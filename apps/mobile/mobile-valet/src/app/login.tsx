@@ -17,8 +17,8 @@ import { useAuthStore } from '@/lib/store';
 export default function LoginScreen() {
   const router = useRouter();
   const { setUser } = useAuthStore();
-  const [email, setEmail] = useState('valet@parkit.local');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -57,7 +57,7 @@ export default function LoginScreen() {
       <View style={styles.content}>
         <View style={styles.logo}>
           <Text style={styles.logoText}>🅿️</Text>
-          <Text style={styles.appName}>ParKit Valet</Text>
+          <Text style={styles.appName}>Parkit Valet</Text>
         </View>
 
         <View style={styles.form}>
@@ -96,7 +96,7 @@ export default function LoginScreen() {
         </View>
 
         <Text style={styles.demo}>
-          Demo: valet@parkit.local / password123
+          Demo: valet@parkit.cr / Parkit123!
         </Text>
       </View>
     </KeyboardAvoidingView>

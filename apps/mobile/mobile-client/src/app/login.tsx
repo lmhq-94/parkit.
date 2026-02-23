@@ -1,16 +1,20 @@
 import { View, Text, StyleSheet, TextInput, Pressable, ScrollView, Alert } from "react-native";
 import { useState } from "react";
-import { useRouter } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import apiClient, { setAuthToken } from "@/lib/api";
 import { saveUser } from "@/lib/auth";
 import { useAuthStore } from "@/lib/store";
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { setUser, setError } = useAuthStore();
+  const { user, setUser, setError } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  if (user) {
+    return <Redirect href="/(tabs)" />;
+  }
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -77,7 +81,7 @@ export default function LoginScreen() {
         </Pressable>
       </View>
 
-      <Text style={styles.demo}>Demo: customer@parkit.com / password123</Text>
+      <Text style={styles.demo}>Demo: cliente@parkit.cr / Parkit123!</Text>
     </ScrollView>
   );
 }

@@ -1,5 +1,5 @@
 import { StyleSheet, View, FlatList, Text, TouchableOpacity, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/store';
 import { clearAuthToken } from '@/lib/api';
@@ -21,13 +21,14 @@ export default function TicketsScreen() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      router.replace('/login');
-      return;
+    if (user) {
+      loadTickets();
     }
-
-    loadTickets();
   }, [user]);
+
+  if (!user) {
+    return <Redirect href="/login" />;
+  }
 
   const loadTickets = async () => {
     setLoading(true);

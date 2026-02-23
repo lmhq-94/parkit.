@@ -2,12 +2,13 @@ import { ExpoConfig, ConfigContext } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
+  newArchEnabled: true,
   name: "Parkit Customer",
   slug: "parkit-customer",
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/icon.png",
-  schemes: ["parkit"],
+  scheme: "parkit",
   userInterfaceStyle: "light",
   backgroundColor: "#ffffff",
   splash: {

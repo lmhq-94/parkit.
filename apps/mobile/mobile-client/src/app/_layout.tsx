@@ -1,25 +1,21 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/store";
-import { router } from "expo-router";
+import { Stack } from "expo-router";
 import { View, Text } from "react-native";
 
 export default function RootLayout() {
-  const { user, hydrate } = useAuthStore();
+  const { hydrate } = useAuthStore();
+  const [isHydrating, setIsHydrating] = useState(true);
 
   useEffect(() => {
     const init = async () => {
       await hydrate();
+      setIsHydrating(false);
     };
     init();
   }, []);
 
-  useEffect(() => {
-    if (user === null && typeof window !== "undefined") {
-      router.replace("/login");
-    }
-  }, [user]);
-
-  if (user === null) {
+  if (isHydrating) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text>Loading...</Text>
@@ -27,15 +23,10 @@ export default function RootLayout() {
     );
   }
 
-  return <RootLayoutNav />;
-}
-
-import { Stack } from "expo-router";
-
-function RootLayoutNav() {
   return (
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="login" options={{ headerShown: false }} />
     </Stack>
   );
 }

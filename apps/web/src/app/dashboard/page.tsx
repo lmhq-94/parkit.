@@ -7,10 +7,10 @@ import { Users, MapPin, Ticket } from "lucide-react";
 export default function DashboardPage() {
   return (
     <ProtectedRoute>
-      <div className="min-h-screen md:flex bg-gray-50">
+      <div className="flex">
         <DashboardSidebar />
-        <main className="flex-1 min-w-0">
-          <div className="container-narrow py-6 md:py-12">
+        <main className="flex-1">
+          <div className="container-narrow py-12">
             <h1 className="text-3xl font-bold mb-8">Dashboard Overview</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">

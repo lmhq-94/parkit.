@@ -13,21 +13,24 @@
     "prebuild": "expo prebuild --clean"
   },
   "dependencies": {
-    "axios": "^1.7.5",
-    "expo": "^52.0.0",
-    "expo-router": "^3.7.0",
-    "expo-secure-store": "^13.0.1",
-    "react": "^18.3.1",
-    "react-native": "^0.76.0",
-    "react-native-safe-area-context": "^4.12.0",
-    "react-native-screens": "^5.0.1",
+    "ajv": "^8.18.0",
+    "ajv-keywords": "^5.1.0",
+    "axios": "1.7.7",
+    "expo": "~52.0.11",
+    "expo-linking": "~7.0.5",
+    "expo-router": "~4.0.1",
+    "expo-secure-store": "~14.0.1",
+    "react": "18.3.1",
+    "react-native": "0.76.9",
+    "react-native-safe-area-context": "4.12.0",
+    "react-native-screens": "~4.4.0",
     "zustand": "^4.5.5"
   },
   "devDependencies": {
     "@types/react": "^18.3.11",
     "@types/react-native": "^0.73.0",
     "eslint": "^8.57.0",
-    "eslint-config-expo": "^7.1.0",
+    "eslint-config-expo": "~8.0.1",
     "typescript": "^5.3.3"
   },
   "private": true

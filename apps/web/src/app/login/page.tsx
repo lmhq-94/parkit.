@@ -78,7 +78,7 @@ export default function LoginPage() {
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="admin@parkit.com"
+              placeholder="admin@parkit.cr"
             />
           </div>
 
@@ -108,7 +108,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-xs text-center text-gray-500 mt-8">
-          Demo credentials: admin@parkit.com / password123
+          Demo credentials: admin@parkit.cr / Parkit123!
         </p>
       </div>
     </div>

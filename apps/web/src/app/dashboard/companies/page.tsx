@@ -8,9 +8,9 @@ import { Plus, Edit2, Trash2 } from "lucide-react";
 
 interface Company {
   id: string;
-  legalName?: string;
   commercialName?: string;
-  billingEmail?: string;
+  name?: string;
+  email?: string;
   status?: string;
 }
 
@@ -37,13 +37,13 @@ export default function CompaniesPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen md:flex bg-gray-50">
+      <div className="flex">
         <DashboardSidebar />
-        <main className="flex-1 min-w-0">
-          <div className="container-narrow py-6 md:py-12">
-            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center mb-8">
+        <main className="flex-1">
+          <div className="container-narrow py-12">
+            <div className="flex justify-between items-center mb-8">
               <h1 className="text-3xl font-bold">Companies</h1>
-              <button className="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto">
+              <button className="btn-primary flex items-center space-x-2">
                 <Plus className="w-4 h-4" />
                 <span>New Company</span>
               </button>
@@ -60,9 +60,8 @@ export default function CompaniesPage() {
                 <p className="text-gray-500">Loading companies...</p>
               </div>
             ) : (
-              <div className="card p-0 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[640px]">
+              <div className="card overflow-hidden">
+                <table className="w-full">
                   <thead className="bg-gray-50 border-b">
                     <tr>
                       <th className="text-left px-6 py-3 font-semibold text-sm">Name</th>
@@ -79,10 +78,10 @@ export default function CompaniesPage() {
                         </td>
                       </tr>
                     ) : (
-                      companies.map((company: Company) => (
+                      companies.map((company: any) => (
                         <tr key={company.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 font-medium">{company.commercialName || company.legalName}</td>
-                          <td className="px-6 py-4 text-sm text-gray-600">{company.billingEmail || "N/A"}</td>
+                          <td className="px-6 py-4 font-medium">{company.name || company.commercialName}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{company.email || "N/A"}</td>
                           <td className="px-6 py-4">
                             <span className="badge-success">
                               {company.status || "ACTIVE"}
@@ -100,8 +99,7 @@ export default function CompaniesPage() {
                       ))
                     )}
                   </tbody>
-                  </table>
-                </div>
+                </table>
               </div>
             )}
           </div>

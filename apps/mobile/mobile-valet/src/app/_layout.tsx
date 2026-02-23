@@ -24,13 +24,13 @@ export default function RootLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        animationEnabled: true,
+        animation: 'default',
       }}
     >
       <Stack.Screen name="index" />
       <Stack.Screen
         name="login"
-        options={{ animationEnabled: false, gestureEnabled: false }}
+        options={{ animation: 'none', gestureEnabled: false }}
       />
     </Stack>
   );

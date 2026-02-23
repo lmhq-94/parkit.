@@ -3,3 +3,8 @@ logs/
 
 # Prisma local DB (solo si usas SQLite en local)
 prisma/dev.db
+
+# Env files
+.env
+.env.development
+.env.production

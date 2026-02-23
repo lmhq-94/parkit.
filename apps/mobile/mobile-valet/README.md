@@ -14,7 +14,7 @@ Ultra-minimal valet operations interface for real-time parking management.
 
 - **Framework**: React Native 0.76 + Expo 52
 - **Language**: TypeScript 5.3.3 (strict mode)
-- **Navigation**: Expo Router v3 (file-based routing)
+- **Navigation**: Expo Router v4 (file-based routing)
 - **State**: Zustand (auth + ticket state)
 - **Storage**: expo-secure-store (encrypted)
 - **API**: Axios with auto JWT injection
@@ -22,7 +22,7 @@ Ultra-minimal valet operations interface for real-time parking management.
 ## 🚀 Quick Start
 
 ```bash
-cd apps/mobile-valet
+cd apps/mobile/mobile-valet
 npm install
 npm run start
 ```
@@ -107,7 +107,7 @@ tsconfig.json        # TypeScript (strict mode)
 ## 🔐 Environment Variables
 
 ```
-EXPO_PUBLIC_API_URL=http://localhost:3001
+EXPO_PUBLIC_API_URL=http://localhost:4000
 EXPO_PUBLIC_API_TIMEOUT=10000
 ```
 

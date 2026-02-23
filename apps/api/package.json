@@ -7,10 +7,20 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "prisma": "prisma",
+    "env:dev": "node scripts/use-env.js dev",
+    "env:prod": "node scripts/use-env.js prod",
+    "db:seed": "prisma db seed",
+    "db:deploy": "prisma migrate deploy",
+    "db:prepare:dev": "npm run env:dev && npm run db:seed",
+    "db:prepare:prod": "npm run env:prod && npm run db:deploy && npm run db:seed",
     "lint": "eslint \"src/**/*.ts\" --ext .ts --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   },
   "keywords": [],
   "author": "",

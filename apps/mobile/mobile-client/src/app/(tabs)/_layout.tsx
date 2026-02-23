@@ -1,7 +1,15 @@
 import { Tabs } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Redirect } from "expo-router";
+import { useAuthStore } from "@/lib/store";
 
 export default function TabsLayout() {
+  const { user } = useAuthStore();
+
+  if (!user) {
+    return <Redirect href="/login" />;
+  }
+
   return (
     <Tabs
       screenOptions={{
