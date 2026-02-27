@@ -1,30 +1,26 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, hydrate } = useAuthStore();
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     hydrate();
+    setIsHydrated(true);
   }, [hydrate]);
 
   useEffect(() => {
-    if (user === null && typeof window !== "undefined") {
-      // Give a moment for hydration
-      const timer = setTimeout(() => {
-        if (!user) {
-          router.push("/login");
-        }
-      }, 100);
-      return () => clearTimeout(timer);
+    if (isHydrated && !user) {
+      router.replace("/login");
     }
-  }, [user, router]);
+  }, [isHydrated, user, router]);
 
-  if (!user) {
+  if (!isHydrated || !user) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 

@@ -47,3 +47,114 @@ body {
 .badge-info {
   @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800;
 }
+
+/* Premium Login UI */
+.premium-bg {
+  @apply min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-[#0A2540] via-[#1E3A8A] to-[#3B82F6];
+}
+
+.premium-bg::before {
+  content: '';
+  @apply absolute inset-0 opacity-40;
+  background: radial-gradient(circle at 15% 50%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+              radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
+}
+
+.premium-glass-panel {
+  @apply relative w-full max-w-md mx-4 p-10 rounded-2xl z-10 transition-all duration-500;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 
+              0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+  backdrop-filter: blur(20px);
+}
+
+.dark .premium-glass-panel {
+  background: rgba(15, 23, 42, 0.6);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
+              0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  backdrop-filter: blur(24px);
+}
+
+.premium-glass-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3), 
+              0 0 0 1px rgba(255, 255, 255, 0.4) inset;
+}
+
+.dark .premium-glass-panel:hover {
+  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), 
+              0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+}
+
+.premium-label {
+  @apply block text-sm font-semibold tracking-wide mb-1.5 ml-1 transition-colors;
+  color: #334155;
+}
+
+.dark .premium-label {
+  color: #CBD5E1;
+}
+
+.premium-input {
+  @apply w-full px-5 py-3.5 rounded-xl transition-all duration-300 outline-none;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  color: #0F172A;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02) inset;
+}
+
+.premium-input:focus {
+  background: #FFFFFF;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1), 0 2px 4px rgba(0,0,0,0.02) inset;
+}
+
+.dark .premium-input {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #F8FAFC;
+}
+
+.dark .premium-input:focus {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15), 0 2px 4px rgba(0,0,0,0.1) inset;
+}
+
+.premium-button {
+  @apply relative w-full overflow-hidden font-bold text-[15px] py-4 rounded-xl transition-all duration-300 mt-2;
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
+}
+
+.premium-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+}
+
+.premium-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.premium-button:disabled {
+  @apply opacity-70 cursor-not-allowed;
+  background: #94A3B8;
+  box-shadow: none;
+}
+
+.dark .premium-button {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+}
+
+.premium-button::after {
+  content: '';
+  @apply absolute top-0 left-[-100%] w-full h-full;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: all 0.5s ease;
+}
+
+.premium-button:hover::after {
+  left: 100%;
+}
+

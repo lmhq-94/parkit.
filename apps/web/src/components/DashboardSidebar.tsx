@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store";
 import { getFullName } from "@/lib/auth";
-import { LogOut, Home, Users, Car, MapPin, Ticket, Bell } from "lucide-react";
+import { LogOut, Home, Building2, Users, Car, MapPin, CalendarDays,Ticket, Bell, Settings } from "lucide-react";
 
 export function DashboardSidebar() {
   const { user, logout } = useAuthStore();
@@ -17,13 +17,14 @@ export function DashboardSidebar() {
 
   const navItems = [
     { label: "Overview", href: "/dashboard", icon: Home },
-    { label: "Companies", href: "/dashboard/companies", icon: Users },
+    { label: "Companies", href: "/dashboard/companies", icon: Building2 },
     { label: "Users", href: "/dashboard/users", icon: Users },
     { label: "Vehicles", href: "/dashboard/vehicles", icon: Car },
     { label: "Parkings", href: "/dashboard/parkings", icon: MapPin },
-    { label: "Bookings", href: "/dashboard/bookings", icon: Ticket },
+    { label: "Bookings", href: "/dashboard/bookings", icon: CalendarDays },
     { label: "Tickets", href: "/dashboard/tickets", icon: Ticket },
     { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
+    { label: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
   return (

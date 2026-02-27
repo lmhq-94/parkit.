@@ -1,14 +1,17 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { SystemRole } from "@prisma/client";
+import { prisma } from "../prisma";
 
 interface JwtPayload {
   userId: string;
   role: SystemRole;
-  companyId: string;
+  companyId?: string;
 }
 
-export function requireAuth(
+const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
+
+export async function requireAuth(
   req: Request,
   res: Response,
   next: NextFunction
@@ -26,18 +29,25 @@ export function requireAuth(
   }
 
   try {
-    // Verify JWT signature and extract payload
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+    const payload = jwt.verify(token, JWT_SECRET) as JwtPayload;
 
-    // Ensure token contains required company context for multi-tenant isolation
-    if (!payload.companyId) {
-      return res.status(401).json({ message: "Token missing companyId" });
+    let companyId = payload.companyId;
+    if (!companyId) {
+      const user = await prisma.user.findUnique({
+        where: { id: payload.userId },
+        select: { companyId: true },
+      });
+
+      if (!user?.companyId) {
+        return res.status(401).json({ message: "Unable to resolve company context" });
+      }
+      companyId = user.companyId;
     }
 
     req.user = {
       userId: payload.userId,
       role: payload.role,
-      companyId: payload.companyId,
+      companyId,
     };
 
     next();

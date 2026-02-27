@@ -7,12 +7,15 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  StatusBar,
+  useColorScheme,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import api, { setAuthToken } from '@/lib/api';
 import { saveUser } from '@/lib/auth';
 import { useAuthStore } from '@/lib/store';
+import { Logo } from '@/components/Logo';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -49,55 +52,90 @@ export default function LoginScreen() {
     }
   };
 
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
+  const dynamicStyles = {
+    container: { backgroundColor: isDark ? '#0F172A' : '#F8FAFC' },
+    badgeContainer: { backgroundColor: isDark ? '#3B82F6' : '#2563EB' },
+    badgeText: { color: isDark ? '#FFFFFF' : '#FFFFFF' },
+    label: { color: isDark ? '#94A3B8' : '#64748B' },
+    input: {
+      backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
+      borderColor: isDark ? '#334155' : '#CBD5E1',
+      color: isDark ? '#F8FAFC' : '#0F172A',
+    },
+    button: { backgroundColor: isDark ? '#3B82F6' : '#2563EB' },
+    buttonText: { color: isDark ? '#FFFFFF' : '#FFFFFF' },
+    demoText: { color: isDark ? '#64748B' : '#94A3B8' },
+    demoHighlight: { color: isDark ? '#CBD5E1' : '#475569' },
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={[styles.container, dynamicStyles.container]}
     >
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={isDark ? "#0F172A" : "#F8FAFC"} />
       <View style={styles.content}>
-        <View style={styles.logo}>
-          <Text style={styles.logoText}>🅿️</Text>
-          <Text style={styles.appName}>Parkit Valet</Text>
+        <View style={styles.header}>
+          <Logo size={48} style={{ marginBottom: 12 }} />
+          <View style={[styles.badgeContainer, dynamicStyles.badgeContainer]}>
+            <Text style={[styles.badgeText, dynamicStyles.badgeText]}>VALET OPERATION</Text>
+          </View>
         </View>
 
         <View style={styles.form}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="your@email.com"
-            placeholderTextColor="#D1D5DB"
-            value={email}
-            onChangeText={setEmail}
-            editable={!loading}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+          <View style={styles.inputGroup}>
+            <Text style={[styles.label, dynamicStyles.label]}>EMAIL ADDRESS</Text>
+            <TextInput
+              style={[styles.input, dynamicStyles.input]}
+              placeholder="e.g. jdoe@parkit.cr"
+              placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+              value={email}
+              onChangeText={setEmail}
+              editable={!loading}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
 
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="••••••••"
-            placeholderTextColor="#D1D5DB"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            editable={!loading}
-          />
+          <View style={styles.inputGroup}>
+            <View style={styles.passwordHeader}>
+              <Text style={[styles.label, dynamicStyles.label]}>PASSWORD</Text>
+              <TouchableOpacity onPress={() => {}}>
+                <Text style={styles.forgotPassword}>Forgot password?</Text>
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              style={[styles.input, dynamicStyles.input]}
+              placeholder="Your secure password"
+              placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              editable={!loading}
+            />
+          </View>
 
           <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
+            style={[styles.button, dynamicStyles.button, loading && styles.buttonDisabled]}
             onPress={handleLogin}
             disabled={loading}
+            activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>
-              {loading ? 'Logging in...' : 'Login'}
+            <Text style={[styles.buttonText, dynamicStyles.buttonText]}>
+              {loading ? 'AUTHENTICATING...' : 'ACCESS SYSTEM'}
             </Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.demo}>
-          Demo: valet@parkit.cr / Parkit123!
-        </Text>
+        <View style={styles.footer}>
+          <Text style={[styles.demo, dynamicStyles.demoText]}>
+            Restricted Access. Staff only.
+          </Text>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -106,62 +144,101 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0066FF',
+    backgroundColor: '#0F172A',
   },
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 32,
   },
-  logo: {
+  header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 56,
   },
-  logoText: {
-    fontSize: 60,
-  },
-  appName: {
-    fontSize: 28,
-    fontWeight: '700',
+  brandText: {
+    fontSize: 48,
+    fontWeight: '900',
     color: '#FFFFFF',
-    marginTop: 12,
-  },
-  form: {
-    marginBottom: 40,
-  },
-  label: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
+    letterSpacing: 2,
     marginBottom: 8,
   },
-  input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 8,
+  badgeContainer: {
+    backgroundColor: '#3B82F6',
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  badgeText: {
     color: '#FFFFFF',
-    marginBottom: 16,
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 2,
+  },
+  form: {
+    marginBottom: 48,
+  },
+  inputGroup: {
+    marginBottom: 24,
+  },
+  passwordHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  label: {
+    color: '#94A3B8',
+    fontSize: 12,
+    fontWeight: '700',
+    marginBottom: 10,
+    letterSpacing: 1,
+    marginLeft: 4,
+  },
+  forgotPassword: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#3B82F6',
+    marginBottom: 10,
+  },
+  input: {
+    backgroundColor: '#1E293B',
+    borderRadius: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    color: '#F8FAFC',
     fontSize: 16,
+    fontWeight: '500',
+    borderWidth: 1,
+    borderColor: '#334155',
   },
   button: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    paddingVertical: 14,
+    backgroundColor: '#3B82F6',
+    borderRadius: 14,
+    paddingVertical: 20,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 16,
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   buttonDisabled: {
-    opacity: 0.7,
+    opacity: 0.6,
   },
   buttonText: {
-    color: '#0066FF',
-    fontWeight: '700',
-    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 15,
+    letterSpacing: 1.5,
+  },
+  footer: {
+    alignItems: 'center',
+    marginTop: 20,
   },
   demo: {
+    color: '#64748B',
+    fontSize: 13,
     textAlign: 'center',
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 12,
+    lineHeight: 20,
   },
 });

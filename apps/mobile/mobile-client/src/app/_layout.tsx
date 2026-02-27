@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/store";
-import { Stack } from "expo-router";
-import { View, Text } from "react-native";
+import { Stack, SplashScreen } from "expo-router";
+import { useFonts } from "expo-font";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { hydrate } = useAuthStore();
   const [isHydrating, setIsHydrating] = useState(true);
+
+  const [fontsLoaded] = useFonts({
+    "CalSans": require("../../assets/fonts/CalSans.ttf"),
+  });
 
   useEffect(() => {
     const init = async () => {
@@ -15,12 +21,14 @@ export default function RootLayout() {
     init();
   }, []);
 
-  if (isHydrating) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Loading...</Text>
-      </View>
-    );
+  useEffect(() => {
+    if (!isHydrating && fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [isHydrating, fontsLoaded]);
+
+  if (isHydrating || !fontsLoaded) {
+    return null;
   }
 
   return (
