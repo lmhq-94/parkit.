@@ -4,27 +4,39 @@ import { useState, useEffect } from "react";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { apiClient } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
+import { isSuperAdmin } from "@/lib/auth";
 import { Plus, Edit2, Trash2 } from "lucide-react";
 
 interface Company {
   id: string;
   commercialName?: string;
+  legalName?: string;
   name?: string;
   email?: string;
+  billingEmail?: string;
   status?: string;
 }
 
 export default function CompaniesPage() {
+  const { user } = useAuthStore();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const superAdmin = isSuperAdmin(user);
 
   useEffect(() => {
     const fetchCompanies = async () => {
+      if (!user) return;
       try {
         setIsLoading(true);
-        const data = await apiClient.get<Company[]>("/companies");
-        setCompanies(Array.isArray(data) ? data : []);
+        if (superAdmin) {
+          const data = await apiClient.get<Company[]>("/companies");
+          setCompanies(Array.isArray(data) ? data : []);
+        } else {
+          const data = await apiClient.get<Company>("/companies/me");
+          setCompanies(data ? [data] : []);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch companies");
       } finally {
@@ -33,7 +45,7 @@ export default function CompaniesPage() {
     };
 
     fetchCompanies();
-  }, []);
+  }, [user, superAdmin]);
 
   return (
     <ProtectedRoute>
@@ -42,11 +54,15 @@ export default function CompaniesPage() {
         <main className="flex-1">
           <div className="container-narrow py-12">
             <div className="flex justify-between items-center mb-8">
-              <h1 className="text-3xl font-bold">Companies</h1>
-              <button className="btn-primary flex items-center space-x-2">
-                <Plus className="w-4 h-4" />
-                <span>New Company</span>
-              </button>
+              <h1 className="text-3xl font-bold">
+                {superAdmin ? "Companies" : "My company"}
+              </h1>
+              {superAdmin && (
+                <button className="btn-primary flex items-center space-x-2">
+                  <Plus className="w-4 h-4" />
+                  <span>New Company</span>
+                </button>
+              )}
             </div>
 
             {error && (
@@ -80,8 +96,8 @@ export default function CompaniesPage() {
                     ) : (
                       companies.map((company: any) => (
                         <tr key={company.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 font-medium">{company.name || company.commercialName}</td>
-                          <td className="px-6 py-4 text-sm text-gray-600">{company.email || "N/A"}</td>
+                          <td className="px-6 py-4 font-medium">{company.name || company.commercialName || company.legalName}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{company.email || company.billingEmail || "N/A"}</td>
                           <td className="px-6 py-4">
                             <span className="badge-success">
                               {company.status || "ACTIVE"}

@@ -34,8 +34,8 @@ export default function LoginPage() {
           email: string;
           firstName: string;
           lastName: string;
-          systemRole: "ADMIN" | "STAFF" | "CUSTOMER";
-          companyId: string;
+          systemRole: "SUPER_ADMIN" | "ADMIN" | "STAFF" | "CUSTOMER";
+          companyId?: string;
         };
         token: string;
       }>("/auth/login", formData);

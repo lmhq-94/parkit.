@@ -29,8 +29,9 @@ npm --prefix apps/api run dev
 
 Key conventions:
 
-- JWT tokens must include `userId`, `role`, and `companyId` claims.
-- Controllers expect `req.user.companyId` to be present (populated by auth middleware).
+- JWT tokens must include `userId`, `role`, and optionally `companyId` (omitted for SUPER_ADMIN).
+- Controllers expect `req.user.companyId` for company-scoped routes (populated by auth middleware or by the `x-company-id` header for SUPER_ADMIN).
+- **SUPER_ADMIN**: Can access all companies. For company-scoped endpoints (users, parkings, etc.) must send the header `x-company-id: <companyId>` to specify which company to act on.
 
 OpenAPI:
 

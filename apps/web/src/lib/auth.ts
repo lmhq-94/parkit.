@@ -3,8 +3,8 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  systemRole: "ADMIN" | "STAFF" | "CUSTOMER";
-  companyId: string;
+  systemRole: "SUPER_ADMIN" | "ADMIN" | "STAFF" | "CUSTOMER";
+  companyId?: string;
   avatar?: string;
 }
 
@@ -41,8 +41,12 @@ export function clearStoredUser(): void {
   }
 }
 
+export function isSuperAdmin(user: User | null): boolean {
+  return user?.systemRole === "SUPER_ADMIN";
+}
+
 export function isAdmin(user: User | null): boolean {
-  return user?.systemRole === "ADMIN";
+  return user?.systemRole === "ADMIN" || user?.systemRole === "SUPER_ADMIN";
 }
 
 export function isStaff(user: User | null): boolean {
