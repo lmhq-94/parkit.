@@ -6,6 +6,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
+import Link from "next/link";
 import { Plus, Edit2, Trash2 } from "lucide-react";
 
 interface Company {
@@ -49,66 +50,78 @@ export default function CompaniesPage() {
 
   return (
     <ProtectedRoute>
-      <div className="flex">
+      <div className="flex min-h-screen bg-[#0a0a0f]">
         <DashboardSidebar />
         <main className="flex-1">
-          <div className="container-narrow py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             <div className="flex justify-between items-center mb-8">
-              <h1 className="text-3xl font-bold">
-                {superAdmin ? "Companies" : "My company"}
-              </h1>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
+                  {superAdmin ? "Companies" : "My company"}
+                </h1>
+                <p className="text-slate-400 text-sm mt-1">
+                  {superAdmin ? "Manage all companies" : "Your company details"}
+                </p>
+              </div>
               {superAdmin && (
-                <button className="btn-primary flex items-center space-x-2">
+                <Link
+                  href="/dashboard/companies/new"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 text-white text-sm font-medium hover:bg-sky-400 transition-colors shadow-lg shadow-sky-500/20"
+                >
                   <Plus className="w-4 h-4" />
-                  <span>New Company</span>
-                </button>
+                  New Company
+                </Link>
               )}
             </div>
 
             {error && (
-              <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+              <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
                 {error}
               </div>
             )}
 
             {isLoading ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500">Loading companies...</p>
+              <div className="flex items-center justify-center py-24">
+                <div className="w-10 h-10 border-2 border-sky-500/30 border-t-sky-400 rounded-full animate-spin" />
               </div>
             ) : (
-              <div className="card overflow-hidden">
+              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] overflow-hidden backdrop-blur-sm">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b">
-                    <tr>
-                      <th className="text-left px-6 py-3 font-semibold text-sm">Name</th>
-                      <th className="text-left px-6 py-3 font-semibold text-sm">Email</th>
-                      <th className="text-left px-6 py-3 font-semibold text-sm">Status</th>
-                      <th className="text-right px-6 py-3 font-semibold text-sm">Actions</th>
+                  <thead>
+                    <tr className="border-b border-white/[0.08]">
+                      <th className="text-left px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-400">Name</th>
+                      <th className="text-left px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-400">Email</th>
+                      <th className="text-left px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-400">Status</th>
+                      <th className="text-right px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-400">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y">
+                  <tbody className="divide-y divide-white/[0.06]">
                     {companies.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="text-center py-8 text-gray-500">
+                        <td colSpan={4} className="text-center py-12 text-slate-500 text-sm">
                           No companies found
                         </td>
                       </tr>
                     ) : (
-                      companies.map((company: any) => (
-                        <tr key={company.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 font-medium">{company.name || company.commercialName || company.legalName}</td>
-                          <td className="px-6 py-4 text-sm text-gray-600">{company.email || company.billingEmail || "N/A"}</td>
+                      companies.map((company) => (
+                        <tr key={company.id} className="hover:bg-white/[0.03] transition-colors">
+                          <td className="px-6 py-4 font-medium text-white">
+                            {company.name || company.commercialName || company.legalName}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-slate-400">
+                            {company.email || company.billingEmail || "N/A"}
+                          </td>
                           <td className="px-6 py-4">
-                            <span className="badge-success">
+                            <span className="inline-flex px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
                               {company.status || "ACTIVE"}
                             </span>
                           </td>
-                          <td className="px-6 py-4 flex justify-end space-x-2">
-                            <button className="p-2 hover:bg-gray-200 rounded transition-colors">
-                              <Edit2 className="w-4 h-4 text-blue-600" />
+                          <td className="px-6 py-4 flex justify-end gap-1">
+                            <button className="p-2 rounded-lg text-slate-400 hover:bg-white/[0.06] hover:text-sky-400 transition-colors">
+                              <Edit2 className="w-4 h-4" />
                             </button>
-                            <button className="p-2 hover:bg-gray-200 rounded transition-colors">
-                              <Trash2 className="w-4 h-4 text-red-600" />
+                            <button className="p-2 rounded-lg text-slate-400 hover:bg-white/[0.06] hover:text-red-400 transition-colors">
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           </td>
                         </tr>

@@ -5,8 +5,8 @@ import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 export default function UsersPage() {
   return (
     <DashboardDataTablePage
-      title="Users"
-      description="Users available in your company."
+      title="Employees"
+      description="Staff and users in your company."
       endpoint="/users"
       emptyMessage="No users found"
       columns={[

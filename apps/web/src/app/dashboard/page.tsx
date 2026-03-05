@@ -7,43 +7,48 @@ import { Users, MapPin, Ticket } from "lucide-react";
 export default function DashboardPage() {
   return (
     <ProtectedRoute>
-      <div className="flex">
+      <div className="flex min-h-screen bg-[#0a0a0f]">
         <DashboardSidebar />
         <main className="flex-1">
-          <div className="container-narrow py-12">
-            <h1 className="text-3xl font-bold mb-8">Dashboard Overview</h1>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight mb-2">
+              Dashboard Overview
+            </h1>
+            <p className="text-slate-400 text-sm mb-10">
+              Summary of your parking operations
+            </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
               <StatCard
                 title="Total Companies"
                 value="12"
-                icon={<Users className="w-8 h-8 text-blue-500" />}
+                icon={<Users className="w-7 h-7 text-sky-400" />}
                 trend="+2.5%"
               />
               <StatCard
                 title="Active Parkings"
                 value="48"
-                icon={<MapPin className="w-8 h-8 text-green-500" />}
+                icon={<MapPin className="w-7 h-7 text-emerald-400" />}
                 trend="+5.3%"
               />
               <StatCard
                 title="Total Tickets"
                 value="1,524"
-                icon={<Ticket className="w-8 h-8 text-purple-500" />}
+                icon={<Ticket className="w-7 h-7 text-violet-400" />}
                 trend="+12.1%"
               />
               <StatCard
                 title="System Users"
                 value="287"
-                icon={<Users className="w-8 h-8 text-orange-500" />}
+                icon={<Users className="w-7 h-7 text-amber-400" />}
                 trend="+8.2%"
               />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="card">
-                <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-                <div className="space-y-3">
+              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 backdrop-blur-sm">
+                <h2 className="text-lg font-semibold text-white mb-4">Recent Activity</h2>
+                <div className="space-y-4">
                   <ActivityItem
                     title="New booking created"
                     time="2 minutes ago"
@@ -62,9 +67,9 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="card">
-                <h2 className="text-xl font-semibold mb-4">System Health</h2>
-                <div className="space-y-4">
+              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 backdrop-blur-sm">
+                <h2 className="text-lg font-semibold text-white mb-4">System Health</h2>
+                <div className="space-y-3">
                   <HealthIndicator label="API Server" status="healthy" />
                   <HealthIndicator label="Database" status="healthy" />
                   <HealthIndicator label="Cache" status="healthy" />
@@ -91,14 +96,14 @@ function StatCard({
   trend: string;
 }) {
   return (
-    <div className="card">
-      <div className="flex items-center justify-between">
+    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-5 backdrop-blur-sm transition-colors hover:bg-white/[0.06]">
+      <div className="flex items-start justify-between">
         <div>
-          <p className="text-gray-600 text-sm">{title}</p>
-          <p className="text-3xl font-bold mt-2">{value}</p>
-          <p className="text-green-600 text-xs mt-2">{trend}</p>
+          <p className="text-slate-400 text-sm font-medium">{title}</p>
+          <p className="text-2xl font-bold text-white mt-1">{value}</p>
+          <p className="text-emerald-400/90 text-xs font-medium mt-2">{trend}</p>
         </div>
-        <div>{icon}</div>
+        <div className="rounded-xl bg-white/[0.06] p-2.5">{icon}</div>
       </div>
     </div>
   );
@@ -114,9 +119,9 @@ function ActivityItem({
   user: string;
 }) {
   return (
-    <div className="border-b pb-3 last:border-b-0">
-      <p className="font-medium text-sm">{title}</p>
-      <div className="flex justify-between text-xs text-gray-500 mt-1">
+    <div className="border-b border-white/[0.06] pb-3 last:border-b-0 last:pb-0">
+      <p className="font-medium text-sm text-white">{title}</p>
+      <div className="flex justify-between text-xs text-slate-500 mt-1">
         <span>{user}</span>
         <span>{time}</span>
       </div>
@@ -131,16 +136,16 @@ function HealthIndicator({
   label: string;
   status: "healthy" | "warning" | "error";
 }) {
-  const statusColors = {
-    healthy: "bg-green-100 text-green-800",
-    warning: "bg-yellow-100 text-yellow-800",
-    error: "bg-red-100 text-red-800",
+  const styles = {
+    healthy: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
+    warning: "bg-amber-500/15 text-amber-400 border-amber-500/20",
+    error: "bg-red-500/15 text-red-400 border-red-500/20",
   };
 
   return (
-    <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-      <span className="text-sm font-medium">{label}</span>
-      <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[status]}`}>
+    <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+      <span className="text-sm font-medium text-slate-300">{label}</span>
+      <span className={`px-3 py-1 rounded-lg text-xs font-medium border ${styles[status]}`}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     </div>

@@ -16,6 +16,8 @@ export const app = express();
 const allowedOrigins = new Set([
   "http://localhost:3000",
   "http://127.0.0.1:3000",
+  "http://localhost:3001",
+  "http://127.0.0.1:3001",
 ]);
 
 app.use((req, res, next) => {
@@ -24,7 +26,10 @@ app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", origin);
     res.header("Vary", "Origin");
   }
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, x-company-id"
+  );
   res.header("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
 
   if (req.method === "OPTIONS") {

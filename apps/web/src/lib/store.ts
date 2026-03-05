@@ -48,9 +48,31 @@ export const useAuthStore = create<AuthStore>((set) => ({
 interface DashboardStore {
   sidebarOpen: boolean;
   toggleSidebar: () => void;
+  selectedCompanyId: string | null;
+  selectedCompanyName: string | null;
+  setSelectedCompany: (id: string | null, name: string | null) => void;
 }
 
-export const useDashboardStore = create<DashboardStore>((set) => ({
+const SELECTED_COMPANY_KEY = "parkit_selected_company_id";
+const SELECTED_COMPANY_NAME_KEY = "parkit_selected_company_name";
+
+export const useDashboardStore = create<DashboardStore>((set, get) => ({
   sidebarOpen: true,
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+  selectedCompanyId:
+    typeof window !== "undefined" ? localStorage.getItem(SELECTED_COMPANY_KEY) : null,
+  selectedCompanyName:
+    typeof window !== "undefined" ? localStorage.getItem(SELECTED_COMPANY_NAME_KEY) : null,
+  setSelectedCompany: (id: string | null, name: string | null) => {
+    if (typeof window !== "undefined") {
+      if (id) {
+        localStorage.setItem(SELECTED_COMPANY_KEY, id);
+        localStorage.setItem(SELECTED_COMPANY_NAME_KEY, name || "");
+      } else {
+        localStorage.removeItem(SELECTED_COMPANY_KEY);
+        localStorage.removeItem(SELECTED_COMPANY_NAME_KEY);
+      }
+    }
+    set({ selectedCompanyId: id, selectedCompanyName: name });
+  },
 }));

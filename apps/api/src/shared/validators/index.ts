@@ -2,9 +2,15 @@ import { z } from "zod";
 
 // Companies
 export const CreateCompanySchema = z.object({
-  name: z.string().min(1, "Company name required"),
-  email: z.string().email("Invalid email"),
-  phone: z.string().optional(),
+  legalName: z.string().min(1, "Legal name required"),
+  taxId: z.string().min(1, "Tax ID required"),
+  commercialName: z.string().optional(),
+  countryCode: z.string().optional(),
+  currency: z.string().optional(),
+  timezone: z.string().optional(),
+  billingEmail: z.string().email("Invalid email").optional().or(z.literal("")),
+  contactPhone: z.string().optional(),
+  legalAddress: z.string().optional(),
 });
 
 export const UpdateCompanySchema = z.object({

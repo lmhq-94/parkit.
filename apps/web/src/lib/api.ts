@@ -23,11 +23,18 @@ class ApiClient {
       },
     });
 
-    // Add request interceptor to include JWT token
+    // Add request interceptor to include JWT token and x-company-id for SUPER_ADMIN
     this.client.interceptors.request.use((config) => {
       const token = this.getToken();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+      }
+      const companyId =
+        typeof window !== "undefined"
+          ? localStorage.getItem("parkit_selected_company_id")
+          : null;
+      if (companyId) {
+        config.headers["x-company-id"] = companyId;
       }
       return config;
     });

@@ -22,7 +22,7 @@ export function Logo({
 
   return (
     <div
-      className={`${calSans.variable} font-calsans text-4xl tracking-tighter flex items-center ${className}`}
+      className={`${calSans.variable} font-calsans font-bold text-4xl tracking-tighter flex items-center ${className}`}
     >
       <span
         className={

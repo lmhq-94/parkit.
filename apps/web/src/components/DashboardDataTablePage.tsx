@@ -76,34 +76,34 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
 
   return (
     <ProtectedRoute>
-      <div className="flex">
+      <div className="flex min-h-screen bg-[#0a0a0f]">
         <DashboardSidebar />
-        <main className="flex-1 bg-slate-50 dark:bg-[#060813] min-h-screen transition-colors duration-300">
+        <main className="flex-1">
           <div className="p-6 md:p-10 lg:p-12 max-w-[1600px] mx-auto">
             <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
+                <h1 className="text-2xl md:text-3xl font-semibold text-white mb-2 tracking-tight">
                   {title}
                 </h1>
-                <p className="text-slate-500 dark:text-slate-400 text-lg">
+                <p className="text-slate-400 text-sm">
                   {description}
                 </p>
               </div>
             </div>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-xl flex items-center shadow-sm">
+              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-200 rounded-xl">
                 <span className="font-medium">{error}</span>
               </div>
             )}
 
             {isLoading ? (
               <div className="flex items-center justify-center py-32">
-                <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+                <div className="w-10 h-10 border-2 border-sky-500/30 border-t-sky-400 rounded-full animate-spin" />
               </div>
             ) : (
-              <div className="bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-800/60 rounded-2xl shadow-xl overflow-hidden ring-1 ring-black/5 dark:ring-white/5 relative z-10 transition-all duration-300 group hover:shadow-2xl hover:border-slate-300 dark:hover:border-slate-700/60">
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
+              <div className="relative rounded-2xl border border-white/[0.08] bg-white/[0.04] overflow-hidden backdrop-blur-sm">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-500/20 to-transparent" />
                 <div className="ag-theme-quartz dashboard-grid w-full h-[620px]">
                   <AgGridReact<T>
                     rowData={rows}
