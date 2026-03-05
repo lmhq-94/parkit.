@@ -1,10 +1,24 @@
-import { View, Text, StyleSheet, TextInput, Pressable, ScrollView, Alert, KeyboardAvoidingView, Platform, StatusBar, useColorScheme } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Pressable,
+  ScrollView,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StatusBar,
+  useColorScheme,
+  ActivityIndicator,
+} from "react-native";
 import { useState } from "react";
 import { Logo } from "@/components/Logo";
 import { Redirect, useRouter } from "expo-router";
 import apiClient, { setAuthToken } from "@/lib/api";
 import { saveUser } from "@/lib/auth";
 import { useAuthStore } from "@/lib/store";
+import { getHasSeenOnboarding } from "@/lib/onboarding";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -26,13 +40,14 @@ export default function LoginScreen() {
     setIsLoading(true);
     try {
       const response = await apiClient.post<any>("/auth/login", { email, password });
-      
+
       if (response.data?.data) {
         const { user, token } = response.data.data;
         await saveUser(user, token);
         setAuthToken(token);
         setUser(user, token);
-        router.replace("/(tabs)");
+        const hasSeenOnboarding = await getHasSeenOnboarding();
+        router.replace(hasSeenOnboarding ? "/(tabs)" : "/onboarding");
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Login failed";
@@ -48,90 +63,102 @@ export default function LoginScreen() {
 
   const dynamicStyles = {
     container: { backgroundColor: isDark ? "#020617" : "#F8FAFC" },
-    text: { color: isDark ? "#FFFFFF" : "#020617" },
-    subtitle: { color: isDark ? "#94A3B8" : "#64748B" },
-    label: { color: isDark ? "#94A3B8" : "#475569" },
-    formContainer: { 
-      backgroundColor: isDark ? "rgba(30, 41, 59, 0.4)" : "#FFFFFF",
-      borderColor: isDark ? "#1E293B" : "#E2E8F0",
+    card: {
+      backgroundColor: isDark ? "rgba(30, 41, 59, 0.6)" : "rgba(255, 255, 255, 0.9)",
+      borderColor: isDark ? "rgba(71, 85, 105, 0.5)" : "rgba(226, 232, 240, 0.8)",
     },
-    welcomeText: { color: isDark ? "#F8FAFC" : "#0F172A" },
-    input: { 
-      backgroundColor: isDark ? "#0F172A" : "#F1F5F9",
-      borderColor: isDark ? "#1E293B" : "#CBD5E1",
+    label: { color: isDark ? "#94A3B8" : "#475569" },
+    input: {
+      backgroundColor: isDark ? "rgba(15, 23, 42, 0.8)" : "rgba(241, 245, 249, 0.9)",
+      borderColor: isDark ? "rgba(51, 65, 85, 0.8)" : "rgba(203, 213, 225, 0.8)",
       color: isDark ? "#F8FAFC" : "#0F172A",
     },
-    button: { backgroundColor: isDark ? "#FFFFFF" : "#020617" },
-    buttonText: { color: isDark ? "#020617" : "#FFFFFF" },
-    demoText: { color: isDark ? "#64748B" : "#94A3B8" },
+    welcome: { color: isDark ? "#F8FAFC" : "#0F172A" },
+    subtitle: { color: isDark ? "#64748B" : "#64748B" },
+    button: { backgroundColor: isDark ? "#3B82F6" : "#2563EB" },
+    buttonText: { color: "#FFFFFF" },
+    footer: { color: isDark ? "#64748B" : "#94A3B8" },
+    error: { backgroundColor: isDark ? "rgba(239, 68, 68, 0.15)" : "rgba(239, 68, 68, 0.1)", borderColor: isDark ? "rgba(239, 68, 68, 0.3)" : "rgba(239, 68, 68, 0.25)" },
   };
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === "ios" ? "padding" : "height"} 
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={[styles.keyboardAvoid, dynamicStyles.container]}
     >
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={isDark ? "#020617" : "#F8FAFC"} />
-      <ScrollView style={[styles.container, dynamicStyles.container]} contentContainerStyle={styles.content} bounces={false}>
+      <ScrollView
+        style={[styles.container, dynamicStyles.container]}
+        contentContainerStyle={styles.content}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.header}>
-          <Logo size={48} style={{ marginBottom: 12 }} />
-          <Text style={[styles.subtitle, dynamicStyles.subtitle]}>PREMIUM PARKING</Text>
+          <Logo size={52} style={styles.logo} />
+          <Text style={[styles.badge, dynamicStyles.subtitle]}>PREMIUM PARKING</Text>
+          <Text style={[styles.welcomeTitle, dynamicStyles.welcome]}>Welcome back</Text>
+          <Text style={[styles.welcomeSub, dynamicStyles.subtitle]}>
+            Sign in to manage your vehicles and bookings
+          </Text>
         </View>
 
-        <View style={[styles.formContainer, dynamicStyles.formContainer]}>
-          <Text style={[styles.welcomeText, dynamicStyles.welcomeText]}>Welcome back</Text>
-          
+        <View style={[styles.card, dynamicStyles.card]}>
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, dynamicStyles.label]}>Email Address</Text>
+            <Text style={[styles.label, dynamicStyles.label]}>Email address</Text>
             <TextInput
               style={[styles.input, dynamicStyles.input]}
-              placeholder="e.g. jdoe@parkit.cr"
-              placeholderTextColor={isDark ? "#475569" : "#94A3B8"}
+              placeholder="e.g. you@company.com"
+              placeholderTextColor={isDark ? "#64748B" : "#94A3B8"}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
               editable={!isLoading}
               autoCapitalize="none"
               autoCorrect={false}
+              autoComplete="email"
             />
           </View>
 
           <View style={styles.inputGroup}>
             <View style={styles.passwordHeader}>
-              <Text style={styles.label}>Password</Text>
-              <Pressable onPress={() => {}}>
-                <Text style={styles.forgotPassword}>Forgot password?</Text>
+              <Text style={[styles.label, dynamicStyles.label]}>Password</Text>
+              <Pressable onPress={() => {}} hitSlop={8}>
+                <Text style={styles.forgotLink}>Forgot password?</Text>
               </Pressable>
             </View>
             <TextInput
               style={[styles.input, dynamicStyles.input]}
               placeholder="Your secure password"
-              placeholderTextColor={isDark ? "#475569" : "#94A3B8"}
+              placeholderTextColor={isDark ? "#64748B" : "#94A3B8"}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
               editable={!isLoading}
+              autoComplete="password"
             />
           </View>
 
           <Pressable
             style={({ pressed }) => [
-              styles.loginButton,
+              styles.button,
               dynamicStyles.button,
-              pressed && styles.loginButtonPressed,
-              isLoading && styles.loginButtonDisabled
+              pressed && styles.buttonPressed,
+              isLoading && styles.buttonDisabled,
             ]}
             onPress={handleLogin}
             disabled={isLoading}
           >
-            <Text style={[styles.loginButtonText, dynamicStyles.buttonText]}>
-              {isLoading ? "Authenticating..." : "Sign In"}
-            </Text>
+            {isLoading ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
+              <Text style={[styles.buttonText, dynamicStyles.buttonText]}>Sign in</Text>
+            )}
           </Pressable>
         </View>
 
         <View style={styles.footer}>
-          <Text style={[styles.demoText, dynamicStyles.demoText]}>Need help? Contact support</Text>
+          <Text style={[styles.footerText, dynamicStyles.footer]}>Need help? Contact support</Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -141,112 +168,108 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   keyboardAvoid: {
     flex: 1,
-    backgroundColor: "#020617",
   },
   container: {
     flex: 1,
-    backgroundColor: "#020617",
   },
   content: {
     flexGrow: 1,
     justifyContent: "space-between",
     paddingHorizontal: 24,
-    paddingTop: 80,
-    paddingBottom: 40,
+    paddingTop: 72,
+    paddingBottom: 48,
   },
   header: {
     alignItems: "center",
-    marginBottom: 40,
+    marginBottom: 32,
   },
-  title: {
-    fontSize: 42,
-    fontWeight: "300",
-    color: "#FFFFFF",
-    letterSpacing: 4,
-    marginBottom: 8,
+  logo: {
+    marginBottom: 16,
   },
-  subtitle: {
-    fontSize: 14,
-    color: "#94A3B8",
+  badge: {
+    fontSize: 12,
     letterSpacing: 2,
     textTransform: "uppercase",
+    fontWeight: "600",
+    marginBottom: 12,
   },
-  formContainer: {
-    backgroundColor: "rgba(30, 41, 59, 0.4)",
-    borderRadius: 24,
-    padding: 32,
-    borderWidth: 1,
-    borderColor: "#1E293B",
-  },
-  welcomeText: {
-    fontSize: 24,
-    fontWeight: "500",
-    color: "#F8FAFC",
-    marginBottom: 32,
+  welcomeTitle: {
+    fontSize: 26,
+    fontWeight: "600",
+    marginBottom: 6,
     textAlign: "center",
   },
+  welcomeSub: {
+    fontSize: 15,
+    textAlign: "center",
+    paddingHorizontal: 24,
+    lineHeight: 22,
+  },
+  card: {
+    borderRadius: 24,
+    padding: 28,
+    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 24,
+    elevation: 6,
+  },
   inputGroup: {
-    marginBottom: 24,
+    marginBottom: 22,
   },
   passwordHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 8,
   },
   label: {
     fontSize: 13,
-    fontWeight: "500",
+    fontWeight: "600",
     marginBottom: 8,
-    color: "#94A3B8",
-    marginLeft: 4,
+    marginLeft: 2,
   },
-  forgotPassword: {
+  forgotLink: {
     fontSize: 13,
-    fontWeight: "500",
+    fontWeight: "600",
     color: "#3B82F6",
-    marginBottom: 8,
   },
   input: {
-    backgroundColor: "#0F172A",
     borderWidth: 1,
-    borderColor: "#1E293B",
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    borderRadius: 14,
+    paddingHorizontal: 18,
     paddingVertical: 16,
     fontSize: 16,
-    color: "#F8FAFC",
   },
-  loginButton: {
-    backgroundColor: "#FFFFFF",
-    paddingVertical: 16,
-    borderRadius: 12,
+  button: {
+    paddingVertical: 18,
+    borderRadius: 14,
     alignItems: "center",
-    marginTop: 8,
-    shadowColor: "#FFFFFF",
+    marginTop: 12,
+    shadowColor: "#2563EB",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.25,
     shadowRadius: 12,
     elevation: 4,
   },
-  loginButtonPressed: {
-    transform: [{ scale: 0.98 }],
-    opacity: 0.9,
+  buttonPressed: {
+    opacity: 0.92,
+    transform: [{ scale: 0.99 }],
   },
-  loginButtonDisabled: {
+  buttonDisabled: {
     opacity: 0.7,
   },
-  loginButtonText: {
-    color: "#020617",
+  buttonText: {
     fontSize: 16,
     fontWeight: "600",
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
   footer: {
     alignItems: "center",
-    marginTop: 40,
+    marginTop: 32,
   },
-  demoText: {
-    color: "#64748B",
+  footerText: {
     fontSize: 13,
     textAlign: "center",
   },

@@ -8,8 +8,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
-  userInterfaceStyle: 'light',
+  userInterfaceStyle: 'automatic',
   scheme: 'parkit-valet',
+  backgroundColor: '#020617',
+  splash: {
+    backgroundColor: '#020617',
+  },
   platforms: ['ios', 'android', 'web'],
   ios: {
     supportsTabletMode: false,
