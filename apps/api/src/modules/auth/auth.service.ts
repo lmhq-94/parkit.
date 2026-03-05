@@ -27,7 +27,7 @@ export class AuthService {
     const token = signToken({
       userId: user.id,
       role: user.systemRole,
-      companyId: user.companyId,
+      companyId: user.companyId ?? undefined,
     });
 
     return { user, token };
@@ -54,7 +54,7 @@ export class AuthService {
     const token = signToken({
       userId: user.id,
       role: user.systemRole,
-      companyId: user.companyId,
+      companyId: user.companyId ?? undefined,
     });
 
     return { user, token };

@@ -8,10 +8,11 @@ import { CreateCompanySchema, UpdateCompanySchema } from "../../shared/validator
 
 const router = Router();
 
+// Only SUPER_ADMIN can list all companies and create companies
 router.get(
   "/",
   requireAuth,
-  requireRole("ADMIN"),
+  requireRole("SUPER_ADMIN"),
   CompaniesController.list
 );
 
@@ -19,14 +20,16 @@ router.post(
   "/",
   validateRequest(CreateCompanySchema),
   requireAuth,
-  requireRole("ADMIN"),
+  requireRole("SUPER_ADMIN"),
   CompaniesController.create
 );
 
+// ADMIN: own company. SUPER_ADMIN: must send x-company-id to act on a company
 router.get(
   "/me",
   requireAuth,
   requireCompany,
+  requireRole("ADMIN"),
   CompaniesController.me
 );
 
@@ -35,6 +38,7 @@ router.patch(
   validateRequest(UpdateCompanySchema),
   requireAuth,
   requireCompany,
+  requireRole("ADMIN"),
   CompaniesController.update
 );
 

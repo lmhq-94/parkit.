@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
-import { Logo } from "@/components/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -55,25 +54,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="premium-bg">
-      <div className="premium-glass-panel">
-        <div className="flex justify-center mb-4">
-          <Logo className="text-5xl" />
-        </div>
-        <p className="text-center text-slate-500 dark:text-slate-400 font-medium tracking-wide uppercase text-xs mb-8 transition-colors">
-          Parking Management System
-        </p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 px-4">
+      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+        <h1 className="text-3xl font-bold text-center mb-2">Parkit Admin</h1>
+        <p className="text-center text-gray-600 mb-8">Parking Management System</p>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-xl text-sm font-medium animate-pulse">
+          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="premium-label">
-              Email Address
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email
             </label>
             <input
               id="email"
@@ -82,20 +77,15 @@ export default function LoginPage() {
               value={formData.email}
               onChange={handleChange}
               required
-              className="premium-input"
-              placeholder="e.g. jdoe@parkit.cr"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="admin@parkit.cr"
             />
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1.5 ml-1">
-              <label htmlFor="password" className="block text-sm font-semibold tracking-wide transition-colors text-slate-700 dark:text-slate-300">
-                Password
-              </label>
-              <a href="#" className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline transition-colors mr-1">
-                Forgot password?
-              </a>
-            </div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
             <input
               id="password"
               name="password"
@@ -103,25 +93,23 @@ export default function LoginPage() {
               value={formData.password}
               onChange={handleChange}
               required
-              className="premium-input"
-              placeholder="Your secure password"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="••••••••"
             />
           </div>
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="premium-button"
+            className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span>{isSubmitting ? "Authenticating..." : "Sign in securely"}</span>
+            {isSubmitting ? "Signing in..." : "Sign in"}
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700/50 transition-colors">
-          <p className="text-xs text-center text-slate-500 font-medium">
-            Secure Access Portal • Authorized Personnel Only
-          </p>
-        </div>
+        <p className="text-xs text-center text-gray-500 mt-8">
+          Demo credentials: admin@parkit.cr / Parkit123!
+        </p>
       </div>
     </div>
   );

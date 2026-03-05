@@ -1,18 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AxiosError } from "axios";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { apiClient } from "@/lib/api";
-import { Building2 } from "lucide-react";
+import { Plus, Edit2, Trash2 } from "lucide-react";
 
 interface Company {
   id: string;
-  legalName?: string;
   commercialName?: string;
-  billingEmail?: string;
-  contactPhone?: string;
+  name?: string;
+  email?: string;
   status?: string;
 }
 
@@ -25,20 +23,8 @@ export default function CompaniesPage() {
     const fetchCompanies = async () => {
       try {
         setIsLoading(true);
-        setError(null);
-
-        try {
-          const list = await apiClient.get<Company[]>("/companies");
-          setCompanies(Array.isArray(list) ? list : []);
-        } catch (err) {
-          const axiosErr = err as AxiosError;
-          if (axiosErr.response?.status === 403) {
-            const me = await apiClient.get<Company>("/companies/me");
-            setCompanies(me ? [me] : []);
-          } else {
-            throw err;
-          }
-        }
+        const data = await apiClient.get<Company[]>("/companies");
+        setCompanies(Array.isArray(data) ? data : []);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch companies");
       } finally {
@@ -55,8 +41,12 @@ export default function CompaniesPage() {
         <DashboardSidebar />
         <main className="flex-1">
           <div className="container-narrow py-12">
-            <div className="flex items-center space-x-3 mb-8">
+            <div className="flex justify-between items-center mb-8">
               <h1 className="text-3xl font-bold">Companies</h1>
+              <button className="btn-primary flex items-center space-x-2">
+                <Plus className="w-4 h-4" />
+                <span>New Company</span>
+              </button>
             </div>
 
             {error && (
@@ -74,31 +64,36 @@ export default function CompaniesPage() {
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b">
                     <tr>
-                      <th className="text-left px-6 py-3 font-semibold text-sm">Commercial Name</th>
-                      <th className="text-left px-6 py-3 font-semibold text-sm">Legal Name</th>
-                      <th className="text-left px-6 py-3 font-semibold text-sm">Billing Email</th>
-                      <th className="text-left px-6 py-3 font-semibold text-sm">Phone</th>
+                      <th className="text-left px-6 py-3 font-semibold text-sm">Name</th>
+                      <th className="text-left px-6 py-3 font-semibold text-sm">Email</th>
                       <th className="text-left px-6 py-3 font-semibold text-sm">Status</th>
+                      <th className="text-right px-6 py-3 font-semibold text-sm">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {companies.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="text-center py-8 text-gray-500">
+                        <td colSpan={4} className="text-center py-8 text-gray-500">
                           No companies found
                         </td>
                       </tr>
                     ) : (
-                      companies.map((company) => (
+                      companies.map((company: any) => (
                         <tr key={company.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 font-medium">{company.commercialName || "N/A"}</td>
-                          <td className="px-6 py-4 text-sm text-gray-600">{company.legalName || "N/A"}</td>
-                          <td className="px-6 py-4 text-sm text-gray-600">{company.billingEmail || "N/A"}</td>
-                          <td className="px-6 py-4 text-sm text-gray-600">{company.contactPhone || "N/A"}</td>
+                          <td className="px-6 py-4 font-medium">{company.name || company.commercialName}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{company.email || "N/A"}</td>
                           <td className="px-6 py-4">
                             <span className="badge-success">
                               {company.status || "ACTIVE"}
                             </span>
+                          </td>
+                          <td className="px-6 py-4 flex justify-end space-x-2">
+                            <button className="p-2 hover:bg-gray-200 rounded transition-colors">
+                              <Edit2 className="w-4 h-4 text-blue-600" />
+                            </button>
+                            <button className="p-2 hover:bg-gray-200 rounded transition-colors">
+                              <Trash2 className="w-4 h-4 text-red-600" />
+                            </button>
                           </td>
                         </tr>
                       ))

@@ -10,7 +10,26 @@ export async function requireCompany(
     return res.status(401).json({ message: "Unauthorized" });
   }
 
+  // Already resolved (e.g. by requireAuth from User record)
+  if (req.user.companyId) {
+    return next();
+  }
+
   const headerCompanyId = req.headers["x-company-id"] as string | undefined;
+
+  // SUPER_ADMIN: must send x-company-id when acting in a company context
+  if (req.user.role === "SUPER_ADMIN") {
+    if (headerCompanyId) {
+      req.user.companyId = headerCompanyId;
+      return next();
+    }
+    if (req.user.companyId) {
+      return next();
+    }
+    return res.status(400).json({
+      message: "x-company-id header required for this operation when using super admin",
+    });
+  }
 
   if (headerCompanyId) {
     req.user.companyId = headerCompanyId;

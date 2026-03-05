@@ -13,6 +13,7 @@ datasource db {
  */
 
 enum SystemRole {
+  SUPER_ADMIN
   ADMIN
   STAFF
   CUSTOMER
@@ -115,7 +116,7 @@ model Company {
 
 model User {
   id             String     @id @default(uuid())
-  companyId      String
+  companyId      String?    // Optional for SUPER_ADMIN (global admin, no company)
   firstName      String
   lastName       String
   email          String     @unique
@@ -134,7 +135,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   // relations
-  company          Company           @relation(fields: [companyId], references: [id])
+  company          Company?          @relation(fields: [companyId], references: [id])
   client           Client?
   valet            Valet?
   auditLogs        AuditLog[]

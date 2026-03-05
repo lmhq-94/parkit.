@@ -6,7 +6,8 @@ declare global {
       user: {
         userId: string;
         role: SystemRole;
-        companyId: string;
+        /** Set for all roles except SUPER_ADMIN without x-company-id */
+        companyId?: string;
       };
     }
   }

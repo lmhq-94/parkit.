@@ -55,6 +55,19 @@ Valets:
 
 ---
 
+### Roles and permissions
+
+| Role         | Scope        | Description |
+|-------------|--------------|-------------|
+| **SUPER_ADMIN** | Global       | Can manage all companies and all data. No company assigned; when acting on a specific company must send the `x-company-id` header. Only role that can list all companies (GET `/companies`) and create companies (POST `/companies`). |
+| **ADMIN**      | Single company | Can manage only the company they belong to (users, parkings, clients, etc.). |
+| **STAFF**      | Single company | Operational access within the company (e.g. valets). |
+| **CUSTOMER**   | Single company | End users (bookings, tickets, vehicles). |
+
+Super admin users are created via **seed** or internal tooling (e.g. `superadmin@parkit.cr` in seed). For API calls that require a company context (e.g. list users of a company), SUPER_ADMIN must send the header **`x-company-id: <companyId>`**.
+
+---
+
 ## Core Features
 
 - Multi-company (multi-tenant) architecture

@@ -3,7 +3,7 @@ export interface CreateUserDTO {
     lastName: string;
     email: string;
     password: string;
-    systemRole?: "ADMIN" | "STAFF" | "CUSTOMER";
+    systemRole?: "SUPER_ADMIN" | "ADMIN" | "STAFF" | "CUSTOMER";
   }
   
   export interface UpdateUserDTO {
@@ -11,6 +11,6 @@ export interface CreateUserDTO {
     lastName?: string;
     phone?: string;
     isActive?: boolean;
-    systemRole?: "ADMIN" | "STAFF" | "CUSTOMER";
+    systemRole?: "SUPER_ADMIN" | "ADMIN" | "STAFF" | "CUSTOMER";
   }
   

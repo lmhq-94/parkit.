@@ -6,7 +6,7 @@ export class ClientsController {
   static async create(req: Request, res: Response) {
     try {
       const client = await ClientsService.create(
-        req.user.companyId,
+        req.user.companyId!,
         req.body
       );
 
@@ -22,7 +22,7 @@ export class ClientsController {
 
   static async list(req: Request, res: Response) {
     try {
-      const clients = await ClientsService.list(req.user.companyId);
+      const clients = await ClientsService.list(req.user.companyId!);
 
       return ok(res, clients);
     } catch (error: unknown) {
@@ -38,7 +38,7 @@ export class ClientsController {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const client = await ClientsService.getById(
-        req.user.companyId,
+        req.user.companyId!,
         id
       );
 
@@ -60,7 +60,7 @@ export class ClientsController {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const client = await ClientsService.update(
-        req.user.companyId,
+        req.user.companyId!,
         id,
         req.body
       );
@@ -79,7 +79,7 @@ export class ClientsController {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const vehicles = await ClientsService.getVehicles(
-        req.user.companyId,
+        req.user.companyId!,
         id
       );
 
@@ -97,7 +97,7 @@ export class ClientsController {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const clientVehicle = await ClientsService.addVehicle(
-        req.user.companyId,
+        req.user.companyId!,
         id,
         req.body
       );

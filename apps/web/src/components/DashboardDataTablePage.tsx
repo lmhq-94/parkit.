@@ -3,10 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ValueGetterParams } from "ag-grid-community";
+import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-quartz.css";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
+
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 type TableColumn<T> = {
   header: string;
@@ -36,7 +41,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const loadData = async () => {
       if (!user?.id) {
         return;
       }
@@ -55,7 +60,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
       }
     };
 
-    fetchData();
+    loadData();
   }, [endpoint, fetchData, user?.id]);
 
   const columnDefs = useMemo<ColDef<T>[]>(
@@ -73,22 +78,33 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
     <ProtectedRoute>
       <div className="flex">
         <DashboardSidebar />
-        <main className="flex-1">
-          <div className="container-narrow py-12">
-            <h1 className="text-3xl font-bold mb-3">{title}</h1>
-            <p className="text-gray-600 mb-8">{description}</p>
+        <main className="flex-1 bg-slate-50 dark:bg-[#060813] min-h-screen transition-colors duration-300">
+          <div className="p-6 md:p-10 lg:p-12 max-w-[1600px] mx-auto">
+            <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
+                  {title}
+                </h1>
+                <p className="text-slate-500 dark:text-slate-400 text-lg">
+                  {description}
+                </p>
+              </div>
+            </div>
 
             {error && (
-              <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-                {error}
+              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-xl flex items-center shadow-sm">
+                <span className="font-medium">{error}</span>
               </div>
             )}
 
             {isLoading ? (
-              <div className="text-center py-12 text-gray-500">Loading data...</div>
+              <div className="flex items-center justify-center py-32">
+                <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+              </div>
             ) : (
-              <div className="card">
-                <div className="ag-theme-quartz w-full h-[520px]">
+              <div className="bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-800/60 rounded-2xl shadow-xl overflow-hidden ring-1 ring-black/5 dark:ring-white/5 relative z-10 transition-all duration-300 group hover:shadow-2xl hover:border-slate-300 dark:hover:border-slate-700/60">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
+                <div className="ag-theme-quartz dashboard-grid w-full h-[620px]">
                   <AgGridReact<T>
                     rowData={rows}
                     columnDefs={columnDefs}
@@ -99,13 +115,10 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                       flex: 1,
                       minWidth: 140,
                     }}
-                    overlayNoRowsTemplate={`<span class="text-gray-500">${emptyMessage}</span>`}
+                    overlayNoRowsTemplate={`<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500"><svg class="w-12 h-12 mb-3 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg><span>${emptyMessage}</span></div>`}
                     pagination
-                    paginationPageSize={10}
+                    paginationPageSize={12}
                     animateRows
-                    getRowId={(params) =>
-                      params.data?.id !== undefined ? String(params.data.id) : crypto.randomUUID()
-                    }
                   />
                 </div>
               </div>

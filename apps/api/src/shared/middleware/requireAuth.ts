@@ -31,23 +31,31 @@ export async function requireAuth(
   try {
     const payload = jwt.verify(token, JWT_SECRET) as JwtPayload;
 
-    let companyId = payload.companyId;
+    let companyId: string | undefined = payload.companyId;
     if (!companyId) {
       const user = await prisma.user.findUnique({
         where: { id: payload.userId },
-        select: { companyId: true },
+        select: { companyId: true, systemRole: true },
       });
 
-      if (!user?.companyId) {
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      if (user.companyId) {
+        companyId = user.companyId;
+      } else if (user.systemRole === "SUPER_ADMIN") {
+        // SUPER_ADMIN has no company; companyId can come from x-company-id header when needed
+        companyId = req.headers["x-company-id"] as string | undefined;
+      }
+      if (!companyId && user.systemRole !== "SUPER_ADMIN") {
         return res.status(401).json({ message: "Unable to resolve company context" });
       }
-      companyId = user.companyId;
     }
 
     req.user = {
       userId: payload.userId,
       role: payload.role,
-      companyId,
+      companyId: companyId ?? undefined,
     };
 
     next();

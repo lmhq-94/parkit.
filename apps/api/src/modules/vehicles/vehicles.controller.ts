@@ -7,7 +7,7 @@ export class VehiclesController {
   static async create(req: Request, res: Response) {
     try {
       const vehicle = await VehiclesService.create(
-        req.user.companyId,
+        req.user.companyId!,
         req.body
       );
 
@@ -23,7 +23,7 @@ export class VehiclesController {
 
   static async list(req: Request, res: Response) {
     try {
-      const vehicles = await VehiclesService.list(req.user.companyId);
+      const vehicles = await VehiclesService.list(req.user.companyId!);
 
       return ok(res, vehicles);
     } catch (error: unknown) {
@@ -39,7 +39,7 @@ export class VehiclesController {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const vehicle = await VehiclesService.getById(
-        req.user.companyId,
+        req.user.companyId!,
         id
       );
 
@@ -61,7 +61,7 @@ export class VehiclesController {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const vehicle = await VehiclesService.update(
-        req.user.companyId,
+        req.user.companyId!,
         id,
         req.body
       );
@@ -82,7 +82,7 @@ export class VehiclesController {
       const countryStr = parseQueryParam(req.query.countryCode as string | string[] | undefined) || 'CR';
 
       const vehicle = await VehiclesService.getByPlate(
-        req.user.companyId,
+        req.user.companyId!,
         plateStr,
         countryStr
       );

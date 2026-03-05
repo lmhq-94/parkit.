@@ -108,7 +108,7 @@ describe("Parkit API Integration Tests", () => {
         expect(res.status).toBe(401);
       });
 
-      it("should require ADMIN role", async () => {
+      it("should require SUPER_ADMIN role", async () => {
         const res = await request(app)
           .get("/companies")
           .set("Authorization", `Bearer ${mockToken}`);

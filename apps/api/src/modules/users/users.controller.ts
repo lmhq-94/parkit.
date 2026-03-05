@@ -5,8 +5,9 @@ import { created, fail, notFound, ok } from "../../shared/utils/response";
 export class UsersController {
   static async create(req: Request, res: Response) {
     try {
+      const companyId = req.user.companyId!;
       const user = await UsersService.create(
-        req.user.companyId,
+        companyId,
         req.body
       );
 
@@ -22,7 +23,7 @@ export class UsersController {
 
   static async list(req: Request, res: Response) {
     try {
-      const users = await UsersService.list(req.user.companyId);
+      const users = await UsersService.list(req.user.companyId!);
       return ok(res, users);
     } catch (error: unknown) {
       return fail(
@@ -37,7 +38,7 @@ export class UsersController {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const user = await UsersService.getById(
-        req.user.companyId,
+        req.user.companyId!,
         id
       );
 
@@ -59,7 +60,7 @@ export class UsersController {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const user = await UsersService.update(
-        req.user.companyId,
+        req.user.companyId!,
         id,
         req.body
       );
@@ -78,7 +79,7 @@ export class UsersController {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       await UsersService.deactivate(
-        req.user.companyId,
+        req.user.companyId!,
         id
       );
 

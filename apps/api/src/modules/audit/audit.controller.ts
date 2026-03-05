@@ -12,7 +12,7 @@ export class AuditController {
       const offsetStr = parseQueryParam(req.query.offset as string | string[] | undefined) || "0";
 
         const logs = await AuditService.list(
-          req.user.companyId,
+          req.user.companyId!,
         {
           ticketId: ticketIdStr,
           userId: userIdStr,
@@ -35,7 +35,7 @@ export class AuditController {
     try {
       const ticketId = Array.isArray(req.params.ticketId) ? req.params.ticketId[0] : req.params.ticketId;
         const logs = await AuditService.getByTicket(
-          req.user.companyId,
+          req.user.companyId!,
         ticketId
       );
 
@@ -53,7 +53,7 @@ export class AuditController {
     try {
       const userId = Array.isArray(req.params.userId) ? req.params.userId[0] : req.params.userId;
         const logs = await AuditService.getByUser(
-          req.user.companyId,
+          req.user.companyId!,
         userId
       );
 

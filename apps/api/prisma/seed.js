@@ -38,6 +38,30 @@ async function main() {
     },
   });
 
+  await prisma.user.upsert({
+    where: { email: "superadmin@parkit.cr" },
+    update: {
+      companyId: null,
+      firstName: "Super",
+      lastName: "Admin",
+      passwordHash,
+      systemRole: "SUPER_ADMIN",
+      timezone: "America/Costa_Rica",
+      isActive: true,
+    },
+    create: {
+      id: "b8e5d9b5-6g35-5c77-0g95-d6ec1g9f7b12",
+      companyId: null,
+      firstName: "Super",
+      lastName: "Admin",
+      email: "superadmin@parkit.cr",
+      passwordHash,
+      systemRole: "SUPER_ADMIN",
+      timezone: "America/Costa_Rica",
+      isActive: true,
+    },
+  });
+
   const adminUser = await prisma.user.upsert({
     where: { email: "admin@parkit.cr" },
     update: {

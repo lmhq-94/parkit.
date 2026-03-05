@@ -18,7 +18,11 @@ export class CompaniesController {
 
   static async me(req: Request, res: Response) {
     try {
-      const company = await CompaniesService.getById(req.user.companyId);
+      const companyId = req.user.companyId;
+      if (!companyId) {
+        return fail(res, 400, "Company context required");
+      }
+      const company = await CompaniesService.getById(companyId);
 
       if (!company) {
         return notFound(res, "Company not found");
@@ -36,8 +40,12 @@ export class CompaniesController {
 
   static async update(req: Request, res: Response) {
     try {
+      const companyId = req.user.companyId;
+      if (!companyId) {
+        return fail(res, 400, "Company context required");
+      }
       const company = await CompaniesService.update(
-        req.user.companyId,
+        companyId,
         req.body
       );
 
