@@ -2,6 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --page-bg: #f8fafc;
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --card-border: rgba(0, 0, 0, 0.08);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --input-bg: rgba(0, 0, 0, 0.04);
+    --input-border: rgba(0, 0, 0, 0.1);
+  }
+
+  .dark {
+    --page-bg: #0a0a0f;
+    --card-bg: rgba(255, 255, 255, 0.04);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --text-primary: #ffffff;
+    --text-secondary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --input-bg: rgba(255, 255, 255, 0.06);
+    --input-border: rgba(255, 255, 255, 0.1);
+  }
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -9,6 +33,9 @@ html {
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
     sans-serif;
+  background-color: var(--page-bg);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Utility classes */
@@ -46,4 +73,209 @@ body {
 
 .badge-info {
   @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800;
+}
+
+/* AG Grid: headers sin mayúsculas */
+.ag-theme-quartz .ag-header-cell-label {
+  text-transform: none;
+}
+
+/* AG Grid: tema Parkit (alineado con la app) */
+.ag-theme-parkit.ag-theme-quartz {
+  --ag-background-color: var(--card-bg);
+  --ag-foreground-color: var(--text-primary);
+  --ag-data-color: var(--text-primary);
+  --ag-secondary-foreground-color: var(--text-muted);
+  --ag-header-background-color: var(--input-bg);
+  --ag-header-foreground-color: var(--text-muted);
+  --ag-header-cell-hover-background-color: rgba(14, 165, 233, 0.08);
+  --ag-active-color: #0ea5e9;
+  --ag-border-color: var(--card-border);
+  --ag-row-hover-color: rgba(14, 165, 233, 0.06);
+  --ag-odd-row-background-color: transparent;
+  --ag-row-border-color: transparent;
+  --ag-row-border-width: 0;
+  --ag-row-border-style: none;
+  --ag-cell-horizontal-border: none;
+  --ag-secondary-border-color: var(--card-border);
+  --ag-borders: solid 1px;
+  --ag-borders-critical: solid 1px;
+  --ag-border-radius: 0;
+  --ag-font-size: 13px;
+  --ag-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --ag-selected-row-background-color: rgba(14, 165, 233, 0.12);
+  --ag-range-selection-border-color: rgba(14, 165, 233, 0.5);
+  --ag-range-selection-background-color: rgba(14, 165, 233, 0.1);
+  --ag-input-focus-border-color: #0ea5e9;
+  --ag-checkbox-checked-color: #0ea5e9;
+  --ag-modal-overlay-background-color: rgba(10, 10, 15, 0.6);
+  --ag-menu-background-color: #ffffff;
+  --ag-tooltip-background-color: #ffffff;
+}
+
+.dark .ag-theme-parkit.ag-theme-quartz {
+  --ag-row-hover-color: rgba(14, 165, 233, 0.1);
+  --ag-header-cell-hover-background-color: rgba(14, 165, 233, 0.12);
+  --ag-menu-background-color: #0f172a;
+  --ag-tooltip-background-color: #0f172a;
+}
+
+/* Popups/filtros del AG Grid: z-index alto y fondo opaco (se renderizan en portal) */
+.ag-popup,
+.ag-filter-body-wrapper,
+.ag-filter,
+.ag-menu,
+.ag-picker-field-wrapper {
+  z-index: 10000 !important;
+}
+
+.ag-popup .ag-root-wrapper,
+.ag-filter-body-wrapper .ag-filter-body,
+.ag-filter,
+.ag-menu {
+  background-color: #ffffff !important;
+  border: 1px solid var(--card-border);
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.2);
+}
+
+.dark .ag-popup .ag-root-wrapper,
+.dark .ag-filter-body-wrapper .ag-filter-body,
+.dark .ag-filter,
+.dark .ag-menu {
+  background-color: #0f172a !important;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+/* Dropdowns dentro de filtros: fondo opaco */
+.ag-select-list,
+.ag-list-box,
+.ag-popup-child,
+.ag-picker-field-wrapper .ag-root-wrapper,
+.ag-filter .ag-popup-child {
+  background-color: #ffffff !important;
+  border: 1px solid var(--card-border);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.15);
+  z-index: 10001 !important;
+}
+
+.dark .ag-select-list,
+.dark .ag-list-box,
+.dark .ag-popup-child,
+.dark .ag-picker-field-wrapper .ag-root-wrapper,
+.dark .ag-filter .ag-popup-child {
+  background-color: #0f172a !important;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.4);
+}
+
+/* Items de listas en dropdowns */
+.ag-select-list-item,
+.ag-list-item {
+  color: var(--text-primary);
+}
+
+.dark .ag-select-list-item,
+.dark .ag-list-item {
+  color: #e2e8f0;
+}
+
+.ag-select-list-item:hover,
+.ag-list-item:hover {
+  background-color: rgba(14, 165, 233, 0.1) !important;
+}
+
+/* Grid: cabecera y filas compactas, filas unidas sin hueco */
+.ag-theme-parkit .ag-header {
+  border-bottom: 1px solid var(--card-border);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.ag-theme-parkit .ag-header-cell {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  display: flex;
+  align-items: center;
+  line-height: 1.2;
+  font-size: 12px;
+}
+
+/* Sin bordes ni espacio entre filas: filas unidas */
+.ag-theme-parkit .ag-row {
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  outline: none !important;
+  transition: background-color 0.12s ease;
+}
+
+.ag-theme-parkit .ag-cell {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  line-height: 1.2;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+}
+
+/* Quitar borde entre celdas que pueda crear línea entre filas */
+.ag-theme-parkit .ag-cell-wrapper {
+  border: none !important;
+}
+
+/* Paginación al estilo app */
+.ag-theme-parkit .ag-paging-panel {
+  border-top: 1px solid var(--card-border);
+  padding: 0.35rem 1rem;
+  min-height: 36px;
+  background-color: var(--input-bg);
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.ag-theme-parkit .ag-paging-button {
+  color: var(--text-secondary) !important;
+  font-weight: 500;
+}
+
+.ag-theme-parkit .ag-paging-button:not(.ag-disabled):hover {
+  color: #0ea5e9 !important;
+}
+
+.ag-theme-parkit .ag-paging-row-summary-panel {
+  color: var(--text-muted);
+}
+
+/* Iconos de ordenación en sky */
+.ag-theme-parkit .ag-header-cell-sorted-asc .ag-icon-asc,
+.ag-theme-parkit .ag-header-cell-sorted-desc .ag-icon-desc {
+  color: #0ea5e9 !important;
+}
+
+/* Inputs de filtro y controles */
+.ag-theme-parkit .ag-input-field-input {
+  background: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border-radius: 0.5rem;
+  border: 1px solid var(--input-border);
+}
+
+.ag-theme-parkit .ag-input-field-input::placeholder {
+  color: var(--text-muted);
+}
+
+.ag-theme-parkit .ag-paging-page-size-select {
+  background: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--input-border);
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
 }

@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -10,6 +11,14 @@ module.exports = {
       colors: {
         primary: "#0066FF",
         secondary: "#F5A623",
+        page: "var(--page-bg)",
+        card: "var(--card-bg)",
+        "card-border": "var(--card-border)",
+        "text-primary": "var(--text-primary)",
+        "text-secondary": "var(--text-secondary)",
+        "text-muted": "var(--text-muted)",
+        "input-bg": "var(--input-bg)",
+        "input-border": "var(--input-border)",
       },
       animation: {
         "fade-in": "fade-in 0.6s ease-out forwards",

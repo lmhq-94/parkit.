@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LocaleToggle } from "@/components/LocaleToggle";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 
 function GoogleIcon({ className }: { className?: string }) {
@@ -39,16 +43,10 @@ function MicrosoftIcon({ className }: { className?: string }) {
   );
 }
 
-function GitHubIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-    </svg>
-  );
-}
-
 export default function LoginPage() {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const { t } = useTranslation();
   const { login, setError, error } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -56,6 +54,7 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
+  const isDark = resolvedTheme === "dark";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -97,19 +96,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="dark min-h-screen flex items-center justify-center relative overflow-hidden bg-[#0a0a0f] px-4 py-12">
-      {/* Background: subtle gradient mesh (Uber-style, not competing with content) */}
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-page px-4 py-12">
+      {/* Theme + Language toggles (top right) */}
+      <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+        <ThemeToggle />
+        <LocaleToggle />
+      </div>
+      {/* Background: subtle gradient mesh */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_-10%,rgba(59,130,246,0.14),transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_50%_at_85%_60%,rgba(99,102,241,0.08),transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_40%_at_15%_90%,rgba(59,130,246,0.06),transparent_50%)]" />
 
       <div className="relative w-full max-w-[400px] animate-fade-in">
-        {/* Card: clean, elevated (Uber / Stripe style) */}
-        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.06] bg-clip-padding p-8 shadow-2xl shadow-black/30 backdrop-blur-2xl md:p-10">
+        <div className="rounded-2xl border border-card-border bg-card bg-clip-padding p-8 shadow-2xl shadow-black/10 dark:shadow-black/30 backdrop-blur-2xl md:p-10">
           <div className="mb-8 flex flex-col items-center">
-            <Logo variant="onDark" className="text-5xl md:text-6xl" />
-            <p className="mt-6 text-center text-slate-400 text-sm">
-              Sign in to continue to your account
+            <Logo variant={isDark ? "onDark" : "default"} className="text-5xl md:text-6xl" />
+            <p className="mt-6 text-center text-text-secondary text-sm">
+              {t("auth.signInToContinue")}
             </p>
           </div>
 
@@ -126,12 +129,12 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="email"
-                className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-300/90"
+                className="mb-2 block text-xs font-semibold uppercase tracking-wider text-text-secondary"
               >
-                Email address
+                {t("auth.email")}
               </label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted" />
                 <input
                   id="email"
                   name="email"
@@ -141,7 +144,7 @@ export default function LoginPage() {
                   required
                   autoComplete="email"
                   placeholder="you@company.com"
-                  className="w-full rounded-xl border border-white/12 bg-white/[0.07] py-3.5 pl-12 pr-4 text-white placeholder-slate-400 transition-all duration-200 focus:border-sky-400/50 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-sky-400/25"
+                  className="w-full rounded-xl border border-input-border bg-input-bg py-3.5 pl-12 pr-4 text-text-primary placeholder-text-muted transition-all duration-200 focus:border-sky-400/50 focus:outline-none focus:ring-2 focus:ring-sky-400/25"
                 />
               </div>
             </div>
@@ -150,19 +153,19 @@ export default function LoginPage() {
               <div className="mb-2 flex items-center justify-between">
                 <label
                   htmlFor="password"
-                  className="block text-xs font-semibold uppercase tracking-wider text-slate-300/90"
+                  className="block text-xs font-semibold uppercase tracking-wider text-text-secondary"
                 >
-                  Password
+                  {t("auth.password")}
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-xs font-medium text-sky-400 hover:text-sky-300 transition-colors"
+                  className="text-xs font-medium text-sky-500 hover:text-sky-400 dark:text-sky-400 dark:hover:text-sky-300 transition-colors"
                 >
-                  Forgot password?
+                  {t("auth.forgotPassword")}
                 </Link>
               </div>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted" />
                 <input
                   id="password"
                   name="password"
@@ -172,13 +175,13 @@ export default function LoginPage() {
                   required
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  className="w-full rounded-xl border border-white/12 bg-white/[0.07] py-3.5 pl-12 pr-12 text-white placeholder-slate-400 transition-all duration-200 focus:border-sky-400/50 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-sky-400/25"
+                  className="w-full rounded-xl border border-input-border bg-input-bg py-3.5 pl-12 pr-12 text-text-primary placeholder-text-muted transition-all duration-200 focus:border-sky-400/50 focus:outline-none focus:ring-2 focus:ring-sky-400/25"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-slate-300 hover:bg-white/5 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400/25 focus:ring-offset-2 focus:ring-offset-transparent"
-                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-text-muted hover:text-text-secondary hover:bg-input-bg transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400/25 focus:ring-offset-2 focus:ring-offset-transparent"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -192,16 +195,16 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="group flex w-full items-center justify-center gap-2 rounded-xl bg-sky-500 py-3.5 font-semibold text-white shadow-lg shadow-sky-500/25 transition-all duration-200 hover:bg-sky-400 hover:shadow-sky-400/30 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-[#0a0a0f] disabled:pointer-events-none disabled:opacity-60"
+              className="group flex w-full items-center justify-center gap-2 rounded-xl bg-sky-500 py-3.5 font-semibold text-white shadow-lg shadow-sky-500/25 transition-all duration-200 hover:bg-sky-400 hover:shadow-sky-400/30 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-page disabled:pointer-events-none disabled:opacity-60"
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                  Signing in…
+                  {t("common.loading")}
                 </span>
               ) : (
                 <>
-                  Sign in
+                  {t("auth.signIn")}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </>
               )}
@@ -209,10 +212,10 @@ export default function LoginPage() {
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10" />
+                <div className="w-full border-t border-card-border" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-transparent px-3 text-xs font-medium text-slate-500">or</span>
+                <span className="bg-card px-3 text-xs font-medium text-text-muted">or</span>
               </div>
             </div>
 
@@ -220,32 +223,23 @@ export default function LoginPage() {
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center justify-center gap-3 rounded-xl border border-white/12 bg-white/[0.04] py-3.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-white/[0.04]"
+                className="flex w-full items-center justify-center gap-3 rounded-xl border border-input-border bg-input-bg py-3.5 text-sm font-medium text-text-secondary transition-colors hover:bg-card disabled:cursor-not-allowed disabled:opacity-60"
                 title="Coming soon"
               >
-                <GoogleIcon className="h-5 w-5" />
-                Continue with Google
+                <GoogleIcon className="h-5 w-5 shrink-0" />
+                {t("auth.continueWithGoogle")}
               </button>
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center justify-center gap-3 rounded-xl border border-white/12 bg-white/[0.04] py-3.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-white/[0.04]"
+                className="flex w-full items-center justify-center gap-3 rounded-xl border border-input-border bg-input-bg py-3.5 text-sm font-medium text-text-secondary transition-colors hover:bg-card disabled:cursor-not-allowed disabled:opacity-60"
                 title="Coming soon"
               >
-                <MicrosoftIcon className="h-5 w-5" />
-                Continue with Microsoft
+                <MicrosoftIcon className="h-5 w-5 shrink-0" />
+                {t("auth.continueWithMicrosoft")}
               </button>
-              <button
-                type="button"
-                disabled
-                className="flex w-full items-center justify-center gap-3 rounded-xl border border-white/12 bg-white/[0.04] py-3.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-white/[0.04]"
-                title="Coming soon"
-              >
-                <GitHubIcon className="h-5 w-5" />
-                Continue with GitHub
-              </button>
-              <p className="text-center text-xs text-slate-500">
-                More sign-in options coming soon
+              <p className="text-center text-xs text-text-muted">
+                {t("auth.moreOptionsComing")}
               </p>
             </div>
           </form>

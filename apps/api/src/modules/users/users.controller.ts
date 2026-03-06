@@ -23,7 +23,8 @@ export class UsersController {
 
   static async list(req: Request, res: Response) {
     try {
-      const users = await UsersService.list(req.user.companyId!);
+      const excludeValets = req.query.excludeValets === "true" || req.query.excludeValets === "1";
+      const users = await UsersService.list(req.user.companyId!, { excludeValets });
       return ok(res, users);
     } catch (error: unknown) {
       return fail(

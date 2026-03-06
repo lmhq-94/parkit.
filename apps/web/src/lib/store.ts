@@ -44,10 +44,33 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
 }));
 
-// UI/Dashboard state
+// Locale (i18n)
+const LOCALE_KEY = "parkit_locale";
+export type Locale = "es" | "en";
+
+interface LocaleStore {
+  locale: Locale;
+  setLocale: (locale: Locale) => void;
+}
+
+export const useLocaleStore = create<LocaleStore>((set) => ({
+  locale: typeof window !== "undefined" ? (localStorage.getItem(LOCALE_KEY) === "en" ? "en" : "es") : "es",
+  setLocale: (locale: Locale) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(LOCALE_KEY, locale);
+    }
+    set({ locale });
+  },
+}));
+
+// UI/Dashboard state (sidebarCollapsed inicia true para evitar mismatch SSR; se hidrata desde localStorage en el sidebar)
+export const SIDEBAR_COLLAPSED_KEY = "parkit_sidebar_collapsed";
+
 interface DashboardStore {
   sidebarOpen: boolean;
   toggleSidebar: () => void;
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: (collapsed: boolean) => void;
   selectedCompanyId: string | null;
   selectedCompanyName: string | null;
   setSelectedCompany: (id: string | null, name: string | null) => void;
@@ -56,9 +79,16 @@ interface DashboardStore {
 const SELECTED_COMPANY_KEY = "parkit_selected_company_id";
 const SELECTED_COMPANY_NAME_KEY = "parkit_selected_company_name";
 
-export const useDashboardStore = create<DashboardStore>((set, get) => ({
+export const useDashboardStore = create<DashboardStore>((set) => ({
   sidebarOpen: true,
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+  sidebarCollapsed: true,
+  setSidebarCollapsed: (collapsed) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(collapsed));
+    }
+    set({ sidebarCollapsed: collapsed });
+  },
   selectedCompanyId:
     typeof window !== "undefined" ? localStorage.getItem(SELECTED_COMPANY_KEY) : null,
   selectedCompanyName:

@@ -27,9 +27,12 @@ export class UsersService {
     });
   }
 
-  static async list(companyId: string) {
+  static async list(companyId: string, options?: { excludeValets?: boolean }) {
     return prisma.user.findMany({
-      where: { companyId },
+      where: {
+        companyId,
+        ...(options?.excludeValets === true ? { valet: null } : {}),
+      },
       orderBy: { createdAt: "desc" },
     });
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ValueGetterParams } from "ag-grid-community";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
@@ -9,7 +9,8 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { apiClient } from "@/lib/api";
-import { useAuthStore } from "@/lib/store";
+import { useAuthStore, useLocaleStore } from "@/lib/store";
+import { t } from "@/lib/i18n";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -25,6 +26,8 @@ interface DashboardDataTablePageProps<T> {
   fetchData?: (userId: string) => Promise<T[] | T | null | undefined>;
   columns: Array<TableColumn<T>>;
   emptyMessage: string;
+  /** Acción opcional en el header (ej. botón "Nueva empresa") */
+  headerAction?: React.ReactNode;
 }
 
 export function DashboardDataTablePage<T extends { id?: string | number }>({
@@ -34,11 +37,42 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   fetchData,
   columns,
   emptyMessage,
+  headerAction,
 }: DashboardDataTablePageProps<T>) {
   const { user } = useAuthStore();
+  const locale = useLocaleStore((s) => s.locale);
   const [rows, setRows] = useState<T[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const getLocaleText = useCallback(
+    (params: { key: string; defaultValue?: string }) => {
+      const def = params.defaultValue ?? "";
+      if (locale === "es" && def === "Page Size") return t(locale, "grid.pageSize");
+      const key = "grid." + params.key;
+      const translated = t(locale, key);
+      return translated !== key ? translated : (params.defaultValue ?? params.key);
+    },
+    [locale]
+  );
+
+  const localeText = useMemo(() => {
+    const keys = [
+      "page", "to", "of", "first", "previous", "next", "last",
+      "pageSize", "pageSizeLabel", "rowsPerPage", "pageSizeSelectLabel",
+      "filterOoo", "contains", "equals", "notEqual", "startsWith", "endsWith",
+      "lessThan", "greaterThan", "lessThanOrEqual", "greaterThanOrEqual",
+      "inRange", "andCondition", "orCondition", "and", "or",
+      "applyFilter", "resetFilter", "clearFilter", "notContains",
+      "firstPage", "lastPage", "nextPage", "previousPage",
+    ] as const;
+    const out: Record<string, string> = {};
+    for (const k of keys) {
+      const val = t(locale, "grid." + k);
+      out[k] = val !== "grid." + k ? val : k;
+    }
+    return out;
+  }, [locale]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -76,19 +110,20 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
 
   return (
     <ProtectedRoute>
-      <div className="flex min-h-screen bg-[#0a0a0f]">
+      <div className="flex min-h-screen bg-page">
         <DashboardSidebar />
-        <main className="flex-1">
-          <div className="p-6 md:p-10 lg:p-12 max-w-[1600px] mx-auto">
+        <main className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 flex flex-col min-h-0 p-6 md:p-10 lg:p-12 max-w-[1600px] mx-auto w-full">
             <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>
-                <h1 className="text-2xl md:text-3xl font-semibold text-white mb-2 tracking-tight">
+                <h1 className="text-2xl md:text-3xl font-semibold text-text-primary mb-2 tracking-tight">
                   {title}
                 </h1>
-                <p className="text-slate-400 text-sm">
+                <p className="text-text-secondary text-sm">
                   {description}
                 </p>
               </div>
+              {headerAction != null ? <div className="shrink-0">{headerAction}</div> : null}
             </div>
 
             {error && (
@@ -102,10 +137,12 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                 <div className="w-10 h-10 border-2 border-sky-500/30 border-t-sky-400 rounded-full animate-spin" />
               </div>
             ) : (
-              <div className="relative rounded-2xl border border-white/[0.08] bg-white/[0.04] overflow-hidden backdrop-blur-sm">
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-500/20 to-transparent" />
-                <div className="ag-theme-quartz dashboard-grid w-full h-[620px]">
+              <div className="relative flex-1 flex flex-col min-h-[400px] rounded-2xl border border-card-border bg-card overflow-hidden backdrop-blur-sm shadow-lg shadow-black/5 dark:shadow-none">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-500/30 to-transparent" />
+                <div className="ag-theme-quartz ag-theme-parkit flex-1 min-h-0 w-full">
                   <AgGridReact<T>
+                    key={locale}
+                    theme="legacy"
                     rowData={rows}
                     columnDefs={columnDefs}
                     defaultColDef={{
@@ -117,8 +154,13 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                     }}
                     overlayNoRowsTemplate={`<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500"><svg class="w-12 h-12 mb-3 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg><span>${emptyMessage}</span></div>`}
                     pagination
-                    paginationPageSize={12}
-                    animateRows
+                    paginationPageSize={20}
+                    animateRows={false}
+                    suppressCellFocus
+                    rowHeight={32}
+                    headerHeight={36}
+                    localeText={localeText}
+                    getLocaleText={getLocaleText}
                   />
                 </div>
               </div>

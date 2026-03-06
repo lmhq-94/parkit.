@@ -1,32 +1,40 @@
 "use client";
 
+import { useMemo } from "react";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function UsersPage() {
+  const { t, tEnum } = useTranslation();
+  const columns = useMemo(
+    () => [
+      {
+        header: t("tables.employees.name"),
+        render: (user: { firstName?: string; lastName?: string }) =>
+          `${user.firstName || ""} ${user.lastName || ""}`.trim() || "N/A",
+      },
+      {
+        header: t("tables.employees.email"),
+        render: (user: { email?: string }) => user.email || "N/A",
+      },
+      {
+        header: t("tables.employees.role"),
+        render: (user: { systemRole?: string }) => tEnum("systemRole", user.systemRole),
+      },
+      {
+        header: t("tables.employees.status"),
+        render: (user: { isActive?: boolean }) => (user.isActive ? t("tables.employees.active") : t("tables.employees.inactive")),
+      },
+    ],
+    [t, tEnum]
+  );
   return (
     <DashboardDataTablePage
-      title="Employees"
-      description="Staff and users in your company."
-      endpoint="/users"
-      emptyMessage="No users found"
-      columns={[
-        {
-          header: "Name",
-          render: (user: any) => `${user.firstName || ""} ${user.lastName || ""}`.trim() || "N/A",
-        },
-        {
-          header: "Email",
-          render: (user: any) => user.email || "N/A",
-        },
-        {
-          header: "Role",
-          render: (user: any) => user.systemRole || "N/A",
-        },
-        {
-          header: "Status",
-          render: (user: any) => (user.isActive ? "ACTIVE" : "INACTIVE"),
-        },
-      ]}
+      title={t("tables.employees.title")}
+      description={t("tables.employees.description")}
+      endpoint="/users?excludeValets=true"
+      emptyMessage={t("tables.employees.empty")}
+      columns={columns}
     />
   );
 }

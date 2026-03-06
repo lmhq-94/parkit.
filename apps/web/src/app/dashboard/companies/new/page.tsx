@@ -73,24 +73,26 @@ export default function NewCompanyPage() {
 
   return (
     <ProtectedRoute>
-      <div className="flex min-h-screen bg-[#0a0a0f]">
+      <div className="flex min-h-screen bg-page">
         <DashboardSidebar />
         <main className="flex-1">
-          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="p-6 md:p-10 lg:p-12 max-w-[1600px] mx-auto">
             <Link
               href="/dashboard/companies"
-              className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-sky-400 transition-colors mb-8"
+              className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-sky-400 transition-colors mb-6"
             >
               <ArrowLeft className="w-4 h-4" />
               Volver a empresas
             </Link>
 
-            <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
-              Nueva empresa
-            </h1>
-            <p className="text-slate-400 text-sm mt-1 mb-8">
-              Completa los datos para registrar una nueva empresa.
-            </p>
+            <div className="mb-10">
+              <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight mb-2">
+                Nueva empresa
+              </h1>
+              <p className="text-slate-400 text-sm">
+                Completa los datos para registrar una nueva empresa.
+              </p>
+            </div>
 
             {error && (
               <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
@@ -100,59 +102,57 @@ export default function NewCompanyPage() {
 
             <form
               onSubmit={handleSubmit}
-              className="rounded-2xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-sm p-6 space-y-6"
+              className="relative rounded-2xl border border-white/[0.08] bg-white/[0.04] overflow-hidden backdrop-blur-sm p-8"
             >
-              <div>
-                <label htmlFor="legalName" className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Razón social *
-                </label>
-                <input
-                  id="legalName"
-                  name="legalName"
-                  type="text"
-                  required
-                  value={formData.legalName}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50"
-                  placeholder="Ej. Empresa S.A."
-                />
-              </div>
-
-              <div>
-                <label htmlFor="commercialName" className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Nombre comercial
-                </label>
-                <input
-                  id="commercialName"
-                  name="commercialName"
-                  type="text"
-                  value={formData.commercialName}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50"
-                  placeholder="Ej. Parkit Costa Rica"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="taxId" className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Cédula jurídica / NIF *
-                </label>
-                <input
-                  id="taxId"
-                  name="taxId"
-                  type="text"
-                  required
-                  value={formData.taxId}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50"
-                  placeholder="Ej. 3-101-123456"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-500/20 to-transparent" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div>
+                  <label htmlFor="legalName" className="block text-sm font-medium text-slate-300 mb-1.5">
+                    Razón social *
+                  </label>
+                  <input
+                    id="legalName"
+                    name="legalName"
+                    type="text"
+                    required
+                    value={formData.legalName}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50"
+                    placeholder="Ej. Empresa S.A."
+                  />
+                </div>
+                <div>
+                  <label htmlFor="commercialName" className="block text-sm font-medium text-slate-300 mb-1.5">
+                    Nombre comercial
+                  </label>
+                  <input
+                    id="commercialName"
+                    name="commercialName"
+                    type="text"
+                    value={formData.commercialName}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50"
+                    placeholder="Ej. Parkit Costa Rica"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="taxId" className="block text-sm font-medium text-slate-300 mb-1.5">
+                    Cédula jurídica / NIF *
+                  </label>
+                  <input
+                    id="taxId"
+                    name="taxId"
+                    type="text"
+                    required
+                    value={formData.taxId}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50"
+                    placeholder="Ej. 3-101-123456"
+                  />
+                </div>
                 <div>
                   <label htmlFor="countryCode" className="block text-sm font-medium text-slate-300 mb-1.5">
-                    País
+                    Código de país
                   </label>
                   <input
                     id="countryCode"
@@ -178,54 +178,64 @@ export default function NewCompanyPage() {
                     placeholder="CRC"
                   />
                 </div>
+                <div>
+                  <label htmlFor="timezone" className="block text-sm font-medium text-slate-300 mb-1.5">
+                    Zona horaria
+                  </label>
+                  <input
+                    id="timezone"
+                    name="timezone"
+                    type="text"
+                    value={formData.timezone}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50"
+                    placeholder="America/Costa_Rica"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="billingEmail" className="block text-sm font-medium text-slate-300 mb-1.5">
+                    Email de facturación
+                  </label>
+                  <input
+                    id="billingEmail"
+                    name="billingEmail"
+                    type="email"
+                    value={formData.billingEmail}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50"
+                    placeholder="facturacion@empresa.com"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="contactPhone" className="block text-sm font-medium text-slate-300 mb-1.5">
+                    Teléfono de contacto
+                  </label>
+                  <input
+                    id="contactPhone"
+                    name="contactPhone"
+                    type="tel"
+                    value={formData.contactPhone}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50"
+                    placeholder="+506 2222-2222"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label htmlFor="legalAddress" className="block text-sm font-medium text-slate-300 mb-1.5">
+                    Dirección legal
+                  </label>
+                  <textarea
+                    id="legalAddress"
+                    name="legalAddress"
+                    rows={2}
+                    value={formData.legalAddress}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 resize-none"
+                    placeholder="Dirección fiscal"
+                  />
+                </div>
               </div>
-
-              <div>
-                <label htmlFor="billingEmail" className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Email de facturación
-                </label>
-                <input
-                  id="billingEmail"
-                  name="billingEmail"
-                  type="email"
-                  value={formData.billingEmail}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50"
-                  placeholder="facturacion@empresa.com"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="contactPhone" className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Teléfono de contacto
-                </label>
-                <input
-                  id="contactPhone"
-                  name="contactPhone"
-                  type="tel"
-                  value={formData.contactPhone}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50"
-                  placeholder="+506 2222-2222"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="legalAddress" className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Dirección legal
-                </label>
-                <textarea
-                  id="legalAddress"
-                  name="legalAddress"
-                  rows={2}
-                  value={formData.legalAddress}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 resize-none"
-                  placeholder="Dirección fiscal"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-3 pt-6 mt-2">
                 <button
                   type="submit"
                   disabled={isSubmitting}

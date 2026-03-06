@@ -1,36 +1,28 @@
 "use client";
 
+import { useMemo } from "react";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function VehiclesPage() {
+  const { t } = useTranslation();
+  const columns = useMemo(
+    () => [
+      { header: t("tables.vehicles.plate"), render: (v: { plate?: string }) => v.plate || "N/A" },
+      { header: t("tables.vehicles.brand"), render: (v: { brand?: string }) => v.brand || "N/A" },
+      { header: t("tables.vehicles.model"), render: (v: { model?: string }) => v.model || "N/A" },
+      { header: t("tables.vehicles.year"), render: (v: { year?: string | number }) => (v.year != null ? String(v.year) : "N/A") },
+      { header: t("tables.vehicles.country"), render: (v: { countryCode?: string }) => v.countryCode || "N/A" },
+    ],
+    [t]
+  );
   return (
     <DashboardDataTablePage
-      title="Vehicles"
-      description="Vehicles registered in your company."
+      title={t("tables.vehicles.title")}
+      description={t("tables.vehicles.description")}
       endpoint="/vehicles"
-      emptyMessage="No vehicles found"
-      columns={[
-        {
-          header: "Plate",
-          render: (vehicle: any) => vehicle.plate || "N/A",
-        },
-        {
-          header: "Brand",
-          render: (vehicle: any) => vehicle.brand || "N/A",
-        },
-        {
-          header: "Model",
-          render: (vehicle: any) => vehicle.model || "N/A",
-        },
-        {
-          header: "Year",
-          render: (vehicle: any) => vehicle.year || "N/A",
-        },
-        {
-          header: "Country",
-          render: (vehicle: any) => vehicle.countryCode || "N/A",
-        },
-      ]}
+      emptyMessage={t("tables.vehicles.empty")}
+      columns={columns}
     />
   );
 }

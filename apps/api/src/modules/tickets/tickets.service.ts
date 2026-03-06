@@ -102,6 +102,12 @@ export class TicketsService {
             model: true,
           },
         },
+        parking: {
+          select: {
+            name: true,
+            address: true,
+          },
+        },
         client: {
           select: {
             user: {
