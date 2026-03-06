@@ -6,7 +6,7 @@ import type { ColDef, ICellRendererParams, ValueGetterParams, ValueSetterParams 
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
-import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Check, Eye, Pencil, Plus, Trash2, X } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
@@ -35,6 +35,8 @@ interface DashboardDataTablePageProps<T> {
   refreshToken?: number;
   /** Callback al hacer clic en Editar (opcional). Si se pasa, se muestra el botón Editar. */
   onEdit?: (row: T) => void;
+  /** Callback al hacer clic en Ver (opcional). Si se pasa, se muestra el botón Ver. */
+  onView?: (row: T) => void;
   /** Callback al hacer clic en Eliminar (opcional). Si se pasa, se muestra el botón Eliminar. Tras eliminar se recarga la tabla. */
   onDelete?: (row: T) => void | Promise<void>;
   /** Mensaje de confirmación antes de eliminar (opcional). */
@@ -47,10 +49,12 @@ interface DashboardDataTablePageProps<T> {
 
 function ActionsCellRenderer<T extends { id?: string | number }>(
   params: ICellRendererParams<T> & {
+    onView?: (row: T) => void;
     onEdit?: (row: T) => void;
     onDelete?: (row: T) => void | Promise<void>;
     getConfirmDeleteMessage?: (row: T) => string;
     confirmDeleteMessage: string;
+    viewLabel: string;
     editLabel: string;
     deleteLabel: string;
     saveLabel: string;
@@ -62,12 +66,13 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
     onCancelCreate?: () => void;
   }
 ) {
-  const { data, onEdit, onDelete, getConfirmDeleteMessage, confirmDeleteMessage, editLabel, deleteLabel, saveLabel, cancelLabel, firstEditableColId, onCreate, onCancelCreate } = params;
+  const { data, onView, onEdit, onDelete, getConfirmDeleteMessage, confirmDeleteMessage, viewLabel, editLabel, deleteLabel, saveLabel, cancelLabel, firstEditableColId, onCreate, onCancelCreate } = params;
   const [deleting, setDeleting] = useState(false);
   const [saving, setSaving] = useState(false);
 
   if (!data) return null;
   const isNew = Boolean((data as unknown as { __isNew?: boolean }).__isNew);
+  const hasView = !isNew && typeof onView === "function";
   const hasEdit = !isNew && (typeof onEdit === "function" || firstEditableColId != null);
   const hasDelete = typeof onDelete === "function";
   const hasCreate = isNew && typeof onCreate === "function";
@@ -103,7 +108,7 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
     }
   };
 
-  if (!hasEdit && !hasDelete && !hasCreate) return null;
+  if (!hasView && !hasEdit && !hasDelete && !hasCreate) return null;
 
   return (
     <div className="flex items-center justify-center gap-1 h-full">
@@ -129,6 +134,17 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
             <X className="w-4 h-4" />
           </button>
         </>
+      )}
+      {hasView && (
+        <button
+          type="button"
+          onClick={() => onView!(data)}
+          className="p-2 rounded-lg text-text-muted hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
+          title={viewLabel}
+          aria-label={viewLabel}
+        >
+          <Eye className="w-4 h-4" />
+        </button>
       )}
       {hasEdit && (
         <button
@@ -166,6 +182,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   emptyMessage,
   headerAction,
   refreshToken,
+  onView,
   onEdit,
   onDelete,
   getConfirmDeleteMessage,
@@ -295,6 +312,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
     const hasEditableCols = columns.some((c) => Boolean(c.editable && c.field));
     const firstEditableColId = hasEditableCols ? columns.find((c) => c.editable && c.field)?.header : undefined;
     const hasActions =
+      onView != null ||
       onEdit != null ||
       onDelete != null ||
       onCreate != null ||
@@ -307,14 +325,16 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
         filter: false,
         resizable: false,
         flex: 0,
-        minWidth: 110,
-        maxWidth: 110,
+        minWidth: onView != null && onEdit != null ? 145 : 110,
+        maxWidth: onView != null && onEdit != null ? 145 : 110,
         cellRenderer: ActionsCellRenderer,
         cellRendererParams: {
+          onView: onView ?? undefined,
           onEdit: onEdit ?? undefined,
           onDelete: onDelete ? handleDelete : undefined,
           getConfirmDeleteMessage: getConfirmDeleteMessage ?? undefined,
           confirmDeleteMessage: t(locale, "common.confirmDelete"),
+          viewLabel: t(locale, "common.view"),
           editLabel: t(locale, "common.edit"),
           deleteLabel: t(locale, "common.delete"),
           saveLabel: t(locale, "common.save"),
@@ -326,7 +346,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
       });
     }
     return dataCols;
-  }, [columns, locale, onEdit, onDelete, onCreate, getConfirmDeleteMessage, handleDelete, handleCreate, onUpdate]);
+  }, [columns, locale, onView, onEdit, onDelete, onCreate, getConfirmDeleteMessage, handleDelete, handleCreate, onUpdate]);
 
   const hasEditableColumns = useMemo(
     () => columns.some((c) => Boolean(c.editable && c.field)),

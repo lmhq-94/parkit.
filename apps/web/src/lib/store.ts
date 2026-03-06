@@ -78,6 +78,9 @@ interface DashboardStore {
   selectedCompanyId: string | null;
   selectedCompanyName: string | null;
   setSelectedCompany: (id: string | null, name: string | null) => void;
+  /** Incrementar para forzar recarga de la lista de companies en el sidebar */
+  companiesVersion: number;
+  bumpCompanies: () => void;
 }
 
 const SELECTED_COMPANY_KEY = "parkit_selected_company_id";
@@ -109,4 +112,6 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
     }
     set({ selectedCompanyId: id, selectedCompanyName: name });
   },
+  companiesVersion: 0,
+  bumpCompanies: () => set((s) => ({ companiesVersion: s.companiesVersion + 1 })),
 }));

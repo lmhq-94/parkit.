@@ -62,7 +62,7 @@ export default function EditBookingPage() {
         setLoading(false);
       }
     })();
-  }, [id, t]);
+  }, [id]);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => setForm(p => ({ ...p, [k]: e.target.value }));

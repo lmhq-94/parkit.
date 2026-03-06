@@ -42,7 +42,7 @@ export default function EditVehiclePage() {
         setLoading(false);
       }
     })();
-  }, [id, t]);
+  }, [id]);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement>) => setForm(p => ({ ...p, [k]: e.target.value }));

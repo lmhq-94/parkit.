@@ -102,15 +102,132 @@ function SidebarTooltip({
 const SELECTED_COMPANY_KEY = "parkit_selected_company_id";
 const SELECTED_COMPANY_NAME_KEY = "parkit_selected_company_name";
 
+function CompanySelector({
+  companies, selectedCompanyId, selectedCompanyName, onSelect, placeholder, allCompaniesLabel, emptyLabel,
+}: {
+  companies: { id: string; commercialName?: string; legalName?: string }[];
+  selectedCompanyId: string | null;
+  selectedCompanyName: string | null;
+  onSelect: (id: string, name: string) => void;
+  placeholder: string;
+  allCompaniesLabel: string;
+  emptyLabel: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  const updatePosition = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setPosition({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+    }
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const onScrollOrResize = () => updatePosition();
+    window.addEventListener("scroll", onScrollOrResize, true);
+    window.addEventListener("resize", onScrollOrResize);
+    return () => {
+      window.removeEventListener("scroll", onScrollOrResize, true);
+      window.removeEventListener("resize", onScrollOrResize);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!triggerRef.current?.contains(target) && !target.closest("[data-company-dropdown]")) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  const dropdown = open && typeof document !== "undefined" && createPortal(
+    <div
+      data-company-dropdown
+      className="fixed z-[99999] overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl bg-white dark:bg-slate-900 py-1.5 px-1.5"
+      style={{ top: position.top, left: position.left, width: Math.max(position.width, 220) }}
+    >
+      <div className="max-h-52 overflow-y-auto">
+        {companies.map((c) => {
+          const name = c.commercialName || c.legalName || c.id;
+          return (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => { onSelect(c.id, name); setOpen(false); }}
+              className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg truncate ${
+                selectedCompanyId === c.id
+                  ? "bg-sky-500/20 text-sky-600 dark:text-sky-400 font-medium"
+                  : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              }`}
+            >
+              {name}
+            </button>
+          );
+        })}
+        {companies.length === 0 && (
+          <p className="px-3 py-3 text-sm text-slate-400 text-center">{emptyLabel}</p>
+        )}
+      </div>
+      <div className="border-t border-slate-200 dark:border-slate-700 mt-1 pt-1">
+        <Link
+          href="/dashboard/companies"
+          onClick={() => setOpen(false)}
+          className="block w-full px-3 py-2 text-left text-sm text-sky-600 dark:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg"
+        >
+          {allCompaniesLabel}
+        </Link>
+      </div>
+    </div>,
+    document.body
+  );
+
+  return (
+    <>
+      <div className="relative">
+        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none z-10" />
+        <button
+          ref={triggerRef}
+          type="button"
+          onClick={() => { if (!open) updatePosition(); setOpen((o) => !o); }}
+          className={`w-full flex items-center pl-9 pr-8 py-2.5 rounded-xl border text-left text-sm transition-colors ${
+            open
+              ? "bg-input-bg border-sky-500 ring-1 ring-sky-500 text-text-primary"
+              : "bg-input-bg border-input-border text-text-secondary hover:border-sky-500/40"
+          }`}
+        >
+          <span className="truncate flex-1">
+            {selectedCompanyName || <span className="text-text-muted">{placeholder}</span>}
+          </span>
+        </button>
+        <ChevronDown className={`absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-transform duration-200 ${open ? "rotate-180 text-sky-500" : "text-text-muted/50"}`} />
+      </div>
+      {dropdown}
+    </>
+  );
+}
+
 export function DashboardSidebar() {
   const pathname = usePathname();
   const { resolvedTheme } = useTheme();
   const { t } = useTranslation();
   const { user, logout } = useAuthStore();
-  const { selectedCompanyId, selectedCompanyName, setSelectedCompany, sidebarCollapsed: collapsed, setSidebarCollapsed, sidebarOpen, toggleSidebar } = useDashboardStore();
+  const { selectedCompanyId, selectedCompanyName, setSelectedCompany, sidebarCollapsed: collapsed, setSidebarCollapsed, sidebarOpen, toggleSidebar, companiesVersion } = useDashboardStore();
   const [mounted, setMounted] = useState(false);
   const [companies, setCompanies] = useState<{ id: string; commercialName?: string; legalName?: string }[]>([]);
-  const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
   const [adminCompanyName, setAdminCompanyName] = useState<string | null>(null);
 
   const superAdmin = isSuperAdmin(user);
@@ -141,7 +258,7 @@ export function DashboardSidebar() {
       .get<{ id: string; commercialName?: string; legalName?: string }[]>("/companies")
       .then((data) => setCompanies(Array.isArray(data) ? data : []))
       .catch(() => setCompanies([]));
-  }, [superAdmin]);
+  }, [superAdmin, companiesVersion]);
 
   // Para ADMIN: obtener nombre de la empresa (su company) para mostrarlo en el sidebar
   useEffect(() => {
@@ -164,7 +281,6 @@ export function DashboardSidebar() {
 
   const handleSelectCompany = (id: string, name: string) => {
     setSelectedCompany(id, name);
-    setCompanyDropdownOpen(false);
   };
 
   const navGroups = useMemo(
@@ -258,66 +374,15 @@ export function DashboardSidebar() {
           <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-text-muted">
             {t("sidebar.company")}
           </p>
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1 min-w-0">
-              <button
-                type="button"
-                onClick={() => setCompanyDropdownOpen((o) => !o)}
-                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl bg-input-bg border border-input-border text-left text-sm text-text-secondary hover:bg-card transition-colors"
-              >
-                <Building2 className="w-4 h-4 text-text-muted shrink-0" />
-                <span className="truncate flex-1">
-                  {selectedCompanyName || t("sidebar.selectCompany")}
-                </span>
-                <ChevronDown className="w-4 h-4 text-text-muted shrink-0" />
-              </button>
-            {companyDropdownOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-[90]"
-                  aria-hidden
-                  onClick={() => setCompanyDropdownOpen(false)}
-                />
-                <ul className="absolute left-0 right-0 top-full mt-1 py-1 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl max-h-48 overflow-y-auto z-[100]">
-                  {companies.map((c) => (
-                    <li key={c.id}>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleSelectCompany(
-                            c.id,
-                            c.commercialName || c.legalName || c.id
-                          )
-                        }
-                        className={`w-full px-3 py-2.5 text-left text-sm truncate transition-colors ${
-                          selectedCompanyId === c.id
-                            ? "bg-sky-500/15 text-sky-600 dark:text-sky-400"
-                            : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-                        }`}
-                      >
-                        {c.commercialName || c.legalName || c.id}
-                      </button>
-                    </li>
-                  ))}
-                  {companies.length === 0 && (
-                    <li className="px-3 py-4 text-sm text-slate-500 dark:text-slate-400 text-center">
-                      {t("companies.noCompanies")}
-                    </li>
-                  )}
-                  <li className="border-t border-slate-200 dark:border-slate-700 mt-1 pt-1">
-                    <Link
-                      href="/dashboard/companies"
-                      onClick={() => setCompanyDropdownOpen(false)}
-                      className="block w-full px-3 py-2.5 text-left text-sm text-sky-600 dark:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                    >
-                      {t("sidebar.allCompanies")}
-                    </Link>
-                  </li>
-                </ul>
-              </>
-            )}
-            </div>
-          </div>
+          <CompanySelector
+            companies={companies}
+            selectedCompanyId={selectedCompanyId}
+            selectedCompanyName={selectedCompanyName}
+            onSelect={handleSelectCompany}
+            placeholder={t("sidebar.selectCompany")}
+            allCompaniesLabel={t("sidebar.allCompanies")}
+            emptyLabel={t("companies.noCompanies")}
+          />
         </div>
       )}
 
