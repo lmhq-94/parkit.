@@ -6,8 +6,6 @@ import type { ColDef, ValueGetterParams } from "ag-grid-community";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
-import { DashboardSidebar } from "@/components/DashboardSidebar";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
@@ -31,8 +29,8 @@ interface DashboardDataTablePageProps<T> {
 }
 
 export function DashboardDataTablePage<T extends { id?: string | number }>({
-  title,
-  description,
+  title: _title,
+  description: _description,
   endpoint,
   fetchData,
   columns,
@@ -109,21 +107,9 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   );
 
   return (
-    <ProtectedRoute>
-      <div className="flex min-h-screen bg-page">
-        <DashboardSidebar />
-        <main className="flex-1 flex flex-col min-h-0">
-          <div className="flex-1 flex flex-col min-h-0 p-6 md:p-10 lg:p-12 max-w-[1600px] mx-auto w-full">
-            <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-semibold text-text-primary mb-2 tracking-tight">
-                  {title}
-                </h1>
-                <p className="text-text-secondary text-sm">
-                  {description}
-                </p>
-              </div>
-              {headerAction != null ? <div className="shrink-0">{headerAction}</div> : null}
+    <div className="flex-1 flex flex-col min-h-0 pt-0 px-6 md:px-10 lg:px-12 pb-6 md:pb-10 lg:pb-12 max-w-[1600px] mx-auto w-full">
+            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-end gap-4">
+              {headerAction != null ? headerAction : null}
             </div>
 
             {error && (
@@ -164,9 +150,6 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                 </div>
               </div>
             )}
-          </div>
-        </main>
-      </div>
-    </ProtectedRoute>
+    </div>
   );
 }

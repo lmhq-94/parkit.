@@ -1,7 +1,5 @@
 "use client";
 
-import { DashboardSidebar } from "@/components/DashboardSidebar";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getStoredUser, isSuperAdmin } from "@/lib/auth";
 import { apiClient } from "@/lib/api";
@@ -99,37 +97,28 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <ProtectedRoute>
-        <div className="flex min-h-screen bg-page">
-          <DashboardSidebar />
-          <main className="flex-1 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-4">
-              <div className="h-10 w-10 rounded-full border-2 border-sky-500 border-t-transparent animate-spin" />
-              <p className="text-text-muted text-sm">{t("common.loading")}</p>
-            </div>
-          </main>
+      <div className="flex flex-1 items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-10 w-10 rounded-full border-2 border-sky-500 border-t-transparent animate-spin" />
+          <p className="text-text-muted text-sm">{t("common.loading")}</p>
         </div>
-      </ProtectedRoute>
+      </div>
     );
   }
 
   if (error || !stats) {
     return (
-      <ProtectedRoute>
-        <div className="flex min-h-screen bg-page">
-          <DashboardSidebar />
-          <main className="flex-1 flex items-center justify-center p-8">
-            <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 text-center max-w-md">
-              <p className="text-red-500 dark:text-red-400 font-medium">{error ?? "Error"}</p>
-              <p className="text-text-muted text-sm mt-2">{t("common.loading")}</p>
-            </div>
-          </main>
+      <div className="flex flex-1 items-center justify-center p-8">
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 text-center max-w-md">
+          <p className="text-red-500 dark:text-red-400 font-medium">{error ?? "Error"}</p>
+          <p className="text-text-muted text-sm mt-2">{t("common.loading")}</p>
         </div>
-      </ProtectedRoute>
+      </div>
     );
   }
 
   const isAdmin = user?.systemRole === "ADMIN";
+  // Orden igual al sidebar: Overview (esta página), Employees, Valets, Vehicles, Parkings, Bookings, Tickets
   const statCards: Array<{
     key: string;
     title: string;
@@ -155,13 +144,6 @@ export default function DashboardPage() {
       icon: <Users className="w-6 h-6" />,
       color: "rose",
     },
-    {
-      key: "parkings",
-      title: t("dashboard.activeParkings"),
-      value: stats.parkingsCount,
-      icon: <MapPin className="w-6 h-6" />,
-      color: "emerald",
-    },
     ...(isAdmin
       ? [
           {
@@ -174,11 +156,11 @@ export default function DashboardPage() {
         ]
       : []),
     {
-      key: "tickets",
-      title: t("dashboard.totalTickets"),
-      value: stats.ticketsCount,
-      icon: <Ticket className="w-6 h-6" />,
-      color: "violet",
+      key: "parkings",
+      title: t("dashboard.activeParkings"),
+      value: stats.parkingsCount,
+      icon: <MapPin className="w-6 h-6" />,
+      color: "emerald",
     },
     {
       key: "bookings",
@@ -186,6 +168,13 @@ export default function DashboardPage() {
       value: stats.bookingsCount,
       icon: <CalendarCheck className="w-6 h-6" />,
       color: "amber",
+    },
+    {
+      key: "tickets",
+      title: t("dashboard.totalTickets"),
+      value: stats.ticketsCount,
+      icon: <Ticket className="w-6 h-6" />,
+      color: "violet",
     },
   ];
 
@@ -233,26 +222,19 @@ export default function DashboardPage() {
   }));
 
   return (
-    <ProtectedRoute>
-      <div className="flex min-h-screen bg-page">
-        <DashboardSidebar />
-        <main className="flex-1 min-h-0 flex flex-col">
-          <div className="p-6 md:p-10 lg:p-12 max-w-[1600px] mx-auto w-full flex-1 flex flex-col gap-8">
-            {/* Header */}
+    <div className="pt-6 px-6 md:px-10 lg:px-12 pb-6 md:pb-10 lg:pb-12 max-w-[1600px] mx-auto w-full flex-1 flex flex-col gap-8">
+            {/* Banner: actividad de la semana (sin duplicar título/subtítulo del layout) */}
             <header className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-600/90 via-sky-700/80 to-slate-800 dark:from-sky-700/90 dark:via-sky-800/80 dark:to-slate-900 border border-sky-500/20 p-6 md:p-8">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(14,165,233,0.25),transparent)]" />
-              <div className="relative">
-                <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
-                  {t("dashboard.title")}
-                </h1>
-                <p className="text-sky-100/90 text-sm md:text-base mt-1 max-w-xl">
-                  {t("dashboard.summary")}
-                </p>
-                <div className="mt-4 flex items-center gap-2 text-sky-200/80 text-sm">
-                  <TrendingUp className="w-4 h-4" />
-                  <span>
+              <div className="relative flex items-center gap-3">
+                <TrendingUp className="w-8 h-8 text-sky-200/90 shrink-0" />
+                <div>
+                  <p className="text-lg font-semibold text-white tracking-tight">
+                    {t("dashboard.chartTicketsTitle")}
+                  </p>
+                  <p className="text-sky-200/90 text-sm mt-0.5">
                     {stats.ticketsLast7Days.reduce((a, b) => a + b.count, 0)} {t("dashboard.ticketsThisWeek")}
-                  </span>
+                  </p>
                 </div>
               </div>
             </header>
@@ -408,9 +390,6 @@ export default function DashboardPage() {
                 </div>
               </div>
             </section>
-          </div>
-        </main>
-      </div>
-    </ProtectedRoute>
+    </div>
   );
 }

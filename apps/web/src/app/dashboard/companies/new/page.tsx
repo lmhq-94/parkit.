@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { DashboardSidebar } from "@/components/DashboardSidebar";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { apiClient } from "@/lib/api";
 import { isSuperAdmin } from "@/lib/auth";
 import { useAuthStore } from "@/lib/store";
@@ -72,11 +70,7 @@ export default function NewCompanyPage() {
   }
 
   return (
-    <ProtectedRoute>
-      <div className="flex min-h-screen bg-page">
-        <DashboardSidebar />
-        <main className="flex-1">
-          <div className="p-6 md:p-10 lg:p-12 max-w-[1600px] mx-auto">
+    <div className="pt-0 px-6 md:px-10 lg:px-12 pb-6 md:pb-10 lg:pb-12 max-w-[1600px] mx-auto">
             <Link
               href="/dashboard/companies"
               className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-sky-400 transition-colors mb-6"
@@ -251,9 +245,6 @@ export default function NewCompanyPage() {
                 </Link>
               </div>
             </form>
-          </div>
-        </main>
-      </div>
-    </ProtectedRoute>
+    </div>
   );
 }

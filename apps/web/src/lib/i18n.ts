@@ -77,6 +77,8 @@ export const translations = {
       designedFor: "Diseñado para",
       main: "Principal",
       account: "Cuenta",
+      expand: "Expandir menú",
+      collapse: "Contraer menú",
     },
     dashboard: {
       title: "Resumen",
@@ -341,6 +343,8 @@ export const translations = {
       designedFor: "Designed for",
       main: "Main",
       account: "Account",
+      expand: "Expand menu",
+      collapse: "Collapse menu",
     },
     dashboard: {
       title: "Overview",

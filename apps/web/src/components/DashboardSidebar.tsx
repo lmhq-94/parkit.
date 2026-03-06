@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore, useDashboardStore, SIDEBAR_COLLAPSED_KEY } from "@/lib/store";
 import { getFullName, isSuperAdmin } from "@/lib/auth";
@@ -29,6 +30,76 @@ import {
   Plus,
 } from "lucide-react";
 
+function SidebarTooltip({
+  show,
+  label,
+  children,
+}: {
+  show: boolean;
+  label: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  const [visible, setVisible] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const ref = useRef<HTMLDivElement>(null);
+
+  const updatePosition = () => {
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setPosition({
+        top: rect.top + rect.height / 2,
+        left: rect.right + 10,
+      });
+    }
+  };
+
+  const handleMouseEnter = () => {
+    if (show && label) {
+      updatePosition();
+      setVisible(true);
+    }
+  };
+
+  const handleMouseLeave = () => setVisible(false);
+
+  const tooltipEl =
+    visible &&
+    show &&
+    label &&
+    typeof document !== "undefined" &&
+    createPortal(
+      <div
+        className="fixed z-[99999] px-3 py-2 text-sm font-medium text-white bg-slate-800 dark:bg-slate-700 rounded-lg shadow-xl border border-slate-700/50 dark:border-slate-600/50 whitespace-nowrap pointer-events-none transition-opacity duration-150"
+        style={{
+          left: position.left,
+          top: position.top,
+          transform: "translateY(-50%)",
+        }}
+      >
+        {label}
+        {/* Flecha hacia el sidebar */}
+        <span
+          className="absolute top-1/2 w-0 h-0 -translate-y-1/2 border-[6px] border-transparent border-r-slate-800 dark:border-r-slate-700"
+          style={{ right: "100%" }}
+          aria-hidden
+        />
+      </div>,
+      document.body
+    );
+
+  return (
+    <div
+      ref={ref}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className="w-full"
+    >
+      {children}
+      {tooltipEl}
+    </div>
+  );
+}
+
 const SELECTED_COMPANY_KEY = "parkit_selected_company_id";
 const SELECTED_COMPANY_NAME_KEY = "parkit_selected_company_name";
 
@@ -38,7 +109,6 @@ export function DashboardSidebar() {
   const { t } = useTranslation();
   const { user, logout } = useAuthStore();
   const { selectedCompanyId, selectedCompanyName, setSelectedCompany, sidebarCollapsed: collapsed, setSidebarCollapsed } = useDashboardStore();
-  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [companies, setCompanies] = useState<{ id: string; commercialName?: string; legalName?: string }[]>([]);
   const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
@@ -137,13 +207,15 @@ export function DashboardSidebar() {
         }`}
       >
         {collapsed ? (
-          <button
-            onClick={toggleCollapsed}
-            className="p-2 rounded-xl text-text-muted hover:text-text-secondary hover:bg-input-bg transition-colors"
-            aria-label="Expand sidebar"
-          >
-            <PanelLeft className="w-5 h-5" />
-          </button>
+          <SidebarTooltip show label={t("sidebar.expand")}>
+            <button
+              onClick={toggleCollapsed}
+              className="p-2 rounded-xl text-text-muted hover:text-text-secondary hover:bg-input-bg transition-colors w-full flex justify-center"
+              aria-label="Expand sidebar"
+            >
+              <PanelLeft className="w-5 h-5" />
+            </button>
+          </SidebarTooltip>
         ) : (
           <>
             <div className="flex items-center justify-between gap-2">
@@ -289,19 +361,20 @@ export function DashboardSidebar() {
                 );
                 return (
                   <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      title={collapsed ? item.label : undefined}
-                      className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
-                        collapsed ? "justify-center" : ""
-                      } ${
-                        isActive
-                          ? "bg-sky-500/10 dark:bg-sky-500/10 text-text-primary"
-                          : "text-text-muted hover:bg-input-bg hover:text-text-secondary"
-                      }`}
-                    >
-                      {linkContent}
-                    </Link>
+                    <SidebarTooltip show={collapsed} label={item.label}>
+                      <Link
+                        href={item.href}
+                        className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
+                          collapsed ? "justify-center" : ""
+                        } ${
+                          isActive
+                            ? "bg-sky-500/10 dark:bg-sky-500/10 text-text-primary"
+                            : "text-text-muted hover:bg-input-bg hover:text-text-secondary"
+                        }`}
+                      >
+                        {linkContent}
+                      </Link>
+                    </SidebarTooltip>
                   </li>
                 );
               })}
@@ -312,32 +385,37 @@ export function DashboardSidebar() {
 
       {/* User + logout */}
       <div className="p-3 border-t border-card-border space-y-2 shrink-0">
-        <div
-          className={`flex items-center gap-3 rounded-xl p-2.5 ${
-            collapsed ? "justify-center" : ""
-          }`}
-          title={collapsed ? getFullName(user) || undefined : undefined}
+        <SidebarTooltip
+          show={collapsed}
+          label={getFullName(user) || user?.email || ""}
         >
-          <div className="flex items-center justify-center text-text-muted shrink-0">
-            <CircleUserRound className="w-5 h-5" />
-          </div>
-          {!collapsed && (
-            <div className="min-w-0 flex-1">
-              <p className="font-medium text-text-primary text-sm truncate">{getFullName(user)}</p>
-              <p className="text-text-muted text-xs truncate">{user?.email}</p>
+          <div
+            className={`flex items-center gap-3 rounded-xl p-2.5 ${
+              collapsed ? "justify-center w-full" : ""
+            }`}
+          >
+            <div className="flex items-center justify-center text-text-muted shrink-0">
+              <CircleUserRound className="w-5 h-5" />
             </div>
-          )}
-        </div>
-        <button
-          onClick={handleLogout}
-          title={collapsed ? t("auth.signOut") : undefined}
-          className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 border border-input-border text-text-muted hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 transition-all duration-200 ${
-            collapsed ? "justify-center" : ""
-          }`}
-        >
-          <LogOut className="w-4 h-4 shrink-0" />
-          {!collapsed && <span className="text-sm font-medium">{t("auth.signOut")}</span>}
-        </button>
+            {!collapsed && (
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-text-primary text-sm truncate">{getFullName(user)}</p>
+                <p className="text-text-muted text-xs truncate">{user?.email}</p>
+              </div>
+            )}
+          </div>
+        </SidebarTooltip>
+        <SidebarTooltip show={collapsed} label={t("auth.signOut")}>
+          <button
+            onClick={handleLogout}
+            className={`group w-full flex items-center gap-3 rounded-xl px-4 py-3 border-2 border-red-500/25 bg-red-500/5 text-red-600 dark:text-red-400 hover:bg-red-500/20 hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/20 dark:hover:bg-red-500/15 dark:hover:shadow-red-500/10 transition-all duration-200 ${
+              collapsed ? "justify-center px-3" : ""
+            }`}
+          >
+            <LogOut className="w-5 h-5 shrink-0 opacity-90 group-hover:opacity-100" />
+            {!collapsed && <span className="text-sm font-semibold">{t("auth.signOut")}</span>}
+          </button>
+        </SidebarTooltip>
       </div>
     </aside>
   );

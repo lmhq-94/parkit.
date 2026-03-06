@@ -1,13 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DashboardSidebar } from "@/components/DashboardSidebar";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { apiClient } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { LocaleToggle } from "@/components/LocaleToggle";
-import { Building2, Mail, Phone, ShieldCheck, Sun, Globe } from "lucide-react";
+import { Building2, Mail, Phone, ShieldCheck } from "lucide-react";
 
 interface CompanyProfile {
   id: string;
@@ -38,20 +34,7 @@ export default function SettingsPage() {
   }, []);
 
   return (
-    <ProtectedRoute>
-      <div className="flex min-h-screen bg-page">
-        <DashboardSidebar />
-        <main className="flex-1">
-          <div className="p-6 md:p-10 lg:p-12 max-w-[1600px] mx-auto">
-            <div className="mb-10">
-              <h1 className="text-2xl md:text-3xl font-semibold text-text-primary tracking-tight mb-2">
-                {t("settings.title")}
-              </h1>
-              <p className="text-text-secondary text-sm">
-                {t("settings.description")}
-              </p>
-            </div>
-
+    <div className="pt-0 px-6 md:px-10 lg:px-12 pb-6 md:pb-10 lg:pb-12 max-w-[1600px] mx-auto">
             {isLoading ? (
               <div className="flex items-center justify-center py-32">
                 <div className="w-10 h-10 border-2 border-sky-500/30 border-t-sky-400 rounded-full animate-spin" />
@@ -116,46 +99,8 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
-
-                {/* App preferences (after company info) - sin overflow-hidden para que el dropdown de idioma se vea */}
-                <div className="relative rounded-2xl border border-card-border bg-card backdrop-blur-sm">
-                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-500/20 to-transparent" />
-                  <div className="px-6 py-4 border-b border-card-border">
-                    <h2 className="text-base font-semibold text-text-primary">{t("settings.appPreferences")}</h2>
-                    <p className="text-xs text-text-muted mt-0.5">{t("settings.appPreferencesDescription")}</p>
-                  </div>
-                  <div className="divide-y divide-card-border">
-                    <div className="flex items-center justify-between gap-4 px-6 py-4">
-                      <div className="flex items-center gap-4 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-sky-500/10 dark:bg-sky-500/15 border border-sky-500/20 flex items-center justify-center shrink-0">
-                          <Sun className="w-5 h-5 text-sky-600 dark:text-sky-400" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-text-primary">{t("settings.theme")}</p>
-                          <p className="text-xs text-text-muted mt-0.5">{t("settings.themeDescription")}</p>
-                        </div>
-                      </div>
-                      <ThemeToggle />
-                    </div>
-                    <div className="flex items-center justify-between gap-4 px-6 py-4">
-                      <div className="flex items-center gap-4 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-sky-500/10 dark:bg-sky-500/15 border border-sky-500/20 flex items-center justify-center shrink-0">
-                          <Globe className="w-5 h-5 text-sky-600 dark:text-sky-400" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-text-primary">{t("settings.language")}</p>
-                          <p className="text-xs text-text-muted mt-0.5">{t("settings.languageDescription")}</p>
-                        </div>
-                      </div>
-                      <LocaleToggle />
-                    </div>
-                  </div>
-                </div>
               </>
             )}
-          </div>
-        </main>
-      </div>
-    </ProtectedRoute>
+    </div>
   );
 }
