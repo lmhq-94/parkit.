@@ -126,6 +126,22 @@ export class VehiclesService {
     });
   }
 
+  static async delete(companyId: string, vehicleId: string) {
+    const vehicle = await prisma.vehicle.findFirst({
+      where: { id: vehicleId, companyId },
+    });
+    if (!vehicle) return null;
+    const [ticketCount, bookingCount] = await Promise.all([
+      prisma.ticket.count({ where: { vehicleId } }),
+      prisma.booking.count({ where: { vehicleId } }),
+    ]);
+    if (ticketCount > 0 || bookingCount > 0) {
+      throw new Error("No se puede eliminar un vehículo con tickets o reservas asociados.");
+    }
+    await prisma.vehicle.delete({ where: { id: vehicleId } });
+    return vehicle;
+  }
+
   static async getByPlate(
     companyId: string,
     plate: string,

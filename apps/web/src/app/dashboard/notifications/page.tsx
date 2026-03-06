@@ -1,11 +1,24 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { useTranslation } from "@/hooks/useTranslation";
+import { apiClient } from "@/lib/api";
+
+type NotificationRow = { id?: string; title?: string; type?: string; status?: string; createdAt?: string };
 
 export default function NotificationsPage() {
   const { t, tEnum } = useTranslation();
+  const [refreshToken, setRefreshToken] = useState(0);
+  const onDelete = useCallback(async (row: NotificationRow) => {
+    if (row.id) await apiClient.delete(`/notifications/${row.id}`);
+  }, []);
+  const onEdit = useCallback(async (row: NotificationRow) => {
+    if (row.id) {
+      await apiClient.patch(`/notifications/${row.id}/read`);
+      setRefreshToken((x) => x + 1);
+    }
+  }, []);
   const columns = useMemo(
     () => [
       { header: t("tables.notifications.titleCol"), render: (n: { title?: string }) => n.title || "N/A" },
@@ -20,12 +33,16 @@ export default function NotificationsPage() {
     [t, tEnum]
   );
   return (
-    <DashboardDataTablePage
+    <DashboardDataTablePage<NotificationRow>
       title={t("tables.notifications.title")}
       description={t("tables.notifications.description")}
       endpoint={(userId: string) => `/notifications/user/${userId}`}
       emptyMessage={t("tables.notifications.empty")}
       columns={columns}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      getConfirmDeleteMessage={() => t("tables.notifications.confirmDelete")}
+      refreshToken={refreshToken}
     />
   );
 }

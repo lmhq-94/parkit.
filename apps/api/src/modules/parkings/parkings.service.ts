@@ -17,6 +17,7 @@ interface UpdateParkingDTO {
   latitude?: number;
   longitude?: number;
   type?: ParkingType;
+  totalSlots?: number;
   requiresBooking?: boolean;
 }
 
@@ -96,6 +97,7 @@ export class ParkingsService {
         latitude: data.latitude,
         longitude: data.longitude,
         ...(data.type !== undefined ? { type: data.type } : {}),
+        ...(data.totalSlots !== undefined ? { totalSlots: data.totalSlots } : {}),
         requiresBooking: data.requiresBooking,
       },
       include: {
@@ -134,6 +136,23 @@ export class ParkingsService {
       },
       orderBy: { label: "asc" },
     });
+  }
+
+  static async delete(companyId: string, parkingId: string) {
+    const parking = await prisma.parking.findFirst({
+      where: { id: parkingId, companyId },
+    });
+    if (!parking) return null;
+    const [ticketCount, bookingCount] = await Promise.all([
+      prisma.ticket.count({ where: { parkingId } }),
+      prisma.booking.count({ where: { parkingId } }),
+    ]);
+    if (ticketCount > 0 || bookingCount > 0) {
+      throw new Error("No se puede eliminar un estacionamiento con tickets o reservas asociados.");
+    }
+    await prisma.parkingSlot.deleteMany({ where: { parkingId } });
+    await prisma.parking.delete({ where: { id: parkingId } });
+    return parking;
   }
 
   static async createSlots(

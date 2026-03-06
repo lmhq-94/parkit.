@@ -110,4 +110,19 @@ export class ParkingsController {
       );
     }
   }
+
+  static async delete(req: Request, res: Response) {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const parking = await ParkingsService.delete(req.user.companyId!, id);
+      if (!parking) return notFound(res, "Parking not found");
+      return ok(res, parking);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
 }

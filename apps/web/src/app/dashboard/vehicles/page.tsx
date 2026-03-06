@@ -1,28 +1,63 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { useTranslation } from "@/hooks/useTranslation";
+import { apiClient } from "@/lib/api";
+
+type VehicleRow = { id?: string; plate?: string; brand?: string; model?: string; year?: number; countryCode?: string };
 
 export default function VehiclesPage() {
   const { t } = useTranslation();
+  const onUpdate = useCallback(async (row: VehicleRow) => {
+    if (!row.id) return;
+    const payload: { plate?: string; brand?: string; model?: string; year?: number } = {};
+    if (row.plate !== undefined) payload.plate = row.plate;
+    if (row.brand !== undefined) payload.brand = row.brand;
+    if (row.model !== undefined) payload.model = row.model;
+    if (row.year !== undefined) payload.year = Number(row.year);
+    await apiClient.patch(`/vehicles/${row.id}`, payload);
+  }, []);
+  const onDelete = useCallback(async (row: VehicleRow) => {
+    if (!row.id) return;
+    await apiClient.delete(`/vehicles/${row.id}`);
+  }, []);
+  const onCreate = useCallback(async (draft: Partial<VehicleRow>) => {
+    const plate = (draft.plate ?? "").toString().trim();
+    if (!plate) {
+      alert("La placa es requerida.");
+      return;
+    }
+    const payload: { plate: string; countryCode?: string; brand?: string; model?: string; year?: number } = {
+      plate,
+      countryCode: (draft.countryCode ?? "CR").toString(),
+    };
+    if (draft.brand) payload.brand = String(draft.brand);
+    if (draft.model) payload.model = String(draft.model);
+    if (draft.year != null && String(draft.year).trim() !== "") payload.year = Number(draft.year);
+    await apiClient.post("/vehicles", payload);
+  }, []);
   const columns = useMemo(
     () => [
-      { header: t("tables.vehicles.plate"), render: (v: { plate?: string }) => v.plate || "N/A" },
-      { header: t("tables.vehicles.brand"), render: (v: { brand?: string }) => v.brand || "N/A" },
-      { header: t("tables.vehicles.model"), render: (v: { model?: string }) => v.model || "N/A" },
-      { header: t("tables.vehicles.year"), render: (v: { year?: string | number }) => (v.year != null ? String(v.year) : "N/A") },
-      { header: t("tables.vehicles.country"), render: (v: { countryCode?: string }) => v.countryCode || "N/A" },
+      { header: t("tables.vehicles.plate"), render: (v: VehicleRow) => v.plate || "N/A", field: "plate" as const, editable: true },
+      { header: t("tables.vehicles.brand"), render: (v: VehicleRow) => v.brand || "N/A", field: "brand" as const, editable: true },
+      { header: t("tables.vehicles.model"), render: (v: VehicleRow) => v.model || "N/A", field: "model" as const, editable: true },
+      { header: t("tables.vehicles.year"), render: (v: VehicleRow) => (v.year != null ? String(v.year) : "N/A"), field: "year" as const, editable: true },
+      { header: t("tables.vehicles.country"), render: (v: VehicleRow) => v.countryCode || "N/A" },
     ],
     [t]
   );
   return (
-    <DashboardDataTablePage
+    <DashboardDataTablePage<VehicleRow>
       title={t("tables.vehicles.title")}
       description={t("tables.vehicles.description")}
       endpoint="/vehicles"
       emptyMessage={t("tables.vehicles.empty")}
       columns={columns}
+      onUpdate={onUpdate}
+      onCreate={onCreate}
+      onDelete={onDelete}
+      getConfirmDeleteMessage={() => t("tables.vehicles.confirmDelete")}
     />
   );
 }

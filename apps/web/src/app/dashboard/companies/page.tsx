@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore } from "@/lib/store";
@@ -61,6 +61,11 @@ export default function CompaniesPage() {
     ? t("tables.companies.description")
     : t("tables.companies.descriptionMyCompany");
 
+  const onDelete = useCallback(async (row: Company) => {
+    if (!row.id) return;
+    await apiClient.delete(`/companies/${row.id}`);
+  }, []);
+
   return (
     <DashboardDataTablePage<Company>
       title={title}
@@ -69,6 +74,8 @@ export default function CompaniesPage() {
       fetchData={fetchData}
       columns={columns}
       emptyMessage={t("tables.companies.empty")}
+      onDelete={superAdmin ? onDelete : undefined}
+      getConfirmDeleteMessage={superAdmin ? () => t("tables.companies.confirmDelete") : undefined}
     />
   );
 }

@@ -221,20 +221,76 @@ export default function DashboardPage() {
     label: formatShortDate(d.date, locale),
   }));
 
+  const ticketsLast7Total = stats.ticketsLast7Days.reduce((a, b) => a + b.count, 0);
+  const daysCount = Math.max(stats.ticketsLast7Days.length, 1);
+  const avgPerDay = ticketsLast7Total / daysCount;
+  const peakDay = stats.ticketsLast7Days.reduce(
+    (best, cur) => (cur.count > best.count ? cur : best),
+    stats.ticketsLast7Days[0] ?? { date: "", count: 0 }
+  );
+  const peakDayLabel = peakDay.date ? formatShortDate(peakDay.date, locale) : "—";
+  const todayCount = stats.ticketsLast7Days.at(-1)?.count ?? 0;
+  const lastActivity = stats.recentTickets[0]?.entryTime
+    ? formatRelativeTime(stats.recentTickets[0].entryTime, locale)
+    : "—";
+
   return (
     <div className="pt-6 px-6 md:px-10 lg:px-12 pb-6 md:pb-10 lg:pb-12 max-w-[1600px] mx-auto w-full flex-1 flex flex-col gap-8">
-            {/* Banner: actividad de la semana (sin duplicar título/subtítulo del layout) */}
+            {/* Banner: resumen rápido con métricas importantes */}
             <header className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-600/90 via-sky-700/80 to-slate-800 dark:from-sky-700/90 dark:via-sky-800/80 dark:to-slate-900 border border-sky-500/20 p-6 md:p-8">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(14,165,233,0.25),transparent)]" />
-              <div className="relative flex items-center gap-3">
-                <TrendingUp className="w-8 h-8 text-sky-200/90 shrink-0" />
-                <div>
-                  <p className="text-lg font-semibold text-white tracking-tight">
-                    {t("dashboard.chartTicketsTitle")}
-                  </p>
-                  <p className="text-sky-200/90 text-sm mt-0.5">
-                    {stats.ticketsLast7Days.reduce((a, b) => a + b.count, 0)} {t("dashboard.ticketsThisWeek")}
-                  </p>
+              <div className="relative space-y-5">
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="w-8 h-8 text-sky-200/90 shrink-0" />
+                    <div>
+                      <p className="text-lg font-semibold text-white tracking-tight">
+                        {t("dashboard.chartTicketsTitle")}
+                      </p>
+                      <p className="text-sky-200/90 text-sm mt-0.5">
+                        {stats.ticketsLast7Days.reduce((a, b) => a + b.count, 0)} {t("dashboard.ticketsThisWeek")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-3 border-t border-white/10">
+                  <div className="flex items-center gap-2">
+                    <CalendarCheck className="w-4 h-4 text-sky-300/80" />
+                    <span className="text-sky-100/90 text-sm">
+                      {t("dashboard.avgPerDay")}:{" "}
+                      <strong className="text-white font-semibold tabular-nums">
+                        {avgPerDay.toFixed(avgPerDay >= 10 ? 0 : 1)}
+                      </strong>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-sky-300/80" />
+                    <span className="text-sky-100/90 text-sm">
+                      {t("dashboard.peakDay")}:{" "}
+                      <strong className="text-white font-semibold tabular-nums">
+                        {peakDay.count.toLocaleString()}
+                      </strong>{" "}
+                      <span className="text-sky-200/80">({peakDayLabel})</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Ticket className="w-4 h-4 text-sky-300/80" />
+                    <span className="text-sky-100/90 text-sm">
+                      {t("dashboard.today")}:{" "}
+                      <strong className="text-white font-semibold tabular-nums">
+                        {todayCount.toLocaleString()}
+                      </strong>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-sky-300/80" />
+                    <span className="text-sky-100/90 text-sm">
+                      {t("dashboard.lastActivity")}:{" "}
+                      <strong className="text-white font-semibold">
+                        {lastActivity}
+                      </strong>
+                    </span>
+                  </div>
                 </div>
               </div>
             </header>

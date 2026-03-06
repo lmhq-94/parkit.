@@ -12,7 +12,7 @@ import { apiClient } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   LogOut,
-  TrendingUp,
+  LayoutDashboard,
   Users,
   UserRound,
   CircleUserRound,
@@ -27,7 +27,6 @@ import {
   ChevronRight,
   ChevronDown,
   Building2,
-  Plus,
 } from "lucide-react";
 
 function SidebarTooltip({
@@ -173,7 +172,7 @@ export function DashboardSidebar() {
       {
         label: t("sidebar.main"),
         items: [
-          { label: t("sidebar.overview"), href: "/dashboard", icon: TrendingUp },
+          { label: t("sidebar.overview"), href: "/dashboard", icon: LayoutDashboard },
           { label: t("sidebar.employees"), href: "/dashboard/users", icon: Users },
           { label: t("sidebar.valets"), href: "/dashboard/valets", icon: UserRound },
           { label: t("sidebar.vehicles"), href: "/dashboard/vehicles", icon: Car },
@@ -304,14 +303,6 @@ export function DashboardSidebar() {
               </>
             )}
             </div>
-            <Link
-              href="/dashboard/companies/new"
-              className="p-2.5 rounded-xl bg-input-bg border border-input-border text-text-muted hover:bg-card hover:text-sky-500 dark:hover:text-sky-400 transition-colors shrink-0"
-              title={t("sidebar.addCompany")}
-              aria-label={t("sidebar.addCompany")}
-            >
-              <Plus className="w-4 h-4" />
-            </Link>
           </div>
         </div>
       )}

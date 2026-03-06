@@ -25,18 +25,40 @@ export type UpdateCompanyInput = z.infer<typeof UpdateCompanySchema>;
 // Users
 export const CreateUserSchema = z.object({
   email: z.string().email("Invalid email"),
-  name: z.string().min(1, "Name required"),
-  role: z.string().min(1, "Role required"),
+  firstName: z.string().min(1, "First name required"),
+  lastName: z.string().min(1, "Last name required"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  systemRole: z.enum(["SUPER_ADMIN", "ADMIN", "STAFF", "CUSTOMER"]).optional(),
 });
 
 export const UpdateUserSchema = z.object({
-  email: z.string().email().optional(),
-  name: z.string().min(1).optional(),
-  role: z.string().optional(),
+  firstName: z.string().min(1).optional(),
+  lastName: z.string().min(1).optional(),
+  phone: z.string().optional(),
+  isActive: z.boolean().optional(),
+  systemRole: z.enum(["SUPER_ADMIN", "ADMIN", "STAFF", "CUSTOMER"]).optional(),
 });
 
 export type CreateUserInput = z.infer<typeof CreateUserSchema>;
 export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
+
+// Valets
+export const CreateValetSchema = z.object({
+  userId: z.string().min(1, "User ID required"),
+  licenseNumber: z.string().min(1, "License number required"),
+  licenseExpiry: z.string().datetime("Invalid datetime"),
+  currentParkingId: z.string().optional(),
+});
+
+export const UpdateValetSchema = z.object({
+  licenseNumber: z.string().min(1).optional(),
+  licenseExpiry: z.string().datetime("Invalid datetime").optional(),
+  currentParkingId: z.string().optional(),
+  ratingAvg: z.number().optional(),
+});
+
+export type CreateValetInput = z.infer<typeof CreateValetSchema>;
+export type UpdateValetInput = z.infer<typeof UpdateValetSchema>;
 
 // Clients
 export const CreateClientSchema = z.object({
@@ -80,14 +102,20 @@ export const CreateParkingSchema = z.object({
   name: z.string().min(1, "Parking name required"),
   address: z.string().min(1, "Address required"),
   type: z.string().min(1, "Type required"),
-  capacity: z.number().positive("Capacity must be positive"),
+  totalSlots: z.number().positive("Total slots must be positive"),
+  requiresBooking: z.boolean().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
 });
 
 export const UpdateParkingSchema = z.object({
   name: z.string().min(1).optional(),
   address: z.string().min(1).optional(),
   type: z.string().optional(),
-  capacity: z.number().positive().optional(),
+  totalSlots: z.number().positive("Total slots must be positive").optional(),
+  requiresBooking: z.boolean().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
 });
 
 export type CreateParkingInput = z.infer<typeof CreateParkingSchema>;
@@ -98,13 +126,14 @@ export const CreateBookingSchema = z.object({
   clientId: z.string().min(1, "Client ID required"),
   parkingId: z.string().min(1, "Parking ID required"),
   vehicleId: z.string().min(1, "Vehicle ID required"),
-  startTime: z.string().datetime("Invalid datetime"),
-  endTime: z.string().datetime("Invalid datetime").optional(),
+  scheduledEntryTime: z.string().datetime("Invalid datetime"),
+  scheduledExitTime: z.string().datetime("Invalid datetime").optional(),
 });
 
 export const UpdateBookingSchema = z.object({
   status: z.string().optional(),
-  endTime: z.string().datetime().optional(),
+  scheduledEntryTime: z.string().datetime().optional(),
+  scheduledExitTime: z.string().datetime().optional(),
 });
 
 export type CreateBookingInput = z.infer<typeof CreateBookingSchema>;
@@ -116,12 +145,12 @@ export const CreateTicketSchema = z.object({
   clientId: z.string().min(1, "Client ID required"),
   parkingId: z.string().min(1, "Parking ID required"),
   vehicleId: z.string().min(1, "Vehicle ID required"),
-  entryTime: z.string().datetime("Invalid datetime"),
+  slotId: z.string().optional(),
 });
 
 export const UpdateTicketSchema = z.object({
   status: z.string().optional(),
-  exitTime: z.string().datetime().optional(),
+  slotId: z.string().optional(),
 });
 
 export type CreateTicketInput = z.infer<typeof CreateTicketSchema>;

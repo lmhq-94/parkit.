@@ -13,5 +13,6 @@ router.get("/", requireAuth, requireCompany, requireRole("ADMIN", "STAFF", "CUST
 router.get("/by-plate", requireAuth, requireCompany, requireRole("ADMIN", "STAFF", "CUSTOMER"), VehiclesController.getByPlate);
 router.get("/:id", requireAuth, requireCompany, requireRole("ADMIN", "STAFF", "CUSTOMER"), VehiclesController.getById);
 router.patch("/:id", validateRequest(UpdateVehicleSchema), requireAuth, requireCompany, requireRole("ADMIN", "STAFF", "CUSTOMER"), VehiclesController.update);
+router.delete("/:id", requireAuth, requireCompany, requireRole("ADMIN", "STAFF", "CUSTOMER"), VehiclesController.delete);
 
 export default router;

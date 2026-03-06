@@ -12,6 +12,7 @@ router.post("/", validateRequest(CreateParkingSchema), requireAuth, requireCompa
 router.get("/", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ParkingsController.list);
 router.get("/:id", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ParkingsController.getById);
 router.patch("/:id", validateRequest(UpdateParkingSchema), requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ParkingsController.update);
+router.delete("/:id", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ParkingsController.delete);
 router.get("/:id/slots", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ParkingsController.getSlots);
 router.get("/:id/slots/available", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ParkingsController.getAvailableSlots);
 

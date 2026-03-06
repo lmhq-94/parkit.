@@ -50,4 +50,19 @@ export class CompaniesService {
       orderBy: { createdAt: "desc" },
     });
   }
+
+  static async delete(id: string) {
+    const company = await prisma.company.findUnique({ where: { id } });
+    if (!company) return null;
+    const [userCount, parkingCount, clientCount] = await Promise.all([
+      prisma.user.count({ where: { companyId: id } }),
+      prisma.parking.count({ where: { companyId: id } }),
+      prisma.client.count({ where: { companyId: id } }),
+    ]);
+    if (userCount > 0 || parkingCount > 0 || clientCount > 0) {
+      throw new Error("No se puede eliminar una empresa con usuarios, estacionamientos o clientes asociados.");
+    }
+    await prisma.company.delete({ where: { id } });
+    return company;
+  }
 }

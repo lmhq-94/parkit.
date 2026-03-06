@@ -18,7 +18,6 @@ const PATH_HEADERS: Record<string, { title: string; description: string }> = {
   "/dashboard/tickets": { title: "tables.tickets.title", description: "tables.tickets.description" },
   "/dashboard/notifications": { title: "tables.notifications.title", description: "tables.notifications.description" },
   "/dashboard/companies": { title: "tables.companies.title", description: "tables.companies.description" },
-  "/dashboard/companies/new": { title: "companies.newCompany", description: "companies.newCompanyDescription" },
 };
 
 function getHeaderForPath(pathname: string) {

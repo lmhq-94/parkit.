@@ -76,6 +76,21 @@ export class VehiclesController {
     }
   }
 
+  static async delete(req: Request, res: Response) {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const vehicle = await VehiclesService.delete(req.user.companyId!, id);
+      if (!vehicle) return notFound(res, "Vehicle not found");
+      return ok(res, vehicle);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
   static async getByPlate(req: Request, res: Response) {
     try {
       const plateStr = parseQueryParam(req.query.plate as string | string[] | undefined) || '';

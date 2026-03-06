@@ -42,4 +42,11 @@ router.patch(
   CompaniesController.update
 );
 
+router.delete(
+  "/:id",
+  requireAuth,
+  requireRole("SUPER_ADMIN"),
+  CompaniesController.delete
+);
+
 export default router;
