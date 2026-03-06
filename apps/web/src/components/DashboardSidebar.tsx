@@ -389,36 +389,43 @@ export function DashboardSidebar() {
       </nav>
 
       {/* User + logout */}
-      <div className="p-3 border-t border-card-border space-y-2 shrink-0">
+      <div className="px-3 pb-3 pt-2 border-t border-card-border shrink-0">
+        {/* User info */}
         <SidebarTooltip
           show={collapsed}
           label={getFullName(user) || user?.email || ""}
         >
           <div
-            className={`flex items-center gap-3 rounded-xl p-2.5 ${
-              collapsed ? "justify-center w-full" : ""
+            className={`flex items-center gap-3 px-3 py-2.5 mb-0.5 ${
+              collapsed ? "justify-center" : ""
             }`}
           >
-            <div className="flex items-center justify-center text-text-muted shrink-0">
-              <CircleUserRound className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-xl bg-input-bg border border-card-border flex items-center justify-center shrink-0">
+              <CircleUserRound className="w-[18px] h-[18px] text-text-muted" />
             </div>
             {!collapsed && (
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-text-primary text-sm truncate">{getFullName(user)}</p>
-                <p className="text-text-muted text-xs truncate">{user?.email}</p>
+                <p className="font-medium text-text-primary text-sm truncate leading-tight">{getFullName(user)}</p>
+                <p className="text-text-muted text-xs truncate leading-tight mt-0.5">{user?.email}</p>
               </div>
             )}
           </div>
         </SidebarTooltip>
+
+        {/* Logout */}
         <SidebarTooltip show={collapsed} label={t("auth.signOut")}>
           <button
             onClick={handleLogout}
-            className={`group w-full flex items-center gap-3 rounded-xl px-4 py-3 border-2 border-red-500/25 bg-red-500/5 text-red-600 dark:text-red-400 hover:bg-red-500/20 hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/20 dark:hover:bg-red-500/15 dark:hover:shadow-red-500/10 transition-all duration-200 ${
-              collapsed ? "justify-center px-3" : ""
+            className={`group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-muted hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/8 transition-all duration-200 ${
+              collapsed ? "justify-center" : ""
             }`}
           >
-            <LogOut className="w-5 h-5 shrink-0 opacity-90 group-hover:opacity-100" />
-            {!collapsed && <span className="text-sm font-semibold">{t("auth.signOut")}</span>}
+            <span className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0">
+              <LogOut className="w-[18px] h-[18px] transition-transform duration-200 group-hover:translate-x-0.5" />
+            </span>
+            {!collapsed && (
+              <span className="text-sm font-medium truncate">{t("auth.signOut")}</span>
+            )}
           </button>
         </SidebarTooltip>
       </div>

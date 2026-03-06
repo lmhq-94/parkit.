@@ -4,6 +4,7 @@ import { User, getStoredUser, setStoredUser, clearStoredUser } from "./auth";
 interface AuthStore {
   user: User | null;
   isLoading: boolean;
+  loggingOut: boolean;
   error: string | null;
   login: (user: User, token: string) => void;
   logout: () => void;
@@ -15,6 +16,7 @@ interface AuthStore {
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   isLoading: false,
+  loggingOut: false,
   error: null,
 
   login: (user: User, token: string) => {
@@ -27,7 +29,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   logout: () => {
     clearStoredUser();
-    set({ user: null });
+    set({ user: null, loggingOut: true });
   },
 
   hydrate: () => {

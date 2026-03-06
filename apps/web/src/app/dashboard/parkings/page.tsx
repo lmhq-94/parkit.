@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDashboardStore } from "@/lib/store";
@@ -9,24 +11,8 @@ import { apiClient } from "@/lib/api";
 export default function ParkingsPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
+  const router = useRouter();
   type ParkingRow = { id?: string; name?: string; address?: string; type?: string; totalSlots?: number; requiresBooking?: boolean };
-  const onCreate = useCallback(async (draft: Partial<ParkingRow>) => {
-    const name = (draft.name ?? "").toString().trim();
-    const address = (draft.address ?? "").toString().trim();
-    const type = (draft.type ?? "").toString().trim();
-    const totalSlots = Number(draft.totalSlots);
-    if (!name || !address || !type || !Number.isFinite(totalSlots) || totalSlots <= 0) {
-      alert("Completa nombre, dirección, tipo y espacios totales.");
-      return;
-    }
-    await apiClient.post("/parkings", {
-      name,
-      address,
-      type,
-      totalSlots,
-      requiresBooking: Boolean(draft.requiresBooking),
-    });
-  }, []);
   const onUpdate = useCallback(async (row: ParkingRow) => {
     if (!row.id) return;
     const name = (row.name ?? "").toString().trim();
@@ -66,10 +52,18 @@ export default function ParkingsPage() {
       endpoint="/parkings"
       emptyMessage={t("tables.parkings.empty")}
       columns={columns}
-      onCreate={onCreate}
+      onEdit={(row: { id?: string }) => router.push(`/dashboard/parkings/${row.id}/edit`)}
       onUpdate={onUpdate}
       onDelete={onDelete}
       getConfirmDeleteMessage={() => t("tables.parkings.confirmDelete")}
+      headerAction={
+        <Link
+          href="/dashboard/parkings/new"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 text-white text-sm font-semibold hover:bg-sky-400 transition-colors"
+        >
+          {t("common.add")}
+        </Link>
+      }
     />
   );
 }

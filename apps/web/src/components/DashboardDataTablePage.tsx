@@ -73,10 +73,10 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
   const hasCreate = isNew && typeof onCreate === "function";
 
   const handleEdit = () => {
-    if (firstEditableColId != null && params.api != null && params.node?.rowIndex != null) {
+    if (typeof onEdit === "function") {
+      onEdit(data);
+    } else if (firstEditableColId != null && params.api != null && params.node?.rowIndex != null) {
       params.api.startEditingCell({ rowIndex: params.node.rowIndex, colKey: firstEditableColId });
-    } else {
-      onEdit?.(data);
     }
   };
 

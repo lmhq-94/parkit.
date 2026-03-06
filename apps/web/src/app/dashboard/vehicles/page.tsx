@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
@@ -14,6 +16,7 @@ export default function VehiclesPage() {
   const user = useAuthStore((s) => s.user);
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const superAdmin = isSuperAdmin(user);
+  const router = useRouter();
   const onUpdate = useCallback(async (row: VehicleRow) => {
     if (!row.id) return;
     const payload: { plate?: string; brand?: string; model?: string; year?: number } = {};
@@ -26,21 +29,6 @@ export default function VehiclesPage() {
   const onDelete = useCallback(async (row: VehicleRow) => {
     if (!row.id) return;
     await apiClient.delete(`/vehicles/${row.id}`);
-  }, []);
-  const onCreate = useCallback(async (draft: Partial<VehicleRow>) => {
-    const plate = (draft.plate ?? "").toString().trim();
-    if (!plate) {
-      alert("La placa es requerida.");
-      return;
-    }
-    const payload: { plate: string; countryCode?: string; brand?: string; model?: string; year?: number } = {
-      plate,
-      countryCode: (draft.countryCode ?? "CR").toString(),
-    };
-    if (draft.brand) payload.brand = String(draft.brand);
-    if (draft.model) payload.model = String(draft.model);
-    if (draft.year != null && String(draft.year).trim() !== "") payload.year = Number(draft.year);
-    await apiClient.post("/vehicles", payload);
   }, []);
   const columns = useMemo(
     () => [
@@ -59,10 +47,20 @@ export default function VehiclesPage() {
       endpoint="/vehicles"
       emptyMessage={t("tables.vehicles.empty")}
       columns={columns}
+      onEdit={superAdmin ? (row) => router.push(`/dashboard/vehicles/${row.id}/edit`) : undefined}
       onUpdate={superAdmin ? onUpdate : undefined}
-      onCreate={superAdmin ? onCreate : undefined}
       onDelete={superAdmin ? onDelete : undefined}
       getConfirmDeleteMessage={superAdmin ? () => t("tables.vehicles.confirmDelete") : undefined}
+      headerAction={
+        superAdmin ? (
+          <Link
+            href="/dashboard/vehicles/new"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 text-white text-sm font-semibold hover:bg-sky-400 transition-colors"
+          >
+            {t("common.add")}
+          </Link>
+        ) : undefined
+      }
     />
   );
 }

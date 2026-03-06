@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 import { apiClient } from "@/lib/api";
-import { Modal } from "@/components/Modal";
 
 interface Company {
   id: string;
@@ -24,27 +25,12 @@ interface Company {
   email?: string;
 }
 
-const defaultForm = {
-  legalName: "",
-  taxId: "",
-  commercialName: "",
-  countryCode: "CR",
-  currency: "CRC",
-  timezone: "UTC",
-  billingEmail: "",
-  contactPhone: "",
-  legalAddress: "",
-};
-
 export default function CompaniesPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const superAdmin = isSuperAdmin(user);
-  const [open, setOpen] = useState(false);
-  const [refreshToken, setRefreshToken] = useState(0);
-  const [form, setForm] = useState(defaultForm);
-  const [submitting, setSubmitting] = useState(false);
+  const router = useRouter();
 
   const fetchData = useMemo(
     () => async (_userId: string): Promise<Company[]> => {
@@ -89,28 +75,6 @@ export default function CompaniesPage() {
     ? t("tables.companies.description")
     : tWithCompany("tables.companies.descriptionMyCompany", selectedCompanyName);
 
-  const onCreate = useCallback(async () => {
-    setSubmitting(true);
-    try {
-      await apiClient.post("/companies", {
-        legalName: form.legalName.trim(),
-        taxId: form.taxId.trim(),
-        commercialName: form.commercialName.trim() || undefined,
-        countryCode: form.countryCode.trim() || undefined,
-        currency: form.currency.trim() || undefined,
-        timezone: form.timezone.trim() || undefined,
-        billingEmail: form.billingEmail.trim() || undefined,
-        contactPhone: form.contactPhone.trim() || undefined,
-        legalAddress: form.legalAddress.trim() || undefined,
-      });
-      setOpen(false);
-      setForm(defaultForm);
-      setRefreshToken((x) => x + 1);
-    } finally {
-      setSubmitting(false);
-    }
-  }, [form]);
-
   const onUpdate = useCallback(
     async (row: Company) => {
       if (!row.id) return;
@@ -148,142 +112,20 @@ export default function CompaniesPage() {
         description={description}
         endpoint="/companies"
         fetchData={fetchData}
-        columns={columns}
-        emptyMessage={t("tables.companies.empty")}
-        onUpdate={onUpdate}
-        onDelete={superAdmin ? onDelete : undefined}
+      columns={columns}
+      emptyMessage={t("tables.companies.empty")}
+      onEdit={superAdmin ? (row) => router.push(`/dashboard/companies/${row.id}/edit`) : undefined}
+      onUpdate={onUpdate}
+      onDelete={superAdmin ? onDelete : undefined}
         getConfirmDeleteMessage={superAdmin ? () => t("tables.companies.confirmDelete") : undefined}
-        refreshToken={refreshToken}
         headerAction={
           superAdmin ? (
-            <>
-              <button
-                type="button"
-                onClick={() => setOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 text-white text-sm font-semibold hover:bg-sky-400 transition-colors"
-              >
-                {t("common.add")}
-              </button>
-              <Modal
-                open={open}
-                title={t("companies.newCompany")}
-                description={t("companies.newCompanyDescription")}
-                onClose={() => (submitting ? undefined : setOpen(false))}
-              >
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1.5 sm:col-span-2">
-                      <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
-                        {t("companies.legalName")} *
-                      </label>
-                      <input
-                        value={form.legalName}
-                        onChange={(e) => setForm((p) => ({ ...p, legalName: e.target.value }))}
-                        className="w-full px-4 py-2.5 rounded-xl bg-input-bg border border-input-border text-sm text-text-primary"
-                      />
-                    </div>
-                    <div className="space-y-1.5 sm:col-span-2">
-                      <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
-                        {t("companies.taxId")} *
-                      </label>
-                      <input
-                        value={form.taxId}
-                        onChange={(e) => setForm((p) => ({ ...p, taxId: e.target.value }))}
-                        className="w-full px-4 py-2.5 rounded-xl bg-input-bg border border-input-border text-sm text-text-primary"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
-                        {t("companies.commercialName")}
-                      </label>
-                      <input
-                        value={form.commercialName}
-                        onChange={(e) => setForm((p) => ({ ...p, commercialName: e.target.value }))}
-                        className="w-full px-4 py-2.5 rounded-xl bg-input-bg border border-input-border text-sm text-text-primary"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
-                        {t("companies.billingEmail")}
-                      </label>
-                      <input
-                        type="email"
-                        value={form.billingEmail}
-                        onChange={(e) => setForm((p) => ({ ...p, billingEmail: e.target.value }))}
-                        className="w-full px-4 py-2.5 rounded-xl bg-input-bg border border-input-border text-sm text-text-primary"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
-                        {t("companies.countryCode")}
-                      </label>
-                      <input
-                        value={form.countryCode}
-                        onChange={(e) => setForm((p) => ({ ...p, countryCode: e.target.value }))}
-                        className="w-full px-4 py-2.5 rounded-xl bg-input-bg border border-input-border text-sm text-text-primary"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
-                        {t("companies.currency")}
-                      </label>
-                      <input
-                        value={form.currency}
-                        onChange={(e) => setForm((p) => ({ ...p, currency: e.target.value }))}
-                        className="w-full px-4 py-2.5 rounded-xl bg-input-bg border border-input-border text-sm text-text-primary"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
-                        {t("companies.contactPhone")}
-                      </label>
-                      <input
-                        value={form.contactPhone}
-                        onChange={(e) => setForm((p) => ({ ...p, contactPhone: e.target.value }))}
-                        className="w-full px-4 py-2.5 rounded-xl bg-input-bg border border-input-border text-sm text-text-primary"
-                      />
-                    </div>
-                    <div className="space-y-1.5 sm:col-span-2">
-                      <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
-                        {t("companies.legalAddress")}
-                      </label>
-                      <input
-                        value={form.legalAddress}
-                        onChange={(e) => setForm((p) => ({ ...p, legalAddress: e.target.value }))}
-                        className="w-full px-4 py-2.5 rounded-xl bg-input-bg border border-input-border text-sm text-text-primary"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
-                        {t("companies.timezone")}
-                      </label>
-                      <input
-                        value={form.timezone}
-                        onChange={(e) => setForm((p) => ({ ...p, timezone: e.target.value }))}
-                        className="w-full px-4 py-2.5 rounded-xl bg-input-bg border border-input-border text-sm text-text-primary"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-2 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => !submitting && setOpen(false)}
-                      className="px-4 py-2.5 rounded-xl border border-input-border bg-input-bg text-sm font-medium text-text-secondary hover:bg-card"
-                    >
-                      {t("common.cancel")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={onCreate}
-                      disabled={submitting || !form.legalName.trim() || !form.taxId.trim()}
-                      className="px-4 py-2.5 rounded-xl bg-sky-500 text-white text-sm font-semibold hover:bg-sky-400 disabled:opacity-50 disabled:pointer-events-none"
-                    >
-                      {submitting ? t("companies.creating") : t("companies.createCompany")}
-                    </button>
-                  </div>
-                </div>
-              </Modal>
-            </>
+            <Link
+              href="/dashboard/companies/new"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 text-white text-sm font-semibold hover:bg-sky-400 transition-colors"
+            >
+              {t("common.add")}
+            </Link>
           ) : undefined
         }
       />

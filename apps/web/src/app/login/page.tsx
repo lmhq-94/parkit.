@@ -41,13 +41,16 @@ export default function LoginPage() {
       if (response) {
         login(response.user, response.token);
         apiClient.setToken(response.token);
+        // Mantener el spinner activo mientras la navegación ocurre —
+        // setIsSubmitting(false) NO se llama en el path exitoso para evitar
+        // el flash del formulario antes de que el dashboard cargue.
         router.push("/dashboard");
+        return;
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Login failed");
-    } finally {
-      setIsSubmitting(false);
     }
+    setIsSubmitting(false);
   };
 
   return (
