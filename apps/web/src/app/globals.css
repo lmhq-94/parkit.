@@ -80,28 +80,28 @@ body {
   text-transform: none;
 }
 
-/* AG Grid: tema Parkit (alineado con la app) */
+/* AG Grid: tema Parkit (tipografía de la app, fondo transparente) */
 .ag-theme-parkit.ag-theme-quartz {
-  --ag-background-color: var(--card-bg);
+  --ag-background-color: transparent;
   --ag-foreground-color: var(--text-primary);
   --ag-data-color: var(--text-primary);
   --ag-secondary-foreground-color: var(--text-muted);
-  --ag-header-background-color: var(--input-bg);
-  --ag-header-foreground-color: var(--text-muted);
+  --ag-header-background-color: transparent;
+  --ag-header-foreground-color: var(--text-secondary);
   --ag-header-cell-hover-background-color: rgba(14, 165, 233, 0.08);
   --ag-active-color: #0ea5e9;
-  --ag-border-color: var(--card-border);
+  --ag-border-color: transparent;
   --ag-row-hover-color: rgba(14, 165, 233, 0.06);
   --ag-odd-row-background-color: transparent;
   --ag-row-border-color: transparent;
   --ag-row-border-width: 0;
   --ag-row-border-style: none;
   --ag-cell-horizontal-border: none;
-  --ag-secondary-border-color: var(--card-border);
-  --ag-borders: solid 1px;
-  --ag-borders-critical: solid 1px;
+  --ag-secondary-border-color: transparent;
+  --ag-borders: none;
+  --ag-borders-critical: none;
   --ag-border-radius: 0;
-  --ag-font-size: 13px;
+  --ag-font-size: 14px;
   --ag-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --ag-selected-row-background-color: rgba(14, 165, 233, 0.12);
   --ag-range-selection-border-color: rgba(14, 165, 233, 0.5);
@@ -187,11 +187,13 @@ body {
   background-color: rgba(14, 165, 233, 0.1) !important;
 }
 
-/* Grid: cabecera y filas compactas, filas unidas sin hueco */
+/* Grid: cabecera y celdas con misma tipografía que la app */
 .ag-theme-parkit .ag-header {
   border-bottom: 1px solid var(--card-border);
   font-weight: 600;
   letter-spacing: 0.01em;
+  font-family: inherit;
+  font-size: 0.875rem; /* 14px, acorde a text-sm de la app */
 }
 
 .ag-theme-parkit .ag-header-cell {
@@ -199,8 +201,9 @@ body {
   padding-right: 0.5rem;
   display: flex;
   align-items: center;
-  line-height: 1.2;
-  font-size: 12px;
+  line-height: 1.25;
+  font-size: 0.875rem;
+  font-family: inherit;
 }
 
 /* Sin bordes ni espacio entre filas: filas unidas */
@@ -217,8 +220,9 @@ body {
 .ag-theme-parkit .ag-cell {
   padding-left: 0.5rem;
   padding-right: 0.5rem;
-  line-height: 1.2;
-  font-size: 12px;
+  line-height: 1.25;
+  font-size: 0.875rem;
+  font-family: inherit;
   display: flex;
   align-items: center;
   border: none !important;
@@ -231,14 +235,15 @@ body {
   border: none !important;
 }
 
-/* Paginación al estilo app */
+/* Paginación: transparente y tipografía de la app */
 .ag-theme-parkit .ag-paging-panel {
   border-top: 1px solid var(--card-border);
   padding: 0.35rem 1rem;
   min-height: 36px;
-  background-color: var(--input-bg);
+  background-color: transparent;
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 0.875rem;
+  font-family: inherit;
 }
 
 .ag-theme-parkit .ag-paging-button {

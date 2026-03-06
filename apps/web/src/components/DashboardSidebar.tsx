@@ -11,7 +11,7 @@ import { apiClient } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   LogOut,
-  Home,
+  TrendingUp,
   Users,
   UserRound,
   CircleUserRound,
@@ -90,7 +90,7 @@ export function DashboardSidebar() {
 
   const handleLogout = () => {
     logout();
-    router.push("/login");
+    window.location.href = "/login";
   };
 
   const handleSelectCompany = (id: string, name: string) => {
@@ -103,7 +103,7 @@ export function DashboardSidebar() {
       {
         label: t("sidebar.main"),
         items: [
-          { label: t("sidebar.overview"), href: "/dashboard", icon: Home },
+          { label: t("sidebar.overview"), href: "/dashboard", icon: TrendingUp },
           { label: t("sidebar.employees"), href: "/dashboard/users", icon: Users },
           { label: t("sidebar.valets"), href: "/dashboard/valets", icon: UserRound },
           { label: t("sidebar.vehicles"), href: "/dashboard/vehicles", icon: Car },

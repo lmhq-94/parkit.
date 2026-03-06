@@ -10,6 +10,7 @@ import parkingsRoutes from "./modules/parkings/parkings.routes";
 import ticketsRoutes from "./modules/tickets/tickets.routes";
 import valetsRoutes from "./modules/valets/valets.routes";
 import vehiclesRoutes from "./modules/vehicles/vehicles.routes";
+import dashboardRoutes from "./modules/dashboard/dashboard.routes";
 
 export const app = express();
 
@@ -56,3 +57,4 @@ app.use("/parkings", parkingsRoutes);
 app.use("/tickets", ticketsRoutes);
 app.use("/valets", valetsRoutes);
 app.use("/vehicles", vehiclesRoutes);
+app.use("/dashboard", dashboardRoutes);

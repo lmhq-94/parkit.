@@ -137,8 +137,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                 <div className="w-10 h-10 border-2 border-sky-500/30 border-t-sky-400 rounded-full animate-spin" />
               </div>
             ) : (
-              <div className="relative flex-1 flex flex-col min-h-[400px] rounded-2xl border border-card-border bg-card overflow-hidden backdrop-blur-sm shadow-lg shadow-black/5 dark:shadow-none">
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-500/30 to-transparent" />
+              <div className="relative flex-1 flex flex-col min-h-[400px] rounded-2xl overflow-hidden bg-transparent">
                 <div className="ag-theme-quartz ag-theme-parkit flex-1 min-h-0 w-full">
                   <AgGridReact<T>
                     key={locale}
@@ -157,8 +156,8 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                     paginationPageSize={20}
                     animateRows={false}
                     suppressCellFocus
-                    rowHeight={32}
-                    headerHeight={36}
+                    rowHeight={44}
+                    headerHeight={48}
                     localeText={localeText}
                     getLocaleText={getLocaleText}
                   />
