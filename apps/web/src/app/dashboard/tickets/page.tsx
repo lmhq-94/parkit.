@@ -5,12 +5,13 @@ import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { Modal } from "@/components/Modal";
-import { useAuthStore } from "@/lib/store";
+import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 
 export default function TicketsPage() {
-  const { t, tEnum } = useTranslation();
+  const { t, tWithCompany, tEnum } = useTranslation();
   const user = useAuthStore((s) => s.user);
+  const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const superAdmin = isSuperAdmin(user);
   const [open, setOpen] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
@@ -110,7 +111,7 @@ export default function TicketsPage() {
   return (
     <DashboardDataTablePage
       title={t("tables.tickets.title")}
-      description={t("tables.tickets.description")}
+      description={tWithCompany("tables.tickets.description", selectedCompanyName)}
       endpoint="/tickets"
       emptyMessage={t("tables.tickets.empty")}
       columns={columns}

@@ -4,14 +4,15 @@ import { useCallback, useMemo } from "react";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
-import { useAuthStore } from "@/lib/store";
+import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 
 type VehicleRow = { id?: string; plate?: string; brand?: string; model?: string; year?: number; countryCode?: string };
 
 export default function VehiclesPage() {
-  const { t } = useTranslation();
+  const { t, tWithCompany } = useTranslation();
   const user = useAuthStore((s) => s.user);
+  const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const superAdmin = isSuperAdmin(user);
   const onUpdate = useCallback(async (row: VehicleRow) => {
     if (!row.id) return;
@@ -54,7 +55,7 @@ export default function VehiclesPage() {
   return (
     <DashboardDataTablePage<VehicleRow>
       title={t("tables.vehicles.title")}
-      description={t("tables.vehicles.description")}
+      description={tWithCompany("tables.vehicles.description", selectedCompanyName)}
       endpoint="/vehicles"
       emptyMessage={t("tables.vehicles.empty")}
       columns={columns}

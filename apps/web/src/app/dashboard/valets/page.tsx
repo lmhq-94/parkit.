@@ -5,14 +5,15 @@ import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { Modal } from "@/components/Modal";
-import { useAuthStore } from "@/lib/store";
+import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 
 type ValetRow = { id?: string; user?: { firstName?: string; lastName?: string; email?: string }; currentStatus?: string; licenseNumber?: string };
 
 export default function ValetsPage() {
-  const { t, tEnum } = useTranslation();
+  const { t, tWithCompany, tEnum } = useTranslation();
   const user = useAuthStore((s) => s.user);
+  const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const superAdmin = isSuperAdmin(user);
   const [open, setOpen] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
@@ -95,7 +96,7 @@ export default function ValetsPage() {
   return (
     <DashboardDataTablePage<ValetRow>
       title={t("tables.valets.title")}
-      description={t("tables.valets.description")}
+      description={tWithCompany("tables.valets.description", selectedCompanyName)}
       endpoint="/valets"
       emptyMessage={t("tables.valets.empty")}
       columns={columns}

@@ -42,6 +42,14 @@ router.patch(
   CompaniesController.update
 );
 
+router.patch(
+  "/:id",
+  validateRequest(UpdateCompanySchema),
+  requireAuth,
+  requireRole("SUPER_ADMIN"),
+  CompaniesController.updateById
+);
+
 router.delete(
   "/:id",
   requireAuth,

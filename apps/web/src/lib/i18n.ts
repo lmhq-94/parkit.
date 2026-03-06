@@ -12,6 +12,7 @@ export const translations = {
       last: "Última",
       pageSize: "Filas por página",
       pageSizeLabel: "Filas por página",
+      pageSizeSelectorLabel: "Filas por página:",
       rowsPerPage: "Filas por página",
       pageSizeSelectLabel: "Filas por página",
       filterOoo: "Filtrar…",
@@ -51,6 +52,7 @@ export const translations = {
       loading: "Cargando…",
       yes: "Sí",
       no: "No",
+      yourCompany: "tu empresa",
     },
     auth: {
       signIn: "Iniciar sesión",
@@ -58,11 +60,18 @@ export const translations = {
       signInToContinue: "Inicia sesión para continuar a tu cuenta",
       email: "Correo electrónico",
       password: "Contraseña",
+      emailPlaceholder: "nombre@empresa.com",
+      passwordPlaceholder: "············",
       forgotPassword: "¿Olvidaste tu contraseña?",
+      resetPasswordTitle: "Restablecer contraseña",
+      resetPasswordDescription: "Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.",
+      sendResetLink: "Enviar enlace",
+      backToSignIn: "Volver a iniciar sesión",
+      resetSubmittedMessage: "Si existe una cuenta para {{email}}, recibirás un enlace para restablecer tu contraseña.",
       continueWithGoogle: "Continuar con Google",
       continueWithMicrosoft: "Continuar con Microsoft",
       continueWithGitHub: "Continuar con GitHub",
-      moreOptionsComing: "Más opciones de inicio de sesión próximamente",
+      moreOptionsComing: "Otras opciones de acceso",
     },
     sidebar: {
       overview: "Resumen",
@@ -196,7 +205,7 @@ export const translations = {
     tables: {
       employees: {
         title: "Empleados",
-        description: "Personal y usuarios de tu empresa.",
+        description: "Personal y usuarios de {{companyName}}.",
         empty: "No hay empleados",
         name: "Nombre",
         firstName: "Nombre",
@@ -210,7 +219,7 @@ export const translations = {
       },
       valets: {
         title: "Valets",
-        description: "Personal de valet de tu empresa.",
+        description: "Personal de valet de {{companyName}}.",
         empty: "No hay valets",
         name: "Nombre",
         email: "Correo",
@@ -220,7 +229,7 @@ export const translations = {
       },
       vehicles: {
         title: "Vehículos",
-        description: "Vehículos registrados en tu empresa.",
+        description: "Vehículos registrados en {{companyName}}.",
         empty: "No hay vehículos",
         plate: "Placa",
         brand: "Marca",
@@ -231,7 +240,7 @@ export const translations = {
       },
       parkings: {
         title: "Estacionamientos",
-        description: "Ubicaciones de estacionamiento configuradas.",
+        description: "Ubicaciones de estacionamiento de {{companyName}}.",
         empty: "No hay estacionamientos",
         name: "Nombre",
         address: "Dirección",
@@ -242,7 +251,7 @@ export const translations = {
       },
       bookings: {
         title: "Reservas",
-        description: "Reservas asociadas a tu empresa.",
+        description: "Reservas asociadas a {{companyName}}.",
         empty: "No hay reservas",
         status: "Estado",
         vehicleId: "Vehículo",
@@ -253,7 +262,7 @@ export const translations = {
       },
       tickets: {
         title: "Tiquetes",
-        description: "Tiquetes registrados en tu empresa.",
+        description: "Tiquetes registrados en {{companyName}}.",
         empty: "No hay tiquetes",
         status: "Estado",
         vehicleId: "Vehículo",
@@ -276,7 +285,7 @@ export const translations = {
         title: "Empresas",
         titleMyCompany: "Mi empresa",
         description: "Administra todas las empresas.",
-        descriptionMyCompany: "Datos de tu empresa.",
+        descriptionMyCompany: "Datos de {{companyName}}.",
         empty: "No se encontraron empresas",
         name: "Nombre",
         email: "Email",
@@ -296,6 +305,7 @@ export const translations = {
       last: "Last",
       pageSize: "Rows per page",
       pageSizeLabel: "Rows per page",
+      pageSizeSelectorLabel: "Page Size:",
       rowsPerPage: "Rows per page",
       pageSizeSelectLabel: "Rows per page",
       filterOoo: "Filter…",
@@ -335,6 +345,7 @@ export const translations = {
       loading: "Loading…",
       yes: "Yes",
       no: "No",
+      yourCompany: "your company",
     },
     auth: {
       signIn: "Sign in",
@@ -342,11 +353,18 @@ export const translations = {
       signInToContinue: "Sign in to continue to your account",
       email: "Email",
       password: "Password",
+      emailPlaceholder: "name@company.com",
+      passwordPlaceholder: "············",
       forgotPassword: "Forgot password?",
+      resetPasswordTitle: "Reset password",
+      resetPasswordDescription: "Enter your email and we'll send you a link to reset your password.",
+      sendResetLink: "Send reset link",
+      backToSignIn: "Back to sign in",
+      resetSubmittedMessage: "If an account exists for {{email}}, you'll receive a link to reset your password.",
       continueWithGoogle: "Continue with Google",
       continueWithMicrosoft: "Continue with Microsoft",
       continueWithGitHub: "Continue with GitHub",
-      moreOptionsComing: "More sign-in options coming soon",
+      moreOptionsComing: "Other sign-in options",
     },
     sidebar: {
       overview: "Overview",
@@ -480,7 +498,7 @@ export const translations = {
     tables: {
       employees: {
         title: "Employees",
-        description: "Staff and users in your company.",
+        description: "Staff and users in {{companyName}}.",
         empty: "No employees found",
         name: "Name",
         firstName: "First name",
@@ -494,7 +512,7 @@ export const translations = {
       },
       valets: {
         title: "Valets",
-        description: "Valet staff in your company.",
+        description: "Valet staff in {{companyName}}.",
         empty: "No valets found",
         name: "Name",
         email: "Email",
@@ -504,7 +522,7 @@ export const translations = {
       },
       vehicles: {
         title: "Vehicles",
-        description: "Vehicles registered in your company.",
+        description: "Vehicles registered in {{companyName}}.",
         empty: "No vehicles found",
         plate: "Plate",
         brand: "Brand",
@@ -515,7 +533,7 @@ export const translations = {
       },
       parkings: {
         title: "Parkings",
-        description: "Parking locations configured for your company.",
+        description: "Parking locations for {{companyName}}.",
         empty: "No parkings found",
         name: "Name",
         address: "Address",
@@ -526,7 +544,7 @@ export const translations = {
       },
       bookings: {
         title: "Bookings",
-        description: "Bookings associated with your company.",
+        description: "Bookings associated with {{companyName}}.",
         empty: "No bookings found",
         status: "Status",
         vehicleId: "Vehicle",
@@ -537,7 +555,7 @@ export const translations = {
       },
       tickets: {
         title: "Tickets",
-        description: "Tickets registered for your company.",
+        description: "Tickets registered for {{companyName}}.",
         empty: "No tickets found",
         status: "Status",
         vehicleId: "Vehicle",
@@ -560,7 +578,7 @@ export const translations = {
         title: "Companies",
         titleMyCompany: "My company",
         description: "Manage all companies.",
-        descriptionMyCompany: "Your company details.",
+        descriptionMyCompany: "Details for {{companyName}}.",
         empty: "No companies found",
         name: "Name",
         email: "Email",
@@ -598,6 +616,13 @@ export function t(locale: Locale, key: string): string {
     }
   }
   return typeof value === "string" ? value : key;
+}
+
+/** Traduce una clave y sustituye {{companyName}} por el nombre de la empresa o "tu empresa"/"your company". */
+export function tWithCompany(locale: Locale, key: string, companyName: string | null): string {
+  const str = t(locale, key);
+  const name = companyName ?? t(locale, "common.yourCompany");
+  return str.replace(/\{\{companyName\}\}/g, name);
 }
 
 /** Traduce un valor de enum; si no hay clave, devuelve el valor original. */

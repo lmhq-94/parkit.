@@ -3,10 +3,12 @@
 import { useCallback, useMemo } from "react";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 
 export default function ParkingsPage() {
-  const { t, tEnum } = useTranslation();
+  const { t, tWithCompany, tEnum } = useTranslation();
+  const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   type ParkingRow = { id?: string; name?: string; address?: string; type?: string; totalSlots?: number; requiresBooking?: boolean };
   const onCreate = useCallback(async (draft: Partial<ParkingRow>) => {
     const name = (draft.name ?? "").toString().trim();
@@ -60,7 +62,7 @@ export default function ParkingsPage() {
   return (
     <DashboardDataTablePage
       title={t("tables.parkings.title")}
-      description={t("tables.parkings.description")}
+      description={tWithCompany("tables.parkings.description", selectedCompanyName)}
       endpoint="/parkings"
       emptyMessage={t("tables.parkings.empty")}
       columns={columns}

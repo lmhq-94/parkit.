@@ -3,13 +3,15 @@
 import { useCallback, useMemo, useState } from "react";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import { Modal } from "@/components/Modal";
 
 type UserRow = { id?: string; firstName?: string; lastName?: string; email?: string; systemRole?: string; isActive?: boolean };
 
 export default function UsersPage() {
-  const { t, tEnum } = useTranslation();
+  const { t, tWithCompany, tEnum } = useTranslation();
+  const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const [open, setOpen] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
   const [form, setForm] = useState({
@@ -82,7 +84,7 @@ export default function UsersPage() {
   return (
     <DashboardDataTablePage<UserRow>
       title={t("tables.employees.title")}
-      description={t("tables.employees.description")}
+      description={tWithCompany("tables.employees.description", selectedCompanyName)}
       endpoint="/users?excludeValets=true"
       emptyMessage={t("tables.employees.empty")}
       columns={columns}

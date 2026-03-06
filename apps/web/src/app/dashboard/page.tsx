@@ -235,7 +235,7 @@ export default function DashboardPage() {
     : "—";
 
   return (
-    <div className="pt-6 px-6 md:px-10 lg:px-12 pb-6 md:pb-10 lg:pb-12 max-w-[1600px] mx-auto w-full flex-1 flex flex-col gap-8">
+    <div className="pt-4 md:pt-6 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 max-w-[1600px] mx-auto w-full flex-1 flex flex-col gap-6 md:gap-8">
             {/* Banner: resumen rápido con métricas importantes */}
             <header className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-600/90 via-sky-700/80 to-slate-800 dark:from-sky-700/90 dark:via-sky-800/80 dark:to-slate-900 border border-sky-500/20 p-6 md:p-8">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(14,165,233,0.25),transparent)]" />

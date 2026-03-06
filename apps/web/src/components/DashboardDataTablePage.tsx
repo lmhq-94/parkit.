@@ -194,7 +194,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   const localeText = useMemo(() => {
     const keys = [
       "page", "to", "of", "first", "previous", "next", "last",
-      "pageSize", "pageSizeLabel", "rowsPerPage", "pageSizeSelectLabel",
+      "pageSize", "pageSizeLabel", "pageSizeSelectorLabel", "rowsPerPage", "pageSizeSelectLabel",
       "filterOoo", "contains", "equals", "notEqual", "startsWith", "endsWith",
       "lessThan", "greaterThan", "lessThanOrEqual", "greaterThanOrEqual",
       "inRange", "andCondition", "orCondition", "and", "or",
@@ -359,9 +359,9 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   const showAddInBar = onCreate != null && canCreate && headerAction == null;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 pt-0 px-6 md:px-10 lg:px-12 pb-6 md:pb-10 lg:pb-12 max-w-[1600px] mx-auto w-full">
+    <div className="flex-1 flex flex-col min-h-0 pt-0 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 max-w-[1600px] mx-auto w-full">
             {(headerAction != null || showAddInBar) ? (
-              <div className="mb-4 flex flex-col md:flex-row md:items-center justify-end">
+              <div className="mt-4 mb-2 md:mt-0 md:mb-4 flex flex-col md:flex-row md:items-center justify-end">
                 {headerAction != null ? headerAction : (
                   <button
                     type="button"
@@ -386,7 +386,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                 <div className="w-10 h-10 border-2 border-sky-500/30 border-t-sky-400 rounded-full animate-spin" />
               </div>
             ) : (
-              <div className="relative flex-1 flex flex-col min-h-[400px] rounded-2xl overflow-hidden bg-transparent">
+              <div className="relative flex-1 flex flex-col min-h-[400px] bg-transparent">
                 {onCreate && !showAddInBar && (
                   <button
                     type="button"

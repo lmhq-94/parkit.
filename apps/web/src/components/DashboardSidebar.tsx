@@ -107,7 +107,7 @@ export function DashboardSidebar() {
   const { resolvedTheme } = useTheme();
   const { t } = useTranslation();
   const { user, logout } = useAuthStore();
-  const { selectedCompanyId, selectedCompanyName, setSelectedCompany, sidebarCollapsed: collapsed, setSidebarCollapsed } = useDashboardStore();
+  const { selectedCompanyId, selectedCompanyName, setSelectedCompany, sidebarCollapsed: collapsed, setSidebarCollapsed, sidebarOpen, toggleSidebar } = useDashboardStore();
   const [mounted, setMounted] = useState(false);
   const [companies, setCompanies] = useState<{ id: string; commercialName?: string; legalName?: string }[]>([]);
   const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
@@ -193,10 +193,23 @@ export function DashboardSidebar() {
   );
 
   return (
+    <>
+      {/* Overlay móvil */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-[20000] bg-black/50 md:hidden"
+          aria-hidden
+          onClick={toggleSidebar}
+        />
+      )}
     <aside
-      className={`relative z-30 min-h-screen flex flex-col bg-page backdrop-blur-xl border-r border-card-border transition-[width] duration-300 ease-out shrink-0 ${
-        collapsed ? "w-[72px]" : "w-[260px]"
-      }`}
+      className={`
+        fixed md:relative inset-y-0 left-0 z-[20001] md:z-30
+        min-h-screen flex flex-col bg-page backdrop-blur-xl border-r border-card-border
+        transition-[width,transform] duration-300 ease-out shrink-0
+        w-[260px] ${collapsed ? "md:w-[72px]" : "md:w-[260px]"}
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+      `}
       style={{ boxShadow: "4px 0 24px -4px rgba(0,0,0,0.1)" }}
     >
       {/* Logo / brand */}
@@ -221,9 +234,10 @@ export function DashboardSidebar() {
               <Link href="/dashboard" className="flex items-center min-w-0 overflow-hidden">
                 <Logo variant={isDark ? "onDark" : "default"} className="text-3xl truncate" />
               </Link>
+              {/* Botón colapsar: solo visible en md+ */}
               <button
                 onClick={toggleCollapsed}
-                className="p-2 rounded-xl text-text-muted hover:text-text-secondary hover:bg-input-bg transition-colors shrink-0"
+                className="hidden md:flex p-2 rounded-xl text-text-muted hover:text-text-secondary hover:bg-input-bg transition-colors shrink-0"
                 aria-label="Collapse sidebar"
               >
                 <PanelLeftClose className="w-5 h-5" />
@@ -409,6 +423,7 @@ export function DashboardSidebar() {
         </SidebarTooltip>
       </div>
     </aside>
+    </>
   );
 }
 

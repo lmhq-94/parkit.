@@ -14,9 +14,11 @@ export const CreateCompanySchema = z.object({
 });
 
 export const UpdateCompanySchema = z.object({
-  name: z.string().min(1).optional(),
-  email: z.string().email().optional(),
-  phone: z.string().optional(),
+  legalName: z.string().min(1).optional(),
+  commercialName: z.string().optional(),
+  billingEmail: z.string().email().optional().or(z.literal("")),
+  contactPhone: z.string().optional(),
+  legalAddress: z.string().optional(),
 });
 
 export type CreateCompanyInput = z.infer<typeof CreateCompanySchema>;

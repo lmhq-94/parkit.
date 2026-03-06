@@ -35,14 +35,14 @@ export function Modal({
         aria-label="Close"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-lg rounded-2xl border border-card-border bg-card shadow-2xl backdrop-blur-sm">
-        <div className="p-6 border-b border-card-border">
-          <h2 className="text-lg font-semibold text-text-primary">{title}</h2>
+      <div className="relative w-full max-w-lg max-h-[90dvh] flex flex-col rounded-2xl border border-card-border bg-card shadow-2xl backdrop-blur-sm overflow-hidden">
+        <div className="p-5 md:p-6 border-b border-card-border shrink-0">
+          <h2 className="text-base md:text-lg font-semibold text-text-primary">{title}</h2>
           {description ? (
             <p className="text-sm text-text-secondary mt-1">{description}</p>
           ) : null}
         </div>
-        <div className="p-6">{children}</div>
+        <div className="p-5 md:p-6 overflow-y-auto">{children}</div>
       </div>
     </div>,
     document.body

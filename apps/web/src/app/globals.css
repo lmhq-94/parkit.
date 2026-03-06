@@ -235,15 +235,69 @@ body {
   border: none !important;
 }
 
+/* Permitir que el panel de paginación scrollee sin ser recortado por el root wrapper */
+.ag-theme-parkit .ag-root-wrapper {
+  overflow: visible !important;
+  border-radius: 1rem;
+}
+
+.ag-theme-parkit .ag-root-wrapper-body {
+  overflow: hidden;
+  border-radius: 1rem 1rem 0 0;
+}
+
 /* Paginación: transparente y tipografía de la app */
 .ag-theme-parkit .ag-paging-panel {
   border-top: 1px solid var(--card-border);
+  border-radius: 0 0 1rem 1rem;
   padding: 0.35rem 1rem;
   min-height: 36px;
   background-color: transparent;
   color: var(--text-secondary);
   font-size: 0.875rem;
   font-family: inherit;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important; /* móvil: scroll de izquierda a derecha */
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
+  min-width: 0;
+  gap: 0.75rem;
+}
+
+/* Evitar que los hijos del panel se compriman o rompan */
+.ag-theme-parkit .ag-paging-row-summary-panel,
+.ag-theme-parkit .ag-paging-page-number,
+.ag-theme-parkit .ag-paging-page-size,
+.ag-theme-parkit .ag-paging-button-wrapper,
+.ag-theme-parkit .ag-paging-buttons-panel {
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+/* El resumen de filas ("1 a 20 de 100") debe mostrarse en fila, nunca apilado */
+.ag-theme-parkit .ag-paging-row-summary-panel {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 0.2rem;
+  color: var(--text-muted);
+}
+
+/* "Página 1" — el label y el número deben estar en fila sin superponerse */
+.ag-theme-parkit .ag-paging-page-number {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 0.25rem;
+}
+
+.ag-theme-parkit .ag-paging-description,
+.ag-theme-parkit .ag-paging-number {
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  display: inline !important;
 }
 
 .ag-theme-parkit .ag-paging-button {
@@ -253,10 +307,6 @@ body {
 
 .ag-theme-parkit .ag-paging-button:not(.ag-disabled):hover {
   color: #0ea5e9 !important;
-}
-
-.ag-theme-parkit .ag-paging-row-summary-panel {
-  color: var(--text-muted);
 }
 
 /* Iconos de ordenación en sky */
@@ -283,4 +333,11 @@ body {
   border: 1px solid var(--input-border);
   border-radius: 0.5rem;
   padding: 0.25rem 0.5rem;
+}
+
+/* En pantallas grandes: alinear el footer a la derecha (comportamiento original de AG Grid) */
+@media (min-width: 640px) {
+  .ag-theme-parkit .ag-paging-panel {
+    justify-content: flex-end !important;
+  }
 }

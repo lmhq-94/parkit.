@@ -53,8 +53,10 @@ interface LocaleStore {
   setLocale: (locale: Locale) => void;
 }
 
+// Siempre inicializar a "es" para que SSR y primer paint del cliente coincidan (evita hydration mismatch).
+// El valor real se restaura en Providers con getStoredLocale() en useEffect.
 export const useLocaleStore = create<LocaleStore>((set) => ({
-  locale: typeof window !== "undefined" ? (localStorage.getItem(LOCALE_KEY) === "en" ? "en" : "es") : "es",
+  locale: "es",
   setLocale: (locale: Locale) => {
     if (typeof window !== "undefined") {
       localStorage.setItem(LOCALE_KEY, locale);
@@ -80,7 +82,7 @@ const SELECTED_COMPANY_KEY = "parkit_selected_company_id";
 const SELECTED_COMPANY_NAME_KEY = "parkit_selected_company_name";
 
 export const useDashboardStore = create<DashboardStore>((set) => ({
-  sidebarOpen: true,
+  sidebarOpen: false,
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   sidebarCollapsed: true,
   setSidebarCollapsed: (collapsed) => {
