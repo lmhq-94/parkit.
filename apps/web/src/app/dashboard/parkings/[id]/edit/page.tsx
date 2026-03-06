@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { MapPin, Hash, Tag, Navigation, Radius, ChevronDown, ArrowRight, Loader2 } from "lucide-react";
+import { MapPin, Hash, Tag, Navigation, Radius, ArrowRight, Loader2 } from "lucide-react";
+import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 placeholder:text-text-muted";
-const SL = "w-full pl-10 pr-9 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 appearance-none";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
 const PARKING_TYPES = ["OPEN", "COVERED", "TOWER", "UNDERGROUND", "ELEVATOR"] as const;
@@ -89,9 +89,6 @@ export default function EditParkingPage() {
 
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
         <div className="px-6 py-4 bg-gradient-to-r from-orange-500/8 to-transparent flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-orange-500/15 border border-orange-500/20 flex items-center justify-center shrink-0">
-            <MapPin className="w-4.5 h-4.5 text-orange-500" />
-          </div>
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("parkings.sectionMain")}</p>
             <p className="text-xs text-text-muted">{t("parkings.sectionMainDesc")}</p>
@@ -116,13 +113,9 @@ export default function EditParkingPage() {
             </div>
             <div>
               <label className={LABEL}>{t("parkings.type")} <span className="text-sky-500">*</span></label>
-              <div className="relative group">
-                <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <select value={form.type} onChange={set("type")} className={SL}>
-                  {PARKING_TYPES.map(pt => <option key={pt} value={pt}>{tEnum("parkingType", pt)}</option>)}
-                </select>
-                <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted/50 pointer-events-none" />
-              </div>
+              <SelectField value={form.type} onChange={set("type")} icon={Tag}>
+                {PARKING_TYPES.map(pt => <option key={pt} value={pt}>{tEnum("parkingType", pt)}</option>)}
+              </SelectField>
             </div>
             <div>
               <label className={LABEL}>{t("parkings.totalSlots")} <span className="text-sky-500">*</span></label>
@@ -150,9 +143,6 @@ export default function EditParkingPage() {
 
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
         <div className="px-6 py-4 bg-gradient-to-r from-emerald-500/8 to-transparent flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center shrink-0">
-            <Navigation className="w-4.5 h-4.5 text-emerald-500" />
-          </div>
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("parkings.sectionGeo")}</p>
             <p className="text-xs text-text-muted">{t("parkings.sectionGeoDesc")}</p>

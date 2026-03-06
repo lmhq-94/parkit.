@@ -3,34 +3,58 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, UserCircle, Mail, Lock, Phone, Clock, Shield, ChevronDown, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
+import { User, UserCircle, Mail, Lock, Phone, Clock, Shield, ArrowRight, Loader2, Copy, Check, RefreshCw } from "lucide-react";
+import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 placeholder:text-text-muted";
-const SL = "w-full pl-10 pr-9 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 appearance-none";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
-const ROLES = ["STAFF", "ADMIN", "CUSTOMER"] as const;
+const ROLES = ["CUSTOMER", "ADMIN", "SUPER_ADMIN"] as const;
+
+function generatePassword(): string {
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const lower = "abcdefghjkmnpqrstuvwxyz";
+  const digits = "23456789";
+  const special = "@#$!";
+  const all = upper + lower + digits + special;
+  const rand = (s: string) => s[Math.floor(Math.random() * s.length)];
+  const base = [rand(upper), rand(upper), rand(digits), rand(digits), rand(special)];
+  for (let i = 0; i < 7; i++) base.push(rand(all));
+  return base.sort(() => Math.random() - 0.5).join("");
+}
 
 const defaultForm = {
   firstName: "", lastName: "", email: "",
-  password: "", systemRole: "STAFF", phone: "",
+  password: "", systemRole: "CUSTOMER", phone: "",
   timezone: "America/Costa_Rica",
 };
 
 export default function NewUserPage() {
   const { t, tEnum } = useTranslation();
   const router = useRouter();
-  const [form, setForm] = useState(defaultForm);
+  const [form, setForm] = useState(() => ({ ...defaultForm, password: generatePassword() }));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPass, setShowPass] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(form.password).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const handleRegenerate = () => {
+    setForm(p => ({ ...p, password: generatePassword() }));
+    setCopied(false);
+  };
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm(p => ({ ...p, [k]: e.target.value }));
 
   const handleSubmit = async () => {
-    if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim() || !form.password) return;
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim()) return;
     setSubmitting(true); setError(null);
     try {
       await apiClient.post("/users", {
@@ -46,7 +70,7 @@ export default function NewUserPage() {
     } finally { setSubmitting(false); }
   };
 
-  const isValid = form.firstName.trim() && form.lastName.trim() && form.email.trim() && form.password;
+  const isValid = form.firstName.trim() && form.lastName.trim() && form.email.trim();
 
   return (
     <div className="flex-1 flex flex-col pt-6 pb-8 px-4 md:px-10 lg:px-12 max-w-[1600px] mx-auto w-full gap-5">
@@ -59,9 +83,6 @@ export default function NewUserPage() {
       {/* Sección — identidad y acceso */}
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
         <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-violet-500/15 border border-violet-500/20 flex items-center justify-center shrink-0">
-            <UserCircle className="w-4.5 h-4.5 text-violet-400" />
-          </div>
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("users.sectionMain")}</p>
             <p className="text-xs text-text-muted">{t("users.sectionMainDesc")}</p>
@@ -91,27 +112,29 @@ export default function NewUserPage() {
                 <input type="email" value={form.email} onChange={set("email")} placeholder="nombre@empresa.com" className={IL} />
               </div>
             </div>
-            <div>
-              <label className={LABEL}>{t("users.password")} <span className="text-sky-500">*</span></label>
-              <div className="relative group">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input type={showPass ? "text" : "password"} value={form.password} onChange={set("password")} placeholder="············" autoComplete="new-password" className={IL + " pr-10"} />
-                <button type="button" onClick={() => setShowPass(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-muted hover:text-text-secondary transition-colors"
-                  aria-label={showPass ? t("common.hidePassword") : t("common.showPassword")}>
-                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+            <div className="sm:col-span-2 lg:col-span-3">
+              <label className={LABEL}>{t("users.password")}</label>
+              <div className="flex items-center gap-2 px-4 py-3 rounded-lg border border-input-border bg-input-bg/50">
+                <Lock className="w-4 h-4 text-text-muted shrink-0" />
+                <span className="flex-1 font-mono tracking-wider text-sm text-text-primary select-all">{form.password}</span>
+                <div className="flex items-center gap-0.5 shrink-0">
+                  <button type="button" onClick={handleCopy} title={t("common.copyPassword")}
+                    className="p-1.5 rounded-md text-text-muted hover:text-sky-500 hover:bg-sky-500/10 transition-colors">
+                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                  <button type="button" onClick={handleRegenerate} title={t("common.regenerate")}
+                    className="p-1.5 rounded-md text-text-muted hover:text-sky-500 hover:bg-sky-500/10 transition-colors">
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
+              <p className="mt-1.5 text-[11px] text-amber-500/90">{t("common.tempPasswordNote")}</p>
             </div>
             <div>
               <label className={LABEL}>{t("users.role")}</label>
-              <div className="relative group">
-                <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <select value={form.systemRole} onChange={set("systemRole")} className={SL}>
-                  {ROLES.map(r => <option key={r} value={r}>{tEnum("systemRole", r)}</option>)}
-                </select>
-                <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted/50 pointer-events-none" />
-              </div>
+              <SelectField value={form.systemRole} onChange={set("systemRole")} icon={Shield}>
+                {ROLES.map(r => <option key={r} value={r}>{tEnum("systemRole", r)}</option>)}
+              </SelectField>
             </div>
           </div>
         </div>
@@ -120,9 +143,6 @@ export default function NewUserPage() {
       {/* Sección — contacto y preferencias */}
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
         <div className="px-6 py-4 bg-gradient-to-r from-indigo-500/8 to-transparent flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center shrink-0">
-            <Phone className="w-4.5 h-4.5 text-indigo-400" />
-          </div>
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("users.sectionContact")}</p>
             <p className="text-xs text-text-muted">{t("users.sectionContactDesc")}</p>

@@ -59,6 +59,17 @@ export class CompaniesController {
     }
   }
 
+  static async getById(req: Request, res: Response) {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const company = await CompaniesService.getById(id);
+      if (!company) return notFound(res, "Company not found");
+      return ok(res, company);
+    } catch (error: unknown) {
+      return fail(res, 400, error instanceof Error ? error.message : "Unknown error");
+    }
+  }
+
   static async list(_req: Request, res: Response) {
     try {
       const companies = await CompaniesService.list();

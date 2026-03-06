@@ -51,9 +51,6 @@ export default function NewVehiclePage() {
       {/* Sección — identificación del vehículo */}
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
         <div className="px-6 py-4 bg-gradient-to-r from-blue-500/8 to-transparent flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-500/15 border border-blue-500/20 flex items-center justify-center shrink-0">
-            <Car className="w-4.5 h-4.5 text-blue-500" />
-          </div>
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("vehicles.sectionMain")}</p>
             <p className="text-xs text-text-muted">{t("vehicles.sectionMainDesc")}</p>
@@ -90,9 +87,6 @@ export default function NewVehiclePage() {
       {/* Sección — detalles adicionales */}
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
         <div className="px-6 py-4 bg-gradient-to-r from-sky-500/8 to-transparent flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/20 flex items-center justify-center shrink-0">
-            <Globe className="w-4.5 h-4.5 text-sky-500" />
-          </div>
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("vehicles.sectionExtra")}</p>
             <p className="text-xs text-text-muted">{t("vehicles.sectionExtraDesc")}</p>

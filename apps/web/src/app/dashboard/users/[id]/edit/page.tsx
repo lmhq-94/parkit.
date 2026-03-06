@@ -3,19 +3,19 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, UserCircle, Mail, Lock, Phone, Clock, Shield, ChevronDown, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
+import { User, UserCircle, Mail, Lock, Phone, Clock, Shield, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
+import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 placeholder:text-text-muted";
-const SL = "w-full pl-10 pr-9 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 appearance-none";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
-const ROLES = ["STAFF", "ADMIN", "CUSTOMER"] as const;
+const ROLES = ["CUSTOMER", "ADMIN", "SUPER_ADMIN"] as const;
 
 const defaultForm = {
   firstName: "", lastName: "", email: "",
-  password: "", systemRole: "STAFF", phone: "",
+  password: "", systemRole: "CUSTOMER", phone: "",
   timezone: "",
 };
 
@@ -89,9 +89,6 @@ export default function EditUserPage() {
 
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
         <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-violet-500/15 border border-violet-500/20 flex items-center justify-center shrink-0">
-            <UserCircle className="w-4.5 h-4.5 text-violet-400" />
-          </div>
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("users.sectionMain")}</p>
             <p className="text-xs text-text-muted">{t("users.sectionMainDesc")}</p>
@@ -136,13 +133,9 @@ export default function EditUserPage() {
             </div>
             <div>
               <label className={LABEL}>{t("users.role")}</label>
-              <div className="relative group">
-                <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <select value={form.systemRole} onChange={set("systemRole")} className={SL}>
-                  {ROLES.map(r => <option key={r} value={r}>{tEnum("systemRole", r)}</option>)}
-                </select>
-                <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted/50 pointer-events-none" />
-              </div>
+              <SelectField value={form.systemRole} onChange={set("systemRole")} icon={Shield}>
+                {ROLES.map(r => <option key={r} value={r}>{tEnum("systemRole", r)}</option>)}
+              </SelectField>
             </div>
           </div>
         </div>
@@ -150,9 +143,6 @@ export default function EditUserPage() {
 
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
         <div className="px-6 py-4 bg-gradient-to-r from-indigo-500/8 to-transparent flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center shrink-0">
-            <Phone className="w-4.5 h-4.5 text-indigo-400" />
-          </div>
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("users.sectionContact")}</p>
             <p className="text-xs text-text-muted">{t("users.sectionContactDesc")}</p>

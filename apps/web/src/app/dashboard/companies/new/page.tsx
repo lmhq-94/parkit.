@@ -80,9 +80,6 @@ export default function NewCompanyPage() {
       {/* Sección — datos legales */}
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
         <div className="px-6 py-4 bg-gradient-to-r from-sky-500/8 to-transparent flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/20 flex items-center justify-center shrink-0">
-            <Receipt className="w-4.5 h-4.5 text-sky-500" />
-          </div>
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("companies.sectionMain")}</p>
             <p className="text-xs text-text-muted">{t("companies.sectionMainDesc")}</p>
@@ -104,9 +101,6 @@ export default function NewCompanyPage() {
       {/* Sección — contacto y configuración */}
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
         <div className="px-6 py-4 bg-gradient-to-r from-indigo-500/8 to-transparent flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center shrink-0">
-            <Globe className="w-4.5 h-4.5 text-indigo-400" />
-          </div>
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("companies.sectionContact")}</p>
             <p className="text-xs text-text-muted">{t("companies.sectionContactDesc")}</p>
@@ -119,7 +113,7 @@ export default function NewCompanyPage() {
               <input value={form.commercialName} onChange={set("commercialName")} placeholder="Nombre comercial" className={IL} />
             </Field>
             <Field label={t("companies.billingEmail")} icon={Mail}>
-              <input type="email" value={form.billingEmail} onChange={set("billingEmail")} placeholder="facturacion@empresa.com" className={IL} />
+              <input type="email" value={form.billingEmail} onChange={set("billingEmail")} placeholder="contacto@empresa.com" className={IL} />
             </Field>
             <Field label={t("companies.contactPhone")} icon={Phone}>
               <input value={form.contactPhone} onChange={set("contactPhone")} placeholder="+506 0000-0000" className={IL} />

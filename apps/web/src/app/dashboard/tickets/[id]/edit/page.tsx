@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Ticket, Users, Car, MapPin, ChevronDown, ArrowRight, Loader2 } from "lucide-react";
+import { Ticket, Users, Car, MapPin, ArrowRight, Loader2 } from "lucide-react";
+import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
-const SL = "w-full pl-10 pr-9 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 appearance-none";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
 type ClientOption = { id: string; user?: { firstName?: string; lastName?: string; email?: string } };
@@ -87,9 +87,6 @@ export default function EditTicketPage() {
 
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
         <div className="px-6 py-4 bg-gradient-to-r from-rose-500/8 to-transparent flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-rose-500/15 border border-rose-500/20 flex items-center justify-center shrink-0">
-            <Ticket className="w-4.5 h-4.5 text-rose-500" />
-          </div>
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("tickets.sectionMain")}</p>
             <p className="text-xs text-text-muted">{t("tickets.sectionMainDesc")}</p>
@@ -101,48 +98,36 @@ export default function EditTicketPage() {
             <div>
               <label className={LABEL}>{t("tickets.client")} <span className="text-sky-500">*</span></label>
               {clients.length === 0 ? skel : (
-                <div className="relative group">
-                  <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                  <select value={form.clientId} onChange={set("clientId")} className={SL}>
-                    <option value="">{t("common.selectPlaceholder")}</option>
-                    {clients.map(c => (
-                      <option key={c.id} value={c.id}>
-                        {`${c.user?.firstName ?? ""} ${c.user?.lastName ?? ""}`.trim() || c.user?.email || c.id}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted/50 pointer-events-none" />
-                </div>
+                <SelectField value={form.clientId} onChange={set("clientId")} icon={Users}>
+                  <option value="">{t("common.selectPlaceholder")}</option>
+                  {clients.map(c => (
+                    <option key={c.id} value={c.id}>
+                      {`${c.user?.firstName ?? ""} ${c.user?.lastName ?? ""}`.trim() || c.user?.email || c.id}
+                    </option>
+                  ))}
+                </SelectField>
               )}
             </div>
             <div>
               <label className={LABEL}>{t("tickets.vehicle")} <span className="text-sky-500">*</span></label>
               {vehicles.length === 0 ? skel : (
-                <div className="relative group">
-                  <Car className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                  <select value={form.vehicleId} onChange={set("vehicleId")} className={SL}>
-                    <option value="">{t("common.selectPlaceholder")}</option>
-                    {vehicles.map(v => (
-                      <option key={v.id} value={v.id}>
-                        {v.plate ? `${v.plate} — ${[v.brand, v.model].filter(Boolean).join(" ")}` : v.id}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted/50 pointer-events-none" />
-                </div>
+                <SelectField value={form.vehicleId} onChange={set("vehicleId")} icon={Car}>
+                  <option value="">{t("common.selectPlaceholder")}</option>
+                  {vehicles.map(v => (
+                    <option key={v.id} value={v.id}>
+                      {v.plate ? `${v.plate} — ${[v.brand, v.model].filter(Boolean).join(" ")}` : v.id}
+                    </option>
+                  ))}
+                </SelectField>
               )}
             </div>
             <div>
               <label className={LABEL}>{t("tickets.parking")} <span className="text-sky-500">*</span></label>
               {parkings.length === 0 ? skel : (
-                <div className="relative group">
-                  <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                  <select value={form.parkingId} onChange={set("parkingId")} className={SL}>
-                    <option value="">{t("common.selectPlaceholder")}</option>
-                    {parkings.map(p => <option key={p.id} value={p.id}>{p.name ?? p.id}</option>)}
-                  </select>
-                  <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted/50 pointer-events-none" />
-                </div>
+                <SelectField value={form.parkingId} onChange={set("parkingId")} icon={MapPin}>
+                  <option value="">{t("common.selectPlaceholder")}</option>
+                  {parkings.map(p => <option key={p.id} value={p.id}>{p.name ?? p.id}</option>)}
+                </SelectField>
               )}
             </div>
           </div>

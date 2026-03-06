@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { CalendarCheck, Users, Car, MapPin, Calendar, ChevronDown, ArrowRight, Loader2 } from "lucide-react";
+import { CalendarCheck, Users, Car, MapPin, Calendar, ArrowRight, Loader2 } from "lucide-react";
+import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 placeholder:text-text-muted";
-const SL = "w-full pl-10 pr-9 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 appearance-none";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
 type ClientOption = { id: string; user?: { firstName?: string; lastName?: string; email?: string } };
@@ -98,9 +98,6 @@ export default function EditBookingPage() {
 
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
         <div className="px-6 py-4 bg-gradient-to-r from-teal-500/8 to-transparent flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-teal-500/15 border border-teal-500/20 flex items-center justify-center shrink-0">
-            <CalendarCheck className="w-4.5 h-4.5 text-teal-500" />
-          </div>
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("bookings.sectionMain")}</p>
             <p className="text-xs text-text-muted">{t("bookings.sectionMainDesc")}</p>
@@ -112,48 +109,36 @@ export default function EditBookingPage() {
             <div>
               <label className={LABEL}>{t("bookings.client")} <span className="text-sky-500">*</span></label>
               {clients.length === 0 ? skel : (
-                <div className="relative group">
-                  <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                  <select value={form.clientId} onChange={set("clientId")} className={SL}>
-                    <option value="">{t("common.selectPlaceholder")}</option>
-                    {clients.map(c => (
-                      <option key={c.id} value={c.id}>
-                        {`${c.user?.firstName ?? ""} ${c.user?.lastName ?? ""}`.trim() || c.user?.email || c.id}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted/50 pointer-events-none" />
-                </div>
+                <SelectField value={form.clientId} onChange={set("clientId")} icon={Users}>
+                  <option value="">{t("common.selectPlaceholder")}</option>
+                  {clients.map(c => (
+                    <option key={c.id} value={c.id}>
+                      {`${c.user?.firstName ?? ""} ${c.user?.lastName ?? ""}`.trim() || c.user?.email || c.id}
+                    </option>
+                  ))}
+                </SelectField>
               )}
             </div>
             <div>
               <label className={LABEL}>{t("bookings.vehicle")} <span className="text-sky-500">*</span></label>
               {vehicles.length === 0 ? skel : (
-                <div className="relative group">
-                  <Car className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                  <select value={form.vehicleId} onChange={set("vehicleId")} className={SL}>
-                    <option value="">{t("common.selectPlaceholder")}</option>
-                    {vehicles.map(v => (
-                      <option key={v.id} value={v.id}>
-                        {v.plate ? `${v.plate} — ${[v.brand, v.model].filter(Boolean).join(" ")}` : v.id}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted/50 pointer-events-none" />
-                </div>
+                <SelectField value={form.vehicleId} onChange={set("vehicleId")} icon={Car}>
+                  <option value="">{t("common.selectPlaceholder")}</option>
+                  {vehicles.map(v => (
+                    <option key={v.id} value={v.id}>
+                      {v.plate ? `${v.plate} — ${[v.brand, v.model].filter(Boolean).join(" ")}` : v.id}
+                    </option>
+                  ))}
+                </SelectField>
               )}
             </div>
             <div>
               <label className={LABEL}>{t("bookings.parking")} <span className="text-sky-500">*</span></label>
               {parkings.length === 0 ? skel : (
-                <div className="relative group">
-                  <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                  <select value={form.parkingId} onChange={set("parkingId")} className={SL}>
-                    <option value="">{t("common.selectPlaceholder")}</option>
-                    {parkings.map(p => <option key={p.id} value={p.id}>{p.name ?? p.id}</option>)}
-                  </select>
-                  <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted/50 pointer-events-none" />
-                </div>
+                <SelectField value={form.parkingId} onChange={set("parkingId")} icon={MapPin}>
+                  <option value="">{t("common.selectPlaceholder")}</option>
+                  {parkings.map(p => <option key={p.id} value={p.id}>{p.name ?? p.id}</option>)}
+                </SelectField>
               )}
             </div>
             <div>
@@ -169,9 +154,6 @@ export default function EditBookingPage() {
 
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
         <div className="px-6 py-4 bg-gradient-to-r from-sky-500/8 to-transparent flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/20 flex items-center justify-center shrink-0">
-            <Calendar className="w-4.5 h-4.5 text-sky-500" />
-          </div>
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("bookings.sectionExit")}</p>
             <p className="text-xs text-text-muted">{t("bookings.sectionExitDesc")}</p>
