@@ -5,9 +5,13 @@ import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { Modal } from "@/components/Modal";
+import { useAuthStore } from "@/lib/store";
+import { isSuperAdmin } from "@/lib/auth";
 
 export default function TicketsPage() {
   const { t, tEnum } = useTranslation();
+  const user = useAuthStore((s) => s.user);
+  const superAdmin = isSuperAdmin(user);
   const [open, setOpen] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -70,7 +74,7 @@ export default function TicketsPage() {
 
   const columns = useMemo(
     () => [
-      { header: t("tables.tickets.status"), render: (ticket: { status?: string }) => tEnum("ticketStatus", ticket.status), field: "status" as const, editable: true },
+      { header: t("tables.tickets.status"), render: (ticket: { status?: string }) => tEnum("ticketStatus", ticket.status), field: "status" as const, editable: superAdmin },
       {
         header: t("tables.tickets.vehicleId"),
         render: (ticket: {
@@ -101,7 +105,7 @@ export default function TicketsPage() {
           ticket.exitTime ? new Date(ticket.exitTime).toLocaleString() : "N/A",
       },
     ],
-    [t, tEnum]
+    [t, tEnum, superAdmin]
   );
   return (
     <DashboardDataTablePage
@@ -111,10 +115,11 @@ export default function TicketsPage() {
       emptyMessage={t("tables.tickets.empty")}
       columns={columns}
       refreshToken={refreshToken}
-      onUpdate={onUpdate}
-      onDelete={onDelete}
-      getConfirmDeleteMessage={() => t("tables.tickets.confirmCancel")}
+      onUpdate={superAdmin ? onUpdate : undefined}
+      onDelete={superAdmin ? onDelete : undefined}
+      getConfirmDeleteMessage={superAdmin ? () => t("tables.tickets.confirmCancel") : undefined}
       headerAction={
+        superAdmin ? (
         <>
           <button
             type="button"
@@ -196,6 +201,7 @@ export default function TicketsPage() {
             </div>
           </Modal>
         </>
+        ) : undefined
       }
     />
   );

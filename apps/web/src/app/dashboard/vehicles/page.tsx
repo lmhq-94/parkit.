@@ -4,11 +4,15 @@ import { useCallback, useMemo } from "react";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
+import { isSuperAdmin } from "@/lib/auth";
 
 type VehicleRow = { id?: string; plate?: string; brand?: string; model?: string; year?: number; countryCode?: string };
 
 export default function VehiclesPage() {
   const { t } = useTranslation();
+  const user = useAuthStore((s) => s.user);
+  const superAdmin = isSuperAdmin(user);
   const onUpdate = useCallback(async (row: VehicleRow) => {
     if (!row.id) return;
     const payload: { plate?: string; brand?: string; model?: string; year?: number } = {};
@@ -39,13 +43,13 @@ export default function VehiclesPage() {
   }, []);
   const columns = useMemo(
     () => [
-      { header: t("tables.vehicles.plate"), render: (v: VehicleRow) => v.plate || "N/A", field: "plate" as const, editable: true },
-      { header: t("tables.vehicles.brand"), render: (v: VehicleRow) => v.brand || "N/A", field: "brand" as const, editable: true },
-      { header: t("tables.vehicles.model"), render: (v: VehicleRow) => v.model || "N/A", field: "model" as const, editable: true },
-      { header: t("tables.vehicles.year"), render: (v: VehicleRow) => (v.year != null ? String(v.year) : "N/A"), field: "year" as const, editable: true },
+      { header: t("tables.vehicles.plate"), render: (v: VehicleRow) => v.plate || "N/A", field: "plate" as const, editable: superAdmin },
+      { header: t("tables.vehicles.brand"), render: (v: VehicleRow) => v.brand || "N/A", field: "brand" as const, editable: superAdmin },
+      { header: t("tables.vehicles.model"), render: (v: VehicleRow) => v.model || "N/A", field: "model" as const, editable: superAdmin },
+      { header: t("tables.vehicles.year"), render: (v: VehicleRow) => (v.year != null ? String(v.year) : "N/A"), field: "year" as const, editable: superAdmin },
       { header: t("tables.vehicles.country"), render: (v: VehicleRow) => v.countryCode || "N/A" },
     ],
-    [t]
+    [t, superAdmin]
   );
   return (
     <DashboardDataTablePage<VehicleRow>
@@ -54,10 +58,10 @@ export default function VehiclesPage() {
       endpoint="/vehicles"
       emptyMessage={t("tables.vehicles.empty")}
       columns={columns}
-      onUpdate={onUpdate}
-      onCreate={onCreate}
-      onDelete={onDelete}
-      getConfirmDeleteMessage={() => t("tables.vehicles.confirmDelete")}
+      onUpdate={superAdmin ? onUpdate : undefined}
+      onCreate={superAdmin ? onCreate : undefined}
+      onDelete={superAdmin ? onDelete : undefined}
+      getConfirmDeleteMessage={superAdmin ? () => t("tables.vehicles.confirmDelete") : undefined}
     />
   );
 }

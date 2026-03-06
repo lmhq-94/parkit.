@@ -5,11 +5,15 @@ import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { Modal } from "@/components/Modal";
+import { useAuthStore } from "@/lib/store";
+import { isSuperAdmin } from "@/lib/auth";
 
 type ValetRow = { id?: string; user?: { firstName?: string; lastName?: string; email?: string }; currentStatus?: string; licenseNumber?: string };
 
 export default function ValetsPage() {
   const { t, tEnum } = useTranslation();
+  const user = useAuthStore((s) => s.user);
+  const superAdmin = isSuperAdmin(user);
   const [open, setOpen] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -83,10 +87,10 @@ export default function ValetsPage() {
         header: t("tables.valets.license"),
         render: (valet: { licenseNumber?: string }) => valet.licenseNumber ?? "—",
         field: "licenseNumber" as const,
-        editable: true,
+        editable: superAdmin,
       },
     ],
-    [t, tEnum]
+    [t, tEnum, superAdmin]
   );
   return (
     <DashboardDataTablePage<ValetRow>
@@ -95,11 +99,12 @@ export default function ValetsPage() {
       endpoint="/valets"
       emptyMessage={t("tables.valets.empty")}
       columns={columns}
-      onUpdate={onUpdate}
-      onDelete={onDelete}
-      getConfirmDeleteMessage={() => t("tables.valets.confirmDelete")}
+      onUpdate={superAdmin ? onUpdate : undefined}
+      onDelete={superAdmin ? onDelete : undefined}
+      getConfirmDeleteMessage={superAdmin ? () => t("tables.valets.confirmDelete") : undefined}
       refreshToken={refreshToken}
       headerAction={
+        superAdmin ? (
         <>
           <button
             type="button"
@@ -168,6 +173,7 @@ export default function ValetsPage() {
             </div>
           </Modal>
         </>
+        ) : undefined
       }
     />
   );

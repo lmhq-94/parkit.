@@ -5,9 +5,13 @@ import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { Modal } from "@/components/Modal";
+import { useAuthStore } from "@/lib/store";
+import { isSuperAdmin } from "@/lib/auth";
 
 export default function BookingsPage() {
   const { t, tEnum } = useTranslation();
+  const user = useAuthStore((s) => s.user);
+  const superAdmin = isSuperAdmin(user);
   const [open, setOpen] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -68,7 +72,7 @@ export default function BookingsPage() {
 
   const columns = useMemo(
     () => [
-      { header: t("tables.bookings.status"), render: (b: { status?: string }) => tEnum("bookingStatus", b.status), field: "status" as const, editable: true },
+      { header: t("tables.bookings.status"), render: (b: { status?: string }) => tEnum("bookingStatus", b.status), field: "status" as const, editable: superAdmin },
       {
         header: t("tables.bookings.vehicleId"),
         render: (b: {
@@ -99,7 +103,7 @@ export default function BookingsPage() {
           b.scheduledExitTime ? new Date(b.scheduledExitTime).toLocaleString() : "N/A",
       },
     ],
-    [t, tEnum]
+    [t, tEnum, superAdmin]
   );
   const onDelete = useCallback(async (row: { id?: string }) => {
     if (!row.id) return;
@@ -115,10 +119,11 @@ export default function BookingsPage() {
       emptyMessage={t("tables.bookings.empty")}
       columns={columns}
       refreshToken={refreshToken}
-      onUpdate={onUpdate}
-      onDelete={onDelete}
-      getConfirmDeleteMessage={() => t("tables.bookings.confirmCancel")}
+      onUpdate={superAdmin ? onUpdate : undefined}
+      onDelete={superAdmin ? onDelete : undefined}
+      getConfirmDeleteMessage={superAdmin ? () => t("tables.bookings.confirmCancel") : undefined}
       headerAction={
+        superAdmin ? (
         <>
           <button
             type="button"
@@ -220,6 +225,7 @@ export default function BookingsPage() {
             </div>
           </Modal>
         </>
+        ) : undefined
       }
     />
   );
