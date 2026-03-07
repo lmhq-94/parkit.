@@ -89,21 +89,21 @@ export default function EditVehiclePage() {
               <label className={LABEL}>{t("vehicles.plate")} <span className="text-sky-500">*</span></label>
               <div className="relative group">
                 <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input value={form.plate} onChange={set("plate")} placeholder="ABC-123" className={IL + " uppercase"} />
+                <input value={form.plate} onChange={set("plate")} placeholder={t("common.placeholderPlate")} className={IL + " uppercase"} />
               </div>
             </div>
             <div>
               <label className={LABEL}>{t("vehicles.brand")} <span className="text-sky-500">*</span></label>
               <div className="relative group">
                 <Car className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input value={form.brand} onChange={set("brand")} placeholder="Toyota" className={IL} />
+                <input value={form.brand} onChange={set("brand")} placeholder={t("common.placeholderBrand")} className={IL} />
               </div>
             </div>
             <div>
               <label className={LABEL}>{t("vehicles.model")} <span className="text-sky-500">*</span></label>
               <div className="relative group">
                 <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input value={form.model} onChange={set("model")} placeholder="Corolla" className={IL} />
+                <input value={form.model} onChange={set("model")} placeholder={t("common.placeholderModel")} className={IL} />
               </div>
             </div>
           </div>
@@ -124,14 +124,14 @@ export default function EditVehiclePage() {
               <label className={LABEL}>{t("vehicles.year")}</label>
               <div className="relative group">
                 <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input type="number" min={1900} max={new Date().getFullYear() + 1} value={form.year} onChange={set("year")} placeholder={String(new Date().getFullYear())} className={IL} />
+                <input type="number" min={1900} max={new Date().getFullYear() + 1} value={form.year} onChange={set("year")} placeholder={t("common.placeholderYear")} className={IL} />
               </div>
             </div>
             <div>
               <label className={LABEL}>{t("vehicles.countryCode")}</label>
               <div className="relative group">
                 <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input value={form.countryCode} onChange={set("countryCode")} placeholder="CR" className={IL} />
+                <input value={form.countryCode} onChange={set("countryCode")} placeholder={t("common.placeholderCountryCode")} className={IL} />
               </div>
             </div>
           </div>

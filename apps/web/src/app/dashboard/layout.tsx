@@ -1,5 +1,6 @@
 "use client";
 
+import { createContext, useContext, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -10,6 +11,12 @@ import { isSuperAdmin } from "@/lib/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LocaleToggle } from "@/components/LocaleToggle";
 import { ArrowLeft, Menu } from "lucide-react";
+
+const HeaderActionContext = createContext<((node: React.ReactNode) => void) | null>(null);
+export function useHeaderAction() {
+  const setter = useContext(HeaderActionContext);
+  return setter;
+}
 
 type PathHeader = {
   title: string;
@@ -76,13 +83,19 @@ export default function DashboardLayout({
   const descriptionKey = useMyCompany && header.descriptionMyCompany ? header.descriptionMyCompany : header.description;
   const descriptionText = tWithCompany(descriptionKey, selectedCompanyName);
 
+  const [headerAction, setHeaderAction] = useState<React.ReactNode>(null);
+  useEffect(() => {
+    if (isNewPage) setHeaderAction(null);
+  }, [isNewPage]);
+
   return (
     <ProtectedRoute>
-      <div className="flex min-h-screen bg-page">
-        <DashboardSidebar />
-        <main className="flex-1 flex flex-col min-h-0 min-w-0">
-          <header className="shrink-0 flex flex-wrap items-center justify-between gap-4 px-4 md:pl-12 md:pr-10 lg:pr-12 pt-5 md:pt-8 pb-0 bg-card/50 backdrop-blur-sm">
-            <div className="flex items-center gap-3 min-w-0">
+      <HeaderActionContext.Provider value={setHeaderAction}>
+        <div className="flex min-h-screen bg-page">
+          <DashboardSidebar />
+          <main className="flex-1 flex flex-col min-h-0 min-w-0">
+            <header className="shrink-0 flex flex-wrap items-center justify-between gap-4 px-4 md:pl-12 md:pr-10 lg:pr-12 pt-5 md:pt-8 pb-0 bg-card/50 backdrop-blur-sm">
+              <div className="flex items-center gap-3 min-w-0">
               {/* Hamburger: solo móvil */}
               <button
                 type="button"
@@ -118,7 +131,15 @@ export default function DashboardLayout({
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-3 shrink-0 ml-auto">
+              {headerAction && (
+                <>
+                  <div className="flex items-center">
+                    {headerAction}
+                  </div>
+                  <hr className="h-6 w-px border-0 bg-input-border shrink-0 self-center" role="separator" aria-orientation="vertical" />
+                </>
+              )}
               <ThemeToggle />
               <LocaleToggle />
             </div>
@@ -126,6 +147,7 @@ export default function DashboardLayout({
           <div className="flex-1 flex flex-col overflow-auto min-h-0">{children}</div>
         </main>
       </div>
+      </HeaderActionContext.Provider>
     </ProtectedRoute>
   );
 }

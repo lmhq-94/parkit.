@@ -99,31 +99,31 @@ export default function EditUserPage() {
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <div>
-              <label className={LABEL}>{t("users.firstName")} <span className="text-sky-500">*</span></label>
+              <label className={LABEL}>{t("users.firstName")} <span className="text-red-500">*</span></label>
               <div className="relative group">
                 <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input value={form.firstName} onChange={set("firstName")} placeholder="Luis" className={IL} />
+                <input value={form.firstName} onChange={set("firstName")} placeholder={t("common.placeholderName")} className={IL} />
               </div>
             </div>
             <div>
-              <label className={LABEL}>{t("users.lastName")} <span className="text-sky-500">*</span></label>
+              <label className={LABEL}>{t("users.lastName")} <span className="text-red-500">*</span></label>
               <div className="relative group">
                 <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input value={form.lastName} onChange={set("lastName")} placeholder="Herrera" className={IL} />
+                <input value={form.lastName} onChange={set("lastName")} placeholder={t("common.placeholderLastName")} className={IL} />
               </div>
             </div>
             <div>
-              <label className={LABEL}>{t("users.email")} <span className="text-sky-500">*</span></label>
+              <label className={LABEL}>{t("users.email")} <span className="text-red-500">*</span></label>
               <div className="relative group">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input type="email" value={form.email} onChange={set("email")} placeholder="nombre@empresa.com" className={IL} />
+                <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} />
               </div>
             </div>
             <div>
               <label className={LABEL}>{t("users.password")}</label>
               <div className="relative group">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input type={showPass ? "text" : "password"} value={form.password} onChange={set("password")} placeholder="············" autoComplete="new-password" className={IL + " pr-10"} />
+                <input type={showPass ? "text" : "password"} value={form.password} onChange={set("password")} placeholder={t("common.placeholderPassword")} autoComplete="new-password" className={IL + " pr-10"} />
                 <button type="button" onClick={() => setShowPass(v => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-muted hover:text-text-secondary transition-colors"
                   aria-label={showPass ? t("common.hidePassword") : t("common.showPassword")}>
@@ -156,7 +156,7 @@ export default function EditUserPage() {
               <label className={LABEL}>{t("users.phone")}</label>
               <div className="relative group">
                 <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input value={form.phone} onChange={set("phone")} placeholder="+506 0000-0000" className={IL} />
+                <input value={form.phone} onChange={set("phone")} placeholder={t("common.placeholderPhone")} className={IL} />
               </div>
             </div>
             <div>

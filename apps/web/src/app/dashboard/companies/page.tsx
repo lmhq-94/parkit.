@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { X, Pencil } from "lucide-react";
+import { X, Pencil, Plus } from "lucide-react";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
@@ -186,19 +186,27 @@ export default function CompaniesPage() {
       {
         header: t("tables.companies.name"),
         render: (c: Company) =>
-          c.name ?? c.commercialName ?? c.legalName ?? "N/A",
+          c.name ?? c.commercialName ?? c.legalName ?? "—",
         field: "commercialName" as const,
         editable: true,
       },
       {
         header: t("tables.companies.email"),
-        render: (c: Company) => c.email ?? c.billingEmail ?? "N/A",
+        render: (c: Company) => c.email ?? c.billingEmail ?? "—",
         field: "billingEmail" as const,
         editable: true,
+        linkType: "email",
+      },
+      {
+        header: t("companies.contactPhone"),
+        render: (c: Company) => c.contactPhone ?? "—",
+        linkType: "phone",
       },
       {
         header: t("tables.companies.status"),
         render: (c: Company) => tEnum("companyStatus", c.status),
+        statusBadge: "company",
+        statusField: "status",
       },
     ],
     [t, tEnum]
@@ -264,8 +272,9 @@ export default function CompaniesPage() {
           superAdmin ? (
             <Link
               href="/dashboard/companies/new"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 text-white text-sm font-semibold hover:bg-sky-400 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition-colors shadow-sm shadow-sky-500/20"
             >
+              <Plus className="w-4 h-4" strokeWidth={2.25} />
               {t("common.add")}
             </Link>
           ) : undefined

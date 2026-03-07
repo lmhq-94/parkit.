@@ -74,11 +74,11 @@ export function FormWizard({
   };
 
   return (
-    <div className="flex-1 flex flex-col pt-8 pb-8 px-4 md:px-10 lg:px-12 max-w-[1600px] mx-auto w-full gap-8">
+    <div className="flex-1 flex flex-col pt-14 pb-8 px-4 md:px-10 lg:px-12 max-w-[1600px] mx-auto w-full gap-8">
 
       {/* ── Stepper (top) ───────────────────────────── */}
       {steps.length > 1 && (
-        <div className="select-none px-2">
+        <div className="select-none px-2 mb-10">
           {/* Step labels row */}
           <div className="flex items-center mb-3">
             {steps.map((s, i) => {
@@ -133,7 +133,7 @@ export function FormWizard({
       )}
 
       {/* ── Step content ────────────────────────────── */}
-      <div className="overflow-hidden flex-1 flex flex-col">
+      <div className="overflow-hidden flex-1 flex flex-col justify-center">
         <div
           key={current}
           className={[
@@ -171,7 +171,7 @@ export function FormWizard({
       </div>
 
       {/* ── Action bar ──────────────────────────────── */}
-      <div className="flex items-center justify-between gap-4 pt-2 border-t border-input-border/40">
+      <div className="flex items-center justify-between gap-4 pt-2">
         <p className="text-xs text-text-muted/50 hidden sm:block">
           {step.badge === "required" ? t("common.requiredNote") : t("common.optionalNote")}
         </p>

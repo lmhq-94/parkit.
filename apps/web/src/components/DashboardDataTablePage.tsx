@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useHeaderAction } from "@/app/dashboard/layout";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ICellRendererParams, ValueGetterParams, ValueSetterParams } from "ag-grid-community";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
@@ -14,14 +15,121 @@ import { t } from "@/lib/i18n";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
+export type StatusBadgeVariant =
+  | "company"
+  | "user"
+  | "valet"
+  | "booking"
+  | "ticket"
+  | "notification";
+
 type TableColumn<T> = {
   header: string;
   render: (item: T) => string | number | boolean | null | undefined;
-  /** Campo en el objeto row para edición inline. Si se usa con editable: true, la celda se puede editar. */
+  /** Campo en el objeto row para edición inline. Si se usa con editable: true, la celda es editable. */
   field?: keyof T & string;
   /** Si true y field está definido, la celda es editable directamente en el grid. */
   editable?: boolean;
+  /** Si se define, la columna de estado se muestra con color y punto indicador (minimalista). */
+  statusBadge?: StatusBadgeVariant;
+  /** Campo para leer el valor crudo del estado (ej. "status", "currentStatus", "isActive"). Por defecto "status". */
+  statusField?: keyof T & string;
+  /** Renderer personalizado para la celda (ej. iconos). Si se define, se usa en lugar del texto de render(). */
+  cellRenderer?: React.ComponentType<ICellRendererParams<T> & Record<string, unknown>>;
+  /** Parámetros adicionales para cellRenderer. */
+  cellRendererParams?: Record<string, unknown>;
+  /** Ancho fijo o límites de ancho de la columna (opcional). */
+  width?: number;
+  minWidth?: number;
+  maxWidth?: number;
+  /** Si es "email" o "phone", la celda se muestra como enlace mailto: o tel: al hacer clic. */
+  linkType?: "email" | "phone";
 };
+
+const STATUS_TEXT_STYLES: Record<string, { text: string; dot: string }> = {
+  success: { text: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500" },
+  warning: { text: "text-amber-600 dark:text-amber-400", dot: "bg-amber-500" },
+  error: { text: "text-red-600 dark:text-red-400", dot: "bg-red-500" },
+  muted: { text: "text-slate-500 dark:text-slate-400", dot: "bg-slate-400" },
+  info: { text: "text-sky-600 dark:text-sky-400", dot: "bg-sky-500" },
+};
+
+function getStatusBadgeVariant(
+  type: StatusBadgeVariant,
+  value: string | boolean | null | undefined
+): string {
+  const v = value === true ? "true" : value === false ? "false" : String(value ?? "");
+  switch (type) {
+    case "company":
+      if (v === "ACTIVE") return "success";
+      if (v === "PENDING" || v === "SUSPENDED") return "warning";
+      if (v === "INACTIVE") return "error";
+      return "muted";
+    case "user":
+      return value === true ? "success" : "error";
+    case "valet":
+      if (v === "AVAILABLE") return "success";
+      if (v === "BUSY") return "warning";
+      if (v === "AWAY") return "muted";
+      return "muted";
+    case "booking":
+      if (v === "CONFIRMED" || v === "CHECKED_IN") return "success";
+      if (v === "PENDING") return "warning";
+      if (v === "CANCELLED" || v === "NO_SHOW") return "error";
+      return "muted";
+    case "ticket":
+      if (v === "PARKED" || v === "REQUESTED") return "info";
+      if (v === "DELIVERED") return "success";
+      if (v === "CANCELLED") return "error";
+      return "muted";
+    case "notification":
+      if (v === "DELIVERED" || v === "READ") return "success";
+      if (v === "SENT") return "info";
+      if (v === "FAILED") return "error";
+      return "muted";
+    default:
+      return "muted";
+  }
+}
+
+function StatusCellRenderer<T>(
+  params: ICellRendererParams<T> & {
+    getLabel: (data: T) => string;
+    statusType: StatusBadgeVariant;
+    getValue: (data: T) => string | boolean | null | undefined;
+  }
+) {
+  const { data, getLabel, statusType, getValue } = params;
+  if (data == null) return null;
+  const label = getLabel(data);
+  const raw = getValue(data);
+  const variant = getStatusBadgeVariant(statusType, raw);
+  const style = STATUS_TEXT_STYLES[variant] ?? STATUS_TEXT_STYLES.muted;
+  return (
+    <span className={`inline-flex items-center gap-2 text-sm ${style.text}`}>
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${style.dot}`} />
+      {label || "—"}
+    </span>
+  );
+}
+
+function LinkCellRenderer(
+  params: ICellRendererParams & { linkType: "email" | "phone" }
+) {
+  const value = params.value != null ? String(params.value).trim() : "";
+  const isEmpty = !value || value === "N/A" || value === "—";
+  if (isEmpty) return <span className="text-slate-400">—</span>;
+  const href = params.linkType === "email" ? `mailto:${value}` : `tel:${value}`;
+  return (
+    <a
+      href={href}
+      className="text-sky-600 dark:text-sky-400 hover:underline truncate block"
+      title={params.linkType === "email" ? value : value}
+    >
+      {value}
+    </a>
+  );
+}
 
 interface DashboardDataTablePageProps<T> {
   title: string;
@@ -282,14 +390,46 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   const columnDefs = useMemo<ColDef<T>[]>(() => {
     const dataCols: ColDef<T>[] = columns.map((column) => {
       const hasField = Boolean(column.editable && column.field);
+      const statusFieldKey = (column.statusField ?? column.field ?? "status") as keyof T & string;
+      const widthProps =
+        column.width != null || column.minWidth != null || column.maxWidth != null
+          ? {
+              ...(column.width != null && { width: column.width }),
+              ...(column.minWidth != null && { minWidth: column.minWidth }),
+              ...(column.maxWidth != null && { maxWidth: column.maxWidth }),
+            }
+          : {};
       const base: ColDef<T> = {
         headerName: column.header,
         colId: column.header,
+        ...widthProps,
       };
+
+      const badgeParams = column.statusBadge
+        ? {
+            cellRenderer: StatusCellRenderer,
+            cellRendererParams: {
+              getLabel: column.render,
+              statusType: column.statusBadge,
+              getValue: (data: T) =>
+                (data as Record<string, unknown>)[statusFieldKey] as string | boolean | null | undefined,
+            },
+          }
+        : {};
+
       if (hasField && column.field) {
         const field = column.field;
+        const linkProps =
+          column.linkType != null
+            ? {
+                cellRenderer: LinkCellRenderer,
+                cellRendererParams: { linkType: column.linkType },
+              }
+            : {};
         return {
           ...base,
+          ...badgeParams,
+          ...linkProps,
           field,
           editable: (params: { data?: unknown }) =>
             Boolean((params.data as { __isNew?: boolean } | undefined)?.__isNew) || Boolean(onUpdate),
@@ -304,8 +444,31 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
           },
         } as unknown as ColDef<T>;
       }
+
+      if (column.statusBadge) {
+        return {
+          ...base,
+          ...badgeParams,
+          valueGetter: (params: ValueGetterParams<T>) =>
+            params.data ? column.render(params.data) : "",
+        } as unknown as ColDef<T>;
+      }
+
+      const customCell =
+        column.linkType != null
+          ? {
+              cellRenderer: LinkCellRenderer,
+              cellRendererParams: { linkType: column.linkType },
+            }
+          : column.cellRenderer != null
+            ? {
+                cellRenderer: column.cellRenderer,
+                cellRendererParams: column.cellRendererParams ?? {},
+              }
+            : {};
       return {
         ...base,
+        ...customCell,
         valueGetter: (params: ValueGetterParams<T>) =>
           params.data ? column.render(params.data) : "",
       };
@@ -378,24 +541,28 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   );
 
   const showAddInBar = onCreate != null && canCreate && headerAction == null;
+  const setHeaderAction = useHeaderAction();
+
+  useEffect(() => {
+    if (headerAction != null || showAddInBar) {
+      const node = headerAction ?? (
+        <button
+          type="button"
+          onClick={startCreate}
+          disabled={draftRow != null}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-sky-500/20"
+        >
+          <Plus className="w-4 h-4" strokeWidth={2.25} />
+          {t(locale, "common.add")}
+        </button>
+      );
+      setHeaderAction?.(node);
+    }
+    return () => { setHeaderAction?.(null); };
+  }, [headerAction, showAddInBar, setHeaderAction, startCreate, draftRow, locale]);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 pt-0 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 max-w-[1600px] mx-auto w-full">
-            {(headerAction != null || showAddInBar) && (
-              <div className="mt-4 mb-2 md:mt-0 md:mb-4 flex items-center gap-2 justify-end">
-                {headerAction != null ? headerAction : (
-                  <button
-                    type="button"
-                    onClick={startCreate}
-                    disabled={draftRow != null}
-                    className="inline-flex items-center px-4 py-2.5 rounded-xl bg-sky-500 text-white text-sm font-semibold hover:bg-sky-400 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {t(locale, "common.add")}
-                  </button>
-                )}
-              </div>
-            )}
-
+    <div className="flex-1 flex flex-col min-h-0 pt-6 md:pt-8 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 max-w-[1600px] mx-auto w-full">
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-200 rounded-xl">
                 <span className="font-medium">{error}</span>
@@ -408,18 +575,6 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
               </div>
             ) : (
               <div className="relative flex-1 flex flex-col min-h-[400px] bg-transparent">
-                {onCreate && !showAddInBar && (
-                  <button
-                    type="button"
-                    onClick={startCreate}
-                    disabled={!canCreate || draftRow != null}
-                    title={t(locale, "common.add")}
-                    aria-label={t(locale, "common.add")}
-                    className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/80 bg-white/95 text-slate-500 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 hover:shadow focus:outline-none focus:ring-2 focus:ring-slate-300/50 dark:border-slate-600/80 dark:bg-slate-800/95 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:bg-slate-700/90 dark:hover:text-slate-200 disabled:pointer-events-none disabled:opacity-50"
-                  >
-                    <Plus className="h-4 w-4 stroke-[2.25]" strokeWidth={2.25} />
-                  </button>
-                )}
                 <div className="ag-theme-quartz ag-theme-parkit flex-1 min-h-0 w-full">
                   <AgGridReact<T>
                     key={locale}

@@ -128,7 +128,7 @@ export default function EditCompanyPage() {
       {/* Sección — datos legales */}
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
         <div className="px-6 py-4 bg-gradient-to-r from-sky-500/8 to-transparent flex items-center gap-3">
-                    <div>
+          <div>
             <p className="text-sm font-semibold text-text-primary">{t("companies.sectionMain")}</p>
             <p className="text-xs text-text-muted">{t("companies.sectionMainDesc")}</p>
           </div>
@@ -137,10 +137,10 @@ export default function EditCompanyPage() {
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <Field label={t("companies.legalName")} required icon={Building2}>
-              <input value={form.legalName} onChange={set("legalName")} placeholder="Empresa S.A." className={IL} />
+              <input value={form.legalName} onChange={set("legalName")} placeholder={t("common.placeholderLegalName")} className={IL} />
             </Field>
             <Field label={t("companies.taxId")} required icon={Receipt}>
-              <input value={form.taxId} onChange={set("taxId")} placeholder="3-101-000000" className={IL} />
+              <input value={form.taxId} onChange={set("taxId")} placeholder={t("common.placeholderTaxId")} className={IL} />
             </Field>
             <div>
               <label className={LABEL}>{t("tables.companies.status")}</label>
@@ -166,19 +166,19 @@ export default function EditCompanyPage() {
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <Field label={t("companies.commercialName")} icon={Building2}>
-              <input value={form.commercialName} onChange={set("commercialName")} placeholder="Nombre comercial" className={IL} />
+              <input value={form.commercialName} onChange={set("commercialName")} placeholder={t("common.placeholderCommercialName")} className={IL} />
             </Field>
             <Field label={t("companies.billingEmail")} icon={Mail}>
-              <input type="email" value={form.billingEmail} onChange={set("billingEmail")} placeholder="contacto@empresa.com" className={IL} />
+              <input type="email" value={form.billingEmail} onChange={set("billingEmail")} placeholder={t("common.placeholderEmail")} className={IL} />
             </Field>
             <Field label={t("companies.contactPhone")} icon={Phone}>
-              <input value={form.contactPhone} onChange={set("contactPhone")} placeholder="+506 0000-0000" className={IL} />
+              <input value={form.contactPhone} onChange={set("contactPhone")} placeholder={t("common.placeholderPhone")} className={IL} />
             </Field>
             <div className="sm:col-span-2 lg:col-span-3">
               <label className={LABEL}>{t("companies.legalAddress")}</label>
               <div className="relative group">
                 <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input value={form.legalAddress} onChange={set("legalAddress")} placeholder="Provincia, cantón, distrito, señas" className={IL} />
+                <input value={form.legalAddress} onChange={set("legalAddress")} placeholder={t("common.placeholderAddress")} className={IL} />
               </div>
             </div>
           </div>

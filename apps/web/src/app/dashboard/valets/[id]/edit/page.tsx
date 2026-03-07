@@ -150,7 +150,7 @@ export default function EditValetPage() {
                 <input
                   type={showPass ? "text" : "password"}
                   value={form.password} onChange={set("password")}
-                  placeholder="············" autoComplete="new-password"
+                  placeholder={t("common.placeholderPassword")} autoComplete="new-password"
                   className={IL + " pr-10"}
                 />
                 <button type="button" onClick={() => setShowPass(v => !v)}

@@ -93,21 +93,21 @@ export default function NewValetPage() {
             <label className={LABEL}>{t("users.firstName")} <span className="text-red-500">*</span></label>
             <div className="relative group">
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-              <input value={form.firstName} onChange={set("firstName")} placeholder="Luis" className={IL} />
+              <input value={form.firstName} onChange={set("firstName")} placeholder={t("common.placeholderName")} className={IL} />
             </div>
           </div>
           <div>
             <label className={LABEL}>{t("users.lastName")} <span className="text-red-500">*</span></label>
             <div className="relative group">
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-              <input value={form.lastName} onChange={set("lastName")} placeholder="Herrera" className={IL} />
+              <input value={form.lastName} onChange={set("lastName")} placeholder={t("common.placeholderLastName")} className={IL} />
             </div>
           </div>
           <div>
             <label className={LABEL}>{t("users.email")} <span className="text-red-500">*</span></label>
             <div className="relative group">
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-              <input type="email" value={form.email} onChange={set("email")} placeholder="empleado@empresa.com" className={IL} />
+              <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} />
             </div>
           </div>
           <div className="sm:col-span-2 lg:col-span-3">

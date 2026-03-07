@@ -64,14 +64,14 @@ export default function NewParkingPage() {
             <label className={LABEL}>{t("parkings.name")} <span className="text-sky-500">*</span></label>
             <div className="relative group">
               <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-              <input value={form.name} onChange={set("name")} placeholder="Parqueo Central" className={IL} />
+              <input value={form.name} onChange={set("name")} placeholder={t("common.placeholderName")} className={IL} />
             </div>
           </div>
           <div className="sm:col-span-2 lg:col-span-3">
             <label className={LABEL}>{t("parkings.address")} <span className="text-sky-500">*</span></label>
             <div className="relative group">
               <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-              <input value={form.address} onChange={set("address")} placeholder="Calle 0, Avenida 0, San José" className={IL} />
+              <input value={form.address} onChange={set("address")} placeholder={t("common.placeholderAddress")} className={IL} />
             </div>
           </div>
           <div>
@@ -84,7 +84,7 @@ export default function NewParkingPage() {
             <label className={LABEL}>{t("parkings.totalSlots")} <span className="text-sky-500">*</span></label>
             <div className="relative group">
               <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-              <input type="number" min={1} value={form.totalSlots} onChange={set("totalSlots")} placeholder="50" className={IL} />
+              <input type="number" min={1} value={form.totalSlots} onChange={set("totalSlots")} placeholder={t("common.placeholderNumber")} className={IL} />
             </div>
           </div>
           <div className="flex items-center gap-4 pt-1 sm:pt-7">
@@ -115,21 +115,21 @@ export default function NewParkingPage() {
             <label className={LABEL}>{t("parkings.latitude")}</label>
             <div className="relative group">
               <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-              <input type="number" step="any" value={form.latitude} onChange={set("latitude")} placeholder="9.9281" className={IL} />
+              <input type="number" step="any" value={form.latitude} onChange={set("latitude")} placeholder={t("common.placeholderLatitude")} className={IL} />
             </div>
           </div>
           <div>
             <label className={LABEL}>{t("parkings.longitude")}</label>
             <div className="relative group">
               <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-              <input type="number" step="any" value={form.longitude} onChange={set("longitude")} placeholder="-84.0907" className={IL} />
+              <input type="number" step="any" value={form.longitude} onChange={set("longitude")} placeholder={t("common.placeholderLongitude")} className={IL} />
             </div>
           </div>
           <div>
             <label className={LABEL}>{t("parkings.geofenceRadius")}</label>
             <div className="relative group">
               <Radius className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-              <input type="number" min={1} value={form.geofenceRadius} onChange={set("geofenceRadius")} placeholder="50" className={IL} />
+              <input type="number" min={1} value={form.geofenceRadius} onChange={set("geofenceRadius")} placeholder={t("common.placeholderRadius")} className={IL} />
             </div>
           </div>
         </div>
