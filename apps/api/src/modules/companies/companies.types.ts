@@ -7,7 +7,7 @@ export interface CreateCompanyDTO {
   countryCode?: string;
   currency?: string;
   timezone?: string;
-  billingEmail?: string;
+  email?: string;
   contactPhone?: string;
   legalAddress?: string;
   brandingConfig?: Prisma.InputJsonValue;
@@ -16,7 +16,7 @@ export interface CreateCompanyDTO {
 export interface UpdateCompanyDTO {
   legalName?: string;
   commercialName?: string;
-  billingEmail?: string;
+  email?: string;
   contactPhone?: string;
   legalAddress?: string;
   brandingConfig?: Prisma.InputJsonValue;

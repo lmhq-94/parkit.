@@ -12,6 +12,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useDashboardStore } from "@/lib/store";
 import { COUNTRIES, CURRENCIES, TIMEZONES } from "@/lib/companyOptions";
+import { formatTaxId, formatPhone } from "@/lib/inputMasks";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -36,7 +37,7 @@ function Field({ label, required, icon: Icon, children }: {
 const defaultForm = {
   legalName: "", taxId: "", commercialName: "",
   countryCode: "CR", currency: "CRC", timezone: "America/Costa_Rica",
-  billingEmail: "", contactPhone: "", legalAddress: "",
+  email: "", contactPhone: "", legalAddress: "",
 };
 
 export default function NewCompanyPage() {
@@ -62,7 +63,7 @@ export default function NewCompanyPage() {
         countryCode: form.countryCode || undefined,
         currency: form.currency || undefined,
         timezone: form.timezone || undefined,
-        billingEmail: form.billingEmail.trim() || undefined,
+        email: form.email.trim() || undefined,
         contactPhone: form.contactPhone.trim() || undefined,
         legalAddress: form.legalAddress.trim() || undefined,
       });
@@ -87,7 +88,7 @@ export default function NewCompanyPage() {
             <input value={form.legalName} onChange={set("legalName")} placeholder={t("common.placeholderLegalName")} className={IL} />
           </Field>
           <Field label={t("companies.taxId")} required icon={Receipt}>
-            <input value={form.taxId} onChange={set("taxId")} placeholder={t("common.placeholderTaxId")} className={IL} />
+            <input value={form.taxId} onChange={(e) => setForm((p) => ({ ...p, taxId: formatTaxId(e.target.value) }))} placeholder={t("common.placeholderTaxId")} className={IL} />
           </Field>
         </div>
       ),
@@ -103,11 +104,11 @@ export default function NewCompanyPage() {
           <Field label={t("companies.commercialName")} icon={Building2}>
             <input value={form.commercialName} onChange={set("commercialName")} placeholder={t("common.placeholderCommercialName")} className={IL} />
           </Field>
-          <Field label={t("companies.billingEmail")} icon={Mail}>
-            <input type="email" value={form.billingEmail} onChange={set("billingEmail")} placeholder={t("common.placeholderEmail")} className={IL} />
+          <Field label={t("companies.email")} icon={Mail}>
+            <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} />
           </Field>
           <Field label={t("companies.contactPhone")} icon={Phone}>
-            <input value={form.contactPhone} onChange={set("contactPhone")} placeholder={t("common.placeholderPhone")} className={IL} />
+            <input type="tel" value={form.contactPhone} onChange={(e) => setForm((p) => ({ ...p, contactPhone: formatPhone(e.target.value) }))} placeholder={t("common.placeholderPhone")} className={IL} />
           </Field>
           <div className="sm:col-span-2 lg:col-span-3">
             <label className={LABEL}>{t("companies.legalAddress")}</label>

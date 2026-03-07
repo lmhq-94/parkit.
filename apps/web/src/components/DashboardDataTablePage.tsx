@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useHeaderAction } from "@/app/dashboard/layout";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ICellRendererParams, ValueGetterParams, ValueSetterParams } from "ag-grid-community";
@@ -8,7 +8,7 @@ import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "@/app/ag-grid-parkit-overrides.css";
-import { Check, Eye, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Pencil, Plus, Trash2, X } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
@@ -131,6 +131,62 @@ function LinkCellRenderer(
   );
 }
 
+type DetailRow<T> = { __detail: true; __parent: T };
+
+const DETAIL_ROW_MIN_HEIGHT = 100;
+
+function DetailRowMeasureWrapper({
+  children,
+  onMeasured,
+}: {
+  children: React.ReactNode;
+  onMeasured: (height: number) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const height = Math.max(el.scrollHeight, el.getBoundingClientRect().height);
+    onMeasured(Math.max(DETAIL_ROW_MIN_HEIGHT, Math.ceil(height)));
+  }, [onMeasured]);
+  return <div ref={ref}>{children}</div>;
+}
+
+function ExpandCellRenderer<T extends { id?: string | number }>(
+  params: ICellRendererParams<T> & {
+    expandedRowId: string | number | null;
+    onToggle: (id: string | number | null) => void;
+    expandLabel: string;
+    collapseLabel: string;
+    hasRowDetail?: (row: T) => boolean;
+  }
+) {
+  const { data, expandedRowId, onToggle, expandLabel, collapseLabel, hasRowDetail } = params;
+  if (!data) return null;
+  if ((data as unknown as { __detail?: boolean }).__detail) return null;
+  if ((data as unknown as { __isNew?: boolean }).__isNew) return null;
+  if (hasRowDetail != null && !hasRowDetail(data)) return null;
+  const id = data.id;
+  if (id == null) return null;
+  const isExpanded = expandedRowId === id;
+  return (
+    <button
+      type="button"
+      onClick={() => onToggle(isExpanded ? null : id)}
+      className="p-2 rounded-lg text-text-muted hover:text-sky-500 hover:bg-sky-500/10 transition-colors"
+      title={isExpanded ? collapseLabel : expandLabel}
+      aria-label={isExpanded ? collapseLabel : expandLabel}
+      aria-expanded={isExpanded}
+    >
+      {isExpanded ? (
+        <ChevronDown className="w-4 h-4" />
+      ) : (
+        <ChevronRight className="w-4 h-4" />
+      )}
+    </button>
+  );
+}
+
 interface DashboardDataTablePageProps<T> {
   title: string;
   description: string;
@@ -144,8 +200,12 @@ interface DashboardDataTablePageProps<T> {
   refreshToken?: number;
   /** Callback al hacer clic en Editar (opcional). Si se pasa, se muestra el botón Editar. */
   onEdit?: (row: T) => void;
-  /** Callback al hacer clic en Ver (opcional). Si se pasa, se muestra el botón Ver. */
+  /** Callback al hacer clic en Ver (opcional). Si se pasa junto con renderRowDetail, se ignora; usar renderRowDetail para expandir fila. */
   onView?: (row: T) => void;
+  /** Contenido a mostrar al expandir la fila. Si se pasa, se muestra botón expandir en lugar del botón Ver. */
+  renderRowDetail?: (row: T) => React.ReactNode;
+  /** Si se pasa, solo las filas con información adicional muestran el botón expandir. Por defecto todas son expandibles. */
+  hasRowDetail?: (row: T) => boolean;
   /** Callback al hacer clic en Eliminar (opcional). Si se pasa, se muestra el botón Eliminar. Tras eliminar se recarga la tabla. */
   onDelete?: (row: T) => void | Promise<void>;
   /** Mensaje de confirmación antes de eliminar (opcional). */
@@ -158,30 +218,32 @@ interface DashboardDataTablePageProps<T> {
 
 function ActionsCellRenderer<T extends { id?: string | number }>(
   params: ICellRendererParams<T> & {
-    onView?: (row: T) => void;
-    onEdit?: (row: T) => void;
-    onDelete?: (row: T) => void | Promise<void>;
-    getConfirmDeleteMessage?: (row: T) => string;
-    confirmDeleteMessage: string;
-    viewLabel: string;
-    editLabel: string;
-    deleteLabel: string;
-    saveLabel: string;
-    cancelLabel: string;
-    /** Si está definido, al hacer clic en Editar se abre la primera celda editable de la fila. */
-    firstEditableColId?: string;
-    /** Crear/Cancelar creación para filas temporales */
-    onCreate?: (draft: Partial<T>) => void | Promise<void>;
-    onCancelCreate?: () => void;
+  onView?: (row: T) => void;
+  onEdit?: (row: T) => void;
+  onDelete?: (row: T) => void | Promise<void>;
+  getConfirmDeleteMessage?: (row: T) => string;
+  confirmDeleteMessage: string;
+  viewLabel: string;
+  editLabel: string;
+  deleteLabel: string;
+  saveLabel: string;
+  cancelLabel: string;
+  /** Si está definido, se usa expand en lugar del botón Ver. */
+  renderRowDetail?: (row: T) => React.ReactNode;
+  /** Si está definido, al hacer clic en Editar se abre la primera celda editable de la fila. */
+  firstEditableColId?: string;
+  /** Crear/Cancelar creación para filas temporales */
+  onCreate?: (draft: Partial<T>) => void | Promise<void>;
+  onCancelCreate?: () => void;
   }
 ) {
-  const { data, onView, onEdit, onDelete, getConfirmDeleteMessage, confirmDeleteMessage, viewLabel, editLabel, deleteLabel, saveLabel, cancelLabel, firstEditableColId, onCreate, onCancelCreate } = params;
+  const { data, onView, onEdit, onDelete, getConfirmDeleteMessage, confirmDeleteMessage, viewLabel, editLabel, deleteLabel, saveLabel, cancelLabel, firstEditableColId, onCreate, onCancelCreate, renderRowDetail } = params;
   const [deleting, setDeleting] = useState(false);
   const [saving, setSaving] = useState(false);
 
   if (!data) return null;
   const isNew = Boolean((data as unknown as { __isNew?: boolean }).__isNew);
-  const hasView = !isNew && typeof onView === "function";
+  const hasView = !isNew && typeof onView === "function" && renderRowDetail == null;
   const hasEdit = !isNew && (typeof onEdit === "function" || firstEditableColId != null);
   const hasDelete = typeof onDelete === "function";
   const hasCreate = isNew && typeof onCreate === "function";
@@ -297,14 +359,22 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   getConfirmDeleteMessage,
   onUpdate,
   onCreate,
+  renderRowDetail,
+  hasRowDetail,
 }: DashboardDataTablePageProps<T>) {
   const { user } = useAuthStore();
   const locale = useLocaleStore((s) => s.locale);
   const [rows, setRows] = useState<T[]>([]);
   const [draftRow, setDraftRow] = useState<(T & { __isNew?: true }) | null>(null);
+  const [expandedRowId, setExpandedRowId] = useState<string | number | null>(null);
+  const [detailRowHeight, setDetailRowHeight] = useState(DETAIL_ROW_MIN_HEIGHT);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const gridRef = useRef<AgGridReact<T>>(null);
+
+  useEffect(() => {
+    setDetailRowHeight(DETAIL_ROW_MIN_HEIGHT);
+  }, [expandedRowId]);
 
   const getLocaleText = useCallback(
     (params: { key: string; defaultValue?: string }) => {
@@ -388,7 +458,28 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   );
 
   const columnDefs = useMemo<ColDef<T>[]>(() => {
-    const dataCols: ColDef<T>[] = columns.map((column) => {
+    const dataCols: ColDef<T>[] = [];
+    if (renderRowDetail != null) {
+      dataCols.push({
+        headerName: "",
+        colId: "expand",
+        sortable: false,
+        filter: false,
+        resizable: false,
+        flex: 0,
+        minWidth: 44,
+        maxWidth: 44,
+        cellRenderer: ExpandCellRenderer,
+        cellRendererParams: {
+          expandedRowId,
+          onToggle: setExpandedRowId,
+          expandLabel: t(locale, "common.expandRow"),
+          collapseLabel: t(locale, "common.collapseRow"),
+          hasRowDetail: hasRowDetail ?? undefined,
+        },
+      } as ColDef<T>);
+    }
+    columns.forEach((column) => {
       const hasField = Boolean(column.editable && column.field);
       const statusFieldKey = (column.statusField ?? column.field ?? "status") as keyof T & string;
       const widthProps =
@@ -426,7 +517,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                 cellRendererParams: { linkType: column.linkType },
               }
             : {};
-        return {
+        dataCols.push({
           ...base,
           ...badgeParams,
           ...linkProps,
@@ -442,16 +533,18 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
               (params.data as Record<string, unknown>)[field] = params.newValue;
             }
           },
-        } as unknown as ColDef<T>;
+        } as unknown as ColDef<T>);
+        return;
       }
 
       if (column.statusBadge) {
-        return {
+        dataCols.push({
           ...base,
           ...badgeParams,
           valueGetter: (params: ValueGetterParams<T>) =>
             params.data ? column.render(params.data) : "",
-        } as unknown as ColDef<T>;
+        } as unknown as ColDef<T>);
+        return;
       }
 
       const customCell =
@@ -466,16 +559,17 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                 cellRendererParams: column.cellRendererParams ?? {},
               }
             : {};
-      return {
+      dataCols.push({
         ...base,
         ...customCell,
         valueGetter: (params: ValueGetterParams<T>) =>
           params.data ? column.render(params.data) : "",
-      };
+      });
     });
     const hasEditableCols = columns.some((c) => Boolean(c.editable && c.field));
     const firstEditableColId = hasEditableCols ? columns.find((c) => c.editable && c.field)?.header : undefined;
     const hasActions =
+      renderRowDetail != null ||
       onView != null ||
       onEdit != null ||
       onDelete != null ||
@@ -489,8 +583,8 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
         filter: false,
         resizable: false,
         flex: 0,
-        minWidth: onView != null && onEdit != null ? 145 : 110,
-        maxWidth: onView != null && onEdit != null ? 145 : 110,
+        minWidth: (onEdit != null || onView != null || renderRowDetail != null) && onEdit != null ? 145 : 110,
+        maxWidth: (onEdit != null || onView != null || renderRowDetail != null) && onEdit != null ? 145 : 110,
         cellRenderer: ActionsCellRenderer,
         cellRendererParams: {
           onView: onView ?? undefined,
@@ -503,6 +597,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
           deleteLabel: t(locale, "common.delete"),
           saveLabel: t(locale, "common.save"),
           cancelLabel: t(locale, "common.cancel"),
+          renderRowDetail: renderRowDetail ?? undefined,
           firstEditableColId,
           onCreate: onCreate ? handleCreate : undefined,
           onCancelCreate: () => setDraftRow(null),
@@ -510,7 +605,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
       });
     }
     return dataCols;
-  }, [columns, locale, onView, onEdit, onDelete, onCreate, getConfirmDeleteMessage, handleDelete, handleCreate, onUpdate]);
+  }, [columns, locale, onView, onEdit, onDelete, onCreate, getConfirmDeleteMessage, handleDelete, handleCreate, onUpdate, renderRowDetail, hasRowDetail, expandedRowId]);
 
   const hasEditableColumns = useMemo(
     () => columns.some((c) => Boolean(c.editable && c.field)),
@@ -535,9 +630,70 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
     }, 0);
   };
 
-  const rowData = useMemo(
-    () => (draftRow ? ([draftRow as unknown as T, ...rows] as T[]) : rows),
-    [draftRow, rows]
+  const rowData = useMemo(() => {
+    const base = draftRow ? ([draftRow as unknown as T, ...rows] as T[]) : rows;
+    if (renderRowDetail == null || expandedRowId == null) return base;
+    return base.flatMap((row: T) => {
+      if ((row as unknown as { __isNew?: boolean }).__isNew) return [row];
+      if (hasRowDetail != null && !hasRowDetail(row)) return [row];
+      const id = (row as { id?: string | number }).id;
+      if (id === expandedRowId)
+        return [row, { __detail: true as const, __parent: row } as DetailRow<T>];
+      return [row];
+    });
+  }, [draftRow, rows, renderRowDetail, hasRowDetail, expandedRowId]);
+
+  const fullWidthCellRenderer = useCallback(
+    (params: ICellRendererParams<T | DetailRow<T>>) => {
+      const data = params.data as DetailRow<T>;
+      if (!data?.__detail || !data.__parent || !renderRowDetail) return null;
+      const content = (
+        <div className="w-full border-b border-slate-200/80 dark:border-slate-600/50 bg-slate-100/90 dark:bg-slate-800/70 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+          <div className="flex items-stretch gap-6 px-5 py-3 w-full">
+            <div className="shrink-0 w-0.5 min-h-[2rem] rounded-full bg-sky-400/50 dark:bg-sky-400/60 self-stretch" aria-hidden />
+            <div className="min-w-0 flex-1 [&_dl]:grid [&_dl]:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] [&_dl]:gap-x-6 [&_dl]:gap-y-3 [&_dl]:text-sm [&_dl]:w-full [&_dl]:content-start">
+              {renderRowDetail(data.__parent)}
+            </div>
+          </div>
+        </div>
+      );
+      return (
+        <DetailRowMeasureWrapper
+          onMeasured={(height) => {
+            if (height === detailRowHeight) return;
+            setDetailRowHeight(height);
+            params.api?.resetRowHeights();
+          }}
+        >
+          {content}
+        </DetailRowMeasureWrapper>
+      );
+    },
+    [renderRowDetail, detailRowHeight]
+  );
+
+  const isFullWidthRow = useCallback(
+    (params: { rowNode?: { data?: T | DetailRow<T> } }) =>
+      (params.rowNode?.data as DetailRow<T>)?.__detail === true,
+    []
+  );
+
+  const getRowId = useCallback(
+    (params: { data?: T | DetailRow<T>; rowIndex?: number }) => {
+      const d = params.data;
+      if (!d) return String(params.rowIndex ?? 0);
+      if ((d as DetailRow<T>).__detail)
+        return `detail-${(d as DetailRow<T>).__parent?.id ?? params.rowIndex}`;
+      if ((d as unknown as { __isNew?: boolean }).__isNew) return "draft";
+      return String((d as T & { id?: string | number }).id ?? params.rowIndex);
+    },
+    []
+  );
+
+  const getRowHeight = useCallback(
+    (params: { data?: T | DetailRow<T> }) =>
+      (params.data as DetailRow<T>)?.__detail === true ? detailRowHeight : 44,
+    [detailRowHeight]
   );
 
   const showAddInBar = onCreate != null && canCreate && headerAction == null;
@@ -576,10 +732,10 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
             ) : (
               <div className="relative flex-1 flex flex-col min-h-[400px] bg-transparent">
                 <div className="ag-theme-quartz ag-theme-parkit flex-1 min-h-0 w-full">
-                  <AgGridReact<T>
+                  <AgGridReact<T | DetailRow<T>>
                     key={locale}
                     theme="legacy"
-                    ref={gridRef}
+                    ref={gridRef as React.RefObject<AgGridReact<T | DetailRow<T>>>}
                     rowData={rowData}
                     columnDefs={columnDefs}
                     defaultColDef={{
@@ -595,11 +751,15 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                     animateRows={false}
                     suppressCellFocus={!hasEditableColumns}
                     singleClickEdit={hasEditableColumns}
-                    rowHeight={44}
+                    getRowHeight={renderRowDetail ? getRowHeight : undefined}
+                    rowHeight={renderRowDetail ? undefined : 44}
                     headerHeight={48}
                     localeText={localeText}
                     getLocaleText={getLocaleText}
                     onCellValueChanged={handleCellValueChanged}
+                    getRowId={renderRowDetail ? getRowId : undefined}
+                    isFullWidthRow={renderRowDetail ? isFullWidthRow : undefined}
+                    fullWidthCellRenderer={renderRowDetail ? fullWidthCellRenderer : undefined}
                   />
                 </div>
               </div>

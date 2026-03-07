@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
-import { RowDetailModal, DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
+import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
@@ -20,48 +20,8 @@ type TicketRow = {
   parking?: { name?: string };
   entryTime?: string;
   exitTime?: string;
+  createdAt?: string | null;
 };
-
-function TicketDetailModal({
-  ticket,
-  onClose,
-  canEdit,
-  t,
-  tEnum,
-}: {
-  ticket: TicketRow;
-  onClose: () => void;
-  canEdit: boolean;
-  t: (key: string) => string;
-  tEnum: (ns: string, val?: string | null) => string;
-}) {
-  const v = ticket.vehicle;
-  const vehicleLabel = v && (v.brand || v.model || v.plate)
-    ? [v.brand, v.model].filter(Boolean).join(" ").trim() + (v.plate ? ` (${v.plate})` : "")
-    : ticket.vehicleId;
-  const title = ticket.id ? `Tiquete ${ticket.id.slice(0, 8)}` : "—";
-  const isActive = ticket.status !== "CANCELLED" && ticket.status !== "COMPLETED";
-  return (
-    <RowDetailModal
-      title={title}
-      statusLabel={ticket.status ? tEnum("ticketStatus", ticket.status) : undefined}
-      statusActive={isActive}
-      editHref={ticket.id ? `/dashboard/tickets/${ticket.id}/edit` : undefined}
-      canEdit={canEdit}
-      onClose={onClose}
-      t={t}
-    >
-      <dl className="grid grid-cols-3 gap-x-8 gap-y-6">
-        <DetailSectionLabel text={t("tables.tickets.title")} />
-        <DetailField label={t("tables.tickets.status")} value={ticket.status ? tEnum("ticketStatus", ticket.status) : undefined} />
-        <DetailField label={t("tables.tickets.vehicleId")} value={vehicleLabel} />
-        <DetailField label={t("tables.tickets.parkingId")} value={ticket.parking?.name ?? ticket.parkingId} />
-        <DetailField label={t("tables.tickets.entry")} value={ticket.entryTime ? new Date(ticket.entryTime).toLocaleString() : undefined} />
-        <DetailField label={t("tables.tickets.exit")} value={ticket.exitTime ? new Date(ticket.exitTime).toLocaleString() : undefined} />
-      </dl>
-    </RowDetailModal>
-  );
-}
 
 export default function TicketsPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
@@ -70,7 +30,6 @@ export default function TicketsPage() {
   const superAdmin = isSuperAdmin(user);
   const router = useRouter();
   const [refreshToken, setRefreshToken] = useState(0);
-  const [viewTicket, setViewTicket] = useState<TicketRow | null>(null);
 
   const onDelete = useCallback(async (row: { id?: string }) => {
     if (!row.id) return;
@@ -128,10 +87,15 @@ export default function TicketsPage() {
         emptyMessage={t("tables.tickets.empty")}
         columns={columns}
         refreshToken={refreshToken}
-        onView={(row) => {
-          document.body.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-          setTimeout(() => setViewTicket(row as TicketRow), 50);
-        }}
+        hasRowDetail={(ticket) => ticket.createdAt != null}
+        renderRowDetail={(ticket) => (
+          <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
+            <DetailSectionLabel text={t("common.additionalInfo")} />
+            {ticket.createdAt != null && (
+              <DetailField label={t("tables.notifications.createdAt")} value={new Date(ticket.createdAt).toLocaleString()} />
+            )}
+          </dl>
+        )}
         onEdit={superAdmin ? (row: { id?: string }) => router.push(`/dashboard/tickets/${row.id}/edit`) : undefined}
         onUpdate={superAdmin ? onUpdate : undefined}
         onDelete={superAdmin ? onDelete : undefined}
@@ -148,15 +112,6 @@ export default function TicketsPage() {
           ) : undefined
         }
       />
-      {viewTicket && (
-        <TicketDetailModal
-          ticket={viewTicket}
-          onClose={() => setViewTicket(null)}
-          canEdit={superAdmin}
-          t={t}
-          tEnum={tEnum}
-        />
-      )}
     </>
   );
 }

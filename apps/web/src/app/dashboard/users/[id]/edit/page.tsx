@@ -9,6 +9,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 import { TIMEZONES } from "@/lib/companyOptions";
+import { formatPhone } from "@/lib/inputMasks";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -42,7 +43,7 @@ export default function EditUserPage() {
             email: String(data.email ?? ""),
             password: "",
             systemRole: String(data.systemRole ?? "STAFF"),
-            phone: String(data.phone ?? ""),
+            phone: formatPhone(String(data.phone ?? "")),
             timezone: String(data.timezone ?? ""),
           });
         }
@@ -156,7 +157,7 @@ export default function EditUserPage() {
               <label className={LABEL}>{t("users.phone")}</label>
               <div className="relative group">
                 <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input value={form.phone} onChange={set("phone")} placeholder={t("common.placeholderPhone")} className={IL} />
+                <input type="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: formatPhone(e.target.value) }))} placeholder={t("common.placeholderPhone")} className={IL} />
               </div>
             </div>
             <div>

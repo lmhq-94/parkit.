@@ -8,7 +8,7 @@ export const CreateCompanySchema = z.object({
   countryCode: z.string().optional(),
   currency: z.string().optional(),
   timezone: z.string().optional(),
-  billingEmail: z.string().email("Invalid email").optional().or(z.literal("")),
+  email: z.string().email("Invalid email").optional().or(z.literal("")),
   contactPhone: z.string().optional(),
   legalAddress: z.string().optional(),
 });
@@ -16,7 +16,7 @@ export const CreateCompanySchema = z.object({
 export const UpdateCompanySchema = z.object({
   legalName: z.string().min(1).optional(),
   commercialName: z.string().optional(),
-  billingEmail: z.string().email().optional().or(z.literal("")),
+  email: z.string().email().optional().or(z.literal("")),
   contactPhone: z.string().optional(),
   legalAddress: z.string().optional(),
 });
@@ -78,6 +78,12 @@ export const UpdateClientSchema = z.object({
 export type CreateClientInput = z.infer<typeof CreateClientSchema>;
 export type UpdateClientInput = z.infer<typeof UpdateClientSchema>;
 
+const VehicleDimensionsSchema = z.object({
+  lengthCm: z.number().positive().optional(),
+  widthCm: z.number().positive().optional(),
+  heightCm: z.number().positive().optional(),
+}).optional();
+
 // Vehicles
 export const CreateVehicleSchema = z.object({
   plate: z.string().min(1, "Plate required"),
@@ -85,7 +91,7 @@ export const CreateVehicleSchema = z.object({
   brand: z.string().optional(),
   model: z.string().optional(),
   year: z.number().optional(),
-  color: z.string().optional(),
+  dimensions: VehicleDimensionsSchema,
 });
 
 export const UpdateVehicleSchema = z.object({
@@ -93,7 +99,7 @@ export const UpdateVehicleSchema = z.object({
   brand: z.string().optional(),
   model: z.string().optional(),
   year: z.number().optional(),
-  color: z.string().optional(),
+  dimensions: VehicleDimensionsSchema,
 });
 
 export type CreateVehicleInput = z.infer<typeof CreateVehicleSchema>;

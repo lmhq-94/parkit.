@@ -1,48 +1,25 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
-import { RowDetailModal, DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
+import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 
-type VehicleRow = { id?: string; plate?: string; brand?: string; model?: string; year?: number; countryCode?: string };
-
-function VehicleDetailModal({
-  vehicle,
-  onClose,
-  canEdit,
-  t,
-}: {
-  vehicle: VehicleRow;
-  onClose: () => void;
-  canEdit: boolean;
-  t: (key: string) => string;
-}) {
-  const title = vehicle.plate || [vehicle.brand, vehicle.model].filter(Boolean).join(" ") || "—";
-  return (
-    <RowDetailModal
-      title={title}
-      editHref={vehicle.id ? `/dashboard/vehicles/${vehicle.id}/edit` : undefined}
-      canEdit={canEdit}
-      onClose={onClose}
-      t={t}
-    >
-      <dl className="grid grid-cols-3 gap-x-8 gap-y-6">
-        <DetailSectionLabel text={t("tables.vehicles.title")} />
-        <DetailField label={t("tables.vehicles.plate")} value={vehicle.plate} />
-        <DetailField label={t("tables.vehicles.brand")} value={vehicle.brand} />
-        <DetailField label={t("tables.vehicles.model")} value={vehicle.model} />
-        <DetailField label={t("tables.vehicles.year")} value={vehicle.year} />
-      </dl>
-    </RowDetailModal>
-  );
-}
+type VehicleRow = {
+  id?: string;
+  plate?: string;
+  brand?: string;
+  model?: string;
+  year?: number;
+  countryCode?: string;
+  dimensions?: { lengthCm?: number; widthCm?: number; heightCm?: number };
+};
 
 export default function VehiclesPage() {
   const { t, tWithCompany } = useTranslation();
@@ -50,7 +27,6 @@ export default function VehiclesPage() {
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const superAdmin = isSuperAdmin(user);
   const router = useRouter();
-  const [viewVehicle, setViewVehicle] = useState<VehicleRow | null>(null);
 
   const onUpdate = useCallback(async (row: VehicleRow) => {
     if (!row.id) return;
@@ -82,9 +58,22 @@ export default function VehiclesPage() {
         endpoint="/vehicles"
         emptyMessage={t("tables.vehicles.empty")}
         columns={columns}
-        onView={(row) => {
-          document.body.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-          setTimeout(() => setViewVehicle(row), 50);
+        hasRowDetail={(vehicle) =>
+          (vehicle.countryCode != null && vehicle.countryCode !== "") ||
+          (vehicle.dimensions != null && typeof vehicle.dimensions === "object" && Object.keys(vehicle.dimensions as object).length > 0)
+        }
+        renderRowDetail={(vehicle) => {
+          const dims = vehicle.dimensions as { lengthCm?: number; widthCm?: number; heightCm?: number } | null | undefined;
+          const hasDims = dims && (dims.lengthCm != null || dims.widthCm != null || dims.heightCm != null);
+          return (
+            <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
+              <DetailSectionLabel text={t("common.additionalInfo")} />
+              <DetailField label={t("tables.vehicles.country")} value={vehicle.countryCode} />
+              {hasDims && dims?.lengthCm != null && <DetailField label={t("vehicles.lengthCm")} value={String(dims.lengthCm)} />}
+              {hasDims && dims?.widthCm != null && <DetailField label={t("vehicles.widthCm")} value={String(dims.widthCm)} />}
+              {hasDims && dims?.heightCm != null && <DetailField label={t("vehicles.heightCm")} value={String(dims.heightCm)} />}
+            </dl>
+          );
         }}
         onEdit={superAdmin ? (row) => router.push(`/dashboard/vehicles/${row.id}/edit`) : undefined}
         onUpdate={superAdmin ? onUpdate : undefined}
@@ -102,9 +91,6 @@ export default function VehiclesPage() {
           ) : undefined
         }
       />
-      {viewVehicle && (
-        <VehicleDetailModal vehicle={viewVehicle} onClose={() => setViewVehicle(null)} canEdit={superAdmin} t={t} />
-      )}
     </>
   );
 }

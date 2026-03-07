@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { VehiclesService } from "./vehicles.service";
+import { VehicleCatalogService } from "./vehicle-catalog.service";
 import { parseQueryParam } from "../../shared/utils/queryParser";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
 
@@ -88,6 +89,40 @@ export class VehiclesController {
         400,
         error instanceof Error ? error.message : "Unknown error"
       );
+    }
+  }
+
+  static async catalogMakes(_req: Request, res: Response) {
+    try {
+      const makes = await VehicleCatalogService.getMakes();
+      return ok(res, makes.map((m) => ({ id: m.Make_ID, name: m.Make_Name })));
+    } catch (error: unknown) {
+      return fail(res, 502, error instanceof Error ? error.message : "Catalog unavailable");
+    }
+  }
+
+  static async catalogModels(req: Request, res: Response) {
+    try {
+      const make = parseQueryParam(req.query.make as string | string[] | undefined);
+      if (!make?.trim()) return fail(res, 400, "make is required");
+      const models = await VehicleCatalogService.getModels(make);
+      return ok(res, models.map((m) => ({ id: m.Model_ID, name: m.Model_Name })));
+    } catch (error: unknown) {
+      return fail(res, 502, error instanceof Error ? error.message : "Catalog unavailable");
+    }
+  }
+
+  static async catalogDimensions(req: Request, res: Response) {
+    try {
+      const make = parseQueryParam(req.query.make as string | string[] | undefined);
+      const model = parseQueryParam(req.query.model as string | string[] | undefined);
+      const yearParam = parseQueryParam(req.query.year as string | string[] | undefined);
+      const year = yearParam ? parseInt(yearParam, 10) : undefined;
+      if (!make?.trim() || !model?.trim()) return fail(res, 400, "make and model are required");
+      const dimensions = await VehicleCatalogService.getDimensions(make, model, year);
+      return ok(res, dimensions ?? {});
+    } catch (error: unknown) {
+      return fail(res, 502, error instanceof Error ? error.message : "Catalog unavailable");
     }
   }
 

@@ -1,17 +1,17 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import Link from "next/link";
 import { CalendarCheck, DoorOpen, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { ICellRendererParams } from "ag-grid-community";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
-import { RowDetailModal, DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
+import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 
-type ParkingRow = { id?: string; name?: string; address?: string; type?: string; totalSlots?: number; requiresBooking?: boolean };
+type ParkingRow = { id?: string; name?: string; address?: string; type?: string; totalSlots?: number; requiresBooking?: boolean; latitude?: number | null; longitude?: number | null; geofenceRadius?: number };
 
 function RequiresBookingIconCellRenderer(
   params: ICellRendererParams<{ requiresBooking?: boolean }> & { t: (key: string) => string }
@@ -30,43 +30,10 @@ function RequiresBookingIconCellRenderer(
   );
 }
 
-function ParkingDetailModal({
-  parking,
-  onClose,
-  t,
-  tEnum,
-}: {
-  parking: ParkingRow;
-  onClose: () => void;
-  t: (key: string) => string;
-  tEnum: (ns: string, val?: string | null) => string;
-}) {
-  const title = parking.name || "—";
-  return (
-    <RowDetailModal
-      title={title}
-      editHref={parking.id ? `/dashboard/parkings/${parking.id}/edit` : undefined}
-      canEdit
-      onClose={onClose}
-      t={t}
-    >
-      <dl className="grid grid-cols-3 gap-x-8 gap-y-6">
-        <DetailSectionLabel text={t("tables.parkings.title")} />
-        <DetailField label={t("tables.parkings.name")} value={parking.name} />
-        <DetailField label={t("tables.parkings.address")} value={parking.address} />
-        <DetailField label={t("tables.parkings.type")} value={parking.type ? tEnum("parkingType", parking.type) : undefined} />
-        <DetailField label={t("tables.parkings.totalSlots")} value={parking.totalSlots} />
-        <DetailField label={t("tables.parkings.requiresBooking")} value={parking.requiresBooking != null ? (parking.requiresBooking ? t("common.yes") : t("common.no")) : undefined} />
-      </dl>
-    </RowDetailModal>
-  );
-}
-
 export default function ParkingsPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const router = useRouter();
-  const [viewParking, setViewParking] = useState<ParkingRow | null>(null);
 
   const onUpdate = useCallback(async (row: ParkingRow) => {
     if (!row.id) return;
@@ -115,10 +82,17 @@ export default function ParkingsPage() {
         endpoint="/parkings"
         emptyMessage={t("tables.parkings.empty")}
         columns={columns}
-        onView={(row) => {
-          document.body.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-          setTimeout(() => setViewParking(row), 50);
-        }}
+        hasRowDetail={(parking) =>
+          parking.latitude != null || parking.longitude != null || parking.geofenceRadius != null
+        }
+        renderRowDetail={(parking) => (
+          <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
+            <DetailSectionLabel text={t("common.additionalInfo")} />
+            <DetailField label={t("parkings.latitude")} value={parking.latitude != null ? String(parking.latitude) : undefined} />
+            <DetailField label={t("parkings.longitude")} value={parking.longitude != null ? String(parking.longitude) : undefined} />
+            <DetailField label={t("parkings.geofenceRadius")} value={parking.geofenceRadius != null ? String(parking.geofenceRadius) : undefined} />
+          </dl>
+        )}
         onEdit={(row) => router.push(`/dashboard/parkings/${row.id}/edit`)}
         onUpdate={onUpdate}
         onDelete={onDelete}
@@ -133,9 +107,6 @@ export default function ParkingsPage() {
           </Link>
         }
       />
-      {viewParking && (
-        <ParkingDetailModal parking={viewParking} onClose={() => setViewParking(null)} t={t} tEnum={tEnum} />
-      )}
     </>
   );
 }

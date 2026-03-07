@@ -95,7 +95,7 @@ model Company {
   countryCode    String        @default("CR")
   currency       String        @default("CRC")
   timezone       String        @default("UTC")
-  billingEmail   String?
+  email          String?
   contactPhone   String?
   legalAddress   String?
   brandingConfig Json?

@@ -11,7 +11,7 @@ export class CompaniesService {
       ...(data.countryCode && { countryCode: data.countryCode }),
       ...(data.currency && { currency: data.currency }),
       ...(data.timezone && { timezone: data.timezone }),
-      ...(data.billingEmail && { billingEmail: data.billingEmail }),
+      ...(data.email && { email: data.email }),
       ...(data.contactPhone && { contactPhone: data.contactPhone }),
       ...(data.legalAddress && { legalAddress: data.legalAddress }),
       ...(data.brandingConfig && { brandingConfig: data.brandingConfig }),
@@ -33,7 +33,7 @@ export class CompaniesService {
     
     if (data.legalName !== undefined) updateInput.legalName = data.legalName;
     if (data.commercialName !== undefined) updateInput.commercialName = data.commercialName;
-    if (data.billingEmail !== undefined) updateInput.billingEmail = data.billingEmail;
+    if (data.email !== undefined) updateInput.email = data.email;
     if (data.contactPhone !== undefined) updateInput.contactPhone = data.contactPhone;
     if (data.legalAddress !== undefined) updateInput.legalAddress = data.legalAddress;
     if (data.brandingConfig !== undefined) updateInput.brandingConfig = data.brandingConfig;
@@ -47,6 +47,22 @@ export class CompaniesService {
 
   static async list() {
     return prisma.company.findMany({
+      select: {
+        id: true,
+        legalName: true,
+        commercialName: true,
+        taxId: true,
+        countryCode: true,
+        currency: true,
+        timezone: true,
+        email: true,
+        contactPhone: true,
+        legalAddress: true,
+        brandingConfig: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
       orderBy: { createdAt: "desc" },
     });
   }

@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import Link from "next/link";
 import { Crown, Plus, Shield, User, UserCog } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { ICellRendererParams } from "ag-grid-community";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
-import { RowDetailModal, DetailField, DetailSeparator, DetailSectionLabel } from "@/components/RowDetailModal";
+import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
@@ -53,51 +53,10 @@ type UserRow = {
   updatedAt?: string | null;
 };
 
-function UserDetailModal({
-  user,
-  onClose,
-  t,
-  tEnum,
-}: {
-  user: UserRow;
-  onClose: () => void;
-  t: (key: string) => string;
-  tEnum: (ns: string, val?: string | null) => string;
-}) {
-  const title = [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || user.email || "—";
-  const isActive = user.isActive !== false;
-  return (
-    <RowDetailModal
-      title={title}
-      statusLabel={user.isActive ? t("tables.employees.active") : t("tables.employees.inactive")}
-      statusActive={isActive}
-      editHref={user.id ? `/dashboard/users/${user.id}/edit` : undefined}
-      canEdit
-      onClose={onClose}
-      t={t}
-    >
-      <dl className="grid grid-cols-3 gap-x-8 gap-y-6">
-        <DetailSectionLabel text={t("users.sectionMain")} />
-        <DetailField label={t("tables.employees.firstName")} value={user.firstName} />
-        <DetailField label={t("tables.employees.lastName")} value={user.lastName} />
-        <DetailField label={t("tables.employees.email")} value={user.email} />
-        <DetailField label={t("tables.employees.role")} value={tEnum("systemRole", user.systemRole)} />
-        <DetailField label={t("tables.employees.status")} value={user.isActive ? t("tables.employees.active") : t("tables.employees.inactive")} />
-        <DetailSeparator />
-        <DetailSectionLabel text={t("users.sectionContact")} />
-        <DetailField label={t("tables.employees.phone")} value={user.phone} />
-        <DetailField label={t("tables.employees.timezone")} value={user.timezone} />
-        <DetailField label={t("tables.employees.lastLogin")} value={user.lastLogin ? new Date(user.lastLogin).toLocaleString() : undefined} />
-      </dl>
-    </RowDetailModal>
-  );
-}
-
 export default function UsersPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const router = useRouter();
-  const [viewUser, setViewUser] = useState<UserRow | null>(null);
 
   const onDelete = useCallback(async (row: UserRow) => {
     if (row.id) await apiClient.delete(`/users/${row.id}`);
@@ -138,11 +97,6 @@ export default function UsersPage() {
         linkType: "email",
       },
       {
-        header: t("tables.employees.phone"),
-        render: (user: { phone?: string | null }) => user.phone || "—",
-        linkType: "phone",
-      },
-      {
         header: t("tables.employees.status"),
         render: (user: { isActive?: boolean }) => (user.isActive ? t("tables.employees.active") : t("tables.employees.inactive")),
         statusBadge: "user",
@@ -159,10 +113,19 @@ export default function UsersPage() {
         endpoint="/users?excludeValets=true"
         emptyMessage={t("tables.employees.empty")}
         columns={columns}
-        onView={(row) => {
-          document.body.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-          setTimeout(() => setViewUser(row), 50);
-        }}
+        hasRowDetail={(user) =>
+          (user.timezone != null && user.timezone !== "") ||
+          user.lastLogin != null ||
+          (user.phone != null && user.phone !== "")
+        }
+        renderRowDetail={(user) => (
+          <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
+            <DetailSectionLabel text={t("common.additionalInfo")} />
+            <DetailField label={t("tables.employees.phone")} value={user.phone} linkType="phone" />
+            <DetailField label={t("tables.employees.timezone")} value={user.timezone} />
+            <DetailField label={t("tables.employees.lastLogin")} value={user.lastLogin ? new Date(user.lastLogin).toLocaleString() : undefined} />
+          </dl>
+        )}
         onEdit={(row) => router.push(`/dashboard/users/${row.id}/edit`)}
         onUpdate={onUpdate}
         onDelete={onDelete}
@@ -177,9 +140,6 @@ export default function UsersPage() {
           </Link>
         }
       />
-      {viewUser && (
-        <UserDetailModal user={viewUser} onClose={() => setViewUser(null)} t={t} tEnum={tEnum} />
-      )}
     </>
   );
 }

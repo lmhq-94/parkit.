@@ -110,28 +110,44 @@ export function DetailField({
   label,
   value,
   wide,
+  linkType,
 }: {
   label: string;
   value?: string | number | null;
   wide?: boolean;
+  linkType?: "email" | "phone";
 }) {
   if (value === undefined || value === null || value === "") return null;
+  const str = String(value);
+  const href = linkType === "email" ? `mailto:${str}` : linkType === "phone" ? `tel:${str}` : undefined;
   return (
     <div className={wide ? "col-span-2" : ""}>
-      <p className="text-xs text-text-muted mb-1.5">{label}</p>
-      <p className="text-sm font-medium text-text-primary leading-relaxed">{String(value)}</p>
+      <dt className="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">
+        {label}
+      </dt>
+      <dd className="text-sm text-slate-900 dark:text-slate-100 font-normal leading-snug">
+        {href ? (
+          <a href={href} className="text-sky-600 dark:text-sky-400 hover:underline">
+            {str}
+          </a>
+        ) : (
+          str
+        )}
+      </dd>
     </div>
   );
 }
 
 export function DetailSeparator() {
-  return <div className="col-span-3 h-px bg-card-border/30" />;
+  return <div className="col-span-full h-px bg-slate-200/60 dark:bg-slate-600/40 my-1" />;
 }
 
 export function DetailSectionLabel({ text }: { text: string }) {
   return (
-    <div className="col-span-3 -mb-2">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-text-muted">{text}</p>
+    <div className="col-span-full mt-3 first:mt-0">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+        {text}
+      </p>
     </div>
   );
 }

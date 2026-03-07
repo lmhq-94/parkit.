@@ -1,55 +1,17 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
-import { RowDetailModal, DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
+import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 
-type ValetRow = { id?: string; user?: { firstName?: string; lastName?: string; email?: string; phone?: string | null }; currentStatus?: string; licenseNumber?: string };
-
-function ValetDetailModal({
-  valet,
-  onClose,
-  canEdit,
-  t,
-  tEnum,
-}: {
-  valet: ValetRow;
-  onClose: () => void;
-  canEdit: boolean;
-  t: (key: string) => string;
-  tEnum: (ns: string, val?: string | null) => string;
-}) {
-  const u = valet.user;
-  const title = u ? `${u.firstName || ""} ${u.lastName || ""}`.trim() || u.email || "—" : "—";
-  const isAvailable = valet.currentStatus === "AVAILABLE";
-  return (
-    <RowDetailModal
-      title={title}
-      subtitle={u?.email}
-      statusLabel={valet.currentStatus ? tEnum("valetStatus", valet.currentStatus) : undefined}
-      statusActive={isAvailable}
-      editHref={valet.id ? `/dashboard/valets/${valet.id}/edit` : undefined}
-      canEdit={canEdit}
-      onClose={onClose}
-      t={t}
-    >
-      <dl className="grid grid-cols-3 gap-x-8 gap-y-6">
-        <DetailSectionLabel text={t("tables.valets.title")} />
-        <DetailField label={t("tables.valets.name")} value={u ? `${u.firstName || ""} ${u.lastName || ""}`.trim() : undefined} />
-        <DetailField label={t("tables.valets.email")} value={u?.email} />
-        <DetailField label={t("tables.employees.phone")} value={u?.phone} />
-        <DetailField label={t("tables.valets.status")} value={valet.currentStatus ? tEnum("valetStatus", valet.currentStatus) : undefined} />
-      </dl>
-    </RowDetailModal>
-  );
-}
+type ValetRow = { id?: string; user?: { firstName?: string; lastName?: string; email?: string; phone?: string | null }; currentStatus?: string; licenseNumber?: string; licenseExpiry?: string; ratingAvg?: number };
 
 export default function ValetsPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
@@ -57,7 +19,6 @@ export default function ValetsPage() {
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const superAdmin = isSuperAdmin(user);
   const router = useRouter();
-  const [viewValet, setViewValet] = useState<ValetRow | null>(null);
 
   const onDelete = useCallback(async (row: ValetRow) => {
     if (row.id) await apiClient.delete(`/valets/${row.id}`);
@@ -86,11 +47,6 @@ export default function ValetsPage() {
         linkType: "email",
       },
       {
-        header: t("tables.employees.phone"),
-        render: (valet: { user?: { phone?: string | null } }) => valet.user?.phone ?? "—",
-        linkType: "phone",
-      },
-      {
         header: t("tables.valets.status"),
         render: (valet: { currentStatus?: string }) => tEnum("valetStatus", valet.currentStatus),
         statusBadge: "valet",
@@ -107,10 +63,23 @@ export default function ValetsPage() {
         endpoint="/valets"
         emptyMessage={t("tables.valets.empty")}
         columns={columns}
-        onView={(row) => {
-          document.body.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-          setTimeout(() => setViewValet(row), 50);
-        }}
+        hasRowDetail={(valet) =>
+          (valet.user?.phone != null && valet.user.phone !== "") ||
+          (valet.licenseNumber != null && valet.licenseNumber !== "") ||
+          valet.licenseExpiry != null ||
+          valet.ratingAvg != null
+        }
+        renderRowDetail={(valet) => (
+          <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
+            <DetailSectionLabel text={t("common.additionalInfo")} />
+            <DetailField label={t("tables.employees.phone")} value={valet.user?.phone} linkType="phone" />
+            <DetailField label={t("tables.valets.license")} value={valet.licenseNumber} />
+            <DetailField label={t("valets.licenseExpiry")} value={valet.licenseExpiry ? new Date(valet.licenseExpiry).toLocaleDateString() : undefined} />
+            {valet.ratingAvg != null && (
+              <DetailField label={t("valets.ratingAvg")} value={String(valet.ratingAvg)} />
+            )}
+          </dl>
+        )}
         onEdit={superAdmin ? (row) => router.push(`/dashboard/valets/${row.id}/edit`) : undefined}
         onUpdate={superAdmin ? onUpdate : undefined}
         onDelete={superAdmin ? onDelete : undefined}
@@ -127,9 +96,6 @@ export default function ValetsPage() {
           ) : undefined
         }
       />
-      {viewValet && (
-        <ValetDetailModal valet={viewValet} onClose={() => setViewValet(null)} canEdit={superAdmin} t={t} tEnum={tEnum} />
-      )}
     </>
   );
 }
