@@ -8,7 +8,7 @@ import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { TIMEZONES } from "@/lib/companyOptions";
-import { formatPhone } from "@/lib/inputMasks";
+import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -63,7 +63,7 @@ export default function NewUserPage() {
         firstName: form.firstName.trim(), lastName: form.lastName.trim(),
         email: form.email.trim(), password: form.password,
         systemRole: form.systemRole,
-        phone: form.phone.trim() || undefined,
+        phone: form.phone.replace(/\D/g, "").length > 0 ? form.phone.replace(/\D/g, "") : undefined,
         timezone: form.timezone.trim() || undefined,
       });
       router.push("/dashboard/users");
@@ -141,7 +141,7 @@ export default function NewUserPage() {
             <label className={LABEL}>{t("users.phone")}</label>
             <div className="relative group">
               <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-              <input type="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: formatPhone(e.target.value) }))} placeholder={t("common.placeholderPhone")} className={IL} />
+              <input type="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: formatPhoneWithCountryCode(e.target.value, "CR") }))} placeholder="+506 6216-4040" className={IL} />
             </div>
           </div>
           <div>

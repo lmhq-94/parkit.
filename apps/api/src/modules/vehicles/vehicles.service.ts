@@ -11,6 +11,8 @@ interface CreateVehicleDTO {
 }
 
 interface UpdateVehicleDTO {
+  plate?: string;
+  countryCode?: string;
   brand?: string;
   model?: string;
   year?: number;
@@ -108,12 +110,24 @@ export class VehiclesService {
     vehicleId: string,
     data: UpdateVehicleDTO
   ) {
+    if (data.plate != null && data.plate.trim() !== "") {
+      const existing = await prisma.vehicle.findFirst({
+        where: {
+          plate: data.plate.trim(),
+          countryCode: data.countryCode?.trim() || "CR",
+          id: { not: vehicleId },
+        },
+      });
+      if (existing) throw new Error("Vehicle with this plate already exists");
+    }
     return prisma.vehicle.update({
       where: { id: vehicleId },
       data: {
-        brand: data.brand,
-        model: data.model,
-        year: data.year,
+        ...(data.plate != null && data.plate.trim() !== "" && { plate: data.plate.trim() }),
+        ...(data.countryCode !== undefined && { countryCode: data.countryCode.trim() || "CR" }),
+        ...(data.brand !== undefined && { brand: data.brand }),
+        ...(data.model !== undefined && { model: data.model }),
+        ...(data.year !== undefined && { year: data.year }),
         ...(data.dimensions !== undefined ? { dimensions: data.dimensions } : {}),
       },
       include: {

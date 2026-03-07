@@ -10,6 +10,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 import { apiClient } from "@/lib/api";
+import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
 
 interface Company {
   id: string;
@@ -135,7 +136,7 @@ export default function CompaniesPage() {
             <DetailField label={t("companies.legalName")} value={company.legalName} />
             <DetailField label={t("companies.taxId")} value={company.taxId} />
             <DetailField label={t("companies.legalAddress")} value={company.legalAddress} />
-            <DetailField label={t("companies.contactPhone")} value={company.contactPhone} linkType="phone" />
+            <DetailField label={t("companies.contactPhone")} value={company.contactPhone ? formatPhoneWithCountryCode(company.contactPhone, company.countryCode ?? "CR") : undefined} linkType="phone" />
             <DetailField label={t("companies.countryCode")} value={company.countryCode} />
             <DetailField label={t("companies.currency")} value={company.currency} />
             <DetailField label={t("companies.timezone")} value={company.timezone} />
@@ -144,7 +145,7 @@ export default function CompaniesPage() {
         onEdit={superAdmin ? (row) => router.push(`/dashboard/companies/${row.id}/edit`) : undefined}
         onUpdate={onUpdate}
         onDelete={superAdmin ? onDelete : undefined}
-        getConfirmDeleteMessage={superAdmin ? () => t("tables.companies.confirmDelete") : undefined}
+        getConfirmDeleteMessage={superAdmin ? (row) => t("tables.companies.confirmDeleteItem").replace(/\{\{item\}\}/g, row.name ?? row.commercialName ?? row.legalName ?? "—") : undefined}
         headerAction={
           superAdmin ? (
             <Link

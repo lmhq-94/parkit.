@@ -8,6 +8,7 @@ import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { formatPlate } from "@/lib/inputMasks";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 
@@ -59,7 +60,8 @@ export default function TicketsPage() {
           const v = ticket.vehicle;
           if (v && (v.brand || v.model || v.plate)) {
             const brandModel = [v.brand, v.model].filter(Boolean).join(" ").trim();
-            return brandModel ? `${brandModel} (${v.plate ?? ""})` : (v.plate ?? "—");
+            const plateFormatted = v.plate ? formatPlate(v.plate) : "";
+            return brandModel ? `${brandModel} (${plateFormatted})` : (plateFormatted || "—");
           }
           return ticket.vehicleId ?? "—";
         },
@@ -99,7 +101,13 @@ export default function TicketsPage() {
         onEdit={superAdmin ? (row: { id?: string }) => router.push(`/dashboard/tickets/${row.id}/edit`) : undefined}
         onUpdate={superAdmin ? onUpdate : undefined}
         onDelete={superAdmin ? onDelete : undefined}
-        getConfirmDeleteMessage={superAdmin ? () => t("tables.tickets.confirmCancel") : undefined}
+        getConfirmDeleteMessage={superAdmin ? (row) => {
+          const vehicleLabel = row.vehicle ? [row.vehicle.brand, row.vehicle.model].filter(Boolean).join(" ") || (row.vehicle.plate ? formatPlate(row.vehicle.plate) : "") : "";
+          const parkingName = row.parking?.name ?? row.parkingId ?? "";
+          const dateStr = row.entryTime ? new Date(row.entryTime).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" }) : "";
+          const item = [vehicleLabel || row.vehicleId, parkingName, dateStr].filter(Boolean).join(" · ") || "—";
+          return t("tables.tickets.confirmCancelItem").replace(/\{\{item\}\}/g, item);
+        } : undefined}
         headerAction={
           superAdmin ? (
             <Link

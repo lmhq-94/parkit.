@@ -21,6 +21,8 @@ interface FormWizardProps {
   submitLabel?: string;
   cancelHref: string;
   error?: string | null;
+  /** Llamado antes de avanzar al siguiente paso. Si devuelve Promise, se espera (ej. cargar dimensiones). */
+  onBeforeNext?: (fromStep: number, toStep: number) => void | Promise<void>;
 }
 
 const ACCENT: Record<string, { bar: string; dot: string; text: string; bg: string }> = {
@@ -41,11 +43,13 @@ export function FormWizard({
   submitLabel,
   cancelHref,
   error,
+  onBeforeNext,
 }: FormWizardProps) {
   const { t } = useTranslation();
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [animating, setAnimating] = useState(false);
+  const [nextLoading, setNextLoading] = useState(false);
 
   const step = steps[current];
   const isLast = current === steps.length - 1;
@@ -62,10 +66,19 @@ export function FormWizard({
     }, 160);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!canAdvance) return;
     if (isLast) { onSubmit(); return; }
-    goTo(current + 1, "forward");
+    const next = current + 1;
+    if (onBeforeNext) {
+      setNextLoading(true);
+      try {
+        await onBeforeNext(current, next);
+      } finally {
+        setNextLoading(false);
+      }
+    }
+    goTo(next, "forward");
   };
 
   const handleBack = () => {
@@ -198,13 +211,18 @@ export function FormWizard({
           <button
             type="button"
             onClick={handleNext}
-            disabled={submitting || !canAdvance}
+            disabled={submitting || nextLoading || !canAdvance}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-page disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm shadow-sky-500/20"
           >
             {submitting ? (
               <>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 {t("common.saving")}
+              </>
+            ) : nextLoading ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                {t("common.loading")}
               </>
             ) : isLast ? (
               <>

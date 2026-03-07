@@ -10,6 +10,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
+import { formatPlate } from "@/lib/inputMasks";
 
 type VehicleRow = {
   id?: string;
@@ -43,7 +44,7 @@ export default function VehiclesPage() {
   }, []);
   const columns = useMemo(
     () => [
-      { header: t("tables.vehicles.plate"), render: (v: VehicleRow) => v.plate || "—", field: "plate" as const, editable: superAdmin },
+      { header: t("tables.vehicles.plate"), render: (v: VehicleRow) => (v.plate ? formatPlate(v.plate) : "—"), field: "plate" as const, editable: superAdmin },
       { header: t("tables.vehicles.brand"), render: (v: VehicleRow) => v.brand || "—", field: "brand" as const, editable: superAdmin },
       { header: t("tables.vehicles.model"), render: (v: VehicleRow) => v.model || "—", field: "model" as const, editable: superAdmin },
       { header: t("tables.vehicles.year"), render: (v: VehicleRow) => (v.year != null ? String(v.year) : "—"), field: "year" as const, editable: superAdmin },
@@ -78,7 +79,7 @@ export default function VehiclesPage() {
         onEdit={superAdmin ? (row) => router.push(`/dashboard/vehicles/${row.id}/edit`) : undefined}
         onUpdate={superAdmin ? onUpdate : undefined}
         onDelete={superAdmin ? onDelete : undefined}
-        getConfirmDeleteMessage={superAdmin ? () => t("tables.vehicles.confirmDelete") : undefined}
+        getConfirmDeleteMessage={superAdmin ? (row) => t("tables.vehicles.confirmDeleteItem").replace(/\{\{item\}\}/g, row.plate ? formatPlate(row.plate) : [row.brand, row.model].filter(Boolean).join(" ") || "—") : undefined}
         headerAction={
           superAdmin ? (
             <Link

@@ -96,6 +96,7 @@ export const CreateVehicleSchema = z.object({
 
 export const UpdateVehicleSchema = z.object({
   plate: z.string().min(1).optional(),
+  countryCode: z.string().optional(),
   brand: z.string().optional(),
   model: z.string().optional(),
   year: z.number().optional(),

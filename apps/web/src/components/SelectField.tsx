@@ -122,9 +122,9 @@ export function SelectField({ value, onChange, icon: Icon, children, className }
           </div>
         )}
         <div className="overflow-y-auto overscroll-contain min-h-0 flex-1">
-          {filtered.map((opt) => (
+          {filtered.map((opt, idx) => (
             <button
-              key={opt.value}
+              key={`${opt.value}-${idx}`}
               type="button"
               onClick={() => handleSelect(opt.value)}
               className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg ${

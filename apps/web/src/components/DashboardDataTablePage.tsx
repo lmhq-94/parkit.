@@ -12,6 +12,7 @@ import { Check, ChevronDown, ChevronRight, Pencil, Plus, Trash2, X } from "lucid
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
+import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -220,9 +221,8 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
   params: ICellRendererParams<T> & {
   onView?: (row: T) => void;
   onEdit?: (row: T) => void;
-  onDelete?: (row: T) => void | Promise<void>;
-  getConfirmDeleteMessage?: (row: T) => string;
-  confirmDeleteMessage: string;
+  /** Al hacer clic en Eliminar se llama esto (abre modal en el padre). */
+  onRequestDelete?: (row: T) => void;
   viewLabel: string;
   editLabel: string;
   deleteLabel: string;
@@ -237,15 +237,14 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
   onCancelCreate?: () => void;
   }
 ) {
-  const { data, onView, onEdit, onDelete, getConfirmDeleteMessage, confirmDeleteMessage, viewLabel, editLabel, deleteLabel, saveLabel, cancelLabel, firstEditableColId, onCreate, onCancelCreate, renderRowDetail } = params;
-  const [deleting, setDeleting] = useState(false);
+  const { data, onView, onEdit, onRequestDelete, viewLabel, editLabel, deleteLabel, saveLabel, cancelLabel, firstEditableColId, onCreate, onCancelCreate, renderRowDetail } = params;
   const [saving, setSaving] = useState(false);
 
   if (!data) return null;
   const isNew = Boolean((data as unknown as { __isNew?: boolean }).__isNew);
   const hasView = !isNew && typeof onView === "function" && renderRowDetail == null;
   const hasEdit = !isNew && (typeof onEdit === "function" || firstEditableColId != null);
-  const hasDelete = typeof onDelete === "function";
+  const hasDelete = typeof onRequestDelete === "function";
   const hasCreate = isNew && typeof onCreate === "function";
 
   const handleEdit = () => {
@@ -265,17 +264,6 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
       await onCreate?.(draft as Partial<T>);
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    const message = getConfirmDeleteMessage?.(data) ?? confirmDeleteMessage;
-    if (!window.confirm(message)) return;
-    setDeleting(true);
-    try {
-      await onDelete?.(data);
-    } finally {
-      setDeleting(false);
     }
   };
 
@@ -331,9 +319,8 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
       {hasDelete && (
         <button
           type="button"
-          onClick={handleDelete}
-          disabled={deleting}
-          className="p-2 rounded-lg text-text-muted hover:text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+          onClick={() => onRequestDelete?.(data)}
+          className="p-2 rounded-lg text-text-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
           title={deleteLabel}
           aria-label={deleteLabel}
         >
@@ -370,6 +357,8 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   const [detailRowHeight, setDetailRowHeight] = useState(DETAIL_ROW_MIN_HEIGHT);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pendingDeleteRow, setPendingDeleteRow] = useState<T | null>(null);
+  const [deletingInProgress, setDeletingInProgress] = useState(false);
   const gridRef = useRef<AgGridReact<T>>(null);
 
   useEffect(() => {
@@ -426,13 +415,23 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
     loadData();
   }, [loadData, refreshToken]);
 
-  const handleDelete = useCallback(
+  const handleDeleteConfirm = useCallback(
     async (row: T) => {
-      await onDelete?.(row);
-      await loadData();
+      setDeletingInProgress(true);
+      try {
+        await onDelete?.(row);
+        await loadData();
+      } finally {
+        setDeletingInProgress(false);
+        setPendingDeleteRow(null);
+      }
     },
     [onDelete, loadData]
   );
+
+  const onRequestDelete = useCallback((row: T) => {
+    setPendingDeleteRow(row);
+  }, []);
 
   const handleCreate = useCallback(
     async (draft: Partial<T>) => {
@@ -589,9 +588,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
         cellRendererParams: {
           onView: onView ?? undefined,
           onEdit: onEdit ?? undefined,
-          onDelete: onDelete ? handleDelete : undefined,
-          getConfirmDeleteMessage: getConfirmDeleteMessage ?? undefined,
-          confirmDeleteMessage: t(locale, "common.confirmDelete"),
+          onRequestDelete: onDelete ? onRequestDelete : undefined,
           viewLabel: t(locale, "common.view"),
           editLabel: t(locale, "common.edit"),
           deleteLabel: t(locale, "common.delete"),
@@ -605,7 +602,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
       });
     }
     return dataCols;
-  }, [columns, locale, onView, onEdit, onDelete, onCreate, getConfirmDeleteMessage, handleDelete, handleCreate, onUpdate, renderRowDetail, hasRowDetail, expandedRowId]);
+  }, [columns, locale, onView, onEdit, onDelete, onCreate, onRequestDelete, handleCreate, onUpdate, renderRowDetail, hasRowDetail, expandedRowId]);
 
   const hasEditableColumns = useMemo(
     () => columns.some((c) => Boolean(c.editable && c.field)),
@@ -764,6 +761,17 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                 </div>
               </div>
             )}
+
+      <ConfirmDeleteModal
+        open={pendingDeleteRow != null}
+        title={t(locale, "common.confirmDeleteTitle")}
+        message={pendingDeleteRow != null ? (getConfirmDeleteMessage?.(pendingDeleteRow) ?? t(locale, "common.confirmDelete")) : ""}
+        confirmLabel={t(locale, "common.delete")}
+        cancelLabel={t(locale, "common.cancel")}
+        onConfirm={pendingDeleteRow != null ? () => handleDeleteConfirm(pendingDeleteRow) : () => {}}
+        onCancel={() => setPendingDeleteRow(null)}
+        loading={deletingInProgress}
+      />
     </div>
   );
 }

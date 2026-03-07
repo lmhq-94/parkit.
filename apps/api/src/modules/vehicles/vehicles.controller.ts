@@ -92,9 +92,11 @@ export class VehiclesController {
     }
   }
 
-  static async catalogMakes(_req: Request, res: Response) {
+  static async catalogMakes(req: Request, res: Response) {
     try {
-      const makes = await VehicleCatalogService.getMakes();
+      const yearParam = parseQueryParam(req.query.year as string | string[] | undefined);
+      const year = yearParam ? parseInt(yearParam, 10) : undefined;
+      const makes = await VehicleCatalogService.getMakes(year);
       return ok(res, makes.map((m) => ({ id: m.Make_ID, name: m.Make_Name })));
     } catch (error: unknown) {
       return fail(res, 502, error instanceof Error ? error.message : "Catalog unavailable");
@@ -105,7 +107,9 @@ export class VehiclesController {
     try {
       const make = parseQueryParam(req.query.make as string | string[] | undefined);
       if (!make?.trim()) return fail(res, 400, "make is required");
-      const models = await VehicleCatalogService.getModels(make);
+      const yearParam = parseQueryParam(req.query.year as string | string[] | undefined);
+      const year = yearParam ? parseInt(yearParam, 10) : undefined;
+      const models = await VehicleCatalogService.getModels(make, year);
       return ok(res, models.map((m) => ({ id: m.Model_ID, name: m.Model_Name })));
     } catch (error: unknown) {
       return fail(res, 502, error instanceof Error ? error.message : "Catalog unavailable");
@@ -119,6 +123,7 @@ export class VehiclesController {
       const yearParam = parseQueryParam(req.query.year as string | string[] | undefined);
       const year = yearParam ? parseInt(yearParam, 10) : undefined;
       if (!make?.trim() || !model?.trim()) return fail(res, 400, "make and model are required");
+      if (year == null || year < 1900 || year > new Date().getFullYear() + 1) return fail(res, 400, "year is required for dimensions (e.g. 2025)");
       const dimensions = await VehicleCatalogService.getDimensions(make, model, year);
       return ok(res, dimensions ?? {});
     } catch (error: unknown) {

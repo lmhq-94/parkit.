@@ -14,7 +14,7 @@ import { useDashboardStore } from "@/lib/store";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 import { SelectField } from "@/components/SelectField";
 import { COUNTRIES, CURRENCIES, TIMEZONES } from "@/lib/companyOptions";
-import { formatTaxId, formatPhone } from "@/lib/inputMasks";
+import { formatTaxId, formatPhoneWithCountryCode } from "@/lib/inputMasks";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -72,7 +72,7 @@ export default function EditCompanyPage() {
             currency: String(data.currency ?? ""),
             timezone: String(data.timezone ?? ""),
             email: String(data.email ?? ""),
-            contactPhone: formatPhone(String(data.contactPhone ?? "")),
+            contactPhone: formatPhoneWithCountryCode(String(data.contactPhone ?? ""), String(data.countryCode ?? "CR")),
             legalAddress: String(data.legalAddress ?? ""),
             status,
           });
@@ -102,7 +102,7 @@ export default function EditCompanyPage() {
         currency: form.currency || undefined,
         timezone: form.timezone || undefined,
         email: form.email.trim() || undefined,
-        contactPhone: form.contactPhone.trim() || undefined,
+        contactPhone: form.contactPhone.replace(/\D/g, "").length > 0 ? form.contactPhone.replace(/\D/g, "") : undefined,
         legalAddress: form.legalAddress.trim() || undefined,
       });
       bumpCompanies();
@@ -173,7 +173,7 @@ export default function EditCompanyPage() {
               <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} />
             </Field>
             <Field label={t("companies.contactPhone")} icon={Phone}>
-              <input type="tel" value={form.contactPhone} onChange={(e) => setForm((p) => ({ ...p, contactPhone: formatPhone(e.target.value) }))} placeholder={t("common.placeholderPhone")} className={IL} />
+              <input type="tel" value={form.contactPhone} onChange={(e) => setForm((p) => ({ ...p, contactPhone: formatPhoneWithCountryCode(e.target.value, p.countryCode) }))} placeholder="+506 6216-4040" className={IL} />
             </Field>
             <div className="sm:col-span-2 lg:col-span-3">
               <label className={LABEL}>{t("companies.legalAddress")}</label>

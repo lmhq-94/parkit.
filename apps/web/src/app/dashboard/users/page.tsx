@@ -10,6 +10,7 @@ import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
+import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
 
 const ROLE_ICONS: Record<string, React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>> = {
   SUPER_ADMIN: Crown,
@@ -121,7 +122,7 @@ export default function UsersPage() {
         renderRowDetail={(user) => (
           <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
             <DetailSectionLabel text={t("common.additionalInfo")} />
-            <DetailField label={t("tables.employees.phone")} value={user.phone} linkType="phone" />
+            <DetailField label={t("tables.employees.phone")} value={user.phone ? formatPhoneWithCountryCode(user.phone, "CR") : undefined} linkType="phone" />
             <DetailField label={t("tables.employees.timezone")} value={user.timezone} />
             <DetailField label={t("tables.employees.lastLogin")} value={user.lastLogin ? new Date(user.lastLogin).toLocaleString() : undefined} />
           </dl>
@@ -129,7 +130,7 @@ export default function UsersPage() {
         onEdit={(row) => router.push(`/dashboard/users/${row.id}/edit`)}
         onUpdate={onUpdate}
         onDelete={onDelete}
-        getConfirmDeleteMessage={() => t("tables.employees.confirmDelete")}
+        getConfirmDeleteMessage={(row) => t("tables.employees.confirmDeleteItem").replace(/\{\{item\}\}/g, [row.firstName, row.lastName].filter(Boolean).join(" ") || row.email || "—")}
         headerAction={
           <Link
             href="/dashboard/users/new"

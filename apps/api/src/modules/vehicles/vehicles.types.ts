@@ -10,6 +10,8 @@ export interface CreateVehicleDTO {
 }
 
 export interface UpdateVehicleDTO {
+  plate?: string;
+  countryCode?: string;
   brand?: string;
   model?: string;
   year?: number;

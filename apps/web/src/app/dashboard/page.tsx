@@ -3,6 +3,7 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { getStoredUser, isSuperAdmin } from "@/lib/auth";
 import { apiClient } from "@/lib/api";
+import { formatPlate } from "@/lib/inputMasks";
 import {
   Building2,
   MapPin,
@@ -410,7 +411,7 @@ export default function DashboardPage() {
                               .filter(Boolean)
                               .join(" ")
                           : null;
-                        const plate = ticket.vehicle?.plate ?? "—";
+                        const plate = ticket.vehicle?.plate ? formatPlate(ticket.vehicle.plate) : "—";
                         return (
                           <li key={ticket.id}>
                             <Link

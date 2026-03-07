@@ -41,7 +41,7 @@ export default function NotificationsPage() {
       columns={columns}
       onEdit={onEdit}
       onDelete={onDelete}
-      getConfirmDeleteMessage={() => t("tables.notifications.confirmDelete")}
+      getConfirmDeleteMessage={(row) => t("tables.notifications.confirmDeleteItem").replace(/\{\{item\}\}/g, row.title ?? "—")}
       refreshToken={refreshToken}
     />
   );

@@ -8,6 +8,7 @@ import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 
@@ -72,7 +73,7 @@ export default function ValetsPage() {
         renderRowDetail={(valet) => (
           <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
             <DetailSectionLabel text={t("common.additionalInfo")} />
-            <DetailField label={t("tables.employees.phone")} value={valet.user?.phone} linkType="phone" />
+            <DetailField label={t("tables.employees.phone")} value={valet.user?.phone ? formatPhoneWithCountryCode(valet.user.phone, "CR") : undefined} linkType="phone" />
             <DetailField label={t("tables.valets.license")} value={valet.licenseNumber} />
             <DetailField label={t("valets.licenseExpiry")} value={valet.licenseExpiry ? new Date(valet.licenseExpiry).toLocaleDateString() : undefined} />
             {valet.ratingAvg != null && (
@@ -83,7 +84,7 @@ export default function ValetsPage() {
         onEdit={superAdmin ? (row) => router.push(`/dashboard/valets/${row.id}/edit`) : undefined}
         onUpdate={superAdmin ? onUpdate : undefined}
         onDelete={superAdmin ? onDelete : undefined}
-        getConfirmDeleteMessage={superAdmin ? () => t("tables.valets.confirmDelete") : undefined}
+        getConfirmDeleteMessage={superAdmin ? (row) => t("tables.valets.confirmDeleteItem").replace(/\{\{item\}\}/g, [row.user?.firstName, row.user?.lastName].filter(Boolean).join(" ") || row.user?.email || "—") : undefined}
         headerAction={
           superAdmin ? (
             <Link

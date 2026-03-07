@@ -7,6 +7,7 @@ import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { COUNTRIES } from "@/lib/companyOptions";
 import { formatPlate, toTitleCase } from "@/lib/inputMasks";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 placeholder:text-text-muted";
@@ -48,7 +49,10 @@ export default function NewVehiclePage() {
   useEffect(() => {
     (async () => {
       try {
-        const data = await apiClient.get<CatalogMake[]>("/vehicles/catalog/makes");
+        const url = form.year.trim()
+          ? `/vehicles/catalog/makes?year=${encodeURIComponent(form.year)}`
+          : "/vehicles/catalog/makes";
+        const data = await apiClient.get<CatalogMake[]>(url);
         setMakes(Array.isArray(data) ? data : []);
       } catch {
         setMakes([]);
@@ -56,7 +60,7 @@ export default function NewVehiclePage() {
         setLoadingMakes(false);
       }
     })();
-  }, []);
+  }, [form.year]);
 
   useEffect(() => {
     if (!form.brand.trim()) {
@@ -67,8 +71,10 @@ export default function NewVehiclePage() {
     setLoadingModels(true);
     (async () => {
       try {
+        const params = new URLSearchParams({ make: form.brand });
+        if (form.year.trim()) params.set("year", form.year);
         const data = await apiClient.get<CatalogModel[]>(
-          `/vehicles/catalog/models?make=${encodeURIComponent(form.brand)}`
+          `/vehicles/catalog/models?${params.toString()}`
         );
         setModels(Array.isArray(data) ? data : []);
         setValue("model", "");
@@ -79,32 +85,38 @@ export default function NewVehiclePage() {
         setLoadingModels(false);
       }
     })();
+    // Solo al cambiar marca: no refetch al escribir año para no perder el modelo elegido
   }, [form.brand, setValue]);
 
-  const fetchDimensions = useCallback(async () => {
-    if (!form.brand.trim() || !form.model.trim()) return;
+  const getDimensionsData = useCallback(async (): Promise<{ lengthCm?: number; widthCm?: number; heightCm?: number } | null> => {
+    if (!form.brand.trim() || !form.model.trim() || !form.year.trim()) return null;
     try {
-      const q = new URLSearchParams({ make: form.brand, model: form.model });
-      if (form.year.trim()) q.set("year", form.year);
+      const q = new URLSearchParams({ make: form.brand, model: form.model, year: form.year });
       const d = await apiClient.get<{ lengthCm?: number; widthCm?: number; heightCm?: number }>(
         `/vehicles/catalog/dimensions?${q.toString()}`
       );
-      if (d && (d.lengthCm != null || d.widthCm != null || d.heightCm != null)) {
-        setForm((p) => ({
-          ...p,
-          lengthCm: d.lengthCm != null ? String(d.lengthCm) : p.lengthCm,
-          widthCm: d.widthCm != null ? String(d.widthCm) : p.widthCm,
-          heightCm: d.heightCm != null ? String(d.heightCm) : p.heightCm,
-        }));
-      }
+      if (d && (d.lengthCm != null || d.widthCm != null || d.heightCm != null)) return d;
     } catch {
       // ignore
     }
+    return null;
   }, [form.brand, form.model, form.year]);
 
+  const fetchDimensions = useCallback(async () => {
+    const d = await getDimensionsData();
+    if (d) {
+      setForm((p) => ({
+        ...p,
+        lengthCm: d.lengthCm != null ? String(d.lengthCm) : p.lengthCm,
+        widthCm: d.widthCm != null ? String(d.widthCm) : p.widthCm,
+        heightCm: d.heightCm != null ? String(d.heightCm) : p.heightCm,
+      }));
+    }
+  }, [getDimensionsData]);
+
   useEffect(() => {
-    if (form.brand.trim() && form.model.trim()) fetchDimensions();
-  }, [form.brand, form.model, fetchDimensions]);
+    if (form.brand.trim() && form.model.trim() && form.year.trim()) fetchDimensions();
+  }, [form.brand, form.model, form.year, fetchDimensions]);
 
   const handleSubmit = async () => {
     if (!form.plate.trim() || !form.brand.trim() || !form.model.trim()) return;
@@ -168,6 +180,13 @@ export default function NewVehiclePage() {
               ))}
             </SelectField>
           </div>
+          <div>
+            <label className={LABEL}>{t("vehicles.year")}</label>
+            <div className="relative group">
+              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
+              <input type="number" min={1900} max={new Date().getFullYear() + 1} value={form.year} onChange={set("year")} placeholder={t("common.placeholderYear")} className={IL} />
+            </div>
+          </div>
         </div>
       ),
     },
@@ -180,18 +199,13 @@ export default function NewVehiclePage() {
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <div>
-            <label className={LABEL}>{t("vehicles.year")}</label>
-            <div className="relative group">
-              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-              <input type="number" min={1900} max={new Date().getFullYear() + 1} value={form.year} onChange={set("year")} placeholder={t("common.placeholderYear")} className={IL} />
-            </div>
-          </div>
-          <div>
             <label className={LABEL}>{t("vehicles.countryCode")}</label>
-            <div className="relative group">
-              <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-              <input value={form.countryCode} onChange={set("countryCode")} placeholder={t("common.placeholderCountryCode")} className={IL} />
-            </div>
+            <SelectField value={form.countryCode} onChange={set("countryCode")} icon={Globe}>
+              <option value="">{t("common.selectPlaceholder")}</option>
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>{c.label}</option>
+              ))}
+            </SelectField>
           </div>
           <div>
             <label className={LABEL}>{t("vehicles.lengthCm")}</label>
@@ -226,6 +240,19 @@ export default function NewVehiclePage() {
       submitting={submitting}
       submitLabel={t("vehicles.createVehicle")}
       cancelHref="/dashboard/vehicles"
+      onBeforeNext={async (fromStep, toStep) => {
+        if (fromStep === 0 && toStep === 1 && form.brand.trim() && form.model.trim() && form.year.trim()) {
+          const d = await getDimensionsData();
+          if (d) {
+            setForm((p) => ({
+              ...p,
+              lengthCm: d.lengthCm != null ? String(d.lengthCm) : p.lengthCm,
+              widthCm: d.widthCm != null ? String(d.widthCm) : p.widthCm,
+              heightCm: d.heightCm != null ? String(d.heightCm) : p.heightCm,
+            }));
+          }
+        }
+      }}
       error={error}
     />
   );

@@ -96,7 +96,7 @@ export default function ParkingsPage() {
         onEdit={(row) => router.push(`/dashboard/parkings/${row.id}/edit`)}
         onUpdate={onUpdate}
         onDelete={onDelete}
-        getConfirmDeleteMessage={() => t("tables.parkings.confirmDelete")}
+        getConfirmDeleteMessage={(row) => t("tables.parkings.confirmDeleteItem").replace(/\{\{item\}\}/g, row.name ?? "—")}
         headerAction={
           <Link
             href="/dashboard/parkings/new"
