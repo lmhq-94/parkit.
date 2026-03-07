@@ -53,11 +53,12 @@ export function LocaleToggle() {
     createPortal(
       <div
         data-locale-dropdown
-        className="fixed overflow-hidden py-1.5 px-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl min-w-[120px] z-[99999] bg-white dark:bg-slate-900"
+        className="fixed overflow-y-auto overscroll-contain py-1.5 px-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl min-w-[120px] z-[99999] bg-white dark:bg-slate-900"
         style={{
           top: position.top,
           right: position.right,
           left: "auto",
+          maxHeight: "min(70vh, 400px)",
         }}
       >
         <button

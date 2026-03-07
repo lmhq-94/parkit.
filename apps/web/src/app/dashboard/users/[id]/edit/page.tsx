@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, UserCircle, Mail, Lock, Phone, Clock, Shield, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Lock, Phone, Clock, Shield, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
+import { TIMEZONES } from "@/lib/companyOptions";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -160,10 +161,10 @@ export default function EditUserPage() {
             </div>
             <div>
               <label className={LABEL}>{t("users.timezone")}</label>
-              <div className="relative group">
-                <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input value={form.timezone} onChange={set("timezone")} placeholder="America/Costa_Rica" className={IL} />
-              </div>
+              <SelectField value={form.timezone} onChange={set("timezone")} icon={Clock}>
+                <option value="">{t("common.selectPlaceholder")}</option>
+                {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
+              </SelectField>
             </div>
           </div>
         </div>

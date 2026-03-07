@@ -358,6 +358,20 @@ export const CURRENCIES = [
   { code: "ZWL", label: "ZWL — Dólar zimbabuense" },
 ] as const;
 
+export const LICENSE_TYPES = [
+  { value: "A1", label: "A1 — Motocicletas hasta 250cc" },
+  { value: "A2", label: "A2 — Motocicletas hasta 750cc" },
+  { value: "A3", label: "A3 — Motocicletas sin restricción" },
+  { value: "B1", label: "B1 — Automóviles y camionetas" },
+  { value: "B2", label: "B2 — Vehículos de carga no articulados" },
+  { value: "C",  label: "C — Vehículos de carga pesada" },
+  { value: "D1", label: "D1 — Autobuses interurbanos" },
+  { value: "D2", label: "D2 — Microbuses y buses" },
+  { value: "D3", label: "D3 — Taxi y transporte especial" },
+  { value: "E",  label: "E — Maquinaria pesada" },
+  { value: "F",  label: "F — Vehículos especiales" },
+] as const;
+
 export const TIMEZONES = [
   // África
   { value: "Africa/Abidjan",             label: "Africa/Abidjan  (UTC+0)" },

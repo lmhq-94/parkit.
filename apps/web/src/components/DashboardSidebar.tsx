@@ -114,13 +114,20 @@ function CompanySelector({
   emptyLabel: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
+  const [position, setPosition] = useState<{ top?: number; bottom?: number; left: number; width: number }>({ left: 0, width: 0 });
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   const updatePosition = () => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      setPosition({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+      const spaceBelow = typeof window !== "undefined" ? window.innerHeight - rect.bottom - 24 : 200;
+      const openUp = spaceBelow < 180;
+      setPosition({
+        top: openUp ? undefined : rect.bottom + 4,
+        bottom: openUp && typeof window !== "undefined" ? window.innerHeight - rect.top + 4 : undefined,
+        left: rect.left,
+        width: rect.width,
+      });
     }
   };
 
@@ -157,10 +164,16 @@ function CompanySelector({
   const dropdown = open && typeof document !== "undefined" && createPortal(
     <div
       data-company-dropdown
-      className="fixed z-[99999] overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl bg-white dark:bg-slate-900 py-1.5 px-1.5"
-      style={{ top: position.top, left: position.left, width: Math.max(position.width, 220) }}
+      className="fixed z-[99999] flex flex-col rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl bg-white dark:bg-slate-900 py-1.5 px-1.5"
+      style={{
+        top: position.top,
+        bottom: position.bottom,
+        left: position.left,
+        width: Math.max(position.width, 220),
+        maxHeight: "min(70vh, 400px)",
+      }}
     >
-      <div className="max-h-52 overflow-y-auto">
+      <div className="overflow-y-auto overscroll-contain min-h-0 flex-1">
         {companies.map((c) => {
           const name = c.commercialName || c.legalName || c.id;
           return (

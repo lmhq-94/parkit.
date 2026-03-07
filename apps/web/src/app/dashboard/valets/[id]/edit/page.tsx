@@ -4,13 +4,16 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  User, Mail, Lock, CreditCard, Calendar,
-  Activity, ArrowRight, Loader2, Eye, EyeOff, UserCheck,
+  User, Mail, Lock, CreditCard,
+  Activity, ArrowRight, Loader2, Eye, EyeOff,
 } from "lucide-react";
+import { MultiSelectField } from "@/components/MultiSelectField";
+import { DatePickerField } from "@/components/DatePickerField";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
+import { LICENSE_TYPES } from "@/lib/companyOptions";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -18,7 +21,7 @@ const STATUSES = ["AVAILABLE", "BUSY", "AWAY"] as const;
 
 const defaultForm = {
   firstName: "", lastName: "", email: "", password: "",
-  licenseNumber: "", licenseExpiry: "", currentStatus: "AVAILABLE",
+  licenseExpiry: "", currentStatus: "AVAILABLE",
 };
 
 export default function EditValetPage() {
@@ -27,6 +30,7 @@ export default function EditValetPage() {
   const params = useParams();
   const id = params.id as string;
   const [form, setForm] = useState(defaultForm);
+  const [licenseTypes, setLicenseTypes] = useState<string[]>([]);
   const [userId, setUserId] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -40,16 +44,20 @@ export default function EditValetPage() {
         const user = data.user as Record<string, unknown> | undefined;
         const uid = (data.userId as string) ?? user?.id ?? "";
         setUserId(uid as string);
-        const expiry = data.licenseExpiry
-          ? new Date(String(data.licenseExpiry)).toISOString().slice(0, 16)
+        const expiryRaw = data.licenseExpiry
+          ? new Date(String(data.licenseExpiry)).toISOString().slice(0, 10)
           : "";
+        const storedLicense = String(data.licenseNumber ?? "");
+        const parsedTypes = storedLicense
+          ? storedLicense.split(",").map(s => s.trim()).filter(Boolean)
+          : [];
+        setLicenseTypes(parsedTypes);
         setForm({
           firstName: String(user?.firstName ?? ""),
           lastName: String(user?.lastName ?? ""),
           email: String(user?.email ?? ""),
           password: "",
-          licenseNumber: String(data.licenseNumber ?? ""),
-          licenseExpiry: expiry,
+          licenseExpiry: expiryRaw,
           currentStatus: String(data.currentStatus ?? "AVAILABLE"),
         });
       })
@@ -62,7 +70,7 @@ export default function EditValetPage() {
       setForm(p => ({ ...p, [k]: e.target.value }));
 
   const handleSubmit = async () => {
-    if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim() || !form.licenseNumber.trim()) return;
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim() || licenseTypes.length === 0) return;
     setSubmitting(true); setError(null);
     try {
       const userPayload: Record<string, string> = {
@@ -75,7 +83,7 @@ export default function EditValetPage() {
       await Promise.all([
         apiClient.patch(`/users/${userId}`, userPayload),
         apiClient.patch(`/valets/${id}`, {
-          licenseNumber: form.licenseNumber.trim(),
+          licenseNumber: licenseTypes.join(", "),
           ...(form.licenseExpiry ? { licenseExpiry: new Date(form.licenseExpiry).toISOString() } : {}),
           currentStatus: form.currentStatus,
         }),
@@ -88,7 +96,7 @@ export default function EditValetPage() {
     setSubmitting(false);
   };
 
-  const isValid = form.firstName.trim() && form.lastName.trim() && form.email.trim() && form.licenseNumber.trim();
+  const isValid = form.firstName.trim() && form.lastName.trim() && form.email.trim() && licenseTypes.length > 0;
 
   if (loading) return <FormPageSkeleton />;
 
@@ -167,18 +175,21 @@ export default function EditValetPage() {
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <div>
-              <label className={LABEL}>{t("valets.licenseNumber")} <span className="text-red-500">*</span></label>
-              <div className="relative group">
-                <CreditCard className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input value={form.licenseNumber} onChange={set("licenseNumber")} placeholder="B1-000000" className={IL} />
-              </div>
+              <label className={LABEL}>{t("valets.licenseType")} <span className="text-red-500">*</span></label>
+              <MultiSelectField
+                value={licenseTypes}
+                onChange={setLicenseTypes}
+                options={[...LICENSE_TYPES]}
+                icon={CreditCard}
+                placeholder={t("common.selectPlaceholder")}
+              />
             </div>
             <div>
               <label className={LABEL}>{t("valets.licenseExpiry")}</label>
-              <div className="relative group">
-                <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input type="datetime-local" value={form.licenseExpiry} onChange={set("licenseExpiry")} className={IL} />
-              </div>
+              <DatePickerField
+                value={form.licenseExpiry}
+                onChange={v => setForm(p => ({ ...p, licenseExpiry: v }))}
+              />
             </div>
           </div>
         </div>

@@ -15,7 +15,7 @@ interface SelectFieldProps {
 export function SelectField({ value, onChange, icon: Icon, children, className }: SelectFieldProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
+  const [position, setPosition] = useState<{ top?: number; bottom?: number; left: number; width: number; maxHeight: number }>({ left: 0, width: 0, maxHeight: 400 });
   const triggerRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -33,10 +33,21 @@ export function SelectField({ value, onChange, icon: Icon, children, className }
     : options;
 
   const updatePosition = useCallback(() => {
-    if (triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      setPosition({ top: rect.bottom + 4, left: rect.left, width: rect.width });
-    }
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const MARGIN = 12;
+    const spaceBelow = vh - rect.bottom - MARGIN;
+    const spaceAbove = rect.top - MARGIN;
+    const openUp = spaceBelow < 200 && spaceAbove > spaceBelow;
+    const maxHeight = Math.min(400, openUp ? spaceAbove : spaceBelow);
+    setPosition({
+      top: openUp ? undefined : rect.bottom + 4,
+      bottom: openUp ? vh - rect.top + 4 : undefined,
+      left: rect.left,
+      width: rect.width,
+      maxHeight,
+    });
   }, []);
 
   const handleOpen = () => {
@@ -88,11 +99,17 @@ export function SelectField({ value, onChange, icon: Icon, children, className }
     createPortal(
       <div
         data-select-dropdown
-        className="fixed z-[99999] overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl bg-white dark:bg-slate-900 py-1.5 px-1.5"
-        style={{ top: position.top, left: position.left, width: Math.max(position.width, 220) }}
+        className="fixed z-[99999] flex flex-col rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl bg-white dark:bg-slate-900 py-1.5 px-1.5 min-w-[220px] overflow-hidden"
+        style={{
+          top: position.top,
+          bottom: position.bottom,
+          left: position.left,
+          width: Math.max(position.width, 220),
+          maxHeight: position.maxHeight,
+        }}
       >
         {showSearch && (
-          <div className="relative mb-1">
+          <div className="relative mb-1 shrink-0">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
             <input
               ref={searchRef}
@@ -104,7 +121,7 @@ export function SelectField({ value, onChange, icon: Icon, children, className }
             />
           </div>
         )}
-        <div className="max-h-52 overflow-y-auto">
+        <div className="overflow-y-auto overscroll-contain min-h-0 flex-1">
           {filtered.map((opt) => (
             <button
               key={opt.value}

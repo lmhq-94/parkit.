@@ -4,11 +4,11 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { LocaleToggle } from "@/components/LocaleToggle";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LocaleToggle } from "@/components/LocaleToggle";
 import { ArrowLeft, Menu } from "lucide-react";
 
 type PathHeader = {
@@ -81,7 +81,7 @@ export default function DashboardLayout({
       <div className="flex min-h-screen bg-page">
         <DashboardSidebar />
         <main className="flex-1 flex flex-col min-h-0 min-w-0">
-          <header className="shrink-0 flex flex-wrap items-center justify-between gap-4 px-4 md:pl-12 md:pr-6 pt-5 md:pt-8 pb-0 bg-card/50 backdrop-blur-sm">
+          <header className="shrink-0 flex flex-wrap items-center justify-between gap-4 px-4 md:pl-12 md:pr-10 lg:pr-12 pt-5 md:pt-8 pb-0 bg-card/50 backdrop-blur-sm">
             <div className="flex items-center gap-3 min-w-0">
               {/* Hamburger: solo móvil */}
               <button

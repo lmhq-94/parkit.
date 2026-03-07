@@ -6,6 +6,7 @@ import type { ColDef, ICellRendererParams, ValueGetterParams, ValueSetterParams 
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
+import "@/app/ag-grid-parkit-overrides.css";
 import { Check, Eye, Pencil, Plus, Trash2, X } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
@@ -380,8 +381,8 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
 
   return (
     <div className="flex-1 flex flex-col min-h-0 pt-0 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 max-w-[1600px] mx-auto w-full">
-            {(headerAction != null || showAddInBar) ? (
-              <div className="mt-4 mb-2 md:mt-0 md:mb-4 flex flex-col md:flex-row md:items-center justify-end">
+            {(headerAction != null || showAddInBar) && (
+              <div className="mt-4 mb-2 md:mt-0 md:mb-4 flex items-center gap-2 justify-end">
                 {headerAction != null ? headerAction : (
                   <button
                     type="button"
@@ -393,7 +394,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                   </button>
                 )}
               </div>
-            ) : null}
+            )}
 
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-200 rounded-xl">

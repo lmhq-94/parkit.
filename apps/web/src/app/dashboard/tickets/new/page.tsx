@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Ticket, Users, Car, MapPin, ArrowRight, Loader2 } from "lucide-react";
+import { Ticket, Users, Car, MapPin } from "lucide-react";
+import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
@@ -54,30 +54,21 @@ export default function NewTicketPage() {
       router.push("/dashboard/tickets");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al crear el tiquete");
-    } finally { setSubmitting(false); }
+      setSubmitting(false);
+    }
   };
 
-  const isValid = form.clientId && form.vehicleId && form.parkingId;
   const skel = <div className="h-[46px] rounded-lg bg-input-bg border border-input-border animate-pulse" />;
 
-  return (
-    <div className="flex-1 flex flex-col pt-6 pb-8 px-4 md:px-10 lg:px-12 max-w-[1600px] mx-auto w-full gap-5">
-      {error && (
-        <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
-          {error}
-        </div>
-      )}
-
-      {/* Sección — registro del tiquete */}
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-rose-500/8 to-transparent flex items-center gap-3">
-          <div>
-            <p className="text-sm font-semibold text-text-primary">{t("tickets.sectionMain")}</p>
-            <p className="text-xs text-text-muted">{t("tickets.sectionMainDesc")}</p>
-          </div>
-          <span className="ml-auto text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">{t("common.requiredBadge")}</span>
-        </div>
-        <div className="p-6 pt-4">
+  const steps = [
+    {
+      title: t("tickets.sectionMain"),
+      description: t("tickets.sectionMainDesc"),
+      badge: "required" as const,
+      accentColor: "rose",
+      isValid: () => !!(form.clientId && form.vehicleId && form.parkingId) && !loading,
+      content: (
+        <div className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <div>
               <label className={LABEL}>{t("tickets.client")} <span className="text-sky-500">*</span></label>
@@ -115,36 +106,30 @@ export default function NewTicketPage() {
               )}
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Info box */}
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-rose-500/8 to-transparent flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-rose-500/15 border border-rose-500/20 flex items-center justify-center shrink-0">
-            <Ticket className="w-4.5 h-4.5 text-rose-500" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-text-primary">{t("tickets.entryTicket")}</p>
-            <p className="text-xs text-text-muted">{t("tickets.entryTicketNote")}</p>
+          {/* Info box — entrada automática */}
+          <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 px-5 py-4 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-rose-500/15 border border-rose-500/20 flex items-center justify-center shrink-0 mt-0.5">
+              <Ticket className="w-4 h-4 text-rose-500" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-text-primary">{t("tickets.entryTicket")}</p>
+              <p className="text-xs text-text-muted mt-0.5">{t("tickets.entryTicketNote")}</p>
+            </div>
           </div>
         </div>
-      </div>
+      ),
+    },
+  ];
 
-      {/* Acciones */}
-      <div className="mt-auto flex items-center justify-between gap-4 pt-2">
-        <p className="text-xs text-text-muted hidden sm:block">{t("common.requiredNote")}</p>
-        <div className="flex items-center gap-3 ml-auto">
-          <Link href="/dashboard/tickets"
-            className="px-5 py-3 rounded-lg border border-input-border text-sm font-medium text-text-secondary hover:bg-input-bg hover:text-text-primary transition-colors">
-            {t("common.cancel")}
-          </Link>
-          <button type="button" onClick={handleSubmit} disabled={submitting || !isValid || loading}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors">
-            {submitting ? <><Loader2 className="w-4 h-4 animate-spin" />{t("tickets.creating")}</> : <>{t("tickets.createTicket")}<ArrowRight className="w-4 h-4" /></>}
-          </button>
-        </div>
-      </div>
-    </div>
+  return (
+    <FormWizard
+      steps={steps}
+      onSubmit={handleSubmit}
+      submitting={submitting}
+      submitLabel={t("tickets.createTicket")}
+      cancelHref="/dashboard/tickets"
+      error={error}
+    />
   );
 }

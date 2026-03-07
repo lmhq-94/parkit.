@@ -6,6 +6,7 @@ import Link from "next/link";
 import {
   Building2, Receipt, Mail, Phone, Globe,
   DollarSign, Clock, MapPin, ArrowRight, Loader2,
+  Activity,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
@@ -34,14 +35,17 @@ function Field({ label, required, icon: Icon, children }: {
   );
 }
 
+const COMPANY_STATUSES = ["PENDING", "ACTIVE", "SUSPENDED", "INACTIVE"] as const;
+
 const defaultForm = {
   legalName: "", taxId: "", commercialName: "",
   countryCode: "", currency: "", timezone: "",
   billingEmail: "", contactPhone: "", legalAddress: "",
+  status: "PENDING" as string,
 };
 
 export default function EditCompanyPage() {
-  const { t } = useTranslation();
+  const { t, tEnum } = useTranslation();
   const router = useRouter();
   const params = useParams();
   const bumpCompanies = useDashboardStore((s) => s.bumpCompanies);
@@ -56,6 +60,9 @@ export default function EditCompanyPage() {
       try {
         const data = await apiClient.get<Record<string, unknown>>(`/companies/${id}`);
         if (data) {
+          const status = data.status && COMPANY_STATUSES.includes(data.status as typeof COMPANY_STATUSES[number])
+            ? String(data.status)
+            : "PENDING";
           setForm({
             legalName: String(data.legalName ?? ""),
             taxId: String(data.taxId ?? ""),
@@ -66,6 +73,7 @@ export default function EditCompanyPage() {
             billingEmail: String(data.billingEmail ?? ""),
             contactPhone: String(data.contactPhone ?? ""),
             legalAddress: String(data.legalAddress ?? ""),
+            status,
           });
         }
       } catch {
@@ -87,6 +95,7 @@ export default function EditCompanyPage() {
       await apiClient.patch(`/companies/${id}`, {
         legalName: form.legalName.trim(),
         taxId: form.taxId.trim(),
+        status: form.status as "PENDING" | "ACTIVE" | "SUSPENDED" | "INACTIVE",
         commercialName: form.commercialName.trim() || undefined,
         countryCode: form.countryCode || undefined,
         currency: form.currency || undefined,
@@ -126,13 +135,21 @@ export default function EditCompanyPage() {
           <span className="ml-auto text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">{t("common.requiredBadge")}</span>
         </div>
         <div className="p-6 pt-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <Field label={t("companies.legalName")} required icon={Building2}>
               <input value={form.legalName} onChange={set("legalName")} placeholder="Empresa S.A." className={IL} />
             </Field>
             <Field label={t("companies.taxId")} required icon={Receipt}>
               <input value={form.taxId} onChange={set("taxId")} placeholder="3-101-000000" className={IL} />
             </Field>
+            <div>
+              <label className={LABEL}>{t("tables.companies.status")}</label>
+              <SelectField value={form.status} onChange={set("status")} icon={Activity}>
+                {COMPANY_STATUSES.map((s) => (
+                  <option key={s} value={s}>{tEnum("companyStatus", s)}</option>
+                ))}
+              </SelectField>
+            </div>
           </div>
         </div>
       </div>
