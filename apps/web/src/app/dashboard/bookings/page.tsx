@@ -15,6 +15,8 @@ import { isSuperAdmin } from "@/lib/auth";
 type BookingRow = {
   id?: string;
   status?: string;
+  clientId?: string;
+  client?: { user?: { firstName?: string; lastName?: string } };
   vehicleId?: string;
   vehicle?: { brand?: string; model?: string; plate?: string };
   parkingId?: string;
@@ -47,19 +49,24 @@ export default function BookingsPage() {
           b.parking?.name ?? b.parkingId ?? "—",
       },
       {
+        colId: "booking-vehicle",
         header: t("tables.bookings.vehicleId"),
         render: (b: {
           vehicleId?: string;
-          vehicle?: { brand?: string; model?: string; plate?: string };
+          vehicle?: { brand?: string; model?: string };
         }) => {
           const v = b.vehicle;
-          if (v && (v.brand || v.model || v.plate)) {
-            const brandModel = [v.brand, v.model].filter(Boolean).join(" ").trim();
-            const plateFormatted = v.plate ? formatPlate(v.plate) : "";
-            return brandModel ? `${brandModel} (${plateFormatted})` : (plateFormatted || "—");
+          if (v && (v.brand || v.model)) {
+            return [v.brand, v.model].filter(Boolean).join(" ").trim() || "—";
           }
           return b.vehicleId ?? "—";
         },
+      },
+      {
+        colId: "booking-plate",
+        header: t("tables.vehicles.plate"),
+        render: (b: { vehicle?: { plate?: string } }) =>
+          b.vehicle?.plate ? formatPlate(b.vehicle.plate) : "—",
       },
       { header: t("tables.bookings.status"), render: (b: { status?: string }) => tEnum("bookingStatus", b.status), field: "status" as const, editable: superAdmin, statusBadge: "booking", statusField: "status" },
       {
@@ -93,17 +100,25 @@ export default function BookingsPage() {
         hasRowDetail={(booking) =>
           (booking.qrCodeReference != null && booking.qrCodeReference !== "") || booking.createdAt != null
         }
-        renderRowDetail={(booking) => (
-          <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
-            <DetailSectionLabel text={t("common.additionalInfo")} />
-            {booking.qrCodeReference != null && booking.qrCodeReference !== "" && (
-              <DetailField label={t("bookings.qrCodeReference")} value={booking.qrCodeReference} />
-            )}
-            {booking.createdAt != null && (
-              <DetailField label={t("tables.notifications.createdAt")} value={new Date(booking.createdAt).toLocaleString()} />
-            )}
-          </dl>
-        )}
+        renderRowDetail={(booking) => {
+          const ownerName = booking.client?.user
+            ? [booking.client.user.firstName, booking.client.user.lastName].filter(Boolean).join(" ").trim()
+            : null;
+          return (
+            <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
+              <DetailSectionLabel text={t("common.additionalInfo")} />
+              {ownerName != null && ownerName !== "" && (
+                <DetailField label={t("bookings.client")} value={ownerName} />
+              )}
+              {booking.qrCodeReference != null && booking.qrCodeReference !== "" && (
+                <DetailField label={t("bookings.qrCodeReference")} value={booking.qrCodeReference} />
+              )}
+              {booking.createdAt != null && (
+                <DetailField label={t("tables.notifications.createdAt")} value={new Date(booking.createdAt).toLocaleString()} />
+              )}
+            </dl>
+          );
+        }}
         onEdit={superAdmin ? (row: { id?: string }) => router.push(`/dashboard/bookings/${row.id}/edit`) : undefined}
         onUpdate={superAdmin ? onUpdate : undefined}
         onDelete={superAdmin ? onDelete : undefined}

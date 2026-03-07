@@ -15,7 +15,11 @@ export interface CreateCompanyDTO {
 
 export interface UpdateCompanyDTO {
   legalName?: string;
+  taxId?: string;
   commercialName?: string;
+  countryCode?: string;
+  currency?: string;
+  timezone?: string;
   email?: string;
   contactPhone?: string;
   legalAddress?: string;

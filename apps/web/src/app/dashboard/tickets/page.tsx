@@ -15,10 +15,15 @@ import { isSuperAdmin } from "@/lib/auth";
 type TicketRow = {
   id?: string;
   status?: string;
+  clientId?: string;
+  client?: { user?: { firstName?: string; lastName?: string } };
   vehicleId?: string;
   vehicle?: { brand?: string; model?: string; plate?: string };
   parkingId?: string;
   parking?: { name?: string };
+  assignments?: Array<{
+    valet?: { user?: { firstName?: string; lastName?: string } };
+  }>;
   entryTime?: string;
   exitTime?: string;
   createdAt?: string | null;
@@ -52,19 +57,24 @@ export default function TicketsPage() {
           ticket.parking?.name ?? ticket.parkingId ?? "—",
       },
       {
+        colId: "ticket-vehicle",
         header: t("tables.tickets.vehicleId"),
         render: (ticket: {
           vehicleId?: string;
-          vehicle?: { brand?: string; model?: string; plate?: string };
+          vehicle?: { brand?: string; model?: string };
         }) => {
           const v = ticket.vehicle;
-          if (v && (v.brand || v.model || v.plate)) {
-            const brandModel = [v.brand, v.model].filter(Boolean).join(" ").trim();
-            const plateFormatted = v.plate ? formatPlate(v.plate) : "";
-            return brandModel ? `${brandModel} (${plateFormatted})` : (plateFormatted || "—");
+          if (v && (v.brand || v.model)) {
+            return [v.brand, v.model].filter(Boolean).join(" ").trim() || "—";
           }
           return ticket.vehicleId ?? "—";
         },
+      },
+      {
+        colId: "ticket-plate",
+        header: t("tables.vehicles.plate"),
+        render: (ticket: { vehicle?: { plate?: string } }) =>
+          ticket.vehicle?.plate ? formatPlate(ticket.vehicle.plate) : "—",
       },
       { header: t("tables.tickets.status"), render: (ticket: { status?: string }) => tEnum("ticketStatus", ticket.status), field: "status" as const, editable: superAdmin, statusBadge: "ticket", statusField: "status" },
       {
@@ -89,15 +99,32 @@ export default function TicketsPage() {
         emptyMessage={t("tables.tickets.empty")}
         columns={columns}
         refreshToken={refreshToken}
-        hasRowDetail={(ticket) => ticket.createdAt != null}
-        renderRowDetail={(ticket) => (
-          <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
-            <DetailSectionLabel text={t("common.additionalInfo")} />
-            {ticket.createdAt != null && (
-              <DetailField label={t("tables.notifications.createdAt")} value={new Date(ticket.createdAt).toLocaleString()} />
-            )}
-          </dl>
-        )}
+        hasRowDetail={() => true}
+        renderRowDetail={(ticket) => {
+          const ownerName = ticket.client?.user
+            ? [ticket.client.user.firstName, ticket.client.user.lastName].filter(Boolean).join(" ").trim()
+            : null;
+          const valetNames = (ticket.assignments ?? [])
+            .map((a) => {
+              const u = a.valet?.user;
+              if (!u) return null;
+              return [u.firstName, u.lastName].filter(Boolean).join(" ").trim() || null;
+            })
+            .filter((n): n is string => Boolean(n));
+          const valetLabel = [...new Set(valetNames)].join(", ") || "—";
+          return (
+            <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
+              <DetailSectionLabel text={t("common.additionalInfo")} />
+              {ownerName != null && ownerName !== "" && (
+                <DetailField label={t("tickets.client")} value={ownerName} />
+              )}
+              <DetailField label={t("tables.tickets.valet")} value={valetLabel} />
+              {ticket.createdAt != null && (
+                <DetailField label={t("tables.notifications.createdAt")} value={new Date(ticket.createdAt).toLocaleString()} />
+              )}
+            </dl>
+          );
+        }}
         onEdit={superAdmin ? (row: { id?: string }) => router.push(`/dashboard/tickets/${row.id}/edit`) : undefined}
         onUpdate={superAdmin ? onUpdate : undefined}
         onDelete={superAdmin ? onDelete : undefined}

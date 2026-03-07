@@ -30,15 +30,17 @@ export class CompaniesService {
 
   static async update(id: string, data: UpdateCompanyDTO) {
     const updateInput: Prisma.CompanyUpdateInput = {};
-    
     if (data.legalName !== undefined) updateInput.legalName = data.legalName;
+    if (data.taxId !== undefined) updateInput.taxId = data.taxId;
     if (data.commercialName !== undefined) updateInput.commercialName = data.commercialName;
+    if (data.countryCode !== undefined) updateInput.countryCode = data.countryCode;
+    if (data.currency !== undefined) updateInput.currency = data.currency;
+    if (data.timezone !== undefined) updateInput.timezone = data.timezone;
     if (data.email !== undefined) updateInput.email = data.email;
     if (data.contactPhone !== undefined) updateInput.contactPhone = data.contactPhone;
     if (data.legalAddress !== undefined) updateInput.legalAddress = data.legalAddress;
     if (data.brandingConfig !== undefined) updateInput.brandingConfig = data.brandingConfig;
     if (data.status !== undefined) updateInput.status = data.status;
-    
     return prisma.company.update({
       where: { id },
       data: updateInput,

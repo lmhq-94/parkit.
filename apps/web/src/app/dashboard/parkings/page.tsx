@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import Link from "next/link";
-import { CalendarCheck, DoorOpen, Plus } from "lucide-react";
+import { Check, X, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { ICellRendererParams } from "ag-grid-community";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
@@ -18,12 +18,12 @@ function RequiresBookingIconCellRenderer(
 ) {
   const { data, t } = params;
   const requires = data?.requiresBooking;
-  const Icon = requires ? CalendarCheck : DoorOpen;
+  const Icon = requires ? Check : X;
   const title = requires ? t("parkings.requiresBookingOn") : t("parkings.requiresBookingOff");
   return (
     <span className="inline-flex items-center justify-center" title={title}>
       <Icon
-        className={`w-4 h-4 ${requires ? "text-emerald-600 dark:text-emerald-400" : "text-sky-600 dark:text-sky-400"}`}
+        className={`w-4 h-4 ${requires ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}
         aria-hidden
       />
     </span>

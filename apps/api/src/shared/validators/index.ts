@@ -15,10 +15,15 @@ export const CreateCompanySchema = z.object({
 
 export const UpdateCompanySchema = z.object({
   legalName: z.string().min(1).optional(),
+  taxId: z.string().min(1).optional(),
   commercialName: z.string().optional(),
+  countryCode: z.string().optional(),
+  currency: z.string().optional(),
+  timezone: z.string().optional(),
   email: z.string().email().optional().or(z.literal("")),
   contactPhone: z.string().optional(),
   legalAddress: z.string().optional(),
+  status: z.enum(["PENDING", "ACTIVE", "SUSPENDED", "INACTIVE"]).optional(),
 });
 
 export type CreateCompanyInput = z.infer<typeof CreateCompanySchema>;
