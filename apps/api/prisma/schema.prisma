@@ -120,7 +120,7 @@ model User {
   firstName      String
   lastName       String
   email          String     @unique
-  passwordHash   String
+  passwordHash   String?    // null when invited, set when user accepts invitation
   avatarUrl      String?
   timezone       String     @default("UTC")
   phone          String?
@@ -130,6 +130,10 @@ model User {
   lastLogin      DateTime?
   isActive       Boolean    @default(true)
   appPreferences Json?
+
+  // Invitation flow: when admin invites by email, user sets password via link
+  invitationToken         String?   @unique
+  invitationTokenExpiresAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

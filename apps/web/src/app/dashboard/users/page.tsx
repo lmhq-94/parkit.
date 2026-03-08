@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
-import { Crown, Plus, Shield, User, UserCog } from "lucide-react";
+import { Crown, Mail, Plus, Shield, User, UserCog } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { ICellRendererParams } from "ag-grid-community";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
@@ -39,6 +39,28 @@ function RoleIconCellRenderer(
   );
 }
 
+function UserStatusCellRenderer(
+  params: ICellRendererParams<{ isActive?: boolean; pendingInvitation?: boolean }> & { t: (key: string) => string }
+) {
+  const { data, t } = params;
+  if (!data) return null;
+  if (data.pendingInvitation) {
+    return (
+      <span className="inline-flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
+        <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-amber-500" />
+        {t("tables.employees.pendingInvitation")}
+      </span>
+    );
+  }
+  const active = data.isActive;
+  return (
+    <span className={`inline-flex items-center gap-2 text-sm ${active ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${active ? "bg-emerald-500" : "bg-red-500"}`} />
+      {active ? t("tables.employees.active") : t("tables.employees.inactive")}
+    </span>
+  );
+}
+
 type UserRow = {
   id?: string;
   firstName?: string;
@@ -46,6 +68,7 @@ type UserRow = {
   email?: string;
   systemRole?: string;
   isActive?: boolean;
+  pendingInvitation?: boolean;
   phone?: string | null;
   timezone?: string | null;
   lastLogin?: string | null;
@@ -99,13 +122,23 @@ export default function UsersPage() {
       },
       {
         header: t("tables.employees.status"),
-        render: (user: { isActive?: boolean }) => (user.isActive ? t("tables.employees.active") : t("tables.employees.inactive")),
-        statusBadge: "user",
-        statusField: "isActive",
+        render: (user: { isActive?: boolean; pendingInvitation?: boolean }) =>
+          user.pendingInvitation ? t("tables.employees.pendingInvitation") : (user.isActive ? t("tables.employees.active") : t("tables.employees.inactive")),
+        cellRenderer: UserStatusCellRenderer,
+        cellRendererParams: { t },
       },
     ],
     [t, tEnum]
   );
+
+  const [refreshToken, setRefreshToken] = useState(0);
+
+  const handleResendInvitation = useCallback(async (row: UserRow) => {
+    if (!row.id) return;
+    await apiClient.post(`/users/${row.id}/resend-invitation`, {});
+    setRefreshToken((prev) => prev + 1);
+  }, []);
+
   return (
     <>
       <DashboardDataTablePage<UserRow>
@@ -114,13 +147,30 @@ export default function UsersPage() {
         endpoint="/users?excludeValets=true"
         emptyMessage={t("tables.employees.empty")}
         columns={columns}
+        refreshToken={refreshToken}
         hasRowDetail={(user) =>
+          user.pendingInvitation === true ||
           (user.timezone != null && user.timezone !== "") ||
           user.lastLogin != null ||
           (user.phone != null && user.phone !== "")
         }
         renderRowDetail={(user) => (
           <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
+            {user.pendingInvitation && (
+              <>
+                <DetailSectionLabel text={t("tables.employees.pendingInvitation")} />
+                <div className="col-span-3">
+                  <button
+                    type="button"
+                    onClick={() => handleResendInvitation(user)}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors"
+                  >
+                    <Mail className="w-4 h-4" />
+                    {t("tables.employees.resendInvitation")}
+                  </button>
+                </div>
+              </>
+            )}
             <DetailSectionLabel text={t("common.additionalInfo")} />
             <DetailField label={t("tables.employees.phone")} value={user.phone ? formatPhoneWithCountryCode(user.phone, "CR") : undefined} linkType="phone" />
             <DetailField label={t("tables.employees.timezone")} value={user.timezone} />

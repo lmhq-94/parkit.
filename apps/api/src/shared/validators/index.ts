@@ -34,7 +34,14 @@ export const CreateUserSchema = z.object({
   email: z.string().email("Invalid email"),
   firstName: z.string().min(1, "First name required"),
   lastName: z.string().min(1, "Last name required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z
+    .union([
+      z.string().min(6, "Password must be at least 6 characters"),
+      z.literal(""),
+      z.null(),
+    ])
+    .optional()
+    .transform((v) => (v === "" || v === null ? undefined : v)),
   systemRole: z.enum(["SUPER_ADMIN", "ADMIN", "STAFF", "CUSTOMER"]).optional(),
 });
 
@@ -177,3 +184,11 @@ export const LoginSchema = z.object({
 });
 
 export type LoginInput = z.infer<typeof LoginSchema>;
+
+// Invitations (accept invite: set password via email link)
+export const AcceptInvitationSchema = z.object({
+  token: z.string().min(1, "Invitation token required"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+export type AcceptInvitationInput = z.infer<typeof AcceptInvitationSchema>;

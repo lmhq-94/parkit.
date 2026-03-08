@@ -1,5 +1,5 @@
 import { prisma } from "../../shared/prisma";
-import { LoginDTO, RegisterDTO } from "./auth.types";
+import { AcceptInvitationDTO, LoginDTO, RegisterDTO } from "./auth.types";
 import { comparePassword, hashPassword, signToken } from "./auth.utils";
 
 export class AuthService {
@@ -42,6 +42,12 @@ export class AuthService {
       throw new Error("Invalid credentials");
     }
 
+    if (!user.passwordHash) {
+      throw new Error(
+        "Account pending. Please set your password using the invitation link sent to your email."
+      );
+    }
+
     const isValid = await comparePassword(
       data.password,
       user.passwordHash
@@ -58,5 +64,37 @@ export class AuthService {
     });
 
     return { user, token };
+  }
+
+  static async acceptInvitation(data: AcceptInvitationDTO) {
+    const user = await prisma.user.findFirst({
+      where: {
+        invitationToken: data.token,
+        invitationTokenExpiresAt: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new Error("Invalid or expired invitation link. Ask your admin to resend the invitation.");
+    }
+
+    const passwordHash = await hashPassword(data.password);
+
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        invitationToken: null,
+        invitationTokenExpiresAt: null,
+      },
+    });
+
+    const token = signToken({
+      userId: updated.id,
+      role: updated.systemRole,
+      companyId: updated.companyId ?? undefined,
+    });
+
+    return { user: updated, token };
   }
 }

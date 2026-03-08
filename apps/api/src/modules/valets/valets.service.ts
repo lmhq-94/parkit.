@@ -48,34 +48,72 @@ export class ValetsService {
   }
 
   static async list(companyId: string, status?: string) {
-    return prisma.valet.findMany({
-      where: {
-        companyId,
-        currentStatus: status ? (status as ValetStatus) : undefined,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            phone: true,
+    const where = {
+      companyId,
+      currentStatus: status ? (status as ValetStatus) : undefined,
+    };
+    const userSelectWithInvitation = {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      phone: true,
+      invitationTokenExpiresAt: true,
+    } as const;
+    const userSelectWithoutInvitation = {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      phone: true,
+    } as const;
+
+    try {
+      const valets = await prisma.valet.findMany({
+        where,
+        include: {
+          user: { select: userSelectWithInvitation },
+          assignments: {
+            select: { id: true, ticketId: true, role: true, assignedAt: true },
+            orderBy: { assignedAt: "desc" },
+            take: 5,
           },
         },
-        assignments: {
-          select: {
-            id: true,
-            ticketId: true,
-            role: true,
-            assignedAt: true,
+        orderBy: { createdAt: "desc" },
+      });
+      return valets.map((v) => {
+        const user = v.user
+          ? (() => {
+              const { invitationTokenExpiresAt, ...rest } = v.user!;
+              const pendingInvitation =
+                invitationTokenExpiresAt != null && new Date(invitationTokenExpiresAt) > new Date();
+              return { ...rest, pendingInvitation };
+            })()
+          : null;
+        return { ...v, user };
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      if (msg.includes("does not exist in the current database")) {
+        const valets = await prisma.valet.findMany({
+          where,
+          include: {
+            user: { select: userSelectWithoutInvitation },
+            assignments: {
+              select: { id: true, ticketId: true, role: true, assignedAt: true },
+              orderBy: { assignedAt: "desc" },
+              take: 5,
+            },
           },
-          orderBy: { assignedAt: "desc" },
-          take: 5,
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+          orderBy: { createdAt: "desc" },
+        });
+        return valets.map((v) => ({
+          ...v,
+          user: v.user ? { ...v.user, pendingInvitation: false } : null,
+        }));
+      }
+      throw err;
+    }
   }
 
   static async getById(companyId: string, valetId: string) {

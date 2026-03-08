@@ -1,10 +1,11 @@
 export interface CreateUserDTO {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-    systemRole?: "SUPER_ADMIN" | "ADMIN" | "STAFF" | "CUSTOMER";
-  }
+  firstName: string;
+  lastName: string;
+  email: string;
+  /** If omitted, user is created as "invited" and an email is sent to set password via link */
+  password?: string;
+  systemRole?: "SUPER_ADMIN" | "ADMIN" | "STAFF" | "CUSTOMER";
+}
   
   export interface UpdateUserDTO {
     firstName?: string;

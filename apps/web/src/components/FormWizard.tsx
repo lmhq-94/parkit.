@@ -21,6 +21,8 @@ interface FormWizardProps {
   submitLabel?: string;
   cancelHref: string;
   error?: string | null;
+  /** Nota breve que se muestra encima de "Los campos marcados con * son obligatorios" (ej. invitación por correo). */
+  footerNote?: React.ReactNode;
   /** Llamado antes de avanzar al siguiente paso. Si devuelve Promise, se espera (ej. cargar dimensiones). */
   onBeforeNext?: (fromStep: number, toStep: number) => void | Promise<void>;
 }
@@ -43,6 +45,7 @@ export function FormWizard({
   submitLabel,
   cancelHref,
   error,
+  footerNote,
   onBeforeNext,
 }: FormWizardProps) {
   const { t } = useTranslation();
@@ -185,9 +188,16 @@ export function FormWizard({
 
       {/* ── Action bar ──────────────────────────────── */}
       <div className="flex items-center justify-between gap-4 pt-2">
-        <p className="text-xs text-text-muted/50 hidden sm:block">
-          {step.badge === "required" ? t("common.requiredNote") : t("common.optionalNote")}
-        </p>
+        <div className="hidden sm:flex flex-col gap-1">
+          {footerNote && (
+            <p className="text-xs text-text-muted">
+              {footerNote}
+            </p>
+          )}
+          <p className="text-xs text-text-muted/50">
+            {step.badge === "required" ? t("common.requiredNote") : t("common.optionalNote")}
+          </p>
+        </div>
 
         <div className="flex items-center gap-2.5 ml-auto">
           {current === 0 ? (

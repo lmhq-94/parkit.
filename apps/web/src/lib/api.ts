@@ -96,3 +96,17 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient();
+
+/** Extrae el mensaje de error de la API a partir de un error (Axios u otro). */
+export function getApiErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error) && error.response?.data) {
+    const data = error.response.data as Record<string, unknown>;
+    const msg = data?.message;
+    if (typeof msg === "string" && msg.length > 0) return msg;
+    const errs = data?.errors;
+    if (typeof errs === "string" && errs.length > 0) return errs;
+    if (errs != null && typeof errs === "object") return "Validation failed";
+  }
+  if (error instanceof Error && error.message) return error.message;
+  return "Request failed";
+}

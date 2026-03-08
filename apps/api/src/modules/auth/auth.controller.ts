@@ -30,4 +30,18 @@ export class AuthController {
       );
     }
   }
+
+  static async acceptInvitation(req: Request, res: Response) {
+    try {
+      const result = await AuthService.acceptInvitation(req.body);
+
+      return ok(res, result);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
 }

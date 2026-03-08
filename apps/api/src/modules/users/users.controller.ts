@@ -11,7 +11,9 @@ export class UsersController {
         req.body
       );
 
-      return created(res, user);
+      // Don't expose invitation token or password hash in API response
+      const { invitationToken, invitationTokenExpiresAt, passwordHash, ...rest } = user;
+      return created(res, rest);
     } catch (error: unknown) {
       return fail(
         res,
@@ -66,7 +68,10 @@ export class UsersController {
         req.body
       );
 
-      return ok(res, user);
+      const { passwordHash, invitationToken, invitationTokenExpiresAt, ...rest } = user;
+      const pendingInvitation =
+        invitationTokenExpiresAt != null && new Date(invitationTokenExpiresAt) > new Date();
+      return ok(res, { ...rest, pendingInvitation });
     } catch (error: unknown) {
       return fail(
         res,
@@ -85,6 +90,20 @@ export class UsersController {
       );
 
       return ok(res, null, "User deactivated");
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
+  static async resendInvitation(req: Request, res: Response) {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      await UsersService.resendInvitation(req.user.companyId!, id);
+      return ok(res, { ok: true }, "Invitation email sent");
     } catch (error: unknown) {
       return fail(
         res,
