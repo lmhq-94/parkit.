@@ -10,6 +10,7 @@ import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LocaleToggle } from "@/components/LocaleToggle";
+import { apiClient } from "@/lib/api";
 import { ArrowLeft, Menu } from "lucide-react";
 
 const HeaderActionContext = createContext<((node: React.ReactNode) => void) | null>(null);
@@ -54,15 +55,18 @@ const PATH_HEADERS: Record<string, PathHeader> = {
   "/dashboard/companies/[id]/edit": { title: "companies.editCompany", description: "companies.editCompanyDescription", backHref: "/dashboard/companies", backLabel: "tables.companies.title" },
 };
 
+const DEFAULT_HEADER: PathHeader = { title: "dashboard.title", description: "dashboard.summary" };
+
 function getHeaderForPath(pathname: string): PathHeader {
-  if (PATH_HEADERS[pathname]) return PATH_HEADERS[pathname];
-  // Resolver rutas dinámicas /dashboard/{entity}/{id}/edit
+  const exact = PATH_HEADERS[pathname as keyof typeof PATH_HEADERS];
+  if (exact) return exact;
   const editMatch = (pathname ?? "").match(/^\/dashboard\/([^/]+)\/[^/]+\/edit$/);
   if (editMatch) {
-    const key = `/dashboard/${editMatch[1]}/[id]/edit`;
-    if (PATH_HEADERS[key]) return PATH_HEADERS[key];
+    const key = `/dashboard/${editMatch[1]}/[id]/edit` as keyof typeof PATH_HEADERS;
+    const editHeader = PATH_HEADERS[key];
+    if (editHeader) return editHeader as PathHeader;
   }
-  return PATH_HEADERS["/dashboard"];
+  return PATH_HEADERS["/dashboard"] ?? DEFAULT_HEADER;
 }
 
 export default function DashboardLayout({
@@ -88,13 +92,49 @@ export default function DashboardLayout({
     if (isNewPage) setHeaderAction(null);
   }, [isNewPage]);
 
+  const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
+  const companyBranding = useDashboardStore((s) => s.companyBranding);
+  const setCompanyBranding = useDashboardStore((s) => s.setCompanyBranding);
+  const superAdmin = isSuperAdmin(user);
+
+  // Cargar branding de la empresa seleccionada
+  useEffect(() => {
+    if (!selectedCompanyId) {
+      setCompanyBranding(null);
+      return;
+    }
+    const url = superAdmin ? `/companies/${selectedCompanyId}` : "/companies/me";
+    apiClient
+      .get<{ brandingConfig?: { bannerImageUrl?: string; logoImageUrl?: string; primaryColor?: string; secondaryColor?: string } | null }>(url)
+      .then((data) => {
+        const bc = data?.brandingConfig && typeof data.brandingConfig === "object" ? data.brandingConfig : null;
+        setCompanyBranding(bc ? { bannerImageUrl: bc.bannerImageUrl ?? null, logoImageUrl: bc.logoImageUrl ?? null, primaryColor: bc.primaryColor ?? null, secondaryColor: bc.secondaryColor ?? null } : null);
+      })
+      .catch(() => setCompanyBranding(null));
+  }, [selectedCompanyId, superAdmin, setCompanyBranding]);
+
+  // Aplicar colores de la empresa como variables CSS
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const primary = companyBranding?.primaryColor?.trim();
+    const secondary = companyBranding?.secondaryColor?.trim();
+    document.documentElement.style.setProperty("--company-primary", primary && /^#[0-9A-Fa-f]{3,6}$/.test(primary) ? primary : "");
+    document.documentElement.style.setProperty("--company-secondary", secondary && /^#[0-9A-Fa-f]{3,6}$/.test(secondary) ? secondary : "");
+  }, [companyBranding?.primaryColor, companyBranding?.secondaryColor]);
+
   return (
     <ProtectedRoute>
       <HeaderActionContext.Provider value={setHeaderAction}>
         <div className="flex min-h-screen bg-page">
           <DashboardSidebar />
           <main className="flex-1 flex flex-col min-h-0 min-w-0">
-            <header className="shrink-0 flex flex-wrap items-center justify-between gap-4 px-4 md:pl-12 md:pr-10 lg:pr-12 pt-5 md:pt-8 pb-0 bg-card/50 backdrop-blur-sm">
+            <header className="shrink-0 flex flex-col bg-card/50 backdrop-blur-sm">
+              {companyBranding?.bannerImageUrl && (
+                <div className="w-full h-20 md:h-24 overflow-hidden bg-input-bg">
+                  <img src={companyBranding.bannerImageUrl} alt="" className="w-full h-full object-cover" />
+                </div>
+              )}
+              <div className="flex flex-wrap items-center justify-between gap-4 px-4 md:pl-12 md:pr-10 lg:pr-12 pt-5 md:pt-8 pb-0">
               <div className="flex items-center gap-3 min-w-0">
               {/* Hamburger: solo móvil */}
               <button
@@ -143,6 +183,7 @@ export default function DashboardLayout({
               <ThemeToggle />
               <LocaleToggle />
             </div>
+              </div>
           </header>
           <div className="flex-1 flex flex-col overflow-auto min-h-0">{children}</div>
         </main>

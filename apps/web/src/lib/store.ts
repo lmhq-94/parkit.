@@ -67,6 +67,14 @@ export const useLocaleStore = create<LocaleStore>((set) => ({
   },
 }));
 
+// Branding de la empresa actual (banner, logo, color principal). Se carga al entrar al dashboard o al guardar en Settings.
+export type CompanyBranding = {
+  bannerImageUrl?: string | null;
+  logoImageUrl?: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+} | null;
+
 // UI/Dashboard state (sidebarCollapsed inicia true para evitar mismatch SSR; se hidrata desde localStorage en el sidebar)
 export const SIDEBAR_COLLAPSED_KEY = "parkit_sidebar_collapsed";
 
@@ -81,6 +89,8 @@ interface DashboardStore {
   /** Incrementar para forzar recarga de la lista de companies en el sidebar */
   companiesVersion: number;
   bumpCompanies: () => void;
+  companyBranding: CompanyBranding;
+  setCompanyBranding: (b: CompanyBranding) => void;
 }
 
 const SELECTED_COMPANY_KEY = "parkit_selected_company_id";
@@ -114,4 +124,6 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
   },
   companiesVersion: 0,
   bumpCompanies: () => set((s) => ({ companiesVersion: s.companiesVersion + 1 })),
+  companyBranding: null,
+  setCompanyBranding: (b) => set({ companyBranding: b }),
 }));

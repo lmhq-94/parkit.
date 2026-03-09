@@ -8,21 +8,22 @@ const calSans = localFont({
   display: "swap",
 });
 
-type LogoVariant = "default" | "onDark";
+type LogoVariant = "default" | "onDark" | "mark" | "markOnDark";
 
 export function Logo({
   className = "",
   variant = "default",
 }: {
   className?: string;
-  /** Use "onDark" on dark backgrounds for maximum contrast (white + bright blue, subtle glow) */
+  /** "onDark" = full logo on dark bg. "mark" = solo "p." (fondo claro). "markOnDark" = solo "p." en fondo oscuro. */
   variant?: LogoVariant;
 }) {
-  const isOnDark = variant === "onDark";
+  const isOnDark = variant === "onDark" || variant === "markOnDark";
+  const isMark = variant === "mark" || variant === "markOnDark";
 
   return (
     <div
-      className={`${calSans.variable} font-calsans font-bold text-4xl tracking-tighter flex items-center ${className}`}
+      className={`${calSans.variable} font-calsans font-bold tracking-tighter flex items-center ${isMark ? "text-xl" : "text-4xl"} ${className}`}
     >
       <span
         className={
@@ -31,7 +32,7 @@ export function Logo({
             : "text-slate-900 dark:text-white transition-colors duration-300"
         }
       >
-        park
+        {isMark ? "p" : "park"}
       </span>
       <span
         className={
@@ -40,7 +41,7 @@ export function Logo({
             : "text-blue-600 dark:text-blue-500 transition-colors duration-300"
         }
       >
-        it.
+        {isMark ? "." : "it."}
       </span>
     </div>
   );

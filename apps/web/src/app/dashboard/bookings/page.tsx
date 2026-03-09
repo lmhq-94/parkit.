@@ -69,7 +69,7 @@ export default function BookingsPage() {
         render: (b: { vehicle?: { plate?: string } }) =>
           b.vehicle?.plate ? formatPlate(b.vehicle.plate) : "—",
       },
-      { header: t("tables.bookings.status"), render: (b: { status?: string }) => tEnum("bookingStatus", b.status), field: "status" as const, editable: superAdmin, statusBadge: "booking", statusField: "status" },
+      { header: t("tables.bookings.status"), render: (b: { status?: string }) => tEnum("bookingStatus", b.status), field: "status" as const, editable: superAdmin, statusBadge: "booking" as const, statusField: "status" as const },
       {
         header: t("tables.bookings.entry"),
         render: (b: { scheduledEntryTime?: string }) =>

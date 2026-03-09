@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore, useDashboardStore, SIDEBAR_COLLAPSED_KEY } from "@/lib/store";
-import { getFullName, isSuperAdmin } from "@/lib/auth";
+import { getFullName, getAvatarColor, getInitials, isSuperAdmin } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
 import { apiClient } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -15,7 +15,6 @@ import {
   LayoutDashboard,
   Users,
   UserRound,
-  CircleUserRound,
   Car,
   MapPin,
   CalendarCheck,
@@ -238,7 +237,7 @@ export function DashboardSidebar() {
   const { resolvedTheme } = useTheme();
   const { t } = useTranslation();
   const { user, logout } = useAuthStore();
-  const { selectedCompanyId, selectedCompanyName, setSelectedCompany, sidebarCollapsed: collapsed, setSidebarCollapsed, sidebarOpen, toggleSidebar, companiesVersion } = useDashboardStore();
+  const { selectedCompanyId, selectedCompanyName, setSelectedCompany, sidebarCollapsed: collapsed, setSidebarCollapsed, sidebarOpen, toggleSidebar, companiesVersion, companyBranding } = useDashboardStore();
   const [mounted, setMounted] = useState(false);
   const [companies, setCompanies] = useState<{ id: string; commercialName?: string; legalName?: string }[]>([]);
   const [adminCompanyName, setAdminCompanyName] = useState<string | null>(null);
@@ -371,7 +370,15 @@ export function DashboardSidebar() {
           <>
             <div className="flex items-center justify-between gap-2">
               <Link href="/dashboard" className="flex items-center min-w-0 overflow-hidden">
-                <Logo variant={isDark ? "onDark" : "default"} className="text-3xl truncate" />
+                {companyBranding?.logoImageUrl?.trim() ? (
+                  <img
+                    src={companyBranding.logoImageUrl}
+                    alt=""
+                    className="max-h-9 w-auto max-w-full object-contain"
+                  />
+                ) : (
+                  <Logo variant={isDark ? "onDark" : "default"} className="text-3xl truncate" />
+                )}
               </Link>
               {/* Botón colapsar: solo visible en md+ */}
               <button
@@ -499,8 +506,24 @@ export function DashboardSidebar() {
               collapsed ? "justify-center" : ""
             }`}
           >
-            <div className="w-9 h-9 rounded-xl bg-input-bg border border-card-border flex items-center justify-center shrink-0">
-              <CircleUserRound className="w-[18px] h-[18px] text-text-muted" />
+            <div className="w-9 h-9 rounded-full shrink-0 border border-card-border overflow-hidden bg-input-bg flex items-center justify-center">
+              {user?.avatar?.trim() ? (
+                <img
+                  src={user.avatar}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span
+                  className="w-full h-full flex items-center justify-center text-xs font-semibold text-white"
+                  style={{
+                    backgroundColor: getAvatarColor(user?.id) ?? "var(--input-bg)",
+                    color: getAvatarColor(user?.id) ? "white" : "var(--text-muted)",
+                  }}
+                >
+                  {user?.id ? getInitials(user) : "?"}
+                </span>
+              )}
             </div>
             {!collapsed && (
               <div className="min-w-0 flex-1">

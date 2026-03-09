@@ -12,6 +12,9 @@
     --text-muted: #64748b;
     --input-bg: rgba(0, 0, 0, 0.04);
     --input-border: rgba(0, 0, 0, 0.1);
+    /* Colores de la empresa (Settings). Si no se definen, se usan los por defecto. */
+    --company-primary: #2563eb;
+    --company-secondary: #64748b;
   }
 
   .dark {
@@ -23,6 +26,8 @@
     --text-muted: #94a3b8;
     --input-bg: rgba(255, 255, 255, 0.06);
     --input-border: rgba(255, 255, 255, 0.1);
+    --company-primary: #3b82f6;
+    --company-secondary: #94a3b8;
   }
 }
 

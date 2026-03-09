@@ -46,7 +46,7 @@ function AcceptInviteForm() {
     setIsSubmitting(true);
     try {
       const response = await apiClient.post<{
-        user: { id: string; email: string; firstName: string; lastName: string; systemRole: string; companyId?: string };
+        user: { id: string; email: string; firstName: string; lastName: string; systemRole: "SUPER_ADMIN" | "ADMIN" | "STAFF" | "CUSTOMER"; companyId?: string };
         token: string;
       }>("/auth/invitations/accept", { token: token.trim(), password });
       if (response?.user && response?.token) {

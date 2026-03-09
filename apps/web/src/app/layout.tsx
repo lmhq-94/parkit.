@@ -4,7 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 
 export const metadata: Metadata = {
-  title: "Parkit Admin",
+  title: "Parkit Dashboard Console",
   description: "Parking management system admin dashboard",
 };
 
