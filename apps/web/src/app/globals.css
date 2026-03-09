@@ -15,6 +15,7 @@
     /* Colores de la empresa (Settings). Valores por defecto = lib/themeDefaults.ts (light) */
     --company-primary: #2563eb;
     --company-secondary: #64748b;
+    --company-tertiary: #94a3b8;
   }
 
   .dark {
@@ -29,6 +30,7 @@
     /* Valores por defecto = lib/themeDefaults.ts (dark) */
     --company-primary: #3b82f6;
     --company-secondary: #94a3b8;
+    --company-tertiary: #cbd5e1;
   }
 }
 
@@ -341,6 +343,34 @@ body {
 .ring-company-primary-full {
   --tw-ring-color: var(--company-primary, #2563eb);
 }
+
+/* Secondary: botones secundarios, bordes suaves, badges, texto de apoyo */
+.text-company-secondary {
+  color: var(--company-secondary, #64748b);
+}
+.bg-company-secondary-subtle {
+  background-color: color-mix(in srgb, var(--company-secondary, #64748b) 12%, transparent);
+}
+.from-company-secondary-subtle {
+  --tw-gradient-from: color-mix(in srgb, var(--company-secondary, #64748b) 12%, transparent);
+  --tw-gradient-to: transparent;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.border-company-secondary-muted {
+  border-color: color-mix(in srgb, var(--company-secondary, #64748b) 35%, transparent);
+}
+.hover\:border-company-secondary-muted:hover {
+  border-color: color-mix(in srgb, var(--company-secondary, #64748b) 35%, transparent);
+}
+
+/* Tertiary: fondos muy suaves, elementos terciarios */
+.bg-company-tertiary-subtle {
+  background-color: color-mix(in srgb, var(--company-tertiary, #94a3b8) 8%, transparent);
+}
+.text-company-tertiary {
+  color: var(--company-tertiary, #94a3b8);
+}
+
 /* Focus en inputs y botones del dashboard usa el color principal del tema */
 [data-dashboard] input:focus,
 [data-dashboard] button:focus-visible,

@@ -20,12 +20,21 @@ export interface DashboardStats {
 }
 
 export class DashboardService {
-  static async getStats(companyId: string | null): Promise<DashboardStats> {
+  static async getStats(
+    companyId: string | null,
+    days: number = 7,
+    from?: string,
+    to?: string
+  ): Promise<DashboardStats> {
     const isGlobal = !companyId;
     const where = isGlobal ? {} : { companyId };
 
     const companyWhere = isGlobal ? {} : { companyId: companyId! };
-    const [companiesCount, parkingsCount, vehiclesCount, ticketsCount, usersCount, bookingsCount, hasParkingWithBooking, ticketsLast7Days, recentTickets] =
+    const ticketsByDay = (from != null && to != null)
+      ? await this.getTicketsByDayRange(companyId, from, to)
+      : await this.getTicketsByDay(companyId, days);
+
+    const [companiesCount, parkingsCount, vehiclesCount, ticketsCount, usersCount, bookingsCount, hasParkingWithBooking, recentTickets] =
       await Promise.all([
         isGlobal ? prisma.company.count() : Promise.resolve(0),
         prisma.parking.count({ where: companyWhere }),
@@ -36,7 +45,6 @@ export class DashboardService {
         }),
         prisma.booking.count({ where: companyWhere }),
         this.hasParkingWithBooking(companyId),
-        this.getTicketsByDay(companyId, 7),
         this.getRecentTickets(companyId, 5),
       ]);
 
@@ -48,7 +56,7 @@ export class DashboardService {
       usersCount,
       bookingsCount,
       hasParkingWithBooking,
-      ticketsLast7Days,
+      ticketsLast7Days: ticketsByDay,
       recentTickets,
     };
   }
@@ -65,28 +73,67 @@ export class DashboardService {
     companyId: string | null,
     days: number
   ): Promise<{ date: string; count: number }[]> {
-    // Usar UTC para que buckets y agrupación coincidan (evita desfase por zona horaria del servidor)
     const now = new Date();
     const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - (days - 1), 0, 0, 0, 0));
+    const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+    return this.getTicketsByDayRange(
+      companyId,
+      start.toISOString().slice(0, 10),
+      end.toISOString().slice(0, 10)
+    );
+  }
+
+  /** Rango de fechas YYYY-MM-DD; máximo 90 días. Fechas inclusivas: from y to son el primer y último día del chart. */
+  private static async getTicketsByDayRange(
+    companyId: string | null,
+    from: string,
+    to: string
+  ): Promise<{ date: string; count: number }[]> {
+    const [y1, m1, d1] = from.split("-").map(Number);
+    const [y2, m2, d2] = to.split("-").map(Number);
+    // Inicio del primer día y fin del último día en UTC para el filtro
+    const start = new Date(Date.UTC(y1, m1 - 1, d1, 0, 0, 0, 0));
+    const end = new Date(Date.UTC(y2, m2 - 1, d2, 23, 59, 59, 999));
+    if (start.getTime() > end.getTime()) {
+      return [];
+    }
+    const totalDays = Math.ceil((end.getTime() - start.getTime()) / 86400000) + 1;
+    const maxDays = 90;
+    const effectiveEnd =
+      totalDays > maxDays ? new Date(start.getTime() + (maxDays - 1) * 86400000) : end;
+    const effectiveEndStr = effectiveEnd.toISOString().slice(0, 10);
 
     const where = companyId
-      ? { companyId, entryTime: { gte: start } }
-      : { entryTime: { gte: start } };
+      ? { companyId, entryTime: { gte: start, lte: effectiveEnd } }
+      : { entryTime: { gte: start, lte: effectiveEnd } };
 
     const tickets = await prisma.ticket.findMany({
       where,
       select: { entryTime: true },
     });
 
+    // Construir las claves del rango exactamente desde `from` hasta effectiveEnd (inclusive)
+    // para que el chart coincida con los días elegidos sin desfase.
     const byDay: Record<string, number> = {};
-    for (let i = 0; i < days; i++) {
-      const d = new Date(start);
-      d.setUTCDate(d.getUTCDate() + i);
-      byDay[d.toISOString().slice(0, 10)] = 0;
+    let cursor = new Date(Date.UTC(y1, m1 - 1, d1, 12, 0, 0, 0)); // mediodía UTC evita bordes
+    const endCursor = new Date(Date.UTC(
+      parseInt(effectiveEndStr.slice(0, 4), 10),
+      parseInt(effectiveEndStr.slice(5, 7), 10) - 1,
+      parseInt(effectiveEndStr.slice(8, 10), 10),
+      12,
+      0,
+      0,
+      0
+    ));
+    while (cursor.getTime() <= endCursor.getTime()) {
+      byDay[cursor.toISOString().slice(0, 10)] = 0;
+      cursor = new Date(cursor.getTime() + 86400000);
     }
+
     for (const t of tickets) {
       if (t.entryTime) {
-        const key = new Date(t.entryTime).toISOString().slice(0, 10);
+        const d = new Date(t.entryTime);
+        const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
         if (key in byDay) byDay[key]++;
       }
     }

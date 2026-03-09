@@ -72,7 +72,11 @@ export type CompanyBranding = {
   bannerImageUrl?: string | null;
   logoImageUrl?: string | null;
   primaryColor?: string | null;
+  primaryColorDark?: string | null;
   secondaryColor?: string | null;
+  secondaryColorDark?: string | null;
+  tertiaryColor?: string | null;
+  tertiaryColorDark?: string | null;
 } | null;
 
 // UI/Dashboard state (sidebarCollapsed inicia true para evitar mismatch SSR; se hidrata desde localStorage en el sidebar)

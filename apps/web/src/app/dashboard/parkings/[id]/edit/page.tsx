@@ -90,12 +90,12 @@ export default function EditParkingPage() {
       )}
 
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-orange-500/8 to-transparent flex items-center gap-3">
-          <div>
+        <div className="px-6 py-4 bg-gradient-to-r from-orange-500/8 to-transparent">
+          <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("parkings.sectionMain")}</p>
-            <p className="text-xs text-text-muted">{t("parkings.sectionMainDesc")}</p>
+            <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">{t("common.requiredBadge")}</span>
           </div>
-          <span className="ml-auto text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">{t("common.requiredBadge")}</span>
+          <p className="text-xs text-text-muted mt-1">{t("parkings.sectionMainDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -154,12 +154,12 @@ export default function EditParkingPage() {
       </div>
 
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-emerald-500/8 to-transparent flex items-center gap-3">
-          <div>
+        <div className="px-6 py-4 bg-gradient-to-r from-emerald-500/8 to-transparent">
+          <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("parkings.sectionGeo")}</p>
-            <p className="text-xs text-text-muted">{t("parkings.sectionGeoDesc")}</p>
+            <span className="text-[10px] font-semibold text-text-muted/60 bg-input-bg px-2.5 py-1 rounded-full border border-input-border/60">{t("common.optionalBadge")}</span>
           </div>
-          <span className="ml-auto text-[10px] font-semibold text-text-muted/60 bg-input-bg px-2.5 py-1 rounded-full border border-input-border/60">{t("common.optionalBadge")}</span>
+          <p className="text-xs text-text-muted mt-1">{t("parkings.sectionGeoDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

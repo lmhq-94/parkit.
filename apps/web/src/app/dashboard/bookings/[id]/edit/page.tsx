@@ -97,12 +97,12 @@ export default function EditBookingPage() {
       )}
 
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-teal-500/8 to-transparent flex items-center gap-3">
-          <div>
+        <div className="px-6 py-4 bg-gradient-to-r from-teal-500/8 to-transparent">
+          <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("bookings.sectionMain")}</p>
-            <p className="text-xs text-text-muted">{t("bookings.sectionMainDesc")}</p>
+            <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">{t("common.requiredBadge")}</span>
           </div>
-          <span className="ml-auto text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">{t("common.requiredBadge")}</span>
+          <p className="text-xs text-text-muted mt-1">{t("bookings.sectionMainDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -153,12 +153,12 @@ export default function EditBookingPage() {
       </div>
 
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-company-primary-8 to-transparent flex items-center gap-3">
-          <div>
+        <div className="px-6 py-4 bg-gradient-to-r from-company-primary-8 to-transparent">
+          <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("bookings.sectionExit")}</p>
-            <p className="text-xs text-text-muted">{t("bookings.sectionExitDesc")}</p>
+            <span className="text-[10px] font-semibold text-text-muted/60 bg-input-bg px-2.5 py-1 rounded-full border border-input-border/60">{t("common.optionalBadge")}</span>
           </div>
-          <span className="ml-auto text-[10px] font-semibold text-text-muted/60 bg-input-bg px-2.5 py-1 rounded-full border border-input-border/60">{t("common.optionalBadge")}</span>
+          <p className="text-xs text-text-muted mt-1">{t("bookings.sectionExitDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

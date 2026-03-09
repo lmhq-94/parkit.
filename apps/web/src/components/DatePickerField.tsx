@@ -10,10 +10,27 @@ interface DatePickerFieldProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  /** Si es true al montar, abre inmediatamente el datepicker. Útil para rangos personalizados. */
+  autoOpen?: boolean;
+  /** Trigger más bajo (py-2, rounded-md) para alinearse con botones tipo segment. */
+  compact?: boolean;
+  /** Fecha mínima seleccionable YYYY-MM-DD (inclusive). */
+  minDate?: string;
+  /** Fecha máxima seleccionable YYYY-MM-DD (inclusive). */
+  maxDate?: string;
 }
 
+/** Parsea YYYY-MM-DD como fecha de calendario en hora local (evita desfase de un día en zonas detrás de UTC). */
 function parseDate(v: string): Date | null {
   if (!v) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v.trim());
+  if (match) {
+    const y = parseInt(match[1], 10);
+    const m = parseInt(match[2], 10) - 1;
+    const d = parseInt(match[3], 10);
+    const date = new Date(y, m, d);
+    return isNaN(date.getTime()) ? null : date;
+  }
   const d = new Date(v);
   return isNaN(d.getTime()) ? null : d;
 }
@@ -39,6 +56,10 @@ export function DatePickerField({
   onChange,
   placeholder,
   className,
+  autoOpen,
+  compact,
+  minDate,
+  maxDate,
 }: DatePickerFieldProps) {
   const { t } = useTranslation();
   const today = new Date();
@@ -110,6 +131,14 @@ export function DatePickerField({
     }
     setOpen((o) => !o);
   };
+
+  // Abrir automáticamente cuando se active autoOpen (por ejemplo al elegir "Rango" en el overview).
+  useEffect(() => {
+    if (autoOpen && !open) {
+      handleOpen();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoOpen]);
 
   useEffect(() => {
     if (!open) return;
@@ -224,15 +253,20 @@ export function DatePickerField({
             const dateStr = `${view.year}-${String(view.month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
             const isSelected = selectedStr === dateStr;
             const isToday = todayStr === dateStr;
+            const isDisabled =
+              (minDate != null && dateStr < minDate) || (maxDate != null && dateStr > maxDate);
 
             return (
               <button
                 key={day}
                 type="button"
-                onClick={() => selectDay(day)}
+                onClick={() => !isDisabled && selectDay(day)}
+                disabled={isDisabled}
                 className={[
                   "w-full aspect-square min-w-0 rounded-lg text-xs sm:text-sm transition-colors flex items-center justify-center font-medium touch-manipulation",
-                  isSelected
+                  isDisabled
+                    ? "text-slate-300 dark:text-slate-600 cursor-not-allowed"
+                    : isSelected
                     ? "bg-company-primary text-white shadow-sm"
                     : isToday
                     ? "bg-company-primary-subtle text-company-primary hover:bg-company-primary-muted"
@@ -267,21 +301,31 @@ export function DatePickerField({
 
   const displayValue = formatDisplay(value);
 
+  const triggerClasses = compact
+    ? [
+        "w-full py-2 pl-8 pr-3 rounded-md border text-sm text-left transition-colors cursor-pointer",
+        open
+          ? "border-company-primary ring-1 ring-company-primary-full"
+          : "border-transparent hover:border-company-primary-muted bg-transparent",
+        displayValue ? "text-text-primary" : "text-text-muted",
+      ].join(" ")
+    : [
+        "w-full py-3 pl-10 pr-4 rounded-lg border bg-input-bg text-sm text-left transition-colors cursor-pointer",
+        open
+          ? "border-company-primary ring-1 ring-company-primary-full"
+          : "border-input-border hover:border-company-primary-muted",
+        displayValue ? "text-text-primary" : "text-text-muted",
+      ].join(" ");
+
   return (
     <>
       <div className={["relative group w-full", className ?? ""].join(" ")}>
-        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none z-10 transition-colors group-focus-within:text-company-primary" />
+        <Calendar className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none z-10 transition-colors group-focus-within:text-company-primary ${compact ? "left-3" : "left-3.5"}`} />
         <button
           ref={triggerRef}
           type="button"
           onClick={handleOpen}
-          className={[
-            "w-full py-3 pl-10 pr-4 rounded-lg border bg-input-bg text-sm text-left transition-colors cursor-pointer",
-            open
-              ? "border-company-primary ring-1 ring-company-primary-full"
-              : "border-input-border hover:border-company-primary-muted",
-            displayValue ? "text-text-primary" : "text-text-muted",
-          ].join(" ")}
+          className={triggerClasses}
         >
           {displayValue || (placeholder ?? t("datepicker.placeholder"))}
         </button>

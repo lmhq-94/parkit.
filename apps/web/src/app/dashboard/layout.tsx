@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -88,9 +88,20 @@ export default function DashboardLayout({
   const descriptionText = tWithCompany(descriptionKey, selectedCompanyName);
 
   const [headerAction, setHeaderAction] = useState<React.ReactNode>(null);
+  const [headerShadow, setHeaderShadow] = useState(false);
+  const contentScrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (isNewPage) setHeaderAction(null);
   }, [isNewPage]);
+
+  const handleContentScroll = () => {
+    const el = contentScrollRef.current;
+    setHeaderShadow(Boolean(el && el.scrollTop > 0));
+  };
+
+  useEffect(() => {
+    handleContentScroll();
+  }, [pathname]);
 
   const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
   const companyBranding = useDashboardStore((s) => s.companyBranding);
@@ -105,10 +116,23 @@ export default function DashboardLayout({
     }
     const url = superAdmin ? `/companies/${selectedCompanyId}` : "/companies/me";
     apiClient
-      .get<{ brandingConfig?: { bannerImageUrl?: string; logoImageUrl?: string; primaryColor?: string; secondaryColor?: string } | null }>(url)
+      .get<{ brandingConfig?: Record<string, string | null | undefined> | null }>(url)
       .then((data) => {
         const bc = data?.brandingConfig && typeof data.brandingConfig === "object" ? data.brandingConfig : null;
-        setCompanyBranding(bc ? { bannerImageUrl: bc.bannerImageUrl ?? null, logoImageUrl: bc.logoImageUrl ?? null, primaryColor: bc.primaryColor ?? null, secondaryColor: bc.secondaryColor ?? null } : null);
+        if (!bc) {
+          setCompanyBranding(null);
+          return;
+        }
+        setCompanyBranding({
+          bannerImageUrl: bc.bannerImageUrl ?? null,
+          logoImageUrl: bc.logoImageUrl ?? null,
+          primaryColor: bc.primaryColor ?? null,
+          primaryColorDark: bc.primaryColorDark ?? null,
+          secondaryColor: bc.secondaryColor ?? null,
+          secondaryColorDark: bc.secondaryColorDark ?? null,
+          tertiaryColor: bc.tertiaryColor ?? null,
+          tertiaryColorDark: bc.tertiaryColorDark ?? null,
+        });
       })
       .catch(() => setCompanyBranding(null));
   }, [selectedCompanyId, superAdmin, setCompanyBranding]);
@@ -116,10 +140,14 @@ export default function DashboardLayout({
   return (
     <ProtectedRoute>
       <HeaderActionContext.Provider value={setHeaderAction}>
-        <div className="flex min-h-screen bg-page">
+        <div className="flex h-screen overflow-hidden bg-page">
           <DashboardSidebar />
-          <main className="flex-1 flex flex-col min-h-0 min-w-0" data-dashboard>
-            <header className="shrink-0 flex flex-col bg-card/50 backdrop-blur-sm">
+          <main className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden" data-dashboard>
+            <header
+              className={`shrink-0 sticky top-0 z-10 flex flex-col bg-card/50 backdrop-blur-sm transition-shadow duration-200 ${
+                headerShadow ? "shadow-[0_1px_3px_0_rgba(0,0,0,0.06),0_1px_2px_-1px_rgba(0,0,0,0.06)] dark:shadow-[0_1px_3px_0_rgba(0,0,0,0.2),0_1px_2px_-1px_rgba(0,0,0,0.15)]" : ""
+              }`}
+            >
               {companyBranding?.bannerImageUrl && (
                 <div className="w-full h-20 md:h-24 overflow-hidden bg-input-bg">
                   <img src={companyBranding.bannerImageUrl} alt="" className="w-full h-full object-cover" />
@@ -176,7 +204,13 @@ export default function DashboardLayout({
             </div>
               </div>
           </header>
-          <div className="flex-1 flex flex-col overflow-auto min-h-0">{children}</div>
+          <div
+            ref={contentScrollRef}
+            onScroll={handleContentScroll}
+            className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden min-h-0"
+          >
+            {children}
+          </div>
         </main>
       </div>
       </HeaderActionContext.Provider>

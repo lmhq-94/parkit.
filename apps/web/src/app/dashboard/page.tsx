@@ -5,6 +5,7 @@ import { getStoredUser, isSuperAdmin } from "@/lib/auth";
 import { apiClient } from "@/lib/api";
 import { formatPlate } from "@/lib/inputMasks";
 import {
+  ArrowLeft,
   Building2,
   MapPin,
   Ticket,
@@ -25,6 +26,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { DatePickerField } from "@/components/DatePickerField";
 
 interface DashboardStats {
   companiesCount: number;
@@ -69,6 +71,42 @@ function formatRelativeTime(dateStr: string, locale: string) {
   return d.toLocaleDateString(locale === "es" ? "es" : "en");
 }
 
+const RANGE_OPTIONS = [7, 14, 30] as const;
+type RangeDays = (typeof RANGE_OPTIONS)[number];
+
+function toYYYYMMDD(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** Máximo de días permitidos en el rango (igual que en la API). */
+const MAX_RANGE_DAYS = 90;
+
+function addDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr + "T12:00:00");
+  d.setDate(d.getDate() + days);
+  return toYYYYMMDD(d);
+}
+
+function getDefaultCustomRange(): { from: string; to: string } {
+  const now = new Date();
+  const from = new Date(now);
+  from.setDate(from.getDate() - 6);
+  return { from: toYYYYMMDD(from), to: toYYYYMMDD(now) };
+}
+
+/** Ajusta from/to para que el rango no supere MAX_RANGE_DAYS. */
+function clampRange(from: string, to: string): { from: string; to: string } {
+  const fromDate = new Date(from + "T12:00:00").getTime();
+  const toDate = new Date(to + "T12:00:00").getTime();
+  const days = Math.round((toDate - fromDate) / 86400000) + 1;
+  if (days <= MAX_RANGE_DAYS) return { from, to };
+  const maxTo = addDays(from, MAX_RANGE_DAYS - 1);
+  return { from, to: maxTo };
+}
+
 export default function DashboardPage() {
   const { t, tEnum, locale } = useTranslation();
   const user = getStoredUser();
@@ -76,12 +114,20 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [days, setDays] = useState<RangeDays>(7);
+  const [customRange, setCustomRange] = useState<{ from: string; to: string } | null>(null);
+  const [customRangeJustOpened, setCustomRangeJustOpened] = useState(false);
+
+  const query = customRange
+    ? `from=${encodeURIComponent(customRange.from)}&to=${encodeURIComponent(customRange.to)}`
+    : `days=${days}`;
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     (async () => {
       try {
-        const data = await apiClient.get<DashboardStats>("/dashboard/stats");
+        const data = await apiClient.get<DashboardStats>(`/dashboard/stats?${query}`);
         if (!cancelled) {
           setStats(data);
           setError(null);
@@ -97,9 +143,18 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [query]);
 
-  if (loading) {
+  // Después de abrir el rango personalizado por primera vez, reseteamos el flag
+  useEffect(() => {
+    if (customRangeJustOpened) {
+      const id = window.setTimeout(() => setCustomRangeJustOpened(false), 0);
+      return () => window.clearTimeout(id);
+    }
+  }, [customRangeJustOpened]);
+
+  // Spinner completo solo en carga inicial (sin datos). Al cambiar días se mantiene la UI y solo se actualizan los datos.
+  if (loading && !stats) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <div className="flex flex-col items-center gap-4">
@@ -244,27 +299,34 @@ export default function DashboardPage() {
 
   return (
     <div className="pt-4 md:pt-6 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 max-w-[1600px] mx-auto w-full flex-1 flex flex-col gap-6 md:gap-8">
-            {/* Banner: resumen rápido con métricas importantes */}
-            <header className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-600/90 via-slate-700/80 to-slate-800 dark:from-slate-700/90 dark:via-slate-800/80 dark:to-slate-900 border border-white/20 p-6 md:p-8">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,color-mix(in_srgb,var(--company-primary,#2563eb)_25%,transparent),transparent)]" />
+            {/* Banner: degradado según color del tema, fondo oscuro para buena legibilidad del texto */}
+            <header
+              className="relative overflow-hidden rounded-2xl border border-white/15 p-6 md:p-8"
+              style={{
+                background: `linear-gradient(to bottom right, color-mix(in srgb, var(--company-primary, #2563eb) 55%, black), color-mix(in srgb, var(--company-primary, #2563eb) 30%, black), color-mix(in srgb, var(--company-primary, #2563eb) 12%, black))`,
+              }}
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(255,255,255,0.08),transparent)]" />
               <div className="relative space-y-5">
                 <div className="flex flex-wrap items-center gap-4">
                   <div className="flex items-center gap-3">
-                    <TrendingUp className="w-8 h-8 text-sky-200/90 shrink-0" />
+                    <div className="rounded-xl bg-white/15 p-2.5 shrink-0 text-white">
+                      <TrendingUp className="w-7 h-7" />
+                    </div>
                     <div>
                       <p className="text-lg font-semibold text-white tracking-tight">
-                        {t("dashboard.chartTicketsTitle")}
+                        {t("dashboard.activityOverviewTitle")}
                       </p>
-                      <p className="text-sky-200/90 text-sm mt-0.5">
+                      <p className="text-sm mt-0.5 text-white/90">
                         {stats.ticketsLast7Days.reduce((a, b) => a + b.count, 0)} {t("dashboard.ticketsThisWeek")}
                       </p>
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-3 border-t border-white/10">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-3 border-t border-white/15">
                   <div className="flex items-center gap-2">
-                    <CalendarCheck className="w-4 h-4 text-sky-300/80" />
-                    <span className="text-sky-100/90 text-sm">
+                    <CalendarCheck className="w-4 h-4 shrink-0 text-white/90" />
+                    <span className="text-sm text-white/90">
                       {t("dashboard.avgPerDay")}:{" "}
                       <strong className="text-white font-semibold tabular-nums">
                         {avgPerDay.toFixed(avgPerDay >= 10 ? 0 : 1)}
@@ -272,18 +334,18 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-sky-300/80" />
-                    <span className="text-sky-100/90 text-sm">
+                    <TrendingUp className="w-4 h-4 shrink-0 text-white/90" />
+                    <span className="text-sm text-white/90">
                       {t("dashboard.peakDay")}:{" "}
                       <strong className="text-white font-semibold tabular-nums">
                         {peakDay.count.toLocaleString()}
                       </strong>{" "}
-                      <span className="text-sky-200/80">({peakDayLabel})</span>
+                      <span className="text-white/80">({peakDayLabel})</span>
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Ticket className="w-4 h-4 text-sky-300/80" />
-                    <span className="text-sky-100/90 text-sm">
+                    <Ticket className="w-4 h-4 shrink-0 text-white/90" />
+                    <span className="text-sm text-white/90">
                       {t("dashboard.today")}:{" "}
                       <strong className="text-white font-semibold tabular-nums">
                         {todayCount.toLocaleString()}
@@ -291,8 +353,8 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-sky-300/80" />
-                    <span className="text-sky-100/90 text-sm">
+                    <Users className="w-4 h-4 shrink-0 text-white/90" />
+                    <span className="text-sm text-white/90">
                       {t("dashboard.lastActivity")}:{" "}
                       <strong className="text-white font-semibold">
                         {lastActivity}
@@ -337,16 +399,99 @@ export default function DashboardPage() {
             {/* Chart + Recent tickets */}
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
               <div className="lg:col-span-2 rounded-2xl border border-card-border bg-card p-6 backdrop-blur-sm overflow-hidden flex flex-col min-h-[320px]">
-                <h2 className="text-lg font-semibold text-text-primary mb-4">
-                  {t("dashboard.chartTicketsTitle")}
-                </h2>
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+                  <h2 className="text-lg font-semibold text-text-primary">
+                    {t("dashboard.chartTicketsTitle")}
+                  </h2>
+                  <div className="flex items-center justify-end gap-3">
+                    {customRange ? (
+                      <div className="flex items-center gap-2 rounded-lg border border-input-border bg-input-bg p-0.5">
+                        <button
+                          type="button"
+                          onClick={() => setCustomRange(null)}
+                          disabled={loading}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-company-tertiary hover:bg-company-tertiary-subtle hover:text-text-primary border border-transparent transition-colors disabled:opacity-60"
+                          aria-label={t("common.back")}
+                        >
+                          <ArrowLeft className="w-4 h-4 shrink-0" />
+                          {t("common.back")}
+                        </button>
+                        <DatePickerField
+                          value={customRange.from}
+                          autoOpen={customRangeJustOpened}
+                          compact
+                          minDate={addDays(customRange.to, -MAX_RANGE_DAYS + 1)}
+                          maxDate={customRange.to}
+                          onChange={(v) => {
+                            const nextFrom = v || customRange.from;
+                            setCustomRange((r) =>
+                              r ? clampRange(nextFrom, r.to) : r
+                            );
+                          }}
+                          className="min-w-[11rem]"
+                        />
+                        <DatePickerField
+                          value={customRange.to}
+                          autoOpen={customRangeJustOpened}
+                          compact
+                          minDate={customRange.from}
+                          maxDate={addDays(customRange.from, MAX_RANGE_DAYS - 1)}
+                          onChange={(v) => {
+                            const nextTo = v || customRange.to;
+                            setCustomRange((r) =>
+                              r ? clampRange(r.from, nextTo) : r
+                            );
+                          }}
+                          className="min-w-[11rem]"
+                        />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2 rounded-lg border border-input-border bg-input-bg p-0.5">
+                          {RANGE_OPTIONS.map((d) => (
+                            <button
+                              key={d}
+                              type="button"
+                              onClick={() => {
+                                setCustomRange(null);
+                                setDays(d);
+                              }}
+                              disabled={loading}
+                              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-60 ${
+                                days === d
+                                  ? "bg-company-primary-subtle text-company-primary border border-company-primary-muted"
+                                  : "text-company-tertiary hover:bg-company-tertiary-subtle hover:text-text-primary border border-transparent"
+                              }`}
+                            >
+                              {t(d === 7 ? "dashboard.rangeLast7" : d === 14 ? "dashboard.rangeLast14" : "dashboard.rangeLast30")}
+                            </button>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCustomRange(getDefaultCustomRange());
+                              setCustomRangeJustOpened(true);
+                            }}
+                            disabled={loading}
+                            className="px-3 py-2 rounded-md text-sm font-medium text-company-tertiary hover:bg-company-tertiary-subtle hover:text-text-primary border border-transparent transition-colors disabled:opacity-60"
+                          >
+                            {t("dashboard.rangeCustom")}
+                          </button>
+                        </div>
+                        {loading && (
+                          <div className="h-5 w-5 rounded-full border-2 border-company-primary border-t-transparent animate-spin shrink-0" aria-hidden />
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
                 <div className="flex-1 min-h-[240px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="ticketsGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="rgb(14, 165, 233)" stopOpacity={0.4} />
-                          <stop offset="100%" stopColor="rgb(14, 165, 233)" stopOpacity={0} />
+                          <stop offset="0%" stopColor="var(--company-primary, #2563eb)" stopOpacity={0.4} />
+                          <stop offset="100%" stopColor="var(--company-primary, #2563eb)" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid
@@ -383,7 +528,7 @@ export default function DashboardPage() {
                       <Area
                         type="monotone"
                         dataKey="count"
-                        stroke="rgb(14, 165, 233)"
+                        stroke="var(--company-primary, #2563eb)"
                         strokeWidth={2}
                         fill="url(#ticketsGradient)"
                       />
@@ -425,7 +570,7 @@ export default function DashboardPage() {
                               href="/dashboard/tickets"
                               className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-input-bg"
                             >
-                              <div className="rounded-lg bg-violet-500/10 p-2 text-violet-600 dark:text-violet-400">
+                              <div className="rounded-lg bg-company-primary-subtle p-2 text-company-primary">
                                 <Car className="w-4 h-4" />
                               </div>
                               <div className="min-w-0 flex-1">
