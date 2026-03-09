@@ -38,7 +38,10 @@ function Field({ label, required, icon: Icon, children }: {
   );
 }
 
+/** Todos los estados (para cargar/guardar). Al crear una company la API usa PENDING por defecto. */
 const COMPANY_STATUSES = ["PENDING", "ACTIVE", "SUSPENDED", "INACTIVE"] as const;
+/** En el edit solo se puede elegir estos; PENDING no se muestra en el dropdown. */
+const EDITABLE_STATUSES = ["ACTIVE", "SUSPENDED", "INACTIVE"] as const;
 
 const defaultForm = {
   legalName: "", taxId: "", commercialName: "",
@@ -135,11 +138,11 @@ export default function EditCompanyPage() {
       )}
 
       {/* Sección — datos legales */}
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-company-primary-8 to-transparent">
+      <div className="rounded-2xl overflow-hidden">
+        <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("companies.sectionMain")}</p>
-            <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">{t("common.requiredBadge")}</span>
+            <span className="text-[10px] font-semibold text-red-500">{t("common.requiredBadge")}</span>
           </div>
           <p className="text-xs text-text-muted mt-1">{t("companies.sectionMainDesc")}</p>
         </div>
@@ -153,22 +156,37 @@ export default function EditCompanyPage() {
             </Field>
             <div>
               <label className={LABEL}>{t("tables.companies.status")}</label>
-              <SelectField value={form.status} onChange={set("status")} icon={Activity}>
-                {COMPANY_STATUSES.map((s) => (
-                  <option key={s} value={s}>{tEnum("companyStatus", s)}</option>
-                ))}
-              </SelectField>
+              {form.status === "PENDING" ? (
+                <>
+                  <SelectField
+                    value=""
+                    onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
+                    icon={Activity}
+                  >
+                    <option value="">{t("companies.changeStatusTo")}</option>
+                    {EDITABLE_STATUSES.map((s) => (
+                      <option key={s} value={s}>{tEnum("companyStatus", s)}</option>
+                    ))}
+                  </SelectField>
+                </>
+              ) : (
+                <SelectField value={form.status} onChange={set("status")} icon={Activity}>
+                  {EDITABLE_STATUSES.map((s) => (
+                    <option key={s} value={s}>{tEnum("companyStatus", s)}</option>
+                  ))}
+                </SelectField>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       {/* Sección — contacto */}
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-indigo-500/8 to-transparent">
+      <div className="rounded-2xl overflow-hidden">
+        <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("companies.sectionContact")}</p>
-            <span className="text-[10px] font-semibold text-text-muted/60 bg-input-bg px-2.5 py-1 rounded-full border border-input-border/60">{t("common.optionalBadge")}</span>
+            <span className="text-[10px] font-semibold text-company-tertiary">{t("common.optionalBadge")}</span>
           </div>
           <p className="text-xs text-text-muted mt-1">{t("companies.sectionContactDesc")}</p>
         </div>
@@ -212,8 +230,8 @@ export default function EditCompanyPage() {
       </div>
 
       {/* Sección — configuración regional */}
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-emerald-500/8 to-transparent flex items-center gap-3">
+      <div className="rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 flex items-center gap-3">
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("companies.sectionRegional")}</p>
             <p className="text-xs text-text-muted">{t("companies.sectionRegionalDesc")}</p>
@@ -251,7 +269,7 @@ export default function EditCompanyPage() {
         <p className="text-xs text-text-muted hidden sm:block">{t("common.requiredNote")}</p>
         <div className="flex items-center gap-3 ml-auto">
           <Link href="/dashboard/companies"
-            className="px-5 py-3 rounded-lg border border-input-border text-sm font-medium text-text-secondary hover:bg-input-bg hover:text-text-primary transition-colors">
+            className="px-5 py-3 rounded-lg border border-company-secondary-muted text-sm font-medium text-company-secondary hover:bg-company-secondary-subtle hover:text-company-secondary transition-colors">
             {t("common.cancel")}
           </Link>
           <button type="button" onClick={handleSubmit} disabled={submitting || !isValid}

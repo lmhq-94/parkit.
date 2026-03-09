@@ -66,7 +66,7 @@ export function ConfirmDeleteModal({
               type="button"
               onClick={onCancel}
               disabled={loading}
-              className="flex-1 px-4 py-2.5 rounded-lg border border-input-border text-sm font-medium text-text-secondary hover:bg-input-bg hover:text-text-primary transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 rounded-lg border border-company-secondary-muted text-sm font-medium text-company-secondary hover:bg-company-secondary-subtle hover:text-company-secondary transition-colors disabled:opacity-50"
             >
               {cancelLabel}
             </button>

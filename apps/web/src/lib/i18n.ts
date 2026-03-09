@@ -220,6 +220,7 @@ export const translations = {
       addressPickerHint: "Escribe y elige un resultado de la lista, o selecciona un punto en el mapa tras buscar.",
       addressPickerClickToSelect: "Haz clic en el mapa para elegir una ubicación.",
       addressPickerClickToChange: "Haz clic en otro punto del mapa para cambiar la ubicación.",
+      changeStatusTo: "Cambiar estado a…",
     },
     users: {
       newUser: "Nuevo empleado",
@@ -362,7 +363,7 @@ export const translations = {
       forLightMode: "Modo claro",
       forDarkMode: "Modo oscuro",
       bannerImage: "Imagen de cabecera (banner)",
-      bannerImageDescription: "Imagen que se muestra como cabecera. Recomendado: 1200×200 px aprox.",
+      bannerImageDescription: "Imagen que se muestra como cabecera.",
       bannerImagePlaceholder: "https://ejemplo.com/mi-banner.jpg",
       logoImage: "Logo o avatar de la empresa",
       logoImageDescription: "Logo que aparece en el sidebar y en la app.",
@@ -394,6 +395,12 @@ export const translations = {
       saveSuccess: "Configuración guardada.",
       saveError: "Error al guardar. Intenta de nuevo.",
       revertToDefault: "Restaurar valores por defecto",
+      cropApply: "Aplicar",
+      cropCancel: "Cancelar",
+      cropHint: "Arrastra la imagen para encuadrar. Ajusta el zoom si hace falta.",
+      dragOrClick: "Arrastra una imagen aquí o haz clic para subir",
+      dragOrClickShort: "Arrastra o haz clic para subir",
+      recommendedFormat: "Recomendado: {{size}}",
     },
     enums: {
       systemRole: {
@@ -778,6 +785,7 @@ export const translations = {
       addressPickerHint: "Type and choose a result from the list, or pick a point on the map after searching.",
       addressPickerClickToSelect: "Click on the map to choose a location.",
       addressPickerClickToChange: "Click elsewhere on the map to change the location.",
+      changeStatusTo: "Change status to…",
     },
     users: {
       newUser: "New employee",
@@ -920,7 +928,7 @@ export const translations = {
       forLightMode: "Light mode",
       forDarkMode: "Dark mode",
       bannerImage: "Banner image",
-      bannerImageDescription: "Image shown as header. Recommended: ~1200×200 px.",
+      bannerImageDescription: "Image shown as header.",
       bannerImagePlaceholder: "https://example.com/my-banner.jpg",
       logoImage: "Company logo or avatar",
       logoImageDescription: "Logo shown in the sidebar and across the app.",
@@ -952,6 +960,12 @@ export const translations = {
       saveSuccess: "Settings saved.",
       saveError: "Failed to save. Please try again.",
       revertToDefault: "Revert to default settings",
+      cropApply: "Apply",
+      cropCancel: "Cancel",
+      cropHint: "Drag the image to frame it. Adjust zoom if needed.",
+      dragOrClick: "Drag and drop an image here or click to upload",
+      dragOrClickShort: "Drag or click to upload",
+      recommendedFormat: "Recommended: {{size}}",
     },
     enums: {
       systemRole: {

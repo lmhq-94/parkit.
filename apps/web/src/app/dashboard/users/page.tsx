@@ -27,14 +27,14 @@ function RoleIconCellRenderer(
 ) {
   const { data, tEnum, t } = params;
   const role = data?.systemRole;
-  if (!role) return <span className="text-slate-400">—</span>;
+  if (!role) return <span className="text-company-tertiary">—</span>;
   const Icon = ROLE_ICONS[role] ?? User;
   const label = tEnum("systemRole", role);
   const tooltipDesc = t(`enums.systemRoleTooltip.${role}`);
   const title = tooltipDesc ? `${label} — ${tooltipDesc}` : label;
   return (
     <span className="inline-flex items-center justify-center" title={title}>
-      <Icon className="w-4 h-4 text-slate-600 dark:text-slate-400" aria-hidden />
+      <Icon className="w-4 h-4 text-company-secondary" aria-hidden />
     </span>
   );
 }

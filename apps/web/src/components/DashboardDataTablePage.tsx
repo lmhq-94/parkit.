@@ -52,7 +52,7 @@ const STATUS_TEXT_STYLES: Record<string, { text: string; dot: string }> = {
   success: { text: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500" },
   warning: { text: "text-amber-600 dark:text-amber-400", dot: "bg-amber-500" },
   error: { text: "text-red-600 dark:text-red-400", dot: "bg-red-500" },
-  muted: { text: "text-slate-500 dark:text-slate-400", dot: "bg-slate-400" },
+  muted: { text: "text-company-tertiary", dot: "bg-company-tertiary" },
   info: { text: "text-company-primary", dot: "bg-company-primary" },
 };
 
@@ -120,7 +120,7 @@ function LinkCellRenderer(
 ) {
   const value = params.value != null ? String(params.value).trim() : "";
   const isEmpty = !value || value === "N/A" || value === "—";
-  if (isEmpty) return <span className="text-slate-400">—</span>;
+  if (isEmpty) return <span className="text-company-tertiary">—</span>;
   const href = params.linkType === "email" ? `mailto:${value}` : `tel:${value}`;
   return (
     <a
@@ -649,7 +649,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
       const data = params.data as DetailRow<T>;
       if (!data?.__detail || !data.__parent || !renderRowDetail) return null;
       const content = (
-        <div className="w-full border-b border-slate-200/80 dark:border-slate-600/50 bg-slate-100/90 dark:bg-slate-800/70 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+        <div className="w-full border-b border-company-secondary-muted bg-company-tertiary-subtle/50 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
           <div className="flex items-stretch gap-6 px-5 py-3 w-full">
             <div className="shrink-0 w-0.5 min-h-[2rem] rounded-full bg-company-primary-subtle self-stretch" aria-hidden />
             <div className="min-w-0 flex-1 [&_dl]:grid [&_dl]:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] [&_dl]:gap-x-6 [&_dl]:gap-y-3 [&_dl]:text-sm [&_dl]:w-full [&_dl]:content-start">
@@ -746,7 +746,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                       flex: 1,
                       minWidth: 140,
                     }}
-                    overlayNoRowsTemplate={`<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500"><svg class="w-12 h-12 mb-3 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg><span>${emptyMessage}</span></div>`}
+                    overlayNoRowsTemplate={`<div class="flex flex-col items-center justify-center text-company-tertiary"><svg class="w-12 h-12 mb-3 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg><span>${emptyMessage}</span></div>`}
                     pagination
                     paginationPageSize={20}
                     animateRows={false}

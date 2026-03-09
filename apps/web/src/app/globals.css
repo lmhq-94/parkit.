@@ -12,10 +12,10 @@
     --text-muted: #64748b;
     --input-bg: rgba(0, 0, 0, 0.04);
     --input-border: rgba(0, 0, 0, 0.1);
-    /* Colores de la empresa (Settings). Valores por defecto = lib/themeDefaults.ts (light) */
+    /* Colores de la empresa (Settings). Valores por defecto = lib/themeDefaults.ts (light). Secondary/tertiary un poco más oscuros para texto sidebar inactivo. */
     --company-primary: #2563eb;
-    --company-secondary: #64748b;
-    --company-tertiary: #94a3b8;
+    --company-secondary: #475569;
+    --company-tertiary: #64748b;
   }
 
   .dark {
@@ -64,7 +64,15 @@ body {
 }
 
 .btn-secondary {
-  @apply px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background-color: color-mix(in srgb, var(--company-secondary, #64748b) 12%, transparent);
+  color: var(--company-secondary, #64748b);
+  border: 1px solid color-mix(in srgb, var(--company-secondary, #64748b) 35%, transparent);
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+.btn-secondary:hover {
+  background-color: color-mix(in srgb, var(--company-secondary, #64748b) 20%, transparent);
 }
 
 .btn-danger {
@@ -101,9 +109,9 @@ body {
   --ag-background-color: transparent;
   --ag-foreground-color: var(--text-primary);
   --ag-data-color: var(--text-primary);
-  --ag-secondary-foreground-color: var(--text-muted);
+  --ag-secondary-foreground-color: var(--company-tertiary, var(--text-muted));
   --ag-header-background-color: transparent;
-  --ag-header-foreground-color: var(--text-secondary);
+  --ag-header-foreground-color: var(--company-secondary, var(--text-secondary));
   --ag-header-cell-hover-background-color: color-mix(in srgb, var(--company-primary, #0ea5e9) 8%, transparent);
   --ag-active-color: var(--company-primary, #0ea5e9);
   --ag-border-color: transparent;
@@ -250,7 +258,7 @@ body {
 }
 
 .ag-theme-parkit .ag-paging-button {
-  color: var(--text-secondary) !important;
+  color: var(--company-secondary, var(--text-secondary)) !important;
   font-weight: 500;
 }
 
@@ -363,12 +371,21 @@ body {
   border-color: color-mix(in srgb, var(--company-secondary, #64748b) 35%, transparent);
 }
 
-/* Tertiary: fondos muy suaves, elementos terciarios */
+/* Tertiary: fondos muy suaves, elementos terciarios, texto de apoyo */
 .bg-company-tertiary-subtle {
   background-color: color-mix(in srgb, var(--company-tertiary, #94a3b8) 8%, transparent);
 }
+.hover\:bg-company-tertiary-subtle:hover {
+  background-color: color-mix(in srgb, var(--company-tertiary, #94a3b8) 12%, transparent);
+}
 .text-company-tertiary {
   color: var(--company-tertiary, #94a3b8);
+}
+.hover\:text-company-tertiary:hover {
+  color: var(--company-tertiary, #94a3b8);
+}
+.bg-company-tertiary {
+  background-color: var(--company-tertiary, #94a3b8);
 }
 
 /* Focus en inputs y botones del dashboard usa el color principal del tema */

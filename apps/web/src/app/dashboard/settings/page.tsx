@@ -15,6 +15,7 @@ import {
   THEME_DEFAULT_TERTIARY_DARK,
 } from "@/lib/themeDefaults";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
+import { ImageCropEditor } from "@/components/ImageCropEditor";
 import { useToast } from "@/lib/toastStore";
 
 type BrandingConfig = {
@@ -40,81 +41,197 @@ function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
-function ImageSelector({
+/** Tamaño del área: logo cuadrado, banner 4:1. Suficiente para que quepan icono + texto en el drop zone */
+const LOGO_CROP_SIZE = 176;
+const BANNER_CROP_W = 400;
+const BANNER_CROP_H = 100;
+
+function ImageCropField({
+  kind,
   value,
   onChange,
   onClear,
   label,
   description,
-  aspectRatio,
-  previewClass,
-  selectLabel,
-  changeLabel,
-  removeLabel,
-  objectFit = "cover",
+  recommendedSize,
   headerClassName,
+  layout = "card",
+  t,
 }: {
+  kind: "logo" | "banner";
   value: string;
   onChange: (dataUrl: string) => void;
   onClear: () => void;
   label: string;
   description?: string;
-  aspectRatio: string;
-  previewClass?: string;
-  selectLabel: string;
-  changeLabel: string;
-  removeLabel: string;
-  objectFit?: "cover" | "contain";
-  /** Misma altura de cabecera en todas las columnas para alinear como la sección de colores */
+  recommendedSize: string;
   headerClassName?: string;
+  /** "row" = etiqueta a la izquierda, contenido a la derecha (como la sección de colores) */
+  layout?: "card" | "row";
+  t: (key: string) => string;
 }) {
+  const [pendingCrop, setPendingCrop] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+
+  const isLogo = kind === "logo";
+  const aspectRatio: [number, number] = isLogo ? [1, 1] : [4, 1];
+  const cropBoxWidth = isLogo ? LOGO_CROP_SIZE : BANNER_CROP_W;
+  const cropBoxHeight = isLogo ? LOGO_CROP_SIZE : BANNER_CROP_H;
+  const outputMaxWidth = isLogo ? 400 : 1200;
+
+  const processFile = (file: File | null) => {
     if (!file || !file.type.startsWith("image/")) return;
-    try {
-      const dataUrl = await readFileAsDataUrl(file);
-      onChange(dataUrl);
-    } catch {
-      // ignore
-    }
-    e.target.value = "";
+    readFileAsDataUrl(file).then((dataUrl) => setPendingCrop(dataUrl)).catch(() => {});
   };
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    processFile(file ?? null);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    processFile(e.dataTransfer.files?.[0] ?? null);
+  };
+
   const header = (
     <>
       <label className={LABEL}>{label}</label>
-      {description && <p className="text-xs text-text-muted mb-1.5">{description}</p>}
+      {(description || recommendedSize) && (
+        <p className="text-xs text-company-tertiary mt-0.5 break-words">
+          {description}
+          {description && recommendedSize && " "}
+          {recommendedSize && t("settings.recommendedFormat").replace("{{size}}", recommendedSize)}
+        </p>
+      )}
     </>
   );
-  return (
-    <div>
-      {headerClassName ? <div className={headerClassName}>{header}</div> : header}
-      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
-      {value ? (
-        <div className="space-y-2">
-          <div className={`rounded-lg overflow-hidden border border-card-border bg-input-bg ${previewClass || ""}`} style={{ aspectRatio }}>
-            <img src={value} alt="" className={`w-full h-full ${objectFit === "contain" ? "object-contain" : "object-cover"}`} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-          </div>
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={() => inputRef.current?.click()} className="text-sm font-medium text-company-primary hover:underline">
-              {changeLabel}
-            </button>
-            <button type="button" onClick={onClear} className="flex items-center gap-1 text-sm font-medium text-text-muted hover:text-red-600 dark:hover:text-red-400 transition-colors">
-              <X className="w-3.5 h-3.5" />
-              {removeLabel}
-            </button>
-          </div>
+
+  /** Altura fija del bloque de contenido para que empty y preview no cambien el tamaño de la card */
+  const contentMinHeight = isLogo ? 280 : 184;
+  const cardMinHeight = 92 + contentMinHeight;
+
+  const rowWrapper = "flex flex-col gap-3 border-b border-card-border pb-6 last:border-0 last:pb-0 min-w-0";
+
+  const wrapContent = (content: React.ReactNode) =>
+    layout === "row" ? (
+      <div className={rowWrapper}>
+        <div>{headerClassName ? <div className={headerClassName}>{header}</div> : header}</div>
+        <div className="min-w-0 w-full">{content}</div>
+      </div>
+    ) : (
+      <div className="rounded-xl border border-card-border bg-card/80 p-5 space-y-4 min-w-0">
+        {headerClassName ? <div className={headerClassName}>{header}</div> : header}
+        {content}
+      </div>
+    );
+
+  if (pendingCrop) {
+    return wrapContent(
+      <ImageCropEditor
+          sourceDataUrl={pendingCrop}
+          aspectRatio={aspectRatio}
+          cropBoxWidth={cropBoxWidth}
+          cropBoxHeight={cropBoxHeight}
+          outputMaxWidth={outputMaxWidth}
+          onApply={(url) => {
+            onChange(url);
+            setPendingCrop(null);
+          }}
+          onCancel={() => setPendingCrop(null)}
+          applyLabel={t("settings.cropApply")}
+          cancelLabel={t("settings.cropCancel")}
+          hintText={t("settings.cropHint")}
+          aspectLabel={isLogo ? "1:1" : "4:1"}
+          circular={isLogo}
+        />
+    );
+  }
+
+  if (value) {
+    const previewContent = (
+      <div className="flex flex-col gap-4 flex-1 min-h-0" style={layout === "card" ? { minHeight: contentMinHeight } : undefined}>
+        <div className={`overflow-hidden rounded-xl bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 w-full ${isLogo ? "rounded-full mx-auto max-w-[176px] aspect-square" : "rounded-xl aspect-[4/1] max-w-[400px] min-w-[240px]"}`}>
+          <img src={value} alt="" className={`w-full h-full ${isLogo ? "object-cover" : "object-cover object-center"}`} />
         </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="w-full rounded-lg border-2 border-dashed border-input-border bg-input-bg hover:border-company-primary-muted hover:bg-company-primary-subtle transition-colors flex flex-col items-center justify-center gap-2 py-8 px-4"
-        >
-          <Upload className="w-8 h-8 text-text-muted" />
-          <span className="text-sm font-medium text-text-secondary">{selectLabel}</span>
-        </button>
-      )}
+        <div className="flex items-center gap-2 shrink-0">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className={`overflow-hidden rounded-lg bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 ${isLogo ? "rounded-full" : ""}`} style={{ width: isLogo ? 44 : 80, height: isLogo ? 44 : 20 }}>
+              <img src={value} alt="" className="w-full h-full object-cover" />
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center gap-3 shrink-0 pt-0.5">
+          <button type="button" onClick={() => setPendingCrop(value)} className="text-sm font-medium text-company-primary hover:text-company-primary/90 transition-colors whitespace-nowrap">
+            {t("settings.changeImage")}
+          </button>
+          <button type="button" onClick={onClear} className="flex items-center gap-1.5 text-sm font-medium text-company-tertiary hover:text-red-500 dark:hover:text-red-400 transition-colors whitespace-nowrap">
+            <X className="w-4 h-4 shrink-0" />
+            {t("settings.removeImage")}
+          </button>
+        </div>
+      </div>
+    );
+    if (layout === "row") {
+      return (
+        <div className={rowWrapper}>
+          <div>{headerClassName ? <div className={headerClassName}>{header}</div> : header}</div>
+          <div className="min-w-0 w-full">{previewContent}</div>
+        </div>
+      );
+    }
+    return (
+      <div className="rounded-xl border border-card-border bg-card/80 p-5 min-w-0 flex flex-col" style={{ minHeight: cardMinHeight }}>
+        {headerClassName ? <div className={headerClassName}>{header}</div> : header}
+        {previewContent}
+      </div>
+    );
+  }
+
+  const dropZonePadding = isLogo ? "py-6 px-5" : "py-4 px-4";
+  const dropZoneBase = `relative transition-all duration-200 flex flex-col items-center justify-center gap-3 shrink-0 cursor-pointer ${dropZonePadding} `;
+  const dropZoneState = dragOver
+    ? "border-2 border-dashed border-company-primary bg-company-primary-subtle/50 ring-2 ring-company-primary/20 "
+    : "border-2 border-dashed border-input-border bg-input-bg/60 hover:border-company-primary-muted hover:bg-company-primary-subtle/30 ";
+  const dropZoneShape = isLogo ? "rounded-full mx-auto w-full max-w-[176px] aspect-square min-w-[120px]" : "rounded-xl w-full max-w-[400px] min-w-[240px] aspect-[4/1]";
+  const dropZoneClass = dropZoneBase + dropZoneState + dropZoneShape;
+
+  const emptyContent = (
+    <>
+      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      <div
+        className={dropZoneClass}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={handleDrop}
+        onClick={() => inputRef.current?.click()}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); inputRef.current?.click(); } }}
+      >
+        <Upload className="w-8 h-8 text-company-tertiary shrink-0" />
+        <span className={`font-medium text-text-secondary text-center leading-snug px-1 max-w-[90%] ${isLogo ? "text-sm" : "text-xs"}`}>
+          {t(isLogo ? "settings.dragOrClick" : "settings.dragOrClickShort")}
+        </span>
+      </div>
+    </>
+  );
+
+  if (layout === "row") {
+    return (
+      <div className={rowWrapper}>
+        <div>{headerClassName ? <div className={headerClassName}>{header}</div> : header}</div>
+        <div className="min-w-0 w-full">{emptyContent}</div>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-xl border border-card-border bg-card/80 p-5 min-w-0 flex flex-col" style={{ minHeight: cardMinHeight }}>
+      {headerClassName ? <div className={headerClassName}>{header}</div> : header}
+      {emptyContent}
     </div>
   );
 }
@@ -303,224 +420,139 @@ export default function SettingsPage() {
   if (loading) return <FormPageSkeleton />;
 
   return (
-    <div className="flex-1 flex flex-col pt-6 pb-8 px-4 md:px-10 lg:px-12 w-full gap-5">
+    <div className="flex flex-col flex-1 min-h-0 pt-6 pb-8 px-4 md:px-10 lg:px-12 w-full">
       {loadError && (
-        <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+        <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400 shrink-0">
           {loadError}
         </div>
       )}
 
-      {/* Sección 1 — Imágenes (igual que empleados: violet + optional) */}
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent">
-          <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-text-primary">{t("settings.companyTheme")}</p>
-            <span className="text-[10px] font-semibold text-company-secondary bg-company-secondary-subtle px-2.5 py-1 rounded-full border border-company-secondary-muted">{t("common.optionalBadge")}</span>
+      {/* Contenido con scroll interno: así la página no crece y el scroll queda dentro */}
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+      {/* En xl las dos secciones van lado a lado para reducir altura */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-8 items-start">
+        {/* Sección 1 — Tema de la empresa (Logo y Banner) */}
+        <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0">
+          <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm font-semibold text-text-primary">{t("settings.companyTheme")}</p>
+              <span className="text-[10px] font-semibold text-company-secondary bg-company-secondary-subtle px-2.5 py-1 rounded-full border border-company-secondary-muted">{t("common.optionalBadge")}</span>
+            </div>
+            <p className="text-xs text-text-muted mt-1 break-words">{t("settings.companyThemeDescription")}</p>
           </div>
-          <p className="text-xs text-text-muted mt-1">{t("settings.companyThemeDescription")}</p>
-        </div>
-        <div className="p-6 pt-4">
-          <div className="grid grid-cols-1 sm:grid-cols-[14rem_1fr] gap-5 items-start">
-            {/* Logo / avatar de la empresa (columna fija, alineada) */}
-            <div className="min-w-0">
-              <ImageSelector
+          <div className="px-6 pb-6 pt-2">
+            <div className="flex flex-col">
+              <ImageCropField
+                kind="logo"
                 value={form.logoImageUrl ?? ""}
                 onChange={(v) => setForm((p) => ({ ...p, logoImageUrl: v }))}
                 onClear={() => setForm((p) => ({ ...p, logoImageUrl: "" }))}
                 label={t("settings.logoImage")}
                 description={t("settings.logoImageDescription")}
-                aspectRatio="1/1"
-                previewClass="max-h-24 sm:max-h-28 w-24 sm:w-32 mx-auto sm:mx-0"
-                objectFit="contain"
-                selectLabel={t("settings.selectImage")}
-                changeLabel={t("settings.changeImage")}
-                removeLabel={t("settings.removeImage")}
-                headerClassName="min-h-[60px]"
+                recommendedSize="400 × 400 px"
+                layout="row"
+                t={t}
               />
-            </div>
-            {/* Banner (recorte 4:1 como en el sidebar; vista previa misma proporción) */}
-            <div className="min-w-0">
-              <ImageSelector
+              <ImageCropField
+                kind="banner"
                 value={form.bannerImageUrl ?? ""}
                 onChange={(v) => setForm((p) => ({ ...p, bannerImageUrl: v }))}
                 onClear={() => setForm((p) => ({ ...p, bannerImageUrl: "" }))}
                 label={t("settings.bannerImage")}
                 description={t("settings.bannerImageDescription")}
-                aspectRatio="4/1"
-                previewClass="max-h-32 sm:max-h-40 w-full"
-                objectFit="cover"
-                selectLabel={t("settings.selectImage")}
-                changeLabel={t("settings.changeImage")}
-                removeLabel={t("settings.removeImage")}
-                headerClassName="min-h-[60px]"
+                recommendedSize="1200 × 300 px"
+                layout="row"
+                t={t}
               />
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Sección 2 — Colores (sin bordes; header igual que la sección de imágenes) */}
-      <div className="bg-card/60 rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent flex items-center gap-3">
-          <div>
-            <p className="text-sm font-semibold text-text-primary">{t("settings.sectionColors")}</p>
-            <p className="text-xs text-text-muted">{t("settings.sectionColorsDesc")}</p>
+        {/* Sección 2 — Colores */}
+        <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0">
+          <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent flex items-center gap-3">
+            <div>
+              <p className="text-sm font-semibold text-text-primary">{t("settings.sectionColors")}</p>
+              <p className="text-xs text-text-muted">{t("settings.sectionColorsDesc")}</p>
+            </div>
           </div>
-        </div>
-        <div className="px-6 pb-6 pt-2">
-          {/* Grid de 3 columnas iguales para alinear los cuadros de color verticalmente */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-6 sm:gap-y-0">
-            {/* Principal */}
-            <div className="flex flex-col gap-3 min-w-0">
-              <div className="min-h-[60px]">
+          <div className="px-6 pb-6 pt-2">
+          <div className="flex flex-col gap-6">
+            {/* Fila: Principal */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 min-w-0 border-b border-card-border pb-6 last:border-0 last:pb-0">
+              <div className="sm:w-40 shrink-0">
                 <label className={LABEL}>{t("settings.primaryColor")}</label>
                 <p className="text-xs text-text-muted">{t("settings.primaryColorDescription")}</p>
               </div>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-8 flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-text-muted w-[4.5rem] shrink-0">{t("settings.forLightMode")}</span>
-                  <input
-                    type="color"
-                    value={form.primaryColor && /^#[0-9A-Fa-f]{6}$/.test(form.primaryColor) ? form.primaryColor : THEME_DEFAULT_PRIMARY_LIGHT}
-                    onChange={(e) => setForm((p) => ({ ...p, primaryColor: e.target.value }))}
-                    className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0"
-                    title={t("settings.primaryColor")}
-                  />
-                  <input
-                    type="text"
-                    value={form.primaryColor ?? ""}
-                    onChange={(e) => setForm((p) => ({ ...p, primaryColor: e.target.value }))}
-                    placeholder={t("settings.primaryColorPlaceholder")}
-                    className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`}
-                    aria-label={`${t("settings.primaryColor")} ${t("settings.forLightMode")}`}
-                  />
+                  <input type="color" value={form.primaryColor && /^#[0-9A-Fa-f]{6}$/.test(form.primaryColor) ? form.primaryColor : THEME_DEFAULT_PRIMARY_LIGHT} onChange={(e) => setForm((p) => ({ ...p, primaryColor: e.target.value }))} className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0" title={t("settings.primaryColor")} />
+                  <input type="text" value={form.primaryColor ?? ""} onChange={(e) => setForm((p) => ({ ...p, primaryColor: e.target.value }))} placeholder={t("settings.primaryColorPlaceholder")} className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`} aria-label={`${t("settings.primaryColor")} ${t("settings.forLightMode")}`} />
                   <CopyHexButton value={form.primaryColor ?? THEME_DEFAULT_PRIMARY_LIGHT} id="primary-light" copiedId={copiedId} onCopy={handleCopyHex} copyLabel={t("settings.copyHex")} />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-text-muted w-[4.5rem] shrink-0">{t("settings.forDarkMode")}</span>
-                  <input
-                    type="color"
-                    value={form.primaryColorDark && /^#[0-9A-Fa-f]{6}$/.test(form.primaryColorDark) ? form.primaryColorDark : THEME_DEFAULT_PRIMARY_DARK}
-                    onChange={(e) => setForm((p) => ({ ...p, primaryColorDark: e.target.value }))}
-                    className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0"
-                    title={t("settings.primaryColor")}
-                  />
-                  <input
-                    type="text"
-                    value={form.primaryColorDark ?? ""}
-                    onChange={(e) => setForm((p) => ({ ...p, primaryColorDark: e.target.value }))}
-                    placeholder="#3b82f6"
-                    className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`}
-                    aria-label={`${t("settings.primaryColor")} ${t("settings.forDarkMode")}`}
-                  />
+                  <input type="color" value={form.primaryColorDark && /^#[0-9A-Fa-f]{6}$/.test(form.primaryColorDark) ? form.primaryColorDark : THEME_DEFAULT_PRIMARY_DARK} onChange={(e) => setForm((p) => ({ ...p, primaryColorDark: e.target.value }))} className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0" title={t("settings.primaryColor")} />
+                  <input type="text" value={form.primaryColorDark ?? ""} onChange={(e) => setForm((p) => ({ ...p, primaryColorDark: e.target.value }))} placeholder="#3b82f6" className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`} aria-label={`${t("settings.primaryColor")} ${t("settings.forDarkMode")}`} />
                   <CopyHexButton value={form.primaryColorDark ?? THEME_DEFAULT_PRIMARY_DARK} id="primary-dark" copiedId={copiedId} onCopy={handleCopyHex} copyLabel={t("settings.copyHex")} />
                 </div>
               </div>
             </div>
-            {/* Secundario */}
-            <div className="flex flex-col gap-3 min-w-0">
-              <div className="min-h-[60px]">
+            {/* Fila: Secundario */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 min-w-0 border-b border-card-border pb-6 last:border-0 last:pb-0">
+              <div className="sm:w-40 shrink-0">
                 <label className={LABEL}>{t("settings.secondaryColor")}</label>
                 <p className="text-xs text-text-muted">{t("settings.secondaryColorDescription")}</p>
               </div>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-8 flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-text-muted w-[4.5rem] shrink-0">{t("settings.forLightMode")}</span>
-                  <input
-                    type="color"
-                    value={form.secondaryColor && /^#[0-9A-Fa-f]{6}$/.test(form.secondaryColor) ? form.secondaryColor : THEME_DEFAULT_SECONDARY_LIGHT}
-                    onChange={(e) => setForm((p) => ({ ...p, secondaryColor: e.target.value }))}
-                    className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0"
-                    title={t("settings.secondaryColor")}
-                  />
-                  <input
-                    type="text"
-                    value={form.secondaryColor ?? ""}
-                    onChange={(e) => setForm((p) => ({ ...p, secondaryColor: e.target.value }))}
-                    placeholder={t("settings.secondaryColorPlaceholder")}
-                    className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`}
-                    aria-label={`${t("settings.secondaryColor")} ${t("settings.forLightMode")}`}
-                  />
+                  <input type="color" value={form.secondaryColor && /^#[0-9A-Fa-f]{6}$/.test(form.secondaryColor) ? form.secondaryColor : THEME_DEFAULT_SECONDARY_LIGHT} onChange={(e) => setForm((p) => ({ ...p, secondaryColor: e.target.value }))} className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0" title={t("settings.secondaryColor")} />
+                  <input type="text" value={form.secondaryColor ?? ""} onChange={(e) => setForm((p) => ({ ...p, secondaryColor: e.target.value }))} placeholder={t("settings.secondaryColorPlaceholder")} className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`} aria-label={`${t("settings.secondaryColor")} ${t("settings.forLightMode")}`} />
                   <CopyHexButton value={form.secondaryColor ?? THEME_DEFAULT_SECONDARY_LIGHT} id="secondary-light" copiedId={copiedId} onCopy={handleCopyHex} copyLabel={t("settings.copyHex")} />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-text-muted w-[4.5rem] shrink-0">{t("settings.forDarkMode")}</span>
-                  <input
-                    type="color"
-                    value={form.secondaryColorDark && /^#[0-9A-Fa-f]{6}$/.test(form.secondaryColorDark) ? form.secondaryColorDark : THEME_DEFAULT_SECONDARY_DARK}
-                    onChange={(e) => setForm((p) => ({ ...p, secondaryColorDark: e.target.value }))}
-                    className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0"
-                    title={t("settings.secondaryColor")}
-                  />
-                  <input
-                    type="text"
-                    value={form.secondaryColorDark ?? ""}
-                    onChange={(e) => setForm((p) => ({ ...p, secondaryColorDark: e.target.value }))}
-                    placeholder="#94a3b8"
-                    className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`}
-                    aria-label={`${t("settings.secondaryColor")} ${t("settings.forDarkMode")}`}
-                  />
+                  <input type="color" value={form.secondaryColorDark && /^#[0-9A-Fa-f]{6}$/.test(form.secondaryColorDark) ? form.secondaryColorDark : THEME_DEFAULT_SECONDARY_DARK} onChange={(e) => setForm((p) => ({ ...p, secondaryColorDark: e.target.value }))} className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0" title={t("settings.secondaryColor")} />
+                  <input type="text" value={form.secondaryColorDark ?? ""} onChange={(e) => setForm((p) => ({ ...p, secondaryColorDark: e.target.value }))} placeholder="#94a3b8" className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`} aria-label={`${t("settings.secondaryColor")} ${t("settings.forDarkMode")}`} />
                   <CopyHexButton value={form.secondaryColorDark ?? THEME_DEFAULT_SECONDARY_DARK} id="secondary-dark" copiedId={copiedId} onCopy={handleCopyHex} copyLabel={t("settings.copyHex")} />
                 </div>
               </div>
             </div>
-            {/* Terciario */}
-            <div className="flex flex-col gap-3 min-w-0">
-              <div className="min-h-[60px]">
+            {/* Fila: Terciario */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 min-w-0">
+              <div className="sm:w-40 shrink-0">
                 <label className={LABEL}>{t("settings.tertiaryColor")}</label>
                 <p className="text-xs text-text-muted">{t("settings.tertiaryColorDescription")}</p>
               </div>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-8 flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-text-muted w-[4.5rem] shrink-0">{t("settings.forLightMode")}</span>
-                  <input
-                    type="color"
-                    value={form.tertiaryColor && /^#[0-9A-Fa-f]{6}$/.test(form.tertiaryColor) ? form.tertiaryColor : THEME_DEFAULT_TERTIARY_LIGHT}
-                    onChange={(e) => setForm((p) => ({ ...p, tertiaryColor: e.target.value }))}
-                    className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0"
-                    title={t("settings.tertiaryColor")}
-                  />
-                  <input
-                    type="text"
-                    value={form.tertiaryColor ?? ""}
-                    onChange={(e) => setForm((p) => ({ ...p, tertiaryColor: e.target.value }))}
-                    placeholder={t("settings.tertiaryColorPlaceholder")}
-                    className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`}
-                    aria-label={`${t("settings.tertiaryColor")} ${t("settings.forLightMode")}`}
-                  />
+                  <input type="color" value={form.tertiaryColor && /^#[0-9A-Fa-f]{6}$/.test(form.tertiaryColor) ? form.tertiaryColor : THEME_DEFAULT_TERTIARY_LIGHT} onChange={(e) => setForm((p) => ({ ...p, tertiaryColor: e.target.value }))} className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0" title={t("settings.tertiaryColor")} />
+                  <input type="text" value={form.tertiaryColor ?? ""} onChange={(e) => setForm((p) => ({ ...p, tertiaryColor: e.target.value }))} placeholder={t("settings.tertiaryColorPlaceholder")} className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`} aria-label={`${t("settings.tertiaryColor")} ${t("settings.forLightMode")}`} />
                   <CopyHexButton value={form.tertiaryColor ?? THEME_DEFAULT_TERTIARY_LIGHT} id="tertiary-light" copiedId={copiedId} onCopy={handleCopyHex} copyLabel={t("settings.copyHex")} />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-text-muted w-[4.5rem] shrink-0">{t("settings.forDarkMode")}</span>
-                  <input
-                    type="color"
-                    value={form.tertiaryColorDark && /^#[0-9A-Fa-f]{6}$/.test(form.tertiaryColorDark) ? form.tertiaryColorDark : THEME_DEFAULT_TERTIARY_DARK}
-                    onChange={(e) => setForm((p) => ({ ...p, tertiaryColorDark: e.target.value }))}
-                    className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0"
-                    title={t("settings.tertiaryColor")}
-                  />
-                  <input
-                    type="text"
-                    value={form.tertiaryColorDark ?? ""}
-                    onChange={(e) => setForm((p) => ({ ...p, tertiaryColorDark: e.target.value }))}
-                    placeholder="#cbd5e1"
-                    className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`}
-                    aria-label={`${t("settings.tertiaryColor")} ${t("settings.forDarkMode")}`}
-                  />
+                  <input type="color" value={form.tertiaryColorDark && /^#[0-9A-Fa-f]{6}$/.test(form.tertiaryColorDark) ? form.tertiaryColorDark : THEME_DEFAULT_TERTIARY_DARK} onChange={(e) => setForm((p) => ({ ...p, tertiaryColorDark: e.target.value }))} className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0" title={t("settings.tertiaryColor")} />
+                  <input type="text" value={form.tertiaryColorDark ?? ""} onChange={(e) => setForm((p) => ({ ...p, tertiaryColorDark: e.target.value }))} placeholder="#cbd5e1" className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`} aria-label={`${t("settings.tertiaryColor")} ${t("settings.forDarkMode")}`} />
                   <CopyHexButton value={form.tertiaryColorDark ?? THEME_DEFAULT_TERTIARY_DARK} id="tertiary-dark" copiedId={copiedId} onCopy={handleCopyHex} copyLabel={t("settings.copyHex")} />
                 </div>
               </div>
             </div>
           </div>
         </div>
+        </div>
+      </div>
       </div>
 
-      <div className="mt-auto flex items-center justify-between gap-4 pt-2 flex-wrap">
+      <div className="shrink-0 flex items-center justify-between gap-4 pt-4 flex-wrap border-t border-card-border mt-4 pt-4">
         <button
           type="button"
           onClick={handleRevertToDefault}
           disabled={reverting || submitting}
-          className="text-xs text-text-muted hover:text-text-secondary transition-colors disabled:opacity-50 disabled:pointer-events-none inline-flex items-center gap-1.5"
+          className="text-xs text-company-tertiary hover:text-company-secondary transition-colors disabled:opacity-50 disabled:pointer-events-none inline-flex items-center gap-1.5"
         >
           {reverting ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />

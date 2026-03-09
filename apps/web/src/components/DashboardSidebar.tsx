@@ -148,7 +148,7 @@ function getBannerLuminance(imageSrc: string): Promise<number | null> {
 }
 
 function CompanySelector({
-  companies, selectedCompanyId, selectedCompanyName, onSelect, placeholder, allCompaniesLabel, emptyLabel, isDark = false,
+  companies, selectedCompanyId, selectedCompanyName, onSelect, placeholder, allCompaniesLabel, emptyLabel, isDark = false, logoImageUrl,
 }: {
   companies: { id: string; commercialName?: string; legalName?: string }[];
   selectedCompanyId: string | null;
@@ -158,6 +158,7 @@ function CompanySelector({
   allCompaniesLabel: string;
   emptyLabel: string;
   isDark?: boolean;
+  logoImageUrl?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<{ top?: number; bottom?: number; left: number; width: number }>({ left: 0, width: 0 });
@@ -270,13 +271,19 @@ function CompanySelector({
     <>
       <div className="relative flex items-center gap-3">
         <div
-          className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold border border-white/20 overflow-hidden"
-          style={{
-            backgroundColor: selectedCompanyId ? (getAvatarColor(selectedCompanyId) ?? "var(--input-bg)") : "transparent",
-            color: "white",
-          }}
+          className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold border border-white/20 overflow-hidden bg-input-bg"
+          style={
+            !logoImageUrl?.trim()
+              ? {
+                  backgroundColor: selectedCompanyId ? (getAvatarColor(selectedCompanyId) ?? "var(--input-bg)") : "transparent",
+                  color: "white",
+                }
+              : undefined
+          }
         >
-          {selectedCompanyId ? (
+          {logoImageUrl?.trim() ? (
+            <img src={logoImageUrl} alt="" className="w-full h-full object-cover" key={logoImageUrl} />
+          ) : selectedCompanyId ? (
             selectedInitials
           ) : (
             <Building2 className={`w-4 h-4 ${isDark ? "text-white/60" : "text-slate-500"}`} />
@@ -472,15 +479,7 @@ export function DashboardSidebar() {
           <>
             <div className="flex items-center justify-between gap-2">
               <Link href="/dashboard" className="flex items-center min-w-0 overflow-hidden">
-                {companyBranding?.logoImageUrl?.trim() ? (
-                  <img
-                    src={companyBranding.logoImageUrl}
-                    alt=""
-                    className="max-h-9 w-auto max-w-full object-contain"
-                  />
-                ) : (
-                  <Logo variant={isDark ? "onDark" : "default"} className="text-3xl truncate" />
-                )}
+                <Logo variant={isDark ? "onDark" : "default"} className="text-3xl truncate" />
               </Link>
               {/* Botón colapsar: solo visible en md+ */}
               <button
@@ -505,11 +504,11 @@ export function DashboardSidebar() {
         <>
           {superAdmin ? (
             <div className="border-b border-card-border">
-              <div className="relative overflow-hidden h-28 w-full">
+              <div className="relative overflow-hidden w-full aspect-[4/1] min-h-[7rem]">
                 <img
                   src={effectiveBannerSrc}
                   alt=""
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover object-center"
                 />
                 <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/5 via-transparent to-black/10" aria-hidden />
                 <p className={`absolute top-0 left-0 z-10 px-4 pt-3 text-[10px] font-semibold uppercase tracking-widest drop-shadow-sm ${bannerVariant ? "text-white/95" : "text-slate-900"}`}>
@@ -525,17 +524,18 @@ export function DashboardSidebar() {
                     allCompaniesLabel={t("sidebar.allCompanies")}
                     emptyLabel={t("companies.noCompanies")}
                     isDark={bannerVariant}
+                    logoImageUrl={companyBranding?.logoImageUrl}
                   />
                 </div>
               </div>
             </div>
           ) : (
             <div className="border-b border-card-border">
-              <div className="relative overflow-hidden h-28 w-full">
+              <div className="relative overflow-hidden w-full aspect-[4/1] min-h-[7rem]">
                 <img
                   src={effectiveBannerSrc}
                   alt=""
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover object-center"
                 />
                 <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/5 via-transparent to-black/10" aria-hidden />
                 <p className={`absolute top-0 left-0 z-10 px-4 pt-3 text-[10px] font-semibold uppercase tracking-widest drop-shadow-sm ${bannerVariant ? "text-white/95" : "text-slate-900"}`}>
@@ -543,22 +543,30 @@ export function DashboardSidebar() {
                 </p>
                 <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center gap-3 px-4 pb-3 pt-6 bg-gradient-to-t from-black/20 to-transparent">
                   <div className="w-9 h-9 rounded-full shrink-0 border border-white/30 overflow-hidden bg-input-bg flex items-center justify-center">
-                    <span
-                      className="w-full h-full flex items-center justify-center text-xs font-semibold text-white"
-                      style={{
-                        backgroundColor: getAvatarColor(selectedCompanyId) ?? "rgba(0,0,0,0.4)",
-                        color: "white",
-                      }}
-                    >
-                      {(() => {
-                        const name = adminCompanyName || "";
-                        const parts = name.trim().split(/\s+/);
-                        if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-                        if (name.length >= 2) return name.slice(0, 2).toUpperCase();
-                        if (name.length === 1) return name[0].toUpperCase();
-                        return "?";
-                      })()}
-                    </span>
+                    {companyBranding?.logoImageUrl?.trim() ? (
+                      <img
+                        src={companyBranding.logoImageUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span
+                        className="w-full h-full flex items-center justify-center text-xs font-semibold text-white"
+                        style={{
+                          backgroundColor: getAvatarColor(selectedCompanyId) ?? "rgba(0,0,0,0.4)",
+                          color: "white",
+                        }}
+                      >
+                        {(() => {
+                          const name = adminCompanyName || "";
+                          const parts = name.trim().split(/\s+/);
+                          if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+                          if (name.length >= 2) return name.slice(0, 2).toUpperCase();
+                          if (name.length === 1) return name[0].toUpperCase();
+                          return "?";
+                        })()}
+                      </span>
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className={`font-medium text-sm truncate leading-tight drop-shadow-sm ${bannerVariant ? "text-white" : "text-slate-900"}`}>
@@ -580,7 +588,7 @@ export function DashboardSidebar() {
         {navGroups.map((group) => (
           <div key={group.label}>
             {!collapsed && (
-              <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-text-muted">
+              <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-company-tertiary">
                 {group.label}
               </p>
             )}
@@ -598,7 +606,7 @@ export function DashboardSidebar() {
                     <span className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0 transition-all duration-200">
                       <Icon
                         className={`w-5 h-5 ${
-                          isActive ? "text-company-primary" : "text-text-muted group-hover:text-text-secondary"
+                          isActive ? "text-company-primary" : "text-company-tertiary group-hover:text-company-secondary"
                         }`}
                       />
                     </span>
@@ -606,7 +614,7 @@ export function DashboardSidebar() {
                       <>
                         <span
                           className={`font-medium truncate ${
-                            isActive ? "text-text-primary" : "text-text-muted group-hover:text-text-secondary"
+                            isActive ? "text-text-primary" : "text-company-tertiary group-hover:text-company-secondary"
                           }`}
                         >
                           {item.label}

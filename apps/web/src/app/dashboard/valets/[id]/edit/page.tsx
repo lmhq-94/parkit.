@@ -177,7 +177,7 @@ export default function EditValetPage() {
         <div className="px-6 py-4 bg-gradient-to-r from-indigo-500/8 to-transparent">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("valets.sectionStatusEdit")}</p>
-            <span className="text-[10px] font-semibold text-text-muted/60 bg-input-bg px-2.5 py-1 rounded-full border border-input-border/60">{t("common.optionalBadge")}</span>
+            <span className="text-[10px] font-semibold text-company-tertiary bg-company-tertiary-subtle px-2.5 py-1 rounded-full border border-company-secondary-muted">{t("common.optionalBadge")}</span>
           </div>
           <p className="text-xs text-text-muted mt-1">{t("valets.sectionStatusEditDesc")}</p>
         </div>
@@ -197,7 +197,7 @@ export default function EditValetPage() {
         <p className="text-xs text-text-muted hidden sm:block">{t("common.requiredNote")}</p>
         <div className="flex items-center gap-3 ml-auto">
           <Link href="/dashboard/valets"
-            className="px-5 py-3 rounded-lg border border-input-border text-sm font-medium text-text-secondary hover:bg-input-bg hover:text-text-primary transition-colors">
+            className="px-5 py-3 rounded-lg border border-company-secondary-muted text-sm font-medium text-company-secondary hover:bg-company-secondary-subtle hover:text-company-secondary transition-colors">
             {t("common.cancel")}
           </Link>
           <button type="button" onClick={handleSubmit} disabled={submitting || !isValid}

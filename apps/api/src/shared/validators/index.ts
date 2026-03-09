@@ -13,6 +13,19 @@ export const CreateCompanySchema = z.object({
   legalAddress: z.string().optional(),
 });
 
+const BrandingConfigSchema = z
+  .object({
+    bannerImageUrl: z.union([z.string(), z.null()]).optional(),
+    logoImageUrl: z.union([z.string(), z.null()]).optional(),
+    primaryColor: z.union([z.string(), z.null()]).optional(),
+    primaryColorDark: z.union([z.string(), z.null()]).optional(),
+    secondaryColor: z.union([z.string(), z.null()]).optional(),
+    secondaryColorDark: z.union([z.string(), z.null()]).optional(),
+    tertiaryColor: z.union([z.string(), z.null()]).optional(),
+    tertiaryColorDark: z.union([z.string(), z.null()]).optional(),
+  })
+  .optional();
+
 export const UpdateCompanySchema = z.object({
   legalName: z.string().min(1).optional(),
   taxId: z.string().min(1).optional(),
@@ -24,6 +37,7 @@ export const UpdateCompanySchema = z.object({
   contactPhone: z.string().optional(),
   legalAddress: z.string().optional(),
   status: z.enum(["PENDING", "ACTIVE", "SUSPENDED", "INACTIVE"]).optional(),
+  brandingConfig: BrandingConfigSchema,
 });
 
 export type CreateCompanyInput = z.infer<typeof CreateCompanySchema>;
