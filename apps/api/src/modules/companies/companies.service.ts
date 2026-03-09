@@ -1,7 +1,7 @@
 import { prisma } from "../../shared/prisma";
 import type { Prisma } from "@prisma/client";
 import { CreateCompanyDTO, UpdateCompanyDTO } from "./companies.types";
-import { normalizeBrandingConfig } from "./branding-defaults";
+import { normalizeBrandingConfig, DEFAULT_BRANDING_CONFIG } from "./branding-defaults";
 
 function withNormalizedBranding<T extends { brandingConfig?: unknown }>(company: T): T {
   if (!company) return company;
@@ -23,7 +23,7 @@ export class CompaniesService {
       ...(data.email && { email: data.email }),
       ...(data.contactPhone && { contactPhone: data.contactPhone }),
       ...(data.legalAddress && { legalAddress: data.legalAddress }),
-      ...(data.brandingConfig && { brandingConfig: data.brandingConfig }),
+      brandingConfig: (data.brandingConfig ?? DEFAULT_BRANDING_CONFIG) as Prisma.InputJsonValue,
     };
     
     const company = await prisma.company.create({

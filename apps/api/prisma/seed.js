@@ -9,6 +9,18 @@ const prisma = new PrismaClient({
   }),
 });
 
+// Branding por defecto (mismo que DEFAULT_BRANDING_CONFIG en API)
+const defaultBrandingConfig = {
+  bannerImageUrl: null,
+  logoImageUrl: null,
+  primaryColor: "#2563eb",
+  primaryColorDark: "#3b82f6",
+  secondaryColor: "#64748b",
+  secondaryColorDark: "#94a3b8",
+  tertiaryColor: "#94a3b8",
+  tertiaryColorDark: "#cbd5e1",
+};
+
 async function main() {
   const passwordHash = await bcrypt.hash("Parkit123!", 10);
 
@@ -22,6 +34,7 @@ async function main() {
       email: "billing@parkit.cr",
       contactPhone: "+50622223333",
       legalAddress: "San Jose, Costa Rica",
+      brandingConfig: defaultBrandingConfig,
     },
     create: {
       id: "f6a4b5f9-0d84-4352-a67f-f3ad6eb5c701",
@@ -35,6 +48,7 @@ async function main() {
       contactPhone: "+50622223333",
       legalAddress: "San Jose, Costa Rica",
       status: "ACTIVE",
+      brandingConfig: defaultBrandingConfig,
     },
   });
 

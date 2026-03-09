@@ -247,6 +247,15 @@ export function DashboardSidebar() {
   const isAdminRole = user?.systemRole === "ADMIN";
   const isDark = resolvedTheme === "dark";
 
+  const bannerDefaultSrc = isDark
+    ? "/images/default-banner-dark.png"
+    : "/images/default-banner-light.png";
+  const brandingBanner = companyBranding?.bannerImageUrl;
+  const effectiveBannerSrc =
+    typeof brandingBanner === "string" && brandingBanner.trim()
+      ? brandingBanner
+      : bannerDefaultSrc;
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -273,17 +282,20 @@ export function DashboardSidebar() {
       .catch(() => setCompanies([]));
   }, [superAdmin, companiesVersion]);
 
-  // Para ADMIN: obtener nombre de la empresa (su company) para mostrarlo en el sidebar
+  // Para ADMIN: obtener empresa (nombre e id) y, si no hay company seleccionada, fijarla para que el layout cargue branding
   useEffect(() => {
     if (!mounted || !user || superAdmin) return;
     apiClient
-      .get<{ commercialName?: string; legalName?: string }>("/companies/me")
+      .get<{ id?: string; commercialName?: string; legalName?: string }>("/companies/me")
       .then((company) => {
         const name = company?.commercialName || company?.legalName || null;
         setAdminCompanyName(name ?? null);
+        if (company?.id && name) {
+          setSelectedCompany(company.id, name);
+        }
       })
       .catch(() => setAdminCompanyName(null));
-  }, [mounted, user?.id, superAdmin]);
+  }, [mounted, user?.id, superAdmin, setSelectedCompany]);
 
   // Contador de notificaciones sin leer para el badge del sidebar (se refresca al navegar)
   useEffect(() => {
@@ -398,22 +410,71 @@ export function DashboardSidebar() {
         )}
       </div>
 
-      {/* Company selector (SUPER_ADMIN only) */}
-      {superAdmin && !collapsed && (
-        <div className="px-3 pt-4 pb-2 border-b border-card-border">
-          <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-text-muted">
-            {t("sidebar.company")}
-          </p>
-          <CompanySelector
-            companies={companies}
-            selectedCompanyId={selectedCompanyId}
-            selectedCompanyName={selectedCompanyName}
-            onSelect={handleSelectCompany}
-            placeholder={t("sidebar.selectCompany")}
-            allCompaniesLabel={t("sidebar.allCompanies")}
-            emptyLabel={t("companies.noCompanies")}
-          />
-        </div>
+      {/* Company banner + selector (SUPER_ADMIN) o banner con logo (ADMIN) */}
+      {!collapsed && (
+        <>
+          {superAdmin ? (
+            <div className="px-3 pt-3 pb-3 border-b border-card-border">
+              <div className="relative overflow-hidden rounded-xl">
+                <img
+                  src={effectiveBannerSrc}
+                  alt=""
+                  className="w-full h-20 object-cover"
+                />
+                <div className="absolute inset-0 flex flex-col justify-center gap-2 px-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-text-secondary drop-shadow">
+                    {t("sidebar.company")}
+                  </p>
+                  <CompanySelector
+                    companies={companies}
+                    selectedCompanyId={selectedCompanyId}
+                    selectedCompanyName={selectedCompanyName}
+                    onSelect={handleSelectCompany}
+                    placeholder={t("sidebar.selectCompany")}
+                    allCompaniesLabel={t("sidebar.allCompanies")}
+                    emptyLabel={t("companies.noCompanies")}
+                  />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="px-3 pt-3 pb-3 border-b border-card-border">
+              <div className="relative overflow-hidden rounded-xl">
+                <img
+                  src={effectiveBannerSrc}
+                  alt=""
+                  className="w-full h-20 object-cover"
+                />
+                <div className="absolute inset-0 flex items-center px-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="shrink-0 rounded-full bg-page/80 p-1.5 shadow-sm">
+                      {companyBranding?.logoImageUrl?.trim() ? (
+                        <img
+                          src={companyBranding.logoImageUrl}
+                          alt=""
+                          className="h-7 w-7 rounded-full object-contain bg-card"
+                        />
+                      ) : (
+                        <Logo
+                          variant={isDark ? "onDark" : "default"}
+                          className="text-xl"
+                        />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-text-secondary/90">
+                        {t("sidebar.company")}
+                      </p>
+                      <p className="text-sm font-medium text-text-primary truncate">
+                        {adminCompanyName || t("companies.single") || "Company"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Nav groups */}

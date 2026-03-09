@@ -108,39 +108,46 @@ export default function ValetsPage() {
         emptyMessage={t("tables.valets.empty")}
         columns={columns}
         refreshToken={refreshToken}
-        hasRowDetail={(valet) =>
-          valet.user?.pendingInvitation === true ||
-          (valet.user?.phone != null && valet.user.phone !== "") ||
-          (valet.licenseNumber != null && valet.licenseNumber !== "") ||
-          valet.licenseExpiry != null ||
-          valet.ratingAvg != null
+        hasRowDetail={
+          superAdmin
+            ? (valet) =>
+                valet.user?.pendingInvitation === true ||
+                (valet.user?.phone != null && valet.user.phone !== "") ||
+                (valet.licenseNumber != null && valet.licenseNumber !== "") ||
+                valet.licenseExpiry != null ||
+                valet.ratingAvg != null
+            : undefined
         }
-        renderRowDetail={(valet) => (
-          <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
-            {valet.user?.pendingInvitation && (
-              <>
-                <DetailSectionLabel text={t("tables.employees.pendingInvitation")} />
-                <div className="col-span-3">
-                  <button
-                    type="button"
-                    onClick={() => handleResendInvitation(valet)}
-                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors"
-                  >
-                    <Mail className="w-4 h-4" />
-                    {t("tables.employees.resendInvitation")}
-                  </button>
-                </div>
-              </>
-            )}
-            <DetailSectionLabel text={t("common.additionalInfo")} />
-            <DetailField label={t("tables.employees.phone")} value={valet.user?.phone ? formatPhoneWithCountryCode(valet.user.phone, "CR") : undefined} linkType="phone" />
-            <DetailField label={t("tables.valets.license")} value={valet.licenseNumber} />
-            <DetailField label={t("valets.licenseExpiry")} value={valet.licenseExpiry ? new Date(valet.licenseExpiry).toLocaleDateString() : undefined} />
-            {valet.ratingAvg != null && (
-              <DetailField label={t("valets.ratingAvg")} value={String(valet.ratingAvg)} />
-            )}
-          </dl>
-        )}
+        renderRowDetail={
+          superAdmin
+            ? (valet) => (
+                <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
+                  {valet.user?.pendingInvitation && (
+                    <>
+                      <DetailSectionLabel text={t("tables.employees.pendingInvitation")} />
+                      <div className="col-span-3">
+                        <button
+                          type="button"
+                          onClick={() => handleResendInvitation(valet)}
+                          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors"
+                        >
+                          <Mail className="w-4 h-4" />
+                          {t("tables.employees.resendInvitation")}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                  <DetailSectionLabel text={t("common.additionalInfo")} />
+                  <DetailField label={t("tables.employees.phone")} value={valet.user?.phone ? formatPhoneWithCountryCode(valet.user.phone, "CR") : undefined} linkType="phone" />
+                  <DetailField label={t("tables.valets.license")} value={valet.licenseNumber} />
+                  <DetailField label={t("valets.licenseExpiry")} value={valet.licenseExpiry ? new Date(valet.licenseExpiry).toLocaleDateString() : undefined} />
+                  {valet.ratingAvg != null && (
+                    <DetailField label={t("valets.ratingAvg")} value={String(valet.ratingAvg)} />
+                  )}
+                </dl>
+              )
+            : undefined
+        }
         onEdit={superAdmin ? (row) => router.push(`/dashboard/valets/${row.id}/edit`) : undefined}
         onUpdate={superAdmin ? onUpdate : undefined}
         onDelete={superAdmin ? onDelete : undefined}

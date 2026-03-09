@@ -27,6 +27,7 @@ export default function VehiclesPage() {
   const user = useAuthStore((s) => s.user);
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const superAdmin = isSuperAdmin(user);
+  const canManage = superAdmin || user?.systemRole === "ADMIN";
   const router = useRouter();
 
   const onUpdate = useCallback(async (row: VehicleRow) => {
@@ -44,12 +45,12 @@ export default function VehiclesPage() {
   }, []);
   const columns = useMemo(
     () => [
-      { header: t("tables.vehicles.plate"), render: (v: VehicleRow) => (v.plate ? formatPlate(v.plate) : "—"), field: "plate" as const, editable: superAdmin },
-      { header: t("tables.vehicles.brand"), render: (v: VehicleRow) => v.brand || "—", field: "brand" as const, editable: superAdmin },
-      { header: t("tables.vehicles.model"), render: (v: VehicleRow) => v.model || "—", field: "model" as const, editable: superAdmin },
-      { header: t("tables.vehicles.year"), render: (v: VehicleRow) => (v.year != null ? String(v.year) : "—"), field: "year" as const, editable: superAdmin },
+      { header: t("tables.vehicles.plate"), render: (v: VehicleRow) => (v.plate ? formatPlate(v.plate) : "—"), field: "plate" as const, editable: canManage },
+      { header: t("tables.vehicles.brand"), render: (v: VehicleRow) => v.brand || "—", field: "brand" as const, editable: canManage },
+      { header: t("tables.vehicles.model"), render: (v: VehicleRow) => v.model || "—", field: "model" as const, editable: canManage },
+      { header: t("tables.vehicles.year"), render: (v: VehicleRow) => (v.year != null ? String(v.year) : "—"), field: "year" as const, editable: canManage },
     ],
-    [t, superAdmin]
+    [t, canManage]
   );
   return (
     <>
@@ -76,12 +77,12 @@ export default function VehiclesPage() {
             </dl>
           );
         }}
-        onEdit={superAdmin ? (row) => router.push(`/dashboard/vehicles/${row.id}/edit`) : undefined}
-        onUpdate={superAdmin ? onUpdate : undefined}
-        onDelete={superAdmin ? onDelete : undefined}
-        getConfirmDeleteMessage={superAdmin ? (row) => t("tables.vehicles.confirmDeleteItem").replace(/\{\{item\}\}/g, row.plate ? formatPlate(row.plate) : [row.brand, row.model].filter(Boolean).join(" ") || "—") : undefined}
+        onEdit={canManage ? (row) => router.push(`/dashboard/vehicles/${row.id}/edit`) : undefined}
+        onUpdate={canManage ? onUpdate : undefined}
+        onDelete={canManage ? onDelete : undefined}
+        getConfirmDeleteMessage={canManage ? (row) => t("tables.vehicles.confirmDeleteItem").replace(/\{\{item\}\}/g, row.plate ? formatPlate(row.plate) : [row.brand, row.model].filter(Boolean).join(" ") || "—") : undefined}
         headerAction={
-          superAdmin ? (
+          canManage ? (
             <Link
               href="/dashboard/vehicles/new"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors shadow-sm"

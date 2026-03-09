@@ -26,6 +26,18 @@ export type BrandingConfigRaw = {
   [key: string]: unknown;
 };
 
+/** Objeto por defecto para brandingConfig en BD (colores e imágenes por defecto). */
+export const DEFAULT_BRANDING_CONFIG: BrandingConfigRaw = {
+  bannerImageUrl: null,
+  logoImageUrl: null,
+  primaryColor: DEFAULT_PRIMARY_LIGHT,
+  primaryColorDark: DEFAULT_PRIMARY_DARK,
+  secondaryColor: DEFAULT_SECONDARY_LIGHT,
+  secondaryColorDark: DEFAULT_SECONDARY_DARK,
+  tertiaryColor: DEFAULT_TERTIARY_LIGHT,
+  tertiaryColorDark: DEFAULT_TERTIARY_DARK,
+};
+
 const HEX_COLOR = /^#[0-9A-Fa-f]{3,6}$/;
 
 export function normalizeBrandingConfig(

@@ -298,7 +298,7 @@ export default function DashboardPage() {
     : "—";
 
   return (
-    <div className="pt-4 md:pt-6 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 max-w-[1600px] mx-auto w-full flex-1 flex flex-col gap-6 md:gap-8">
+    <div className="pt-4 md:pt-6 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 w-full flex-1 flex flex-col gap-6 md:gap-8">
             {/* Banner: degradado según color del tema, fondo oscuro para buena legibilidad del texto */}
             <header
               className="relative overflow-hidden rounded-2xl border border-white/15 p-6 md:p-8"

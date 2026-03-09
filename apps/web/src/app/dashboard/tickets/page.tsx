@@ -35,6 +35,7 @@ export default function TicketsPage() {
   const user = useAuthStore((s) => s.user);
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const superAdmin = isSuperAdmin(user);
+  const canManage = superAdmin || user?.systemRole === "ADMIN";
   const router = useRouter();
   const [refreshToken, setRefreshToken] = useState(0);
 
@@ -77,7 +78,7 @@ export default function TicketsPage() {
         render: (ticket: { vehicle?: { plate?: string } }) =>
           ticket.vehicle?.plate ? formatPlate(ticket.vehicle.plate) : "—",
       },
-      { header: t("tables.tickets.status"), render: (ticket: { status?: string }) => tEnum("ticketStatus", ticket.status), field: "status" as const, editable: superAdmin, statusBadge: "ticket", statusField: "status" },
+      { header: t("tables.tickets.status"), render: (ticket: { status?: string }) => tEnum("ticketStatus", ticket.status), field: "status" as const, editable: canManage, statusBadge: "ticket" as const, statusField: "status" as const },
       {
         header: t("tables.tickets.entry"),
         render: (ticket: { entryTime?: string }) =>
@@ -89,7 +90,7 @@ export default function TicketsPage() {
           ticket.exitTime ? formatDateTimeDisplay(new Date(ticket.exitTime), t) : "—",
       },
     ],
-    [t, tEnum, superAdmin]
+    [t, tEnum, canManage]
   );
   return (
     <>
@@ -126,10 +127,10 @@ export default function TicketsPage() {
             </dl>
           );
         }}
-        onEdit={superAdmin ? (row: { id?: string }) => router.push(`/dashboard/tickets/${row.id}/edit`) : undefined}
-        onUpdate={superAdmin ? onUpdate : undefined}
-        onDelete={superAdmin ? onDelete : undefined}
-        getConfirmDeleteMessage={superAdmin ? (row) => {
+        onEdit={canManage ? (row: { id?: string }) => router.push(`/dashboard/tickets/${row.id}/edit`) : undefined}
+        onUpdate={canManage ? onUpdate : undefined}
+        onDelete={canManage ? onDelete : undefined}
+        getConfirmDeleteMessage={canManage ? (row) => {
           const vehicleLabel = row.vehicle ? [row.vehicle.brand, row.vehicle.model].filter(Boolean).join(" ") || (row.vehicle.plate ? formatPlate(row.vehicle.plate) : "") : "";
           const parkingName = row.parking?.name ?? row.parkingId ?? "";
           const dateStr = row.entryTime ? formatDateTimeDisplay(new Date(row.entryTime), t) : "";
@@ -137,7 +138,7 @@ export default function TicketsPage() {
           return t("tables.tickets.confirmCancelItem").replace(/\{\{item\}\}/g, item);
         } : undefined}
         headerAction={
-          superAdmin ? (
+          canManage ? (
             <Link
               href="/dashboard/tickets/new"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors shadow-sm"

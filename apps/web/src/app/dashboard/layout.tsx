@@ -153,7 +153,7 @@ export default function DashboardLayout({
                   <img src={companyBranding.bannerImageUrl} alt="" className="w-full h-full object-cover" />
                 </div>
               )}
-              <div className="flex flex-wrap items-center justify-between gap-4 px-4 md:pl-12 md:pr-10 lg:pr-12 pt-5 md:pt-8 pb-0">
+              <div className="flex flex-wrap items-center justify-between gap-4 pt-5 md:pt-8 pb-0 px-4 md:px-10 lg:px-12">
               <div className="flex items-center gap-3 min-w-0">
               {/* Hamburger: solo móvil */}
               <button

@@ -715,7 +715,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   }, [headerAction, showAddInBar, setHeaderAction, startCreate, draftRow, locale]);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 pt-6 md:pt-8 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 max-w-[1600px] mx-auto w-full">
+    <div className="flex-1 flex flex-col min-h-0 pt-6 md:pt-8 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 w-full">
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-200 rounded-xl">
                 <span className="font-medium">{error}</span>

@@ -33,6 +33,7 @@ export default function BookingsPage() {
   const user = useAuthStore((s) => s.user);
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const superAdmin = isSuperAdmin(user);
+  const canManage = superAdmin || user?.systemRole === "ADMIN";
   const router = useRouter();
   const [refreshToken, setRefreshToken] = useState(0);
 
@@ -69,7 +70,7 @@ export default function BookingsPage() {
         render: (b: { vehicle?: { plate?: string } }) =>
           b.vehicle?.plate ? formatPlate(b.vehicle.plate) : "—",
       },
-      { header: t("tables.bookings.status"), render: (b: { status?: string }) => tEnum("bookingStatus", b.status), field: "status" as const, editable: superAdmin, statusBadge: "booking" as const, statusField: "status" as const },
+      { header: t("tables.bookings.status"), render: (b: { status?: string }) => tEnum("bookingStatus", b.status), field: "status" as const, editable: canManage, statusBadge: "booking" as const, statusField: "status" as const },
       {
         header: t("tables.bookings.entry"),
         render: (b: { scheduledEntryTime?: string }) =>
@@ -81,7 +82,7 @@ export default function BookingsPage() {
           b.scheduledExitTime ? formatDateTimeDisplay(new Date(b.scheduledExitTime), t) : "—",
       },
     ],
-    [t, tEnum, superAdmin]
+    [t, tEnum, canManage]
   );
   const onDelete = useCallback(async (row: { id?: string }) => {
     if (!row.id) return;
@@ -120,10 +121,10 @@ export default function BookingsPage() {
             </dl>
           );
         }}
-        onEdit={superAdmin ? (row: { id?: string }) => router.push(`/dashboard/bookings/${row.id}/edit`) : undefined}
-        onUpdate={superAdmin ? onUpdate : undefined}
-        onDelete={superAdmin ? onDelete : undefined}
-        getConfirmDeleteMessage={superAdmin ? (row) => {
+        onEdit={canManage ? (row: { id?: string }) => router.push(`/dashboard/bookings/${row.id}/edit`) : undefined}
+        onUpdate={canManage ? onUpdate : undefined}
+        onDelete={canManage ? onDelete : undefined}
+        getConfirmDeleteMessage={canManage ? (row) => {
           const vehicleLabel = row.vehicle ? [row.vehicle.brand, row.vehicle.model].filter(Boolean).join(" ") || (row.vehicle.plate ? formatPlate(row.vehicle.plate) : "") : "";
           const parkingName = row.parking?.name ?? row.parkingId ?? "";
           const dateStr = row.scheduledEntryTime ? formatDateTimeDisplay(new Date(row.scheduledEntryTime), t) : "";
@@ -131,7 +132,7 @@ export default function BookingsPage() {
           return t("tables.bookings.confirmCancelItem").replace(/\{\{item\}\}/g, item);
         } : undefined}
         headerAction={
-          superAdmin ? (
+          canManage ? (
             <Link
               href="/dashboard/bookings/new"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors shadow-sm"

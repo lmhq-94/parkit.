@@ -89,7 +89,7 @@ export default function NotificationsPage() {
 
   if (loading && items.length === 0) {
     return (
-      <div className="flex-1 flex flex-col pt-14 pb-8 px-4 md:px-10 lg:px-12 max-w-[1600px] mx-auto w-full">
+      <div className="flex-1 flex flex-col pt-14 pb-8 px-4 md:px-10 lg:px-12 w-full">
         <div className="flex items-center justify-center py-24">
           <Loader2 className="w-8 h-8 animate-spin text-company-primary" />
         </div>
@@ -98,7 +98,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col pt-14 pb-8 px-4 md:px-10 lg:px-12 max-w-[1600px] mx-auto w-full">
+    <div className="flex-1 flex flex-col pt-14 pb-8 px-4 md:px-10 lg:px-12 w-full">
       {error && (
         <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
           {error}
