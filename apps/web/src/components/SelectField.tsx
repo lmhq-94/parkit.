@@ -129,7 +129,7 @@ export function SelectField({ value, onChange, icon: Icon, children, className }
               onClick={() => handleSelect(opt.value)}
               className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg ${
                 opt.value === value
-                  ? "bg-sky-500/20 text-sky-600 dark:text-sky-400 font-medium"
+                  ? "bg-company-primary-muted text-company-primary font-medium"
                   : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
               }`}
             >
@@ -157,8 +157,8 @@ export function SelectField({ value, onChange, icon: Icon, children, className }
           className={[
             "w-full py-3 rounded-lg border bg-input-bg text-sm text-left transition-colors cursor-pointer",
             open
-              ? "border-sky-500 ring-1 ring-sky-500 text-text-primary"
-              : "border-input-border text-text-primary hover:border-sky-500/40",
+              ? "border-company-primary ring-1 ring-company-primary-full text-text-primary"
+              : "border-input-border text-text-primary hover:border-company-primary-muted",
             Icon ? "pl-10 pr-9" : "pl-4 pr-9",
             !value ? "text-text-muted" : "",
           ].join(" ")}
@@ -167,7 +167,7 @@ export function SelectField({ value, onChange, icon: Icon, children, className }
         </button>
         <ChevronDown
           className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-transform duration-200 ${
-            open ? "rotate-180 text-sky-500" : "text-text-muted/50"
+            open ? "rotate-180 text-company-primary" : "text-text-muted/50"
           }`}
         />
       </div>

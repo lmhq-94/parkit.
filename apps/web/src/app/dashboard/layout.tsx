@@ -113,21 +113,12 @@ export default function DashboardLayout({
       .catch(() => setCompanyBranding(null));
   }, [selectedCompanyId, superAdmin, setCompanyBranding]);
 
-  // Aplicar colores de la empresa como variables CSS
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-    const primary = companyBranding?.primaryColor?.trim();
-    const secondary = companyBranding?.secondaryColor?.trim();
-    document.documentElement.style.setProperty("--company-primary", primary && /^#[0-9A-Fa-f]{3,6}$/.test(primary) ? primary : "");
-    document.documentElement.style.setProperty("--company-secondary", secondary && /^#[0-9A-Fa-f]{3,6}$/.test(secondary) ? secondary : "");
-  }, [companyBranding?.primaryColor, companyBranding?.secondaryColor]);
-
   return (
     <ProtectedRoute>
       <HeaderActionContext.Provider value={setHeaderAction}>
         <div className="flex min-h-screen bg-page">
           <DashboardSidebar />
-          <main className="flex-1 flex flex-col min-h-0 min-w-0">
+          <main className="flex-1 flex flex-col min-h-0 min-w-0" data-dashboard>
             <header className="shrink-0 flex flex-col bg-card/50 backdrop-blur-sm">
               {companyBranding?.bannerImageUrl && (
                 <div className="w-full h-20 md:h-24 overflow-hidden bg-input-bg">

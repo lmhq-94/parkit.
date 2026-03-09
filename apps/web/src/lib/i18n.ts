@@ -376,6 +376,7 @@ export const translations = {
       notConfigured: "No configurado",
       saveSuccess: "Configuración guardada.",
       saveError: "Error al guardar. Intenta de nuevo.",
+      revertToDefault: "Restaurar valores por defecto",
     },
     enums: {
       systemRole: {
@@ -916,6 +917,7 @@ export const translations = {
       notConfigured: "Not configured",
       saveSuccess: "Settings saved.",
       saveError: "Failed to save. Please try again.",
+      revertToDefault: "Revert to default settings",
     },
     enums: {
       systemRole: {

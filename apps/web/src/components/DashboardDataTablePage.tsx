@@ -52,7 +52,7 @@ const STATUS_TEXT_STYLES: Record<string, { text: string; dot: string }> = {
   warning: { text: "text-amber-600 dark:text-amber-400", dot: "bg-amber-500" },
   error: { text: "text-red-600 dark:text-red-400", dot: "bg-red-500" },
   muted: { text: "text-slate-500 dark:text-slate-400", dot: "bg-slate-400" },
-  info: { text: "text-sky-600 dark:text-sky-400", dot: "bg-sky-500" },
+  info: { text: "text-company-primary", dot: "bg-company-primary" },
 };
 
 function getStatusBadgeVariant(
@@ -124,7 +124,7 @@ function LinkCellRenderer(
   return (
     <a
       href={href}
-      className="text-sky-600 dark:text-sky-400 hover:underline truncate block"
+      className="text-company-primary hover:underline truncate block"
       title={params.linkType === "email" ? value : value}
     >
       {value}
@@ -174,7 +174,7 @@ function ExpandCellRenderer<T extends { id?: string | number }>(
     <button
       type="button"
       onClick={() => onToggle(isExpanded ? null : id)}
-      className="p-2 rounded-lg text-text-muted hover:text-sky-500 hover:bg-sky-500/10 transition-colors"
+      className="p-2 rounded-lg text-text-muted hover:text-company-primary hover:bg-company-primary-subtle transition-colors"
       title={isExpanded ? collapseLabel : expandLabel}
       aria-label={isExpanded ? collapseLabel : expandLabel}
       aria-expanded={isExpanded}
@@ -309,7 +309,7 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
         <button
           type="button"
           onClick={handleEdit}
-          className="p-2 rounded-lg text-text-muted hover:text-sky-500 hover:bg-sky-500/10 transition-colors"
+          className="p-2 rounded-lg text-text-muted hover:text-company-primary hover:bg-company-primary-subtle transition-colors"
           title={editLabel}
           aria-label={editLabel}
         >
@@ -647,7 +647,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
       const content = (
         <div className="w-full border-b border-slate-200/80 dark:border-slate-600/50 bg-slate-100/90 dark:bg-slate-800/70 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
           <div className="flex items-stretch gap-6 px-5 py-3 w-full">
-            <div className="shrink-0 w-0.5 min-h-[2rem] rounded-full bg-sky-400/50 dark:bg-sky-400/60 self-stretch" aria-hidden />
+            <div className="shrink-0 w-0.5 min-h-[2rem] rounded-full bg-company-primary-subtle self-stretch" aria-hidden />
             <div className="min-w-0 flex-1 [&_dl]:grid [&_dl]:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] [&_dl]:gap-x-6 [&_dl]:gap-y-3 [&_dl]:text-sm [&_dl]:w-full [&_dl]:content-start">
               {renderRowDetail(data.__parent)}
             </div>
@@ -703,7 +703,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
           type="button"
           onClick={startCreate}
           disabled={draftRow != null}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-sky-500/20"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
         >
           <Plus className="w-4 h-4" strokeWidth={2.25} />
           {t(locale, "common.add")}
@@ -724,7 +724,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
 
             {isLoading ? (
               <div className="flex items-center justify-center py-32">
-                <div className="w-10 h-10 border-2 border-sky-500/30 border-t-sky-400 rounded-full animate-spin" />
+                <div className="w-10 h-10 border-2 border-company-primary-muted border-t-company-primary rounded-full animate-spin" />
               </div>
             ) : (
               <div className="relative flex-1 flex flex-col min-h-[400px] bg-transparent">

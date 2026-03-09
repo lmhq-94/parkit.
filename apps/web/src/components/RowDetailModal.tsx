@@ -72,7 +72,7 @@ export function RowDetailModal({
               <Link
                 href={editHref}
                 onClick={onClose}
-                className="p-2 rounded-lg text-text-muted hover:text-sky-500 hover:bg-sky-500/10 transition-colors"
+                className="p-2 rounded-lg text-text-muted hover:text-company-primary hover:bg-company-primary-subtle transition-colors"
                 title={t("common.edit")}
                 aria-label={t("common.edit")}
               >
@@ -127,7 +127,7 @@ export function DetailField({
       </dt>
       <dd className="text-sm text-slate-900 dark:text-slate-100 font-normal leading-snug">
         {href ? (
-          <a href={href} className="text-sky-600 dark:text-sky-400 hover:underline">
+          <a href={href} className="text-company-primary hover:underline">
             {str}
           </a>
         ) : (

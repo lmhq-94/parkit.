@@ -85,7 +85,7 @@ export default function LoginPage() {
               onChange={handleChange}
               required
               autoComplete="email"
-              className="w-full rounded-lg border border-input-border bg-input-bg px-4 py-3 text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-lg border border-input-border bg-input-bg px-4 py-3 text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary"
             />
           </div>
 
@@ -94,7 +94,7 @@ export default function LoginPage() {
               <label htmlFor="password" className="block text-sm font-medium text-text-secondary">
                 {t("auth.password")}
               </label>
-              <Link href="/forgot-password" className="text-xs text-sky-500 hover:text-sky-400">
+              <Link href="/forgot-password" className="text-xs text-company-primary hover:text-company-primary">
                 {t("auth.forgotPassword")}
               </Link>
             </div>
@@ -107,7 +107,7 @@ export default function LoginPage() {
                 onChange={handleChange}
                 required
                 autoComplete="current-password"
-                className="w-full rounded-lg border border-input-border bg-input-bg py-3 pl-4 pr-10 text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-lg border border-input-border bg-input-bg py-3 pl-4 pr-10 text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary"
               />
               <button
                 type="button"
@@ -127,7 +127,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 rounded-lg bg-sky-500 py-3 text-sm font-medium text-white hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none"
+            className="w-full flex items-center justify-center gap-2 rounded-lg bg-company-primary py-3 text-sm font-medium text-white hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none"
           >
             {isSubmitting ? (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />

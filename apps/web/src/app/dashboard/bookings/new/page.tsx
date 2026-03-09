@@ -75,7 +75,7 @@ export default function NewBookingPage() {
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <div>
-            <label className={LABEL}>{t("bookings.client")} <span className="text-sky-500">*</span></label>
+            <label className={LABEL}>{t("bookings.client")} <span className="text-company-primary">*</span></label>
             {loading ? skel : (
               <SelectField value={form.clientId} onChange={set("clientId")} icon={Users}>
                 <option value="">{t("common.selectPlaceholder")}</option>
@@ -88,7 +88,7 @@ export default function NewBookingPage() {
             )}
           </div>
           <div>
-            <label className={LABEL}>{t("bookings.vehicle")} <span className="text-sky-500">*</span></label>
+            <label className={LABEL}>{t("bookings.vehicle")} <span className="text-company-primary">*</span></label>
             {loading ? skel : (
               <SelectField value={form.vehicleId} onChange={set("vehicleId")} icon={Car}>
                 <option value="">{t("common.selectPlaceholder")}</option>
@@ -101,7 +101,7 @@ export default function NewBookingPage() {
             )}
           </div>
           <div>
-            <label className={LABEL}>{t("bookings.parking")} <span className="text-sky-500">*</span></label>
+            <label className={LABEL}>{t("bookings.parking")} <span className="text-company-primary">*</span></label>
             {loading ? skel : (
               <SelectField value={form.parkingId} onChange={set("parkingId")} icon={MapPin}>
                 <option value="">{t("common.selectPlaceholder")}</option>
@@ -110,7 +110,7 @@ export default function NewBookingPage() {
             )}
           </div>
           <div>
-            <label className={LABEL}>{t("bookings.scheduledEntry")} <span className="text-sky-500">*</span></label>
+            <label className={LABEL}>{t("bookings.scheduledEntry")} <span className="text-company-primary">*</span></label>
             <DateTimePickerField
               value={form.scheduledEntryTime}
               onChange={(v) => setForm((p) => ({ ...p, scheduledEntryTime: v }))}

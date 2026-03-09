@@ -44,7 +44,7 @@ export default function ForgotPasswordPage() {
           <div className="flex justify-center">
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 text-sm font-medium text-sky-500 hover:text-sky-400 transition-colors"
+              className="inline-flex items-center gap-2 text-sm font-medium text-company-primary hover:text-company-primary transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
               {t("auth.backToSignIn")}
@@ -64,12 +64,12 @@ export default function ForgotPasswordPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoComplete="email"
-                  className="w-full rounded-lg border border-input-border bg-input-bg px-4 py-3 text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                  className="w-full rounded-lg border border-input-border bg-input-bg px-4 py-3 text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary"
                 />
               </div>
               <button
                 type="submit"
-                className="w-full flex items-center justify-center gap-2 rounded-lg bg-sky-500 py-3 text-sm font-medium text-white hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-page"
+                className="w-full flex items-center justify-center gap-2 rounded-lg bg-company-primary py-3 text-sm font-medium text-white hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page"
               >
                 {t("auth.sendResetLink")}
               </button>

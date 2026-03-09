@@ -73,7 +73,7 @@ function AcceptInviteForm() {
           <p className="mt-6 text-sm text-text-muted">{t("auth.inviteExpiredOrInvalid")}</p>
           <Link
             href="/login"
-            className="mt-6 inline-block text-sky-500 hover:text-sky-400 text-sm font-medium"
+            className="mt-6 inline-block text-company-primary hover:text-company-primary text-sm font-medium"
           >
             {t("auth.backToSignIn")}
           </Link>
@@ -125,7 +125,7 @@ function AcceptInviteForm() {
                 required
                 minLength={6}
                 autoComplete="new-password"
-                className="w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary"
               />
             </div>
             <p className="mt-1 text-xs text-text-muted">Mínimo 6 caracteres</p>
@@ -146,7 +146,7 @@ function AcceptInviteForm() {
                 required
                 minLength={6}
                 autoComplete="new-password"
-                className="w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary"
               />
             </div>
           </div>
@@ -154,7 +154,7 @@ function AcceptInviteForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 rounded-lg bg-sky-500 py-3 text-sm font-medium text-white hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none"
+            className="w-full flex items-center justify-center gap-2 rounded-lg bg-company-primary py-3 text-sm font-medium text-white hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none"
           >
             {isSubmitting ? (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -164,7 +164,7 @@ function AcceptInviteForm() {
           </button>
 
           <p className="text-center">
-            <Link href="/login" className="text-sm text-sky-500 hover:text-sky-400">
+            <Link href="/login" className="text-sm text-company-primary hover:text-company-primary">
               {t("auth.backToSignIn")}
             </Link>
           </p>
@@ -179,7 +179,7 @@ export default function AcceptInvitePage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-page">
-          <span className="h-8 w-8 animate-spin rounded-full border-2 border-sky-500/30 border-t-sky-500" />
+          <span className="h-8 w-8 animate-spin rounded-full border-2 border-company-primary-muted border-t-company-primary" />
         </div>
       }
     >

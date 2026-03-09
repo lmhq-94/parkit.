@@ -233,9 +233,9 @@ export function DatePickerField({
                 className={[
                   "w-full aspect-square min-w-0 rounded-lg text-xs sm:text-sm transition-colors flex items-center justify-center font-medium touch-manipulation",
                   isSelected
-                    ? "bg-sky-500 text-white shadow-sm"
+                    ? "bg-company-primary text-white shadow-sm"
                     : isToday
-                    ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 hover:bg-sky-200 dark:hover:bg-sky-800/60"
+                    ? "bg-company-primary-subtle text-company-primary hover:bg-company-primary-muted"
                     : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800",
                 ].join(" ")}
               >
@@ -270,7 +270,7 @@ export function DatePickerField({
   return (
     <>
       <div className={["relative group w-full", className ?? ""].join(" ")}>
-        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none z-10 transition-colors group-focus-within:text-sky-500" />
+        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none z-10 transition-colors group-focus-within:text-company-primary" />
         <button
           ref={triggerRef}
           type="button"
@@ -278,8 +278,8 @@ export function DatePickerField({
           className={[
             "w-full py-3 pl-10 pr-4 rounded-lg border bg-input-bg text-sm text-left transition-colors cursor-pointer",
             open
-              ? "border-sky-500 ring-1 ring-sky-500"
-              : "border-input-border hover:border-sky-500/40",
+              ? "border-company-primary ring-1 ring-company-primary-full"
+              : "border-input-border hover:border-company-primary-muted",
             displayValue ? "text-text-primary" : "text-text-muted",
           ].join(" ")}
         >

@@ -98,7 +98,7 @@ export default function NewTicketPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <div>
               <label className={LABEL}>
-                {t("tickets.client")} <span className="text-sky-500">*</span>
+                {t("tickets.client")} <span className="text-company-primary">*</span>
               </label>
               {clients.length === 0 ? skel : (
                 <SelectField value={form.clientId} onChange={set("clientId")} icon={Users}>
@@ -113,7 +113,7 @@ export default function NewTicketPage() {
             </div>
             <div>
               <label className={LABEL}>
-                {t("tickets.vehicle")} <span className="text-sky-500">*</span>
+                {t("tickets.vehicle")} <span className="text-company-primary">*</span>
               </label>
               {vehicles.length === 0 ? skel : (
                 <SelectField value={form.vehicleId} onChange={set("vehicleId")} icon={Car}>
@@ -128,7 +128,7 @@ export default function NewTicketPage() {
             </div>
             <div>
               <label className={LABEL}>
-                {t("tickets.parking")} <span className="text-sky-500">*</span>
+                {t("tickets.parking")} <span className="text-company-primary">*</span>
               </label>
               {parkings.length === 0 ? skel : (
                 <SelectField value={form.parkingId} onChange={set("parkingId")} icon={MapPin}>
@@ -168,7 +168,7 @@ export default function NewTicketPage() {
             type="button"
             onClick={handleSubmit}
             disabled={submitting || !isValid}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors"
           >
             {submitting ? (
               <>

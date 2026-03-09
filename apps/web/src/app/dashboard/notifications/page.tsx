@@ -18,14 +18,14 @@ type NotificationItem = {
 const STATUS_STYLES: Record<string, string> = {
   DELIVERED: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
   READ: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
-  SENT: "bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30",
+  SENT: "bg-company-primary-subtle text-company-primary border-company-primary-muted",
   FAILED: "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30",
 };
 
 const TYPE_STYLES: Record<string, string> = {
   PUSH: "bg-violet-500/15 text-violet-600 dark:text-violet-400 border-violet-500/30",
   SMS: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
-  EMAIL: "bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30",
+  EMAIL: "bg-company-primary-subtle text-company-primary border-company-primary-muted",
 };
 
 function getStatusStyle(s: string | undefined): string {
@@ -91,7 +91,7 @@ export default function NotificationsPage() {
     return (
       <div className="flex-1 flex flex-col pt-14 pb-8 px-4 md:px-10 lg:px-12 max-w-[1600px] mx-auto w-full">
         <div className="flex items-center justify-center py-24">
-          <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
+          <Loader2 className="w-8 h-8 animate-spin text-company-primary" />
         </div>
       </div>
     );
@@ -141,7 +141,7 @@ export default function NotificationsPage() {
                   type="button"
                   onClick={() => handleMarkAsRead(n)}
                   disabled={markingId === n.id || n.status === "READ"}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 disabled:opacity-50 disabled:pointer-events-none transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-company-primary hover:bg-company-primary-subtle disabled:opacity-50 disabled:pointer-events-none transition-colors"
                 >
                   {markingId === n.id ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

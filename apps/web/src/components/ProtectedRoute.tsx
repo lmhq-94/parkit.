@@ -30,7 +30,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-page">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-sky-500/30 border-t-sky-500" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-company-primary-muted border-t-company-primary" />
       </div>
     );
   }

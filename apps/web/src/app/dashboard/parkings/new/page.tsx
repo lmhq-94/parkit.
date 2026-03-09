@@ -9,7 +9,7 @@ import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 
-const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 placeholder:text-text-muted";
+const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
 const PARKING_TYPES = ["OPEN", "COVERED", "TOWER", "UNDERGROUND", "ELEVATOR"] as const;
@@ -63,23 +63,23 @@ export default function NewParkingPage() {
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <div className="sm:col-span-2 lg:col-span-3">
-            <label className={LABEL}>{t("parkings.name")} <span className="text-sky-500">*</span></label>
+            <label className={LABEL}>{t("parkings.name")} <span className="text-company-primary">*</span></label>
             <div className="relative group">
-              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
+              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input value={form.name} onChange={set("name")} placeholder={t("common.placeholderName")} className={IL} />
             </div>
           </div>
           <div className="sm:col-span-2 lg:col-span-3">
-            <label className={LABEL}>{t("parkings.address")} <span className="text-sky-500">*</span></label>
+            <label className={LABEL}>{t("parkings.address")} <span className="text-company-primary">*</span></label>
             <div className="flex gap-2">
               <div className="relative group flex-1">
-                <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
+                <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                 <input value={form.address} readOnly placeholder={t("common.placeholderAddress")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
               </div>
               <button
                 type="button"
                 onClick={() => setAddressPickerOpen(true)}
-                className="shrink-0 px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-secondary text-sm font-medium hover:bg-sky-500/10 hover:border-sky-500/30 hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-2"
+                className="shrink-0 px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-secondary text-sm font-medium hover:bg-company-primary-subtle hover:border-company-primary-muted hover:text-company-primary transition-colors flex items-center gap-2"
               >
                 <MapPin className="w-4 h-4" />
                 {t("companies.pickAddressOnMap")}
@@ -87,15 +87,15 @@ export default function NewParkingPage() {
             </div>
           </div>
           <div>
-            <label className={LABEL}>{t("parkings.type")} <span className="text-sky-500">*</span></label>
+            <label className={LABEL}>{t("parkings.type")} <span className="text-company-primary">*</span></label>
             <SelectField value={form.type} onChange={set("type")} icon={Tag}>
               {PARKING_TYPES.map(pt => <option key={pt} value={pt}>{tEnum("parkingType", pt)}</option>)}
             </SelectField>
           </div>
           <div>
-            <label className={LABEL}>{t("parkings.totalSlots")} <span className="text-sky-500">*</span></label>
+            <label className={LABEL}>{t("parkings.totalSlots")} <span className="text-company-primary">*</span></label>
             <div className="relative group">
-              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
+              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input type="number" min={1} value={form.totalSlots} onChange={set("totalSlots")} placeholder={t("common.placeholderNumber")} className={IL} />
             </div>
           </div>
@@ -103,7 +103,7 @@ export default function NewParkingPage() {
             <button
               type="button" role="switch" aria-checked={form.requiresBooking}
               onClick={() => setForm(p => ({ ...p, requiresBooking: !p.requiresBooking }))}
-              className={`relative w-11 h-6 rounded-full shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-page ${form.requiresBooking ? "bg-sky-500" : "bg-input-border"}`}
+              className={`relative w-11 h-6 rounded-full shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page ${form.requiresBooking ? "bg-company-primary" : "bg-input-border"}`}
             >
               <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${form.requiresBooking ? "translate-x-5" : "translate-x-0"}`} />
             </button>
@@ -126,21 +126,21 @@ export default function NewParkingPage() {
           <div>
             <label className={LABEL}>{t("parkings.latitude")}</label>
             <div className="relative group">
-              <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
+              <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input type="number" step="any" value={form.latitude} readOnly placeholder={t("common.placeholderLatitude")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
             </div>
           </div>
           <div>
             <label className={LABEL}>{t("parkings.longitude")}</label>
             <div className="relative group">
-              <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
+              <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input type="number" step="any" value={form.longitude} readOnly placeholder={t("common.placeholderLongitude")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
             </div>
           </div>
           <div>
             <label className={LABEL}>{t("parkings.geofenceRadius")}</label>
             <div className="relative group">
-              <Radius className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
+              <Radius className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input type="number" min={1} value={form.geofenceRadius} readOnly placeholder={t("common.placeholderRadius")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
             </div>
           </div>

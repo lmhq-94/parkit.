@@ -187,7 +187,7 @@ export function AddressPickerModal({
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-card-border shrink-0">
           <h2 id="address-picker-title" className="text-sm font-semibold text-text-primary flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-sky-500" />
+            <MapPin className="w-4 h-4 text-company-primary" />
             {t("companies.addressPickerTitle")}
           </h2>
           <button
@@ -215,7 +215,7 @@ export function AddressPickerModal({
                 setSelected(null);
               }}
               placeholder={t("companies.addressPickerSearchPlaceholder")}
-              className="w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary"
               autoFocus
             />
             {loading && (
@@ -274,7 +274,7 @@ export function AddressPickerModal({
             type="button"
             onClick={handleUseAddress}
             disabled={!searchValue.trim()}
-            className="flex-1 px-4 py-2.5 rounded-lg border border-sky-500/30 bg-sky-500/10 text-sm font-medium text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+            className="flex-1 px-4 py-2.5 rounded-lg border border-company-primary-muted bg-company-primary-subtle text-sm font-medium text-company-primary hover:bg-company-primary-subtle transition-colors disabled:opacity-50 disabled:pointer-events-none"
           >
             {t("companies.useThisAddress")}
           </button>

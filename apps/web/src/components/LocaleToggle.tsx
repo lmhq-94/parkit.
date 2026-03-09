@@ -69,7 +69,7 @@ export function LocaleToggle() {
           }}
           className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg ${
             locale === "es"
-              ? "bg-sky-500/20 text-sky-600 dark:text-sky-400 font-medium"
+              ? "bg-company-primary-muted text-company-primary font-medium"
               : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
           }`}
         >
@@ -83,7 +83,7 @@ export function LocaleToggle() {
           }}
           className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg ${
             locale === "en"
-              ? "bg-sky-500/20 text-sky-600 dark:text-sky-400 font-medium"
+              ? "bg-company-primary-muted text-company-primary font-medium"
               : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
           }`}
         >

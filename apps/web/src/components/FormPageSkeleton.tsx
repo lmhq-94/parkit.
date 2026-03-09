@@ -48,7 +48,7 @@ export function FormPageSkeleton() {
       {/* Acciones */}
       <div className="flex items-center justify-end gap-3 pt-2">
         <div className="h-[46px] w-28 rounded-lg bg-input-border/20" />
-        <div className="h-[46px] w-36 rounded-lg bg-sky-500/20" />
+        <div className="h-[46px] w-36 rounded-lg bg-company-primary-muted" />
       </div>
     </div>
   );

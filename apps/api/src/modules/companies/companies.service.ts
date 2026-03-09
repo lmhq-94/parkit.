@@ -1,6 +1,15 @@
 import { prisma } from "../../shared/prisma";
 import type { Prisma } from "@prisma/client";
 import { CreateCompanyDTO, UpdateCompanyDTO } from "./companies.types";
+import { normalizeBrandingConfig } from "./branding-defaults";
+
+function withNormalizedBranding<T extends { brandingConfig?: unknown }>(company: T): T {
+  if (!company) return company;
+  return {
+    ...company,
+    brandingConfig: normalizeBrandingConfig(company.brandingConfig as Parameters<typeof normalizeBrandingConfig>[0]),
+  };
+}
 
 export class CompaniesService {
   static async create(data: CreateCompanyDTO) {
@@ -17,15 +26,17 @@ export class CompaniesService {
       ...(data.brandingConfig && { brandingConfig: data.brandingConfig }),
     };
     
-    return prisma.company.create({
+    const company = await prisma.company.create({
       data: createInput,
     });
+    return withNormalizedBranding(company);
   }
 
   static async getById(id: string) {
-    return prisma.company.findUnique({
+    const company = await prisma.company.findUnique({
       where: { id },
     });
+    return company ? withNormalizedBranding(company) : null;
   }
 
   static async update(id: string, data: UpdateCompanyDTO) {
@@ -41,14 +52,15 @@ export class CompaniesService {
     if (data.legalAddress !== undefined) updateInput.legalAddress = data.legalAddress;
     if (data.brandingConfig !== undefined) updateInput.brandingConfig = data.brandingConfig;
     if (data.status !== undefined) updateInput.status = data.status;
-    return prisma.company.update({
+    const company = await prisma.company.update({
       where: { id },
       data: updateInput,
     });
+    return withNormalizedBranding(company);
   }
 
   static async list() {
-    return prisma.company.findMany({
+    const companies = await prisma.company.findMany({
       select: {
         id: true,
         legalName: true,
@@ -67,6 +79,7 @@ export class CompaniesService {
       },
       orderBy: { createdAt: "desc" },
     });
+    return companies.map((c) => withNormalizedBranding(c));
   }
 
   static async delete(id: string) {

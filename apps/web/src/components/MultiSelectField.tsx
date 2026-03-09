@@ -130,14 +130,14 @@ export function MultiSelectField({
                 onClick={() => toggle(opt.value)}
                 className={`w-full px-3 py-2.5 text-left text-sm transition-colors rounded-lg flex items-center gap-3 ${
                   selected
-                    ? "bg-sky-500/10 text-sky-600 dark:text-sky-400"
+                    ? "bg-company-primary-subtle text-company-primary"
                     : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
                 <span
                   className={`shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors ${
                     selected
-                      ? "bg-sky-500 border-sky-500"
+                      ? "bg-company-primary border-company-primary"
                       : "border-slate-300 dark:border-slate-600"
                   }`}
                 >
@@ -176,8 +176,8 @@ export function MultiSelectField({
           className={[
             "w-full min-h-[46px] py-2 rounded-lg border bg-input-bg text-sm text-left transition-colors cursor-pointer flex flex-wrap items-center gap-1.5",
             open
-              ? "border-sky-500 ring-1 ring-sky-500"
-              : "border-input-border hover:border-sky-500/40",
+              ? "border-company-primary ring-1 ring-company-primary-full"
+              : "border-input-border hover:border-company-primary-muted",
             Icon ? "pl-10 pr-9" : "pl-4 pr-9",
           ].join(" ")}
         >
@@ -187,7 +187,7 @@ export function MultiSelectField({
             selectedLabels.map((label) => (
               <span
                 key={label}
-                className="inline-flex items-center px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-600 dark:text-sky-400 text-xs font-medium"
+                className="inline-flex items-center px-2 py-0.5 rounded-md bg-company-primary-subtle text-company-primary text-xs font-medium"
               >
                 {label}
               </span>
@@ -196,7 +196,7 @@ export function MultiSelectField({
         </button>
         <ChevronDown
           className={`absolute right-3 top-3.5 w-4 h-4 pointer-events-none transition-transform duration-200 ${
-            open ? "rotate-180 text-sky-500" : "text-text-muted/50"
+            open ? "rotate-180 text-company-primary" : "text-text-muted/50"
           }`}
         />
       </div>

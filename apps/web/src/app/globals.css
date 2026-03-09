@@ -12,7 +12,7 @@
     --text-muted: #64748b;
     --input-bg: rgba(0, 0, 0, 0.04);
     --input-border: rgba(0, 0, 0, 0.1);
-    /* Colores de la empresa (Settings). Si no se definen, se usan los por defecto. */
+    /* Colores de la empresa (Settings). Valores por defecto = lib/themeDefaults.ts (light) */
     --company-primary: #2563eb;
     --company-secondary: #64748b;
   }
@@ -26,6 +26,7 @@
     --text-muted: #94a3b8;
     --input-bg: rgba(255, 255, 255, 0.06);
     --input-border: rgba(255, 255, 255, 0.1);
+    /* Valores por defecto = lib/themeDefaults.ts (dark) */
     --company-primary: #3b82f6;
     --company-secondary: #94a3b8;
   }
@@ -49,7 +50,15 @@ body {
 }
 
 .btn-primary {
-  @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors;
+  background-color: var(--company-primary, #2563eb);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: opacity 0.2s, filter 0.2s;
+}
+.btn-primary:hover {
+  opacity: 0.9;
+  filter: brightness(1.05);
 }
 
 .btn-secondary {
@@ -85,7 +94,7 @@ body {
   text-transform: none;
 }
 
-/* AG Grid: tema Parkit (tipografía de la app, fondo transparente) */
+/* AG Grid: tema Parkit (usa --company-primary del tema de la empresa) */
 .ag-theme-parkit.ag-theme-quartz {
   --ag-background-color: transparent;
   --ag-foreground-color: var(--text-primary);
@@ -93,10 +102,10 @@ body {
   --ag-secondary-foreground-color: var(--text-muted);
   --ag-header-background-color: transparent;
   --ag-header-foreground-color: var(--text-secondary);
-  --ag-header-cell-hover-background-color: rgba(14, 165, 233, 0.08);
-  --ag-active-color: #0ea5e9;
+  --ag-header-cell-hover-background-color: color-mix(in srgb, var(--company-primary, #0ea5e9) 8%, transparent);
+  --ag-active-color: var(--company-primary, #0ea5e9);
   --ag-border-color: transparent;
-  --ag-row-hover-color: rgba(14, 165, 233, 0.06);
+  --ag-row-hover-color: color-mix(in srgb, var(--company-primary, #0ea5e9) 6%, transparent);
   --ag-odd-row-background-color: transparent;
   --ag-row-border-color: transparent;
   --ag-row-border-width: 0;
@@ -108,19 +117,19 @@ body {
   --ag-border-radius: 0;
   --ag-font-size: 14px;
   --ag-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --ag-selected-row-background-color: rgba(14, 165, 233, 0.12);
-  --ag-range-selection-border-color: rgba(14, 165, 233, 0.5);
-  --ag-range-selection-background-color: rgba(14, 165, 233, 0.1);
-  --ag-input-focus-border-color: #0ea5e9;
-  --ag-checkbox-checked-color: #0ea5e9;
+  --ag-selected-row-background-color: color-mix(in srgb, var(--company-primary, #0ea5e9) 12%, transparent);
+  --ag-range-selection-border-color: color-mix(in srgb, var(--company-primary, #0ea5e9) 50%, transparent);
+  --ag-range-selection-background-color: color-mix(in srgb, var(--company-primary, #0ea5e9) 10%, transparent);
+  --ag-input-focus-border-color: var(--company-primary, #0ea5e9);
+  --ag-checkbox-checked-color: var(--company-primary, #0ea5e9);
   --ag-modal-overlay-background-color: rgba(10, 10, 15, 0.6);
   --ag-menu-background-color: #ffffff;
   --ag-tooltip-background-color: #ffffff;
 }
 
 .dark .ag-theme-parkit.ag-theme-quartz {
-  --ag-row-hover-color: rgba(14, 165, 233, 0.1);
-  --ag-header-cell-hover-background-color: rgba(14, 165, 233, 0.12);
+  --ag-row-hover-color: color-mix(in srgb, var(--company-primary, #0ea5e9) 10%, transparent);
+  --ag-header-cell-hover-background-color: color-mix(in srgb, var(--company-primary, #0ea5e9) 12%, transparent);
   --ag-menu-background-color: #0f172a;
   --ag-tooltip-background-color: #0f172a;
 }
@@ -244,13 +253,13 @@ body {
 }
 
 .ag-theme-parkit .ag-paging-button:not(.ag-disabled):hover {
-  color: #0ea5e9 !important;
+  color: var(--company-primary, #0ea5e9) !important;
 }
 
-/* Iconos de ordenación en sky */
+/* Iconos de ordenación con color del tema */
 .ag-theme-parkit .ag-header-cell-sorted-asc .ag-icon-asc,
 .ag-theme-parkit .ag-header-cell-sorted-desc .ag-icon-desc {
-  color: #0ea5e9 !important;
+  color: var(--company-primary, #0ea5e9) !important;
 }
 
 /* Inputs de filtro y controles */
@@ -278,6 +287,65 @@ body {
   .ag-theme-parkit .ag-paging-panel {
     justify-content: flex-end !important;
   }
+}
+
+/* Tema de la empresa: utilidades para botones, links, inputs y estados (opacidad vía color-mix) */
+.bg-company-primary {
+  background-color: var(--company-primary, #0ea5e9);
+}
+.hover\:bg-company-primary:hover {
+  filter: brightness(1.08);
+}
+.text-company-primary {
+  color: var(--company-primary, #0ea5e9);
+}
+.ring-company-primary:focus,
+.focus\:ring-company-primary:focus {
+  --tw-ring-color: var(--company-primary, #0ea5e9);
+}
+.focus\:border-company-primary:focus {
+  border-color: var(--company-primary, #0ea5e9);
+}
+/* Fondos/bordes suaves para estados activos y hovers */
+.bg-company-primary-subtle {
+  background-color: color-mix(in srgb, var(--company-primary, #2563eb) 10%, transparent);
+}
+.hover\:bg-company-primary-subtle:hover {
+  background-color: color-mix(in srgb, var(--company-primary, #2563eb) 10%, transparent);
+}
+.bg-company-primary-muted {
+  background-color: color-mix(in srgb, var(--company-primary, #2563eb) 20%, transparent);
+}
+.border-company-primary {
+  border-color: var(--company-primary, #2563eb);
+}
+.border-t-company-primary {
+  border-top-color: var(--company-primary, #2563eb);
+}
+.border-company-primary-muted {
+  border-color: color-mix(in srgb, var(--company-primary, #2563eb) 40%, transparent);
+}
+.hover\:border-company-primary-muted:hover {
+  border-color: color-mix(in srgb, var(--company-primary, #2563eb) 40%, transparent);
+}
+.from-company-primary-8 {
+  --tw-gradient-from: color-mix(in srgb, var(--company-primary, #2563eb) 8%, transparent);
+  --tw-gradient-to: transparent;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.from-company-primary-20 {
+  --tw-gradient-from: color-mix(in srgb, var(--company-primary, #2563eb) 20%, transparent);
+  --tw-gradient-to: transparent;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.ring-company-primary-full {
+  --tw-ring-color: var(--company-primary, #2563eb);
+}
+/* Focus en inputs y botones del dashboard usa el color principal del tema */
+[data-dashboard] input:focus,
+[data-dashboard] button:focus-visible,
+[data-dashboard] [role="button"]:focus-visible {
+  --tw-ring-color: var(--company-primary, #0ea5e9);
 }
 
 /* Leaflet: asegurar que el contenedor del mapa tenga altura para que se vean los tiles */

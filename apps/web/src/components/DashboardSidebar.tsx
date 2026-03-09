@@ -182,7 +182,7 @@ function CompanySelector({
               onClick={() => { onSelect(c.id, name); setOpen(false); }}
               className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg truncate ${
                 selectedCompanyId === c.id
-                  ? "bg-sky-500/20 text-sky-600 dark:text-sky-400 font-medium"
+                  ? "bg-company-primary-muted text-company-primary font-medium"
                   : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
               }`}
             >
@@ -198,7 +198,7 @@ function CompanySelector({
         <Link
           href="/dashboard/companies"
           onClick={() => setOpen(false)}
-          className="block w-full px-3 py-2 text-left text-sm text-sky-600 dark:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg"
+          className="block w-full px-3 py-2 text-left text-sm text-company-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg"
         >
           {allCompaniesLabel}
         </Link>
@@ -217,15 +217,15 @@ function CompanySelector({
           onClick={() => { if (!open) updatePosition(); setOpen((o) => !o); }}
           className={`w-full flex items-center pl-9 pr-8 py-2.5 rounded-xl border text-left text-sm transition-colors ${
             open
-              ? "bg-input-bg border-sky-500 ring-1 ring-sky-500 text-text-primary"
-              : "bg-input-bg border-input-border text-text-secondary hover:border-sky-500/40"
+              ? "bg-input-bg border-company-primary ring-1 ring-company-primary-full text-text-primary"
+              : "bg-input-bg border-input-border text-text-secondary hover:border-company-primary-muted"
           }`}
         >
           <span className="truncate flex-1">
             {selectedCompanyName || <span className="text-text-muted">{placeholder}</span>}
           </span>
         </button>
-        <ChevronDown className={`absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-transform duration-200 ${open ? "rotate-180 text-sky-500" : "text-text-muted/50"}`} />
+        <ChevronDown className={`absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-transform duration-200 ${open ? "rotate-180 text-company-primary" : "text-text-muted/50"}`} />
       </div>
       {dropdown}
     </>
@@ -432,14 +432,14 @@ export function DashboardSidebar() {
                 const linkContent = (
                   <>
                     <span
-                      className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full bg-sky-500 dark:bg-sky-400 transition-all duration-200 ${
+                      className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full bg-company-primary transition-all duration-200 ${
                         isActive ? "opacity-100 h-6" : "opacity-0 h-0"
                       }`}
                     />
                     <span className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0 transition-all duration-200">
                       <Icon
                         className={`w-5 h-5 ${
-                          isActive ? "text-sky-500 dark:text-sky-400" : "text-text-muted group-hover:text-text-secondary"
+                          isActive ? "text-company-primary" : "text-text-muted group-hover:text-text-secondary"
                         }`}
                       />
                     </span>
@@ -458,7 +458,7 @@ export function DashboardSidebar() {
                           </span>
                         )}
                         {isActive && (
-                          <ChevronRight className="w-4 h-4 text-sky-500/80 dark:text-sky-400/80 shrink-0 ml-auto" />
+                          <ChevronRight className="w-4 h-4 text-company-primary shrink-0 ml-auto" />
                         )}
                       </>
                     )}
@@ -479,7 +479,7 @@ export function DashboardSidebar() {
                           collapsed ? "justify-center" : ""
                         } ${
                           isActive
-                            ? "bg-sky-500/10 dark:bg-sky-500/10 text-text-primary"
+                            ? "bg-company-primary-subtle text-text-primary"
                             : "text-text-muted hover:bg-input-bg hover:text-text-secondary"
                         }`}
                       >

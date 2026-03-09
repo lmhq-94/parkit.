@@ -2,10 +2,14 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { Palette, Loader2, ArrowRight, Upload, X } from "lucide-react";
+import { Loader2, ArrowRight, Upload, X } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useDashboardStore } from "@/lib/store";
+import {
+  THEME_DEFAULT_PRIMARY_LIGHT,
+  THEME_DEFAULT_SECONDARY_LIGHT,
+} from "@/lib/themeDefaults";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 type BrandingConfig = {
@@ -15,14 +19,7 @@ type BrandingConfig = {
   secondaryColor?: string | null;
 };
 
-const defaultForm: BrandingConfig = {
-  bannerImageUrl: "",
-  logoImageUrl: "",
-  primaryColor: "#2563eb",
-  secondaryColor: "#64748b",
-};
-
-const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 placeholder:text-text-muted";
+const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
 function readFileAsDataUrl(file: File): Promise<string> {
@@ -82,7 +79,7 @@ function ImageSelector({
             <img src={value} alt="" className={`w-full h-full ${objectFit === "contain" ? "object-contain" : "object-cover"}`} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => inputRef.current?.click()} className="text-sm font-medium text-sky-600 dark:text-sky-400 hover:underline">
+            <button type="button" onClick={() => inputRef.current?.click()} className="text-sm font-medium text-company-primary hover:underline">
               {changeLabel}
             </button>
             <button type="button" onClick={onClear} className="flex items-center gap-1 text-sm font-medium text-text-muted hover:text-red-600 dark:hover:text-red-400 transition-colors">
@@ -95,7 +92,7 @@ function ImageSelector({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="w-full rounded-lg border-2 border-dashed border-input-border bg-input-bg hover:border-sky-500/50 hover:bg-sky-500/5 transition-colors flex flex-col items-center justify-center gap-2 py-8 px-4"
+          className="w-full rounded-lg border-2 border-dashed border-input-border bg-input-bg hover:border-company-primary-muted hover:bg-company-primary-subtle transition-colors flex flex-col items-center justify-center gap-2 py-8 px-4"
         >
           <Upload className="w-8 h-8 text-text-muted" />
           <span className="text-sm font-medium text-text-secondary">{selectLabel}</span>
@@ -115,12 +112,19 @@ function parseHexColor(value: string, fallback: string): string {
 export default function SettingsPage() {
   const { t } = useTranslation();
   const setCompanyBranding = useDashboardStore((s) => s.setCompanyBranding);
-  const [form, setForm] = useState<BrandingConfig>(defaultForm);
+  const [form, setForm] = useState<BrandingConfig>({
+    bannerImageUrl: "",
+    logoImageUrl: "",
+    primaryColor: THEME_DEFAULT_PRIMARY_LIGHT,
+    secondaryColor: THEME_DEFAULT_SECONDARY_LIGHT,
+  });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [reverting, setReverting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  // Cargar branding solo al montar; [t] provocaba re-ejecución y reseteaba colores/imagen al cambiar el formulario
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -131,8 +135,8 @@ export default function SettingsPage() {
           setForm({
             bannerImageUrl: bc.bannerImageUrl ?? "",
             logoImageUrl: bc.logoImageUrl ?? "",
-            primaryColor: bc.primaryColor && /^#[0-9A-Fa-f]{3,6}$/.test(bc.primaryColor) ? bc.primaryColor : defaultForm.primaryColor,
-            secondaryColor: bc.secondaryColor && /^#[0-9A-Fa-f]{3,6}$/.test(bc.secondaryColor) ? bc.secondaryColor : defaultForm.secondaryColor,
+            primaryColor: bc.primaryColor ?? THEME_DEFAULT_PRIMARY_LIGHT,
+            secondaryColor: bc.secondaryColor ?? THEME_DEFAULT_SECONDARY_LIGHT,
           });
         }
       } catch {
@@ -142,15 +146,20 @@ export default function SettingsPage() {
       }
     })();
     return () => { cancelled = true; };
-  }, [t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- carga inicial única para no pisar cambios del usuario
+  }, []);
 
   const handleSubmit = async () => {
     setSubmitting(true);
     setError(null);
     setSuccess(false);
     try {
-      const primaryColor = form.primaryColor?.trim() ? parseHexColor(form.primaryColor, defaultForm.primaryColor!) : null;
-      const secondaryColor = form.secondaryColor?.trim() ? parseHexColor(form.secondaryColor, defaultForm.secondaryColor!) : null;
+      const primaryColor = form.primaryColor?.trim()
+        ? parseHexColor(form.primaryColor, THEME_DEFAULT_PRIMARY_LIGHT)
+        : null;
+      const secondaryColor = form.secondaryColor?.trim()
+        ? parseHexColor(form.secondaryColor, THEME_DEFAULT_SECONDARY_LIGHT)
+        : null;
       await apiClient.patch("/companies/me", {
         brandingConfig: {
           bannerImageUrl: form.bannerImageUrl?.trim() || null,
@@ -170,6 +179,39 @@ export default function SettingsPage() {
       setError(t("settings.saveError"));
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleRevertToDefault = async () => {
+    setReverting(true);
+    setError(null);
+    setSuccess(false);
+    try {
+      await apiClient.patch("/companies/me", {
+        brandingConfig: {
+          bannerImageUrl: null,
+          logoImageUrl: null,
+          primaryColor: THEME_DEFAULT_PRIMARY_LIGHT,
+          secondaryColor: THEME_DEFAULT_SECONDARY_LIGHT,
+        },
+      });
+      setCompanyBranding({
+        bannerImageUrl: null,
+        logoImageUrl: null,
+        primaryColor: THEME_DEFAULT_PRIMARY_LIGHT,
+        secondaryColor: THEME_DEFAULT_SECONDARY_LIGHT,
+      });
+      setForm({
+        bannerImageUrl: "",
+        logoImageUrl: "",
+        primaryColor: THEME_DEFAULT_PRIMARY_LIGHT,
+        secondaryColor: THEME_DEFAULT_SECONDARY_LIGHT,
+      });
+      setSuccess(true);
+    } catch {
+      setError(t("settings.saveError"));
+    } finally {
+      setReverting(false);
     }
   };
 
@@ -285,8 +327,18 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="mt-auto flex items-center justify-between gap-4 pt-2">
-        <p className="text-xs text-text-muted hidden sm:block">{t("common.optionalNote")}</p>
+      <div className="mt-auto flex items-center justify-between gap-4 pt-2 flex-wrap">
+        <button
+          type="button"
+          onClick={handleRevertToDefault}
+          disabled={reverting || submitting}
+          className="text-xs text-text-muted hover:text-text-secondary transition-colors disabled:opacity-50 disabled:pointer-events-none inline-flex items-center gap-1.5"
+        >
+          {reverting ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : null}
+          {t("settings.revertToDefault")}
+        </button>
         <div className="flex items-center gap-3 ml-auto">
           <Link
             href="/dashboard"
@@ -298,7 +350,7 @@ export default function SettingsPage() {
             type="button"
             onClick={handleSubmit}
             disabled={submitting}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors"
           >
             {submitting ? <><Loader2 className="w-4 h-4 animate-spin" />{t("common.saving")}</> : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}
           </button>

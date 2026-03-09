@@ -17,7 +17,7 @@ import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { COUNTRIES, CURRENCIES, TIMEZONES } from "@/lib/companyOptions";
 import { formatTaxId, formatPhoneWithCountryCode } from "@/lib/inputMasks";
 
-const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 placeholder:text-text-muted";
+const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
 function Field({ label, required, icon: Icon, children }: {
@@ -30,7 +30,7 @@ function Field({ label, required, icon: Icon, children }: {
         {label}{required && <span className="ml-1 text-red-500">*</span>}
       </label>
       <div className="relative group">
-        <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
+        <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
         {children}
       </div>
     </div>
@@ -130,7 +130,7 @@ export default function EditCompanyPage() {
 
       {/* Sección — datos legales */}
       <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-sky-500/8 to-transparent flex items-center gap-3">
+        <div className="px-6 py-4 bg-gradient-to-r from-company-primary-8 to-transparent flex items-center gap-3">
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("companies.sectionMain")}</p>
             <p className="text-xs text-text-muted">{t("companies.sectionMainDesc")}</p>
@@ -181,13 +181,13 @@ export default function EditCompanyPage() {
               <label className={LABEL}>{t("companies.legalAddress")}</label>
               <div className="flex gap-2">
                 <div className="relative group flex-1">
-                  <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
+                  <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                   <input value={form.legalAddress} readOnly placeholder={t("common.placeholderAddress")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
                 </div>
                 <button
                   type="button"
                   onClick={() => setAddressPickerOpen(true)}
-                  className="shrink-0 px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-secondary text-sm font-medium hover:bg-sky-500/10 hover:border-sky-500/30 hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-2"
+                  className="shrink-0 px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-secondary text-sm font-medium hover:bg-company-primary-subtle hover:border-company-primary-muted hover:text-company-primary transition-colors flex items-center gap-2"
                 >
                   <MapPin className="w-4 h-4" />
                   {t("companies.pickAddressOnMap")}
@@ -249,7 +249,7 @@ export default function EditCompanyPage() {
             {t("common.cancel")}
           </Link>
           <button type="button" onClick={handleSubmit} disabled={submitting || !isValid}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors">
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors">
             {submitting ? <><Loader2 className="w-4 h-4 animate-spin" />{t("common.saving")}</> : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}
           </button>
         </div>

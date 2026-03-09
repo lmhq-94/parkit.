@@ -10,7 +10,7 @@ import { apiClient } from "@/lib/api";
 import { COUNTRIES } from "@/lib/companyOptions";
 import { formatPlate, toTitleCase } from "@/lib/inputMasks";
 
-const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 placeholder:text-text-muted";
+const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
 type CatalogMake = { id: number; name: string };
@@ -156,14 +156,14 @@ export default function NewVehiclePage() {
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <div>
-            <label className={LABEL}>{t("vehicles.plate")} <span className="text-sky-500">*</span></label>
+            <label className={LABEL}>{t("vehicles.plate")} <span className="text-company-primary">*</span></label>
             <div className="relative group">
-              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
+              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input value={form.plate} onChange={(e) => setForm((p) => ({ ...p, plate: formatPlate(e.target.value) }))} placeholder={t("common.placeholderPlate")} className={IL} />
             </div>
           </div>
           <div>
-            <label className={LABEL}>{t("vehicles.brand")} <span className="text-sky-500">*</span></label>
+            <label className={LABEL}>{t("vehicles.brand")} <span className="text-company-primary">*</span></label>
             <SelectField value={form.brand} onChange={set("brand")} icon={Car}>
               <option value="">{loadingMakes ? t("common.loading") : t("common.selectPlaceholder")}</option>
               {makes.map((m) => (
@@ -172,7 +172,7 @@ export default function NewVehiclePage() {
             </SelectField>
           </div>
           <div>
-            <label className={LABEL}>{t("vehicles.model")} <span className="text-sky-500">*</span></label>
+            <label className={LABEL}>{t("vehicles.model")} <span className="text-company-primary">*</span></label>
             <SelectField value={form.model} onChange={set("model")} icon={Car}>
               <option value="">{loadingModels ? t("common.loading") : form.brand ? t("common.selectPlaceholder") : t("vehicles.selectBrandFirst")}</option>
               {models.map((m) => (
@@ -183,7 +183,7 @@ export default function NewVehiclePage() {
           <div>
             <label className={LABEL}>{t("vehicles.year")}</label>
             <div className="relative group">
-              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
+              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input type="number" min={1900} max={new Date().getFullYear() + 1} value={form.year} onChange={set("year")} placeholder={t("common.placeholderYear")} className={IL} />
             </div>
           </div>
@@ -210,21 +210,21 @@ export default function NewVehiclePage() {
           <div>
             <label className={LABEL}>{t("vehicles.lengthCm")}</label>
             <div className="relative group">
-              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
+              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input type="number" min={1} value={form.lengthCm} onChange={set("lengthCm")} placeholder="cm" className={IL} />
             </div>
           </div>
           <div>
             <label className={LABEL}>{t("vehicles.widthCm")}</label>
             <div className="relative group">
-              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
+              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input type="number" min={1} value={form.widthCm} onChange={set("widthCm")} placeholder="cm" className={IL} />
             </div>
           </div>
           <div>
             <label className={LABEL}>{t("vehicles.heightCm")}</label>
             <div className="relative group">
-              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
+              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input type="number" min={1} value={form.heightCm} onChange={set("heightCm")} placeholder="cm" className={IL} />
             </div>
           </div>

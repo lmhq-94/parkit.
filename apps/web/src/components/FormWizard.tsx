@@ -28,7 +28,7 @@ interface FormWizardProps {
 }
 
 const ACCENT: Record<string, { bar: string; dot: string; text: string; bg: string }> = {
-  sky:     { bar: "bg-sky-500",     dot: "text-sky-500",     text: "text-sky-600 dark:text-sky-400",     bg: "bg-sky-500/8" },
+  sky:     { bar: "bg-company-primary",     dot: "text-company-primary",     text: "text-company-primary",     bg: "bg-company-primary-subtle" },
   emerald: { bar: "bg-emerald-500", dot: "text-emerald-500", text: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/8" },
   indigo:  { bar: "bg-indigo-500",  dot: "text-indigo-500",  text: "text-indigo-600 dark:text-indigo-400",  bg: "bg-indigo-500/8" },
   orange:  { bar: "bg-orange-500",  dot: "text-orange-500",  text: "text-orange-600 dark:text-orange-400",  bg: "bg-orange-500/8" },
@@ -107,9 +107,9 @@ export function FormWizard({
                       className={[
                         "flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-bold transition-all duration-300",
                         done
-                          ? "bg-sky-500 text-white shadow-sm shadow-sky-500/30"
+                          ? "bg-company-primary text-white shadow-sm"
                           : active
-                          ? "border-2 border-sky-500 text-sky-500 bg-sky-500/5"
+                          ? "border-2 border-company-primary text-company-primary bg-company-primary-subtle"
                           : "border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500",
                       ].join(" ")}
                     >
@@ -118,7 +118,7 @@ export function FormWizard({
                     <span
                       className={[
                         "text-[11px] font-medium whitespace-nowrap transition-colors duration-200",
-                        active ? "text-text-primary" : done ? "text-sky-500" : "text-text-muted/50",
+                        active ? "text-text-primary" : done ? "text-company-primary" : "text-text-muted/50",
                       ].join(" ")}
                     >
                       {s.title}
@@ -128,7 +128,7 @@ export function FormWizard({
                   {i < steps.length - 1 && (
                     <div className="flex-1 mx-3 mb-4 h-[2px] rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700/60">
                       <div
-                        className="h-full rounded-full bg-sky-500 transition-all duration-500 ease-out"
+                        className="h-full rounded-full bg-company-primary transition-all duration-500 ease-out"
                         style={{ width: i < current ? "100%" : "0%" }}
                       />
                     </div>
@@ -222,7 +222,7 @@ export function FormWizard({
             type="button"
             onClick={handleNext}
             disabled={submitting || nextLoading || !canAdvance}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-page disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm shadow-sky-500/20"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm"
           >
             {submitting ? (
               <>

@@ -33,6 +33,7 @@ interface DashboardStats {
   ticketsCount: number;
   usersCount: number;
   bookingsCount: number;
+  hasParkingWithBooking?: boolean;
   ticketsLast7Days: { date: string; count: number }[];
   recentTickets: Array<{
     id: string;
@@ -44,8 +45,10 @@ interface DashboardStats {
 }
 
 function formatShortDate(dateStr: string, locale: string) {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString(locale === "es" ? "es" : "en", {
+  // Interpretar YYYY-MM-DD como fecha de calendario (sin convertir a hora local) para que la etiqueta coincida con el día del dato
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const d2 = new Date(y, m - 1, d);
+  return d2.toLocaleDateString(locale === "es" ? "es" : "en", {
     day: "2-digit",
     month: "short",
   });
@@ -100,7 +103,7 @@ export default function DashboardPage() {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 rounded-full border-2 border-sky-500 border-t-transparent animate-spin" />
+          <div className="h-10 w-10 rounded-full border-2 border-company-primary border-t-transparent animate-spin" />
           <p className="text-text-muted text-sm">{t("common.loading")}</p>
         </div>
       </div>
@@ -163,13 +166,17 @@ export default function DashboardPage() {
       icon: <MapPin className="w-6 h-6" />,
       color: "emerald",
     },
-    {
-      key: "bookings",
-      title: t("dashboard.totalBookings"),
-      value: stats.bookingsCount,
-      icon: <CalendarCheck className="w-6 h-6" />,
-      color: "amber",
-    },
+    ...(stats.hasParkingWithBooking
+      ? [
+          {
+            key: "bookings",
+            title: t("dashboard.totalBookings"),
+            value: stats.bookingsCount,
+            icon: <CalendarCheck className="w-6 h-6" />,
+            color: "amber",
+          },
+        ]
+      : []),
     {
       key: "tickets",
       title: t("dashboard.totalTickets"),
@@ -181,9 +188,9 @@ export default function DashboardPage() {
 
   const colorClasses: Record<string, { bg: string; text: string; gradient: string }> = {
     sky: {
-      bg: "bg-sky-500/10 dark:bg-sky-400/10",
-      text: "text-sky-600 dark:text-sky-400",
-      gradient: "from-sky-500/20 to-transparent",
+      bg: "bg-company-primary-subtle",
+      text: "text-company-primary",
+      gradient: "from-company-primary-20 to-transparent",
     },
     emerald: {
       bg: "bg-emerald-500/10 dark:bg-emerald-400/10",
@@ -212,7 +219,7 @@ export default function DashboardPage() {
     },
   };
   const defaultCardStyle: { bg: string; text: string; gradient: string } = {
-    bg: "bg-sky-500/10 dark:bg-sky-400/10",
+    bg: "bg-company-primary-subtle",
     text: "text-sky-600 dark:text-sky-400",
     gradient: "from-sky-500/20 to-transparent",
   };
@@ -238,8 +245,8 @@ export default function DashboardPage() {
   return (
     <div className="pt-4 md:pt-6 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 max-w-[1600px] mx-auto w-full flex-1 flex flex-col gap-6 md:gap-8">
             {/* Banner: resumen rápido con métricas importantes */}
-            <header className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-600/90 via-sky-700/80 to-slate-800 dark:from-sky-700/90 dark:via-sky-800/80 dark:to-slate-900 border border-sky-500/20 p-6 md:p-8">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(14,165,233,0.25),transparent)]" />
+            <header className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-600/90 via-slate-700/80 to-slate-800 dark:from-slate-700/90 dark:via-slate-800/80 dark:to-slate-900 border border-white/20 p-6 md:p-8">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,color-mix(in_srgb,var(--company-primary,#2563eb)_25%,transparent),transparent)]" />
               <div className="relative space-y-5">
                 <div className="flex flex-wrap items-center gap-4">
                   <div className="flex items-center gap-3">
@@ -304,7 +311,7 @@ export default function DashboardPage() {
                   return (
                     <div
                       key={card.key}
-                      className="group relative rounded-2xl border border-card-border bg-card p-5 backdrop-blur-sm transition-all duration-200 hover:border-sky-500/30 hover:shadow-lg hover:shadow-sky-500/5"
+                      className="group relative rounded-2xl border border-card-border bg-card p-5 backdrop-blur-sm transition-all duration-200 hover:border-company-primary-muted hover:shadow-lg"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
@@ -392,7 +399,7 @@ export default function DashboardPage() {
                   </h2>
                   <Link
                     href="/dashboard/tickets"
-                    className="text-sm font-medium text-sky-500 hover:text-sky-400 flex items-center gap-1"
+                    className="text-sm font-medium text-company-primary hover:text-company-primary flex items-center gap-1"
                   >
                     {t("dashboard.viewAll")}
                     <ChevronRight className="w-4 h-4" />
