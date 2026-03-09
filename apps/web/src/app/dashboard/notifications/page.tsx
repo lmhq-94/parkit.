@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Bell, Check, Loader2, Trash2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useToast } from "@/lib/toastStore";
 import { useAuthStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
@@ -38,6 +39,7 @@ function getTypeStyle(t: string | undefined): string {
 
 export default function NotificationsPage() {
   const { t, tEnum } = useTranslation();
+  const { showError: showToastError } = useToast();
   const user = useAuthStore((s) => s.user);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,6 +57,7 @@ export default function NotificationsPage() {
       setItems(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al cargar");
+      showToastError(t("common.loadError"));
     } finally {
       setLoading(false);
     }

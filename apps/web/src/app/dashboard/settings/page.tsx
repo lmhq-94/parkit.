@@ -15,6 +15,7 @@ import {
   THEME_DEFAULT_TERTIARY_DARK,
 } from "@/lib/themeDefaults";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
+import { useToast } from "@/lib/toastStore";
 
 type BrandingConfig = {
   bannerImageUrl?: string | null;
@@ -149,6 +150,7 @@ function CopyHexButton({ value, id, copiedId, onCopy, copyLabel }: { value: stri
 
 export default function SettingsPage() {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const setCompanyBranding = useDashboardStore((s) => s.setCompanyBranding);
   const [form, setForm] = useState<BrandingConfig>({
     bannerImageUrl: "",
@@ -163,8 +165,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [reverting, setReverting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopyHex = (id: string) => {
@@ -196,7 +197,7 @@ export default function SettingsPage() {
           });
         }
       } catch {
-        if (!cancelled) setError(t("settings.saveError"));
+        if (!cancelled) setLoadError(t("settings.saveError"));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -207,8 +208,6 @@ export default function SettingsPage() {
 
   const handleSubmit = async () => {
     setSubmitting(true);
-    setError(null);
-    setSuccess(false);
     try {
       const primaryColor = form.primaryColor?.trim()
         ? parseHexColor(form.primaryColor, THEME_DEFAULT_PRIMARY_LIGHT)
@@ -250,9 +249,9 @@ export default function SettingsPage() {
         tertiaryColor: tertiaryColor || null,
         tertiaryColorDark: tertiaryColorDark || null,
       });
-      setSuccess(true);
+      showSuccess(t("settings.saveSuccess"));
     } catch {
-      setError(t("settings.saveError"));
+      showError(t("settings.saveError"));
     } finally {
       setSubmitting(false);
     }
@@ -260,8 +259,6 @@ export default function SettingsPage() {
 
   const handleRevertToDefault = async () => {
     setReverting(true);
-    setError(null);
-    setSuccess(false);
     try {
       await apiClient.patch("/companies/me", {
         brandingConfig: {
@@ -295,9 +292,9 @@ export default function SettingsPage() {
         tertiaryColor: THEME_DEFAULT_TERTIARY_LIGHT,
         tertiaryColorDark: THEME_DEFAULT_TERTIARY_DARK,
       });
-      setSuccess(true);
+      showSuccess(t("settings.saveSuccess"));
     } catch {
-      setError(t("settings.saveError"));
+      showError(t("settings.saveError"));
     } finally {
       setReverting(false);
     }
@@ -307,15 +304,9 @@ export default function SettingsPage() {
 
   return (
     <div className="flex-1 flex flex-col pt-6 pb-8 px-4 md:px-10 lg:px-12 w-full gap-5">
-      {error && (
+      {loadError && (
         <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-400">
-          {t("settings.saveSuccess")}
+          {loadError}
         </div>
       )}
 
@@ -347,7 +338,7 @@ export default function SettingsPage() {
                 headerClassName="min-h-[60px]"
               />
             </div>
-            {/* Banner (ocupa el resto del espacio, alineado como en Colores) */}
+            {/* Banner (recorte 4:1 como en el sidebar; vista previa misma proporción) */}
             <div className="min-w-0">
               <ImageSelector
                 value={form.bannerImageUrl ?? ""}
@@ -355,8 +346,9 @@ export default function SettingsPage() {
                 onClear={() => setForm((p) => ({ ...p, bannerImageUrl: "" }))}
                 label={t("settings.bannerImage")}
                 description={t("settings.bannerImageDescription")}
-                aspectRatio="6/1"
+                aspectRatio="4/1"
                 previewClass="max-h-32 sm:max-h-40 w-full"
+                objectFit="cover"
                 selectLabel={t("settings.selectImage")}
                 changeLabel={t("settings.changeImage")}
                 removeLabel={t("settings.removeImage")}

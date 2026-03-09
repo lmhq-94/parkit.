@@ -104,16 +104,16 @@ export default function DashboardLayout({
   }, [pathname]);
 
   const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
-  const companyBranding = useDashboardStore((s) => s.companyBranding);
   const setCompanyBranding = useDashboardStore((s) => s.setCompanyBranding);
   const superAdmin = isSuperAdmin(user);
 
-  // Cargar branding de la empresa seleccionada
+  // Cargar branding: super admin por company seleccionada; admin siempre por /companies/me (aunque selectedCompanyId llegue después)
   useEffect(() => {
-    if (!selectedCompanyId) {
+    if (superAdmin && !selectedCompanyId) {
       setCompanyBranding(null);
       return;
     }
+    if (!superAdmin && !user?.id) return;
     const url = superAdmin ? `/companies/${selectedCompanyId}` : "/companies/me";
     apiClient
       .get<{ brandingConfig?: Record<string, string | null | undefined> | null }>(url)
@@ -135,7 +135,7 @@ export default function DashboardLayout({
         });
       })
       .catch(() => setCompanyBranding(null));
-  }, [selectedCompanyId, superAdmin, setCompanyBranding]);
+  }, [selectedCompanyId, superAdmin, setCompanyBranding, user?.id]);
 
   return (
     <ProtectedRoute>
@@ -148,11 +148,6 @@ export default function DashboardLayout({
                 headerShadow ? "shadow-[0_1px_3px_0_rgba(0,0,0,0.06),0_1px_2px_-1px_rgba(0,0,0,0.06)] dark:shadow-[0_1px_3px_0_rgba(0,0,0,0.2),0_1px_2px_-1px_rgba(0,0,0,0.15)]" : ""
               }`}
             >
-              {companyBranding?.bannerImageUrl && (
-                <div className="w-full h-20 md:h-24 overflow-hidden bg-input-bg">
-                  <img src={companyBranding.bannerImageUrl} alt="" className="w-full h-full object-cover" />
-                </div>
-              )}
               <div className="flex flex-wrap items-center justify-between gap-4 pt-5 md:pt-8 pb-0 px-4 md:px-10 lg:px-12">
               <div className="flex items-center gap-3 min-w-0">
               {/* Hamburger: solo móvil */}

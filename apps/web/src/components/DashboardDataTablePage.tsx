@@ -12,6 +12,7 @@ import { Check, ChevronDown, ChevronRight, Eye, Pencil, Plus, Trash2, X } from "
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
+import { useToast } from "@/lib/toastStore";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -351,6 +352,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
 }: DashboardDataTablePageProps<T>) {
   const { user } = useAuthStore();
   const locale = useLocaleStore((s) => s.locale);
+  const { showError: showToastError } = useToast();
   const [rows, setRows] = useState<T[]>([]);
   const [draftRow, setDraftRow] = useState<(T & { __isNew?: true }) | null>(null);
   const [expandedRowId, setExpandedRowId] = useState<string | number | null>(null);
@@ -405,11 +407,13 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
       setRows(Array.isArray(data) ? data : data ? [data] : []);
       setDraftRow(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load data");
+      const msg = err instanceof Error ? err.message : t(locale, "common.loadError");
+      setError(msg);
+      showToastError(t(locale, "common.loadError"));
     } finally {
       setIsLoading(false);
     }
-  }, [endpoint, fetchData, user?.id]);
+  }, [endpoint, fetchData, user?.id, locale]);
 
   useEffect(() => {
     loadData();

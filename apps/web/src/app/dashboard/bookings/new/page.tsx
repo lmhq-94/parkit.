@@ -8,6 +8,7 @@ import { SelectField } from "@/components/SelectField";
 import { DateTimePickerField } from "@/components/DateTimePickerField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { useToast } from "@/lib/toastStore";
 
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
@@ -19,6 +20,7 @@ const defaultForm = { clientId: "", vehicleId: "", parkingId: "", scheduledEntry
 
 export default function NewBookingPage() {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
   const [form, setForm] = useState(defaultForm);
   const [clients, setClients] = useState<ClientOption[]>([]);
@@ -56,9 +58,12 @@ export default function NewBookingPage() {
         scheduledEntryTime: new Date(form.scheduledEntryTime).toISOString(),
         ...(form.scheduledExitTime ? { scheduledExitTime: new Date(form.scheduledExitTime).toISOString() } : {}),
       });
+      showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/bookings");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al crear la reserva");
+      const msg = err instanceof Error ? err.message : "Error al crear la reserva";
+      setError(msg);
+      showError(msg);
       setSubmitting(false);
     }
   };

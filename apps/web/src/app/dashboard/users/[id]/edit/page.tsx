@@ -7,6 +7,7 @@ import { User, Mail, Phone, Clock, Shield, ArrowRight, Loader2 } from "lucide-re
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { useToast } from "@/lib/toastStore";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 import { TIMEZONES } from "@/lib/companyOptions";
 import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
@@ -23,6 +24,7 @@ const defaultForm = {
 
 export default function EditUserPage() {
   const { t, tEnum } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
@@ -47,6 +49,7 @@ export default function EditUserPage() {
         }
       } catch {
         setError(t("common.loadingData"));
+        showError(t("common.loadError"));
       } finally {
         setLoading(false);
       }
@@ -68,9 +71,12 @@ export default function EditUserPage() {
         phone: form.phone.replace(/\D/g, "").length > 0 ? form.phone.replace(/\D/g, "") : undefined,
         timezone: form.timezone.trim() || undefined,
       });
+      showSuccess(t("common.saveSuccessShort"));
       router.push("/dashboard/users");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al actualizar el empleado");
+      const msg = err instanceof Error ? err.message : "Error al actualizar el empleado";
+      setError(msg);
+      showError(msg);
     } finally { setSubmitting(false); }
   };
 

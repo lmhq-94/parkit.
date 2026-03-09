@@ -11,6 +11,7 @@ import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { useToast } from "@/lib/toastStore";
 import { useDashboardStore } from "@/lib/store";
 import { COUNTRIES, CURRENCIES, TIMEZONES } from "@/lib/companyOptions";
 import { formatTaxId, formatPhoneWithCountryCode } from "@/lib/inputMasks";
@@ -43,6 +44,7 @@ const defaultForm = {
 
 export default function NewCompanyPage() {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
   const bumpCompanies = useDashboardStore((s) => s.bumpCompanies);
   const [form, setForm] = useState(defaultForm);
@@ -70,9 +72,12 @@ export default function NewCompanyPage() {
         legalAddress: form.legalAddress.trim() || undefined,
       });
       bumpCompanies();
+      showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/companies");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al crear la empresa");
+      const msg = err instanceof Error ? err.message : "Error al crear la empresa";
+      setError(msg);
+      showError(msg);
       setSubmitting(false);
     }
   };

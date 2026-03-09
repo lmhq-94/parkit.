@@ -8,6 +8,7 @@ import { SelectField } from "@/components/SelectField";
 import { DateTimePickerField } from "@/components/DateTimePickerField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { useToast } from "@/lib/toastStore";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -20,6 +21,7 @@ const defaultForm = { clientId: "", vehicleId: "", parkingId: "", scheduledEntry
 
 export default function EditBookingPage() {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
@@ -58,6 +60,7 @@ export default function EditBookingPage() {
         setParkings(Array.isArray(p) ? p : []);
       } catch {
         setError(t("common.loadingData"));
+        showError(t("common.loadError"));
       } finally {
         setLoading(false);
       }
@@ -76,9 +79,12 @@ export default function EditBookingPage() {
         scheduledEntryTime: new Date(form.scheduledEntryTime).toISOString(),
         ...(form.scheduledExitTime ? { scheduledExitTime: new Date(form.scheduledExitTime).toISOString() } : {}),
       });
+      showSuccess(t("common.saveSuccessShort"));
       router.push("/dashboard/bookings");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al actualizar la reserva");
+      const msg = err instanceof Error ? err.message : "Error al actualizar la reserva";
+      setError(msg);
+      showError(msg);
     } finally { setSubmitting(false); }
   };
 

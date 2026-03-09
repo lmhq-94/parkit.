@@ -7,6 +7,7 @@ import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { useToast } from "@/lib/toastStore";
 import { COUNTRIES } from "@/lib/companyOptions";
 import { formatPlate, toTitleCase } from "@/lib/inputMasks";
 
@@ -29,6 +30,7 @@ const defaultForm = {
 
 export default function NewVehiclePage() {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
   const [form, setForm] = useState(defaultForm);
   const [submitting, setSubmitting] = useState(false);
@@ -139,9 +141,12 @@ export default function NewVehiclePage() {
         countryCode: form.countryCode.trim() || undefined,
         ...(Object.keys(dimensions ?? {}).length > 0 && { dimensions }),
       });
+      showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/vehicles");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al crear el vehículo");
+      const msg = err instanceof Error ? err.message : "Error al crear el vehículo";
+      setError(msg);
+      showError(msg);
       setSubmitting(false);
     }
   };

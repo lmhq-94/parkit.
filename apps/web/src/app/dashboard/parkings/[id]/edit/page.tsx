@@ -8,6 +8,7 @@ import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { useToast } from "@/lib/toastStore";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
@@ -22,6 +23,7 @@ const defaultForm = {
 
 export default function EditParkingPage() {
   const { t, tEnum } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
@@ -49,6 +51,7 @@ export default function EditParkingPage() {
         }
       } catch {
         setError(t("common.loadingData"));
+        showError(t("common.loadError"));
       } finally {
         setLoading(false);
       }
@@ -70,9 +73,12 @@ export default function EditParkingPage() {
         longitude: form.longitude !== "" ? Number(form.longitude) : undefined,
         geofenceRadius: form.geofenceRadius !== "" ? Number(form.geofenceRadius) : undefined,
       });
+      showSuccess(t("common.saveSuccessShort"));
       router.push("/dashboard/parkings");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al actualizar el estacionamiento");
+      const msg = err instanceof Error ? err.message : "Error al actualizar el estacionamiento";
+      setError(msg);
+      showError(msg);
     } finally { setSubmitting(false); }
   };
 

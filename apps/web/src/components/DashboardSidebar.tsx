@@ -101,8 +101,54 @@ function SidebarTooltip({
 const SELECTED_COMPANY_KEY = "parkit_selected_company_id";
 const SELECTED_COMPANY_NAME_KEY = "parkit_selected_company_name";
 
+/** Luminancia media (0–1) de la mitad inferior del banner. Null si no se pudo analizar (ej. CORS). */
+function getBannerLuminance(imageSrc: string): Promise<number | null> {
+  return new Promise((resolve) => {
+    if (typeof document === "undefined" || !imageSrc) {
+      resolve(null);
+      return;
+    }
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        const w = 64;
+        const h = 64;
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(null);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, w, h);
+        const data = ctx.getImageData(0, 0, w, h).data;
+        let sum = 0;
+        let count = 0;
+        for (let y = Math.floor(h / 2); y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const i = (y * w + x) * 4;
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            sum += luminance;
+            count++;
+          }
+        }
+        resolve(count > 0 ? sum / count : null);
+      } catch {
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = imageSrc;
+  });
+}
+
 function CompanySelector({
-  companies, selectedCompanyId, selectedCompanyName, onSelect, placeholder, allCompaniesLabel, emptyLabel,
+  companies, selectedCompanyId, selectedCompanyName, onSelect, placeholder, allCompaniesLabel, emptyLabel, isDark = false,
 }: {
   companies: { id: string; commercialName?: string; legalName?: string }[];
   selectedCompanyId: string | null;
@@ -111,6 +157,7 @@ function CompanySelector({
   placeholder: string;
   allCompaniesLabel: string;
   emptyLabel: string;
+  isDark?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<{ top?: number; bottom?: number; left: number; width: number }>({ left: 0, width: 0 });
@@ -160,10 +207,19 @@ function CompanySelector({
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
+  const companyInitials = (name: string) => {
+    const n = (name || "").trim();
+    const parts = n.split(/\s+/);
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    if (n.length >= 2) return n.slice(0, 2).toUpperCase();
+    if (n.length === 1) return n[0].toUpperCase();
+    return "?";
+  };
+
   const dropdown = open && typeof document !== "undefined" && createPortal(
     <div
       data-company-dropdown
-      className="fixed z-[99999] flex flex-col rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl bg-white dark:bg-slate-900 py-1.5 px-1.5"
+      className="fixed z-[99999] flex flex-col rounded-xl shadow-2xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl py-1.5 pl-3 pr-1.5"
       style={{
         top: position.top,
         bottom: position.bottom,
@@ -207,25 +263,40 @@ function CompanySelector({
     document.body
   );
 
+  const selectedName = selectedCompanyName || "";
+  const selectedInitials = companyInitials(selectedName);
+
   return (
     <>
-      <div className="relative">
-        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none z-10" />
+      <div className="relative flex items-center gap-3">
+        <div
+          className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold border border-white/20 overflow-hidden"
+          style={{
+            backgroundColor: selectedCompanyId ? (getAvatarColor(selectedCompanyId) ?? "var(--input-bg)") : "transparent",
+            color: "white",
+          }}
+        >
+          {selectedCompanyId ? (
+            selectedInitials
+          ) : (
+            <Building2 className={`w-4 h-4 ${isDark ? "text-white/60" : "text-slate-500"}`} />
+          )}
+        </div>
         <button
           ref={triggerRef}
           type="button"
           onClick={() => { if (!open) updatePosition(); setOpen((o) => !o); }}
-          className={`w-full flex items-center pl-9 pr-8 py-2.5 rounded-xl border text-left text-sm transition-colors ${
-            open
-              ? "bg-input-bg border-company-primary ring-1 ring-company-primary-full text-text-primary"
-              : "bg-input-bg border-input-border text-text-secondary hover:border-company-primary-muted"
-          }`}
+          className={`flex-1 flex items-center min-w-0 pl-2 pr-8 py-2.5 rounded-xl text-left text-sm transition-colors ${
+            isDark
+              ? "bg-white/15 hover:bg-white/25 text-white placeholder:text-white/60"
+              : "bg-black/10 hover:bg-black/15 text-slate-900 placeholder:text-slate-600"
+          } ${open ? "ring-2 ring-white/50" : ""}`}
         >
           <span className="truncate flex-1">
-            {selectedCompanyName || <span className="text-text-muted">{placeholder}</span>}
+            {selectedCompanyName || <span className={isDark ? "text-white/70" : "text-slate-500"}>{placeholder}</span>}
           </span>
         </button>
-        <ChevronDown className={`absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-transform duration-200 ${open ? "rotate-180 text-company-primary" : "text-text-muted/50"}`} />
+        <ChevronDown className={`absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-transform duration-200 ${open ? "rotate-180" : ""} ${isDark ? "text-white/80" : "text-slate-600"}`} />
       </div>
       {dropdown}
     </>
@@ -241,7 +312,9 @@ export function DashboardSidebar() {
   const [mounted, setMounted] = useState(false);
   const [companies, setCompanies] = useState<{ id: string; commercialName?: string; legalName?: string }[]>([]);
   const [adminCompanyName, setAdminCompanyName] = useState<string | null>(null);
+  const [adminCompanyEmail, setAdminCompanyEmail] = useState<string | null>(null);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+  const [bannerIsDark, setBannerIsDark] = useState<boolean | null>(null);
 
   const superAdmin = isSuperAdmin(user);
   const isAdminRole = user?.systemRole === "ADMIN";
@@ -256,9 +329,22 @@ export function DashboardSidebar() {
       ? brandingBanner
       : bannerDefaultSrc;
 
+  const bannerVariant = bannerIsDark ?? isDark;
+
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!effectiveBannerSrc) return;
+    let cancelled = false;
+    getBannerLuminance(effectiveBannerSrc).then((luminance) => {
+      if (!cancelled) setBannerIsDark(luminance !== null ? luminance < 0.5 : null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [effectiveBannerSrc]);
 
   // Hidratar estado colapsado desde localStorage (solo importa en la primera carga; al navegar el store ya tiene el valor)
   useEffect(() => {
@@ -286,15 +372,19 @@ export function DashboardSidebar() {
   useEffect(() => {
     if (!mounted || !user || superAdmin) return;
     apiClient
-      .get<{ id?: string; commercialName?: string; legalName?: string }>("/companies/me")
+      .get<{ id?: string; commercialName?: string; legalName?: string; email?: string }>("/companies/me")
       .then((company) => {
         const name = company?.commercialName || company?.legalName || null;
         setAdminCompanyName(name ?? null);
+        setAdminCompanyEmail(company?.email ?? null);
         if (company?.id && name) {
           setSelectedCompany(company.id, name);
         }
       })
-      .catch(() => setAdminCompanyName(null));
+      .catch(() => {
+        setAdminCompanyName(null);
+        setAdminCompanyEmail(null);
+      });
   }, [mounted, user?.id, superAdmin, setSelectedCompany]);
 
   // Contador de notificaciones sin leer para el badge del sidebar (se refresca al navegar)
@@ -410,21 +500,22 @@ export function DashboardSidebar() {
         )}
       </div>
 
-      {/* Company banner + selector (SUPER_ADMIN) o banner con logo (ADMIN) */}
+      {/* Company banner + selector (SUPER_ADMIN) o banner con avatar (ADMIN) */}
       {!collapsed && (
         <>
           {superAdmin ? (
-            <div className="px-3 pt-3 pb-3 border-b border-card-border">
-              <div className="relative overflow-hidden rounded-xl">
+            <div className="border-b border-card-border">
+              <div className="relative overflow-hidden h-28 w-full">
                 <img
                   src={effectiveBannerSrc}
                   alt=""
-                  className="w-full h-20 object-cover"
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 flex flex-col justify-center gap-2 px-4">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-text-secondary drop-shadow">
-                    {t("sidebar.company")}
-                  </p>
+                <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/5 via-transparent to-black/10" aria-hidden />
+                <p className={`absolute top-0 left-0 z-10 px-4 pt-3 text-[10px] font-semibold uppercase tracking-widest drop-shadow-sm ${bannerVariant ? "text-white/95" : "text-slate-900"}`}>
+                  {t("sidebar.company")}
+                </p>
+                <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-3 pt-6 bg-gradient-to-t from-black/20 to-transparent">
                   <CompanySelector
                     companies={companies}
                     selectedCompanyId={selectedCompanyId}
@@ -433,42 +524,49 @@ export function DashboardSidebar() {
                     placeholder={t("sidebar.selectCompany")}
                     allCompaniesLabel={t("sidebar.allCompanies")}
                     emptyLabel={t("companies.noCompanies")}
+                    isDark={bannerVariant}
                   />
                 </div>
               </div>
             </div>
           ) : (
-            <div className="px-3 pt-3 pb-3 border-b border-card-border">
-              <div className="relative overflow-hidden rounded-xl">
+            <div className="border-b border-card-border">
+              <div className="relative overflow-hidden h-28 w-full">
                 <img
                   src={effectiveBannerSrc}
                   alt=""
-                  className="w-full h-20 object-cover"
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 flex items-center px-4">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="shrink-0 rounded-full bg-page/80 p-1.5 shadow-sm">
-                      {companyBranding?.logoImageUrl?.trim() ? (
-                        <img
-                          src={companyBranding.logoImageUrl}
-                          alt=""
-                          className="h-7 w-7 rounded-full object-contain bg-card"
-                        />
-                      ) : (
-                        <Logo
-                          variant={isDark ? "onDark" : "default"}
-                          className="text-xl"
-                        />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-text-secondary/90">
-                        {t("sidebar.company")}
-                      </p>
-                      <p className="text-sm font-medium text-text-primary truncate">
-                        {adminCompanyName || t("companies.single") || "Company"}
-                      </p>
-                    </div>
+                <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/5 via-transparent to-black/10" aria-hidden />
+                <p className={`absolute top-0 left-0 z-10 px-4 pt-3 text-[10px] font-semibold uppercase tracking-widest drop-shadow-sm ${bannerVariant ? "text-white/95" : "text-slate-900"}`}>
+                  {t("sidebar.company")}
+                </p>
+                <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center gap-3 px-4 pb-3 pt-6 bg-gradient-to-t from-black/20 to-transparent">
+                  <div className="w-9 h-9 rounded-full shrink-0 border border-white/30 overflow-hidden bg-input-bg flex items-center justify-center">
+                    <span
+                      className="w-full h-full flex items-center justify-center text-xs font-semibold text-white"
+                      style={{
+                        backgroundColor: getAvatarColor(selectedCompanyId) ?? "rgba(0,0,0,0.4)",
+                        color: "white",
+                      }}
+                    >
+                      {(() => {
+                        const name = adminCompanyName || "";
+                        const parts = name.trim().split(/\s+/);
+                        if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+                        if (name.length >= 2) return name.slice(0, 2).toUpperCase();
+                        if (name.length === 1) return name[0].toUpperCase();
+                        return "?";
+                      })()}
+                    </span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className={`font-medium text-sm truncate leading-tight drop-shadow-sm ${bannerVariant ? "text-white" : "text-slate-900"}`}>
+                      {adminCompanyName || t("companies.single") || "Company"}
+                    </p>
+                    <p className={`text-xs truncate leading-tight mt-0.5 drop-shadow-sm ${bannerVariant ? "text-white/85" : "text-slate-700"}`}>
+                      {adminCompanyEmail || "—"}
+                    </p>
                   </div>
                 </div>
               </div>

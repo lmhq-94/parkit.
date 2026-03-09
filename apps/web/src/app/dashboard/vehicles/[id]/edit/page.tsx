@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Car, Hash, Globe, ArrowRight, Loader2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { useToast } from "@/lib/toastStore";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 import { SelectField } from "@/components/SelectField";
 import { COUNTRIES } from "@/lib/companyOptions";
@@ -30,6 +31,7 @@ const defaultForm = {
 
 export default function EditVehiclePage() {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
@@ -60,6 +62,7 @@ export default function EditVehiclePage() {
         }
       } catch {
         setError(t("common.loadingData"));
+        showError(t("common.loadError"));
       } finally {
         setLoading(false);
       }
@@ -151,9 +154,12 @@ export default function EditVehiclePage() {
         countryCode: form.countryCode.trim() || undefined,
         ...(dimensions !== undefined && { dimensions }),
       });
+      showSuccess(t("common.saveSuccessShort"));
       router.push("/dashboard/vehicles");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al actualizar el vehículo");
+      const msg = err instanceof Error ? err.message : "Error al actualizar el vehículo";
+      setError(msg);
+      showError(msg);
     } finally { setSubmitting(false); }
   };
 

@@ -2,6 +2,7 @@
 
 import { useTranslation } from "@/hooks/useTranslation";
 import { getStoredUser, isSuperAdmin } from "@/lib/auth";
+import { useToast } from "@/lib/toastStore";
 import { apiClient } from "@/lib/api";
 import { formatPlate } from "@/lib/inputMasks";
 import {
@@ -109,6 +110,7 @@ function clampRange(from: string, to: string): { from: string; to: string } {
 
 export default function DashboardPage() {
   const { t, tEnum, locale } = useTranslation();
+  const { showError: showToastError } = useToast();
   const user = getStoredUser();
   const superAdmin = isSuperAdmin(user);
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -134,7 +136,9 @@ export default function DashboardPage() {
         }
       } catch (e) {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Error loading dashboard");
+          const msg = e instanceof Error ? e.message : "Error loading dashboard";
+          setError(msg);
+          showToastError(t("common.loadError"));
         }
       } finally {
         if (!cancelled) setLoading(false);

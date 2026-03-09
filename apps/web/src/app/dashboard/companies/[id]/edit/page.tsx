@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { useToast } from "@/lib/toastStore";
 import { useDashboardStore } from "@/lib/store";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 import { SelectField } from "@/components/SelectField";
@@ -48,6 +49,7 @@ const defaultForm = {
 
 export default function EditCompanyPage() {
   const { t, tEnum } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
   const params = useParams();
   const bumpCompanies = useDashboardStore((s) => s.bumpCompanies);
@@ -81,6 +83,7 @@ export default function EditCompanyPage() {
         }
       } catch {
         setError("Error al cargar los datos");
+        showError(t("common.loadError"));
       } finally {
         setLoading(false);
       }
@@ -108,10 +111,13 @@ export default function EditCompanyPage() {
         legalAddress: form.legalAddress.trim() || undefined,
       });
       bumpCompanies();
+      showSuccess(t("common.saveSuccessShort"));
       router.push("/dashboard/companies");
       return;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al actualizar la empresa");
+      const msg = err instanceof Error ? err.message : "Error al actualizar la empresa";
+      setError(msg);
+      showError(msg);
     }
     setSubmitting(false);
   };

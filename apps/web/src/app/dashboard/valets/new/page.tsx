@@ -8,6 +8,7 @@ import { MultiSelectField } from "@/components/MultiSelectField";
 import { DatePickerField } from "@/components/DatePickerField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getApiErrorMessage } from "@/lib/api";
+import { useToast } from "@/lib/toastStore";
 import { LICENSE_TYPES } from "@/lib/companyOptions";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
@@ -17,6 +18,7 @@ const defaultForm = { firstName: "", lastName: "", email: "", licenseExpiry: "" 
 
 export default function NewValetPage() {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
   const [form, setForm] = useState(defaultForm);
   const [licenseTypes, setLicenseTypes] = useState<string[]>([]);
@@ -43,9 +45,12 @@ export default function NewValetPage() {
         licenseNumber: licenseTypes.join(", "),
         licenseExpiry: new Date(form.licenseExpiry).toISOString(),
       });
+      showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/valets");
     } catch (err) {
-      setError(getApiErrorMessage(err));
+      const msg = getApiErrorMessage(err);
+      setError(msg);
+      showError(msg);
       setSubmitting(false);
     }
   };

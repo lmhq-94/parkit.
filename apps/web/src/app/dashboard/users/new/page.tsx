@@ -7,6 +7,7 @@ import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getApiErrorMessage } from "@/lib/api";
+import { useToast } from "@/lib/toastStore";
 import { TIMEZONES } from "@/lib/companyOptions";
 import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
 
@@ -22,6 +23,7 @@ const defaultForm = {
 
 export default function NewUserPage() {
   const { t, tEnum } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
   const [form, setForm] = useState(defaultForm);
   const [submitting, setSubmitting] = useState(false);
@@ -41,9 +43,12 @@ export default function NewUserPage() {
         phone: form.phone.replace(/\D/g, "").length > 0 ? form.phone.replace(/\D/g, "") : undefined,
         timezone: form.timezone.trim() || undefined,
       });
+      showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/users");
     } catch (err) {
-      setError(getApiErrorMessage(err));
+      const msg = getApiErrorMessage(err);
+      setError(msg);
+      showError(msg);
     } finally { setSubmitting(false); }
   };
 

@@ -9,6 +9,7 @@ import { DatePickerField } from "@/components/DatePickerField";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { useToast } from "@/lib/toastStore";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 import { LICENSE_TYPES } from "@/lib/companyOptions";
 
@@ -23,6 +24,7 @@ const defaultForm = {
 
 export default function EditValetPage() {
   const { t, tEnum } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
@@ -56,7 +58,7 @@ export default function EditValetPage() {
           currentStatus: String(data.currentStatus ?? "AVAILABLE"),
         });
       })
-      .catch(() => setError(t("common.loadingData")))
+      .catch(() => { setError(t("common.loadingData")); showError(t("common.loadError")); })
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -80,10 +82,13 @@ export default function EditValetPage() {
           currentStatus: form.currentStatus,
         }),
       ]);
+      showSuccess(t("common.saveSuccessShort"));
       router.push("/dashboard/valets");
       return;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al actualizar el valet");
+      const msg = err instanceof Error ? err.message : "Error al actualizar el valet";
+      setError(msg);
+      showError(msg);
     }
     setSubmitting(false);
   };

@@ -7,6 +7,7 @@ import { Ticket, Users, Car, MapPin, ArrowRight, Loader2 } from "lucide-react";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { useToast } from "@/lib/toastStore";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -19,6 +20,7 @@ const defaultForm = { clientId: "", vehicleId: "", parkingId: "" };
 
 export default function NewTicketPage() {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
   const [form, setForm] = useState(defaultForm);
   const [clients, setClients] = useState<ClientOption[]>([]);
@@ -62,9 +64,12 @@ export default function NewTicketPage() {
         vehicleId: form.vehicleId,
         parkingId: form.parkingId,
       });
+      showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/tickets");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al crear el tiquete");
+      const msg = err instanceof Error ? err.message : "Error al crear el tiquete";
+      setError(msg);
+      showError(msg);
     } finally {
       setSubmitting(false);
     }

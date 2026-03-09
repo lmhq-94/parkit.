@@ -8,6 +8,7 @@ import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { useToast } from "@/lib/toastStore";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -21,6 +22,7 @@ const defaultForm = {
 
 export default function NewParkingPage() {
   const { t, tEnum } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
   const [form, setForm] = useState(defaultForm);
   const [submitting, setSubmitting] = useState(false);
@@ -43,9 +45,12 @@ export default function NewParkingPage() {
         longitude: form.longitude !== "" ? Number(form.longitude) : undefined,
         geofenceRadius: form.geofenceRadius !== "" ? Number(form.geofenceRadius) : undefined,
       });
+      showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/parkings");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al crear el estacionamiento");
+      const msg = err instanceof Error ? err.message : "Error al crear el estacionamiento";
+      setError(msg);
+      showError(msg);
       setSubmitting(false);
     }
   };

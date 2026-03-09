@@ -7,6 +7,7 @@ import { Ticket, Users, Car, MapPin, ArrowRight, Loader2 } from "lucide-react";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { useToast } from "@/lib/toastStore";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -19,6 +20,7 @@ const defaultForm = { clientId: "", vehicleId: "", parkingId: "" };
 
 export default function EditTicketPage() {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
@@ -51,6 +53,7 @@ export default function EditTicketPage() {
         setParkings(Array.isArray(p) ? p : []);
       } catch {
         setError(t("common.loadingData"));
+        showError(t("common.loadError"));
       } finally {
         setLoading(false);
       }
@@ -65,9 +68,12 @@ export default function EditTicketPage() {
     setSubmitting(true); setError(null);
     try {
       await apiClient.patch(`/tickets/${id}`, { clientId: form.clientId, vehicleId: form.vehicleId, parkingId: form.parkingId });
+      showSuccess(t("common.saveSuccessShort"));
       router.push("/dashboard/tickets");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al actualizar el tiquete");
+      const msg = err instanceof Error ? err.message : "Error al actualizar el tiquete";
+      setError(msg);
+      showError(msg);
     } finally { setSubmitting(false); }
   };
 

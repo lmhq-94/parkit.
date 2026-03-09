@@ -40,7 +40,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json());
+// Límite alto para PATCH /companies/me con brandingConfig (imágenes en base64)
+app.use(express.json({ limit: "10mb" }));
 
 app.get("/health", (_, res) => {
   res.json({ success: true, data: { status: "ok" } });

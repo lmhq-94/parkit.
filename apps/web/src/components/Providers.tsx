@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useLocaleStore } from "@/lib/store";
 import { getStoredLocale } from "@/lib/i18n";
 import { CompanyThemeSync } from "@/components/CompanyThemeSync";
+import { Toaster } from "@/components/Toaster";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const setLocale = useLocaleStore((s) => s.setLocale);
@@ -24,6 +25,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     >
       <CompanyThemeSync />
       {children}
+      <Toaster />
     </NextThemesProvider>
   );
 }
