@@ -2,27 +2,29 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { Calendar, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, X, Clock } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 
-interface DatePickerFieldProps {
+interface DateTimePickerFieldProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
 }
 
-function parseDate(v: string): Date | null {
+function parseDateTime(v: string): Date | null {
   if (!v) return null;
   const d = new Date(v);
   return isNaN(d.getTime()) ? null : d;
 }
 
-function toLocalDateString(date: Date): string {
+function toDateTimeLocalString(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+  const h = String(date.getHours()).padStart(2, "0");
+  const min = String(date.getMinutes()).padStart(2, "0");
+  return `${y}-${m}-${d}T${h}:${min}`;
 }
 
 function getDaysInMonth(year: number, month: number): number {
@@ -34,15 +36,27 @@ function getFirstDayOfWeek(year: number, month: number): number {
   return day === 0 ? 6 : day - 1;
 }
 
-export function DatePickerField({
+function hour24To12(h24: number): { hour12: number; ampm: "AM" | "PM" } {
+  if (h24 === 0) return { hour12: 12, ampm: "AM" };
+  if (h24 < 12) return { hour12: h24, ampm: "AM" };
+  if (h24 === 12) return { hour12: 12, ampm: "PM" };
+  return { hour12: h24 - 12, ampm: "PM" };
+}
+
+function hour12AmPmTo24(hour12: number, ampm: "AM" | "PM"): number {
+  if (ampm === "AM") return hour12 === 12 ? 0 : hour12;
+  return hour12 === 12 ? 12 : hour12 + 12;
+}
+
+export function DateTimePickerField({
   value,
   onChange,
   placeholder,
   className,
-}: DatePickerFieldProps) {
+}: DateTimePickerFieldProps) {
   const { t } = useTranslation();
   const today = new Date();
-  const parsed = parseDate(value);
+  const parsed = parseDateTime(value);
 
   const monthNames = useMemo(
     () => Array.from({ length: 12 }, (_, i) => t(`datepicker.month${i}`)),
@@ -55,9 +69,12 @@ export function DatePickerField({
 
   const formatDisplay = useCallback(
     (v: string): string => {
-      const d = parseDate(v);
+      const d = parseDateTime(v);
       if (!d) return "";
-      return `${String(d.getDate()).padStart(2, "0")} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+      const datePart = `${String(d.getDate()).padStart(2, "0")} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+      const { hour12, ampm } = hour24To12(d.getHours());
+      const timePart = `${hour12}:${String(d.getMinutes()).padStart(2, "0")} ${ampm}`;
+      return `${datePart}, ${timePart}`;
     },
     [monthNames]
   );
@@ -67,6 +84,7 @@ export function DatePickerField({
     year: parsed?.getFullYear() ?? today.getFullYear(),
     month: parsed?.getMonth() ?? today.getMonth(),
   });
+  const [time, setTime] = useState({ hour: parsed?.getHours() ?? 0, minute: parsed?.getMinutes() ?? 0 });
   const [position, setPosition] = useState<{
     top?: number;
     bottom?: number;
@@ -76,12 +94,18 @@ export function DatePickerField({
 
   const triggerRef = useRef<HTMLButtonElement>(null);
 
+  useEffect(() => {
+    if (parsed) {
+      setTime({ hour: parsed.getHours(), minute: parsed.getMinutes() });
+    }
+  }, [value, open]);
+
   const updatePosition = useCallback(() => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const CALENDAR_HEIGHT = 340;
+    const CALENDAR_HEIGHT = 400;
     const MARGIN = 12;
     const minWidth = 280;
     const isNarrow = vw < 400;
@@ -106,7 +130,10 @@ export function DatePickerField({
   const handleOpen = () => {
     if (!open) {
       updatePosition();
-      if (parsed) setView({ year: parsed.getFullYear(), month: parsed.getMonth() });
+      if (parsed) {
+        setView({ year: parsed.getFullYear(), month: parsed.getMonth() });
+        setTime({ hour: parsed.getHours(), minute: parsed.getMinutes() });
+      }
     }
     setOpen((o) => !o);
   };
@@ -128,7 +155,7 @@ export function DatePickerField({
       const target = e.target as HTMLElement;
       if (
         !triggerRef.current?.contains(target) &&
-        !target.closest("[data-datepicker-dropdown]")
+        !target.closest("[data-datetimepicker-dropdown]")
       )
         setOpen(false);
     };
@@ -159,23 +186,55 @@ export function DatePickerField({
     });
   };
 
+  const commitDateTime = useCallback(
+    (year: number, month: number, day: number, hour: number, minute: number) => {
+      const d = new Date(year, month, day, hour, minute, 0, 0);
+      onChange(toDateTimeLocalString(d));
+    },
+    [onChange]
+  );
+
   const selectDay = (day: number) => {
-    const d = new Date(view.year, view.month, day, 12, 0, 0);
-    onChange(toLocalDateString(d));
-    setOpen(false);
+    commitDateTime(view.year, view.month, day, time.hour, time.minute);
+  };
+
+  const getCurrentDateParts = useCallback(() => {
+    const parsedNow = parseDateTime(value);
+    return {
+      year: parsedNow?.getFullYear() ?? view.year,
+      month: parsedNow?.getMonth() ?? view.month,
+      day: parsedNow?.getDate() ?? 1,
+    };
+  }, [value, view.year, view.month]);
+
+  const setHour = (h: number) => {
+    const { year, month, day } = getCurrentDateParts();
+    commitDateTime(year, month, day, h, time.minute);
+    setTime((prev) => ({ ...prev, hour: h }));
+  };
+
+  const setMinute = (m: number) => {
+    const { year, month, day } = getCurrentDateParts();
+    commitDateTime(year, month, day, time.hour, m);
+    setTime((prev) => ({ ...prev, minute: m }));
   };
 
   const daysInMonth = getDaysInMonth(view.year, view.month);
   const firstDow = getFirstDayOfWeek(view.year, view.month);
-  const todayStr = toLocalDateString(today);
-  const selectedStr = parsed ? toLocalDateString(parsed) : null;
+  const todayStr = toDateTimeLocalString(today).slice(0, 10);
+  const selectedStr = parsed ? toDateTimeLocalString(parsed).slice(0, 10) : null;
+
+  const hours12 = Array.from({ length: 12 }, (_, i) => i + 1);
+  const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
+  const hour24 = parsed?.getHours() ?? time.hour;
+  const { hour12, ampm } = hour24To12(hour24);
 
   const calendarDropdown =
     open &&
     typeof document !== "undefined" &&
     createPortal(
       <div
-        data-datepicker-dropdown
+        data-datetimepicker-dropdown
         className="fixed z-[99999] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl bg-white dark:bg-slate-900 overflow-hidden select-none max-w-[calc(100vw-24px)]"
         style={{
           top: position.top,
@@ -215,7 +274,7 @@ export function DatePickerField({
         </div>
 
         {/* Days grid */}
-        <div className="grid grid-cols-7 px-2 sm:px-3 pb-2 sm:pb-3 gap-0.5 sm:gap-y-0.5">
+        <div className="grid grid-cols-7 px-2 sm:px-3 pb-2 gap-0.5 sm:gap-y-0.5">
           {Array.from({ length: firstDow }).map((_, i) => (
             <div key={`empty-${i}`} />
           ))}
@@ -245,6 +304,43 @@ export function DatePickerField({
           })}
         </div>
 
+        {/* Time row — 12h con AM/PM */}
+        <div className="px-3 sm:px-4 py-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 flex-wrap">
+          <Clock className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{t("datepicker.time")}</span>
+          <select
+            value={hour12}
+            onChange={(e) => setHour(hour12AmPmTo24(Number(e.target.value), ampm))}
+            className="flex-1 min-w-0 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 text-sm py-2 px-2"
+          >
+            {hours12.map((h) => (
+              <option key={h} value={h}>
+                {h}
+              </option>
+            ))}
+          </select>
+          <span className="text-slate-400 dark:text-slate-500">:</span>
+          <select
+            value={parsed ? parsed.getMinutes() : time.minute}
+            onChange={(e) => setMinute(Number(e.target.value))}
+            className="flex-1 min-w-0 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 text-sm py-2 px-2"
+          >
+            {minutes.map((m) => (
+              <option key={m} value={m}>
+                {String(m).padStart(2, "0")}
+              </option>
+            ))}
+          </select>
+          <select
+            value={ampm}
+            onChange={(e) => setHour(hour12AmPmTo24(hour12, e.target.value as "AM" | "PM"))}
+            className="min-w-[4rem] rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 text-sm py-2 px-2"
+          >
+            <option value="AM">{t("datepicker.am")}</option>
+            <option value="PM">{t("datepicker.pm")}</option>
+          </select>
+        </div>
+
         {/* Footer */}
         {value && (
           <div className="border-t border-slate-100 dark:border-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between">
@@ -265,7 +361,7 @@ export function DatePickerField({
       document.body
     );
 
-  const displayValue = formatDisplay(value);
+  const displayValue = value ? formatDisplay(value) : "";
 
   return (
     <>
@@ -283,24 +379,10 @@ export function DatePickerField({
             displayValue ? "text-text-primary" : "text-text-muted",
           ].join(" ")}
         >
-          {displayValue || (placeholder ?? t("datepicker.placeholder"))}
+          {displayValue || (placeholder ?? t("datepicker.placeholderDateTime"))}
         </button>
       </div>
       {calendarDropdown}
     </>
-  );
-}
-
-export function DatePickerFieldWithLabel({
-  label,
-  ...props
-}: DatePickerFieldProps & { label: string }) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-text-secondary mb-1.5">
-        {label}
-      </label>
-      <DatePickerField {...props} />
-    </div>
   );
 }

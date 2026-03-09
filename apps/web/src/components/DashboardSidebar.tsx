@@ -242,6 +242,7 @@ export function DashboardSidebar() {
   const [mounted, setMounted] = useState(false);
   const [companies, setCompanies] = useState<{ id: string; commercialName?: string; legalName?: string }[]>([]);
   const [adminCompanyName, setAdminCompanyName] = useState<string | null>(null);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
 
   const superAdmin = isSuperAdmin(user);
   const isAdminRole = user?.systemRole === "ADMIN";
@@ -284,6 +285,15 @@ export function DashboardSidebar() {
       })
       .catch(() => setAdminCompanyName(null));
   }, [mounted, user?.id, superAdmin]);
+
+  // Contador de notificaciones sin leer para el badge del sidebar (se refresca al navegar)
+  useEffect(() => {
+    if (!user?.id) return;
+    apiClient
+      .get<{ count: number }>(`/notifications/user/${user.id}/unread-count`)
+      .then((data) => setUnreadNotificationsCount(data?.count ?? 0))
+      .catch(() => setUnreadNotificationsCount(0));
+  }, [user?.id, pathname]);
 
   const toggleCollapsed = () => setSidebarCollapsed(!collapsed);
 
@@ -435,10 +445,21 @@ export function DashboardSidebar() {
                         >
                           {item.label}
                         </span>
+                        {item.href === "/dashboard/notifications" && unreadNotificationsCount > 0 && (
+                          <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold shrink-0 ml-auto">
+                            {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                          </span>
+                        )}
                         {isActive && (
                           <ChevronRight className="w-4 h-4 text-sky-500/80 dark:text-sky-400/80 shrink-0 ml-auto" />
                         )}
                       </>
+                    )}
+                    {collapsed && item.href === "/dashboard/notifications" && unreadNotificationsCount > 0 && (
+                      <span
+                        className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-page"
+                        aria-label={`${unreadNotificationsCount} sin leer`}
+                      />
                     )}
                   </>
                 );

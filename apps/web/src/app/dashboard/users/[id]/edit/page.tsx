@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Mail, Lock, Phone, Clock, Shield, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Phone, Clock, Shield, ArrowRight, Loader2 } from "lucide-react";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
@@ -17,7 +17,7 @@ const ROLES = ["CUSTOMER", "ADMIN", "SUPER_ADMIN"] as const;
 
 const defaultForm = {
   firstName: "", lastName: "", email: "",
-  password: "", systemRole: "CUSTOMER", phone: "",
+  systemRole: "CUSTOMER", phone: "",
   timezone: "",
 };
 
@@ -30,7 +30,6 @@ export default function EditUserPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPass, setShowPass] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -41,7 +40,6 @@ export default function EditUserPage() {
             firstName: String(data.firstName ?? ""),
             lastName: String(data.lastName ?? ""),
             email: String(data.email ?? ""),
-            password: "",
             systemRole: String(data.systemRole ?? "STAFF"),
             phone: formatPhoneWithCountryCode(String(data.phone ?? ""), "CR"),
             timezone: String(data.timezone ?? ""),
@@ -66,7 +64,6 @@ export default function EditUserPage() {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         email: form.email.trim(),
-        ...(form.password ? { password: form.password } : {}),
         systemRole: form.systemRole,
         phone: form.phone.replace(/\D/g, "").length > 0 ? form.phone.replace(/\D/g, "") : undefined,
         timezone: form.timezone.trim() || undefined,
@@ -119,19 +116,6 @@ export default function EditUserPage() {
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
                 <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} />
               </div>
-            </div>
-            <div>
-              <label className={LABEL}>{t("users.password")}</label>
-              <div className="relative group">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input type={showPass ? "text" : "password"} value={form.password} onChange={set("password")} placeholder={t("common.placeholderPassword")} autoComplete="new-password" className={IL + " pr-10"} />
-                <button type="button" onClick={() => setShowPass(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-muted hover:text-text-secondary transition-colors"
-                  aria-label={showPass ? t("common.hidePassword") : t("common.showPassword")}>
-                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              <p className="mt-1.5 text-xs text-text-muted">{t("common.passwordHint")}</p>
             </div>
             <div>
               <label className={LABEL}>{t("users.role")}</label>

@@ -8,6 +8,7 @@ import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { formatDateTimeDisplay } from "@/lib/dateFormat";
 import { formatPlate } from "@/lib/inputMasks";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
@@ -72,12 +73,12 @@ export default function BookingsPage() {
       {
         header: t("tables.bookings.entry"),
         render: (b: { scheduledEntryTime?: string }) =>
-          b.scheduledEntryTime ? new Date(b.scheduledEntryTime).toLocaleString() : "—",
+          b.scheduledEntryTime ? formatDateTimeDisplay(new Date(b.scheduledEntryTime), t) : "—",
       },
       {
         header: t("tables.bookings.exit"),
         render: (b: { scheduledExitTime?: string }) =>
-          b.scheduledExitTime ? new Date(b.scheduledExitTime).toLocaleString() : "—",
+          b.scheduledExitTime ? formatDateTimeDisplay(new Date(b.scheduledExitTime), t) : "—",
       },
     ],
     [t, tEnum, superAdmin]
@@ -114,7 +115,7 @@ export default function BookingsPage() {
                 <DetailField label={t("bookings.qrCodeReference")} value={booking.qrCodeReference} />
               )}
               {booking.createdAt != null && (
-                <DetailField label={t("tables.notifications.createdAt")} value={new Date(booking.createdAt).toLocaleString()} />
+                <DetailField label={t("tables.notifications.createdAt")} value={formatDateTimeDisplay(new Date(booking.createdAt), t)} />
               )}
             </dl>
           );
@@ -125,7 +126,7 @@ export default function BookingsPage() {
         getConfirmDeleteMessage={superAdmin ? (row) => {
           const vehicleLabel = row.vehicle ? [row.vehicle.brand, row.vehicle.model].filter(Boolean).join(" ") || (row.vehicle.plate ? formatPlate(row.vehicle.plate) : "") : "";
           const parkingName = row.parking?.name ?? row.parkingId ?? "";
-          const dateStr = row.scheduledEntryTime ? new Date(row.scheduledEntryTime).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" }) : "";
+          const dateStr = row.scheduledEntryTime ? formatDateTimeDisplay(new Date(row.scheduledEntryTime), t) : "";
           const item = [vehicleLabel || row.vehicleId, parkingName, dateStr].filter(Boolean).join(" · ") || "—";
           return t("tables.bookings.confirmCancelItem").replace(/\{\{item\}\}/g, item);
         } : undefined}

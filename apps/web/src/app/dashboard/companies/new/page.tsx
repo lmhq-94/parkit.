@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
+import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useDashboardStore } from "@/lib/store";
@@ -47,6 +48,7 @@ export default function NewCompanyPage() {
   const [form, setForm] = useState(defaultForm);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [addressPickerOpen, setAddressPickerOpen] = useState(false);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -112,9 +114,19 @@ export default function NewCompanyPage() {
           </Field>
           <div className="sm:col-span-2 lg:col-span-3">
             <label className={LABEL}>{t("companies.legalAddress")}</label>
-            <div className="relative group">
-              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-              <input value={form.legalAddress} onChange={set("legalAddress")} placeholder={t("common.placeholderAddress")} className={IL} />
+            <div className="flex gap-2">
+              <div className="relative group flex-1">
+                <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
+                <input value={form.legalAddress} readOnly placeholder={t("common.placeholderAddress")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
+              </div>
+              <button
+                type="button"
+                onClick={() => setAddressPickerOpen(true)}
+                className="shrink-0 px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-secondary text-sm font-medium hover:bg-sky-500/10 hover:border-sky-500/30 hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-2"
+              >
+                <MapPin className="w-4 h-4" />
+                {t("companies.pickAddressOnMap")}
+              </button>
             </div>
           </div>
         </div>
@@ -155,13 +167,22 @@ export default function NewCompanyPage() {
   ];
 
   return (
-    <FormWizard
-      steps={steps}
-      onSubmit={handleSubmit}
-      submitting={submitting}
-      submitLabel={t("companies.createCompany")}
-      cancelHref="/dashboard/companies"
-      error={error}
-    />
+    <>
+      <FormWizard
+        steps={steps}
+        onSubmit={handleSubmit}
+        submitting={submitting}
+        submitLabel={t("companies.createCompany")}
+        cancelHref="/dashboard/companies"
+        error={error}
+      />
+      <AddressPickerModal
+        open={addressPickerOpen}
+        onClose={() => setAddressPickerOpen(false)}
+        onSelect={(address) => { setForm((p) => ({ ...p, legalAddress: address })); setAddressPickerOpen(false); }}
+        initialValue={form.legalAddress}
+        countryCode={form.countryCode}
+      />
+    </>
   );
 }

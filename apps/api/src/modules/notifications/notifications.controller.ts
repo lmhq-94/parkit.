@@ -6,11 +6,22 @@ export class NotificationsController {
   static async listByUser(req: Request, res: Response) {
     try {
       const userId = Array.isArray(req.params.userId) ? req.params.userId[0] : req.params.userId;
-      const notifications = await NotificationsService.listByUser(
-        userId
-      );
-
+      const notifications = await NotificationsService.listByUser(userId);
       return ok(res, notifications);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
+  static async unreadCount(req: Request, res: Response) {
+    try {
+      const userId = Array.isArray(req.params.userId) ? req.params.userId[0] : req.params.userId;
+      const count = await NotificationsService.getUnreadCount(userId);
+      return ok(res, { count });
     } catch (error: unknown) {
       return fail(
         res,

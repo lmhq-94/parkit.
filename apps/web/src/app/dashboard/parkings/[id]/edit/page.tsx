@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { MapPin, Hash, Tag, Navigation, Radius, ArrowRight, Loader2 } from "lucide-react";
 import { SelectField } from "@/components/SelectField";
+import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
@@ -28,6 +29,7 @@ export default function EditParkingPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [addressPickerOpen, setAddressPickerOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -106,9 +108,19 @@ export default function EditParkingPage() {
             </div>
             <div className="sm:col-span-2 lg:col-span-3">
               <label className={LABEL}>{t("parkings.address")} <span className="text-sky-500">*</span></label>
-              <div className="relative group">
-                <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input value={form.address} onChange={set("address")} placeholder={t("common.placeholderAddress")} className={IL} />
+              <div className="flex gap-2">
+                <div className="relative group flex-1">
+                  <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
+                  <input value={form.address} readOnly placeholder={t("common.placeholderAddress")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAddressPickerOpen(true)}
+                  className="shrink-0 px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-secondary text-sm font-medium hover:bg-sky-500/10 hover:border-sky-500/30 hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-2"
+                >
+                  <MapPin className="w-4 h-4" />
+                  {t("companies.pickAddressOnMap")}
+                </button>
               </div>
             </div>
             <div>
@@ -155,21 +167,21 @@ export default function EditParkingPage() {
               <label className={LABEL}>{t("parkings.latitude")}</label>
               <div className="relative group">
                 <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input type="number" step="any" value={form.latitude} onChange={set("latitude")} placeholder={t("common.placeholderLatitude")} className={IL} />
+                <input type="number" step="any" value={form.latitude} readOnly placeholder={t("common.placeholderLatitude")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
               </div>
             </div>
             <div>
               <label className={LABEL}>{t("parkings.longitude")}</label>
               <div className="relative group">
                 <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input type="number" step="any" value={form.longitude} onChange={set("longitude")} placeholder={t("common.placeholderLongitude")} className={IL} />
+                <input type="number" step="any" value={form.longitude} readOnly placeholder={t("common.placeholderLongitude")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
               </div>
             </div>
             <div>
               <label className={LABEL}>{t("parkings.geofenceRadius")}</label>
               <div className="relative group">
                 <Radius className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input type="number" min={1} value={form.geofenceRadius} onChange={set("geofenceRadius")} placeholder={t("common.placeholderRadius")} className={IL} />
+                <input type="number" min={1} value={form.geofenceRadius} readOnly placeholder={t("common.placeholderRadius")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
               </div>
             </div>
           </div>
@@ -189,6 +201,24 @@ export default function EditParkingPage() {
           </button>
         </div>
       </div>
+
+      <AddressPickerModal
+        open={addressPickerOpen}
+        onClose={() => setAddressPickerOpen(false)}
+        onSelect={(address, coords) => {
+          setForm((p) => ({
+            ...p,
+            address,
+            ...(coords && {
+              latitude: String(coords.lat),
+              longitude: String(coords.lon),
+              geofenceRadius: "50",
+            }),
+          }));
+          setAddressPickerOpen(false);
+        }}
+        initialValue={form.address}
+      />
     </div>
   );
 }

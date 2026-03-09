@@ -274,3 +274,9 @@ body {
     justify-content: flex-end !important;
   }
 }
+
+/* Leaflet: asegurar que el contenedor del mapa tenga altura para que se vean los tiles */
+.leaflet-container {
+  min-height: 200px;
+  font: inherit;
+}

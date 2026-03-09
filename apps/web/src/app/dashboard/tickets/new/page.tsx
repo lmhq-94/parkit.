@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Ticket, Users, Car, MapPin } from "lucide-react";
-import { FormWizard } from "@/components/FormWizard";
+import Link from "next/link";
+import { Ticket, Users, Car, MapPin, ArrowRight, Loader2 } from "lucide-react";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
@@ -38,44 +39,71 @@ export default function NewTicketPage() {
         setClients(Array.isArray(c) ? c : []);
         setVehicles(Array.isArray(v) ? v : []);
         setParkings(Array.isArray(p) ? p : []);
-      } catch { setClients([]); setVehicles([]); setParkings([]); }
-      finally { setLoading(false); }
+      } catch {
+        setClients([]);
+        setVehicles([]);
+        setParkings([]);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 
   const set = (k: keyof typeof defaultForm) =>
-    (e: React.ChangeEvent<HTMLSelectElement>) => setForm(p => ({ ...p, [k]: e.target.value }));
+    (e: React.ChangeEvent<HTMLSelectElement>) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
   const handleSubmit = async () => {
     if (!form.clientId || !form.vehicleId || !form.parkingId) return;
-    setSubmitting(true); setError(null);
+    setSubmitting(true);
+    setError(null);
     try {
-      await apiClient.post("/tickets", { clientId: form.clientId, vehicleId: form.vehicleId, parkingId: form.parkingId });
+      await apiClient.post("/tickets", {
+        clientId: form.clientId,
+        vehicleId: form.vehicleId,
+        parkingId: form.parkingId,
+      });
       router.push("/dashboard/tickets");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al crear el tiquete");
+    } finally {
       setSubmitting(false);
     }
   };
 
+  const isValid = form.clientId && form.vehicleId && form.parkingId;
+
+  if (loading) return <FormPageSkeleton />;
+
   const skel = <div className="h-[46px] rounded-lg bg-input-bg border border-input-border animate-pulse" />;
 
-  const steps = [
-    {
-      title: t("tickets.sectionMain"),
-      description: t("tickets.sectionMainDesc"),
-      badge: "required" as const,
-      accentColor: "rose",
-      isValid: () => !!(form.clientId && form.vehicleId && form.parkingId) && !loading,
-      content: (
-        <div className="space-y-5">
+  return (
+    <div className="flex-1 flex flex-col pt-6 pb-8 px-4 md:px-10 lg:px-12 max-w-[1600px] mx-auto w-full gap-5">
+      {error && (
+        <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+          {error}
+        </div>
+      )}
+
+      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
+        <div className="px-6 py-4 bg-gradient-to-r from-rose-500/8 to-transparent flex items-center gap-3">
+          <div>
+            <p className="text-sm font-semibold text-text-primary">{t("tickets.sectionMain")}</p>
+            <p className="text-xs text-text-muted">{t("tickets.sectionMainDesc")}</p>
+          </div>
+          <span className="ml-auto text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">
+            {t("common.requiredBadge")}
+          </span>
+        </div>
+        <div className="p-6 pt-4 space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <div>
-              <label className={LABEL}>{t("tickets.client")} <span className="text-sky-500">*</span></label>
-              {loading ? skel : (
+              <label className={LABEL}>
+                {t("tickets.client")} <span className="text-sky-500">*</span>
+              </label>
+              {clients.length === 0 ? skel : (
                 <SelectField value={form.clientId} onChange={set("clientId")} icon={Users}>
                   <option value="">{t("common.selectPlaceholder")}</option>
-                  {clients.map(c => (
+                  {clients.map((c) => (
                     <option key={c.id} value={c.id}>
                       {`${c.user?.firstName ?? ""} ${c.user?.lastName ?? ""}`.trim() || c.user?.email || c.id}
                     </option>
@@ -84,11 +112,13 @@ export default function NewTicketPage() {
               )}
             </div>
             <div>
-              <label className={LABEL}>{t("tickets.vehicle")} <span className="text-sky-500">*</span></label>
-              {loading ? skel : (
+              <label className={LABEL}>
+                {t("tickets.vehicle")} <span className="text-sky-500">*</span>
+              </label>
+              {vehicles.length === 0 ? skel : (
                 <SelectField value={form.vehicleId} onChange={set("vehicleId")} icon={Car}>
                   <option value="">{t("common.selectPlaceholder")}</option>
-                  {vehicles.map(v => (
+                  {vehicles.map((v) => (
                     <option key={v.id} value={v.id}>
                       {v.plate ? `${v.plate} — ${[v.brand, v.model].filter(Boolean).join(" ")}` : v.id}
                     </option>
@@ -97,17 +127,22 @@ export default function NewTicketPage() {
               )}
             </div>
             <div>
-              <label className={LABEL}>{t("tickets.parking")} <span className="text-sky-500">*</span></label>
-              {loading ? skel : (
+              <label className={LABEL}>
+                {t("tickets.parking")} <span className="text-sky-500">*</span>
+              </label>
+              {parkings.length === 0 ? skel : (
                 <SelectField value={form.parkingId} onChange={set("parkingId")} icon={MapPin}>
                   <option value="">{t("common.selectPlaceholder")}</option>
-                  {parkings.map(p => <option key={p.id} value={p.id}>{p.name ?? p.id}</option>)}
+                  {parkings.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name ?? p.id}
+                    </option>
+                  ))}
                 </SelectField>
               )}
             </div>
           </div>
 
-          {/* Info box — entrada automática */}
           <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 px-5 py-4 flex items-start gap-3">
             <div className="w-8 h-8 rounded-lg bg-rose-500/15 border border-rose-500/20 flex items-center justify-center shrink-0 mt-0.5">
               <Ticket className="w-4 h-4 text-rose-500" />
@@ -118,18 +153,37 @@ export default function NewTicketPage() {
             </div>
           </div>
         </div>
-      ),
-    },
-  ];
+      </div>
 
-  return (
-    <FormWizard
-      steps={steps}
-      onSubmit={handleSubmit}
-      submitting={submitting}
-      submitLabel={t("tickets.createTicket")}
-      cancelHref="/dashboard/tickets"
-      error={error}
-    />
+      <div className="mt-auto flex items-center justify-between gap-4 pt-2">
+        <p className="text-xs text-text-muted hidden sm:block">{t("common.requiredNote")}</p>
+        <div className="flex items-center gap-3 ml-auto">
+          <Link
+            href="/dashboard/tickets"
+            className="px-5 py-3 rounded-lg border border-input-border text-sm font-medium text-text-secondary hover:bg-input-bg hover:text-text-primary transition-colors"
+          >
+            {t("common.cancel")}
+          </Link>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={submitting || !isValid}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors"
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                {t("common.saving")}
+              </>
+            ) : (
+              <>
+                {t("tickets.createTicket")}
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

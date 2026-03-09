@@ -3,10 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  User, Mail, Lock, CreditCard,
-  Activity, ArrowRight, Loader2, Eye, EyeOff,
-} from "lucide-react";
+import { User, Mail, CreditCard, Activity, ArrowRight, Loader2 } from "lucide-react";
 import { MultiSelectField } from "@/components/MultiSelectField";
 import { DatePickerField } from "@/components/DatePickerField";
 import { SelectField } from "@/components/SelectField";
@@ -20,7 +17,7 @@ const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 const STATUSES = ["AVAILABLE", "BUSY", "AWAY"] as const;
 
 const defaultForm = {
-  firstName: "", lastName: "", email: "", password: "",
+  firstName: "", lastName: "", email: "",
   licenseExpiry: "", currentStatus: "AVAILABLE",
 };
 
@@ -35,7 +32,6 @@ export default function EditValetPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPass, setShowPass] = useState(false);
 
   useEffect(() => {
     apiClient.get<Record<string, unknown>>(`/valets/${id}`)
@@ -56,7 +52,6 @@ export default function EditValetPage() {
           firstName: String(user?.firstName ?? ""),
           lastName: String(user?.lastName ?? ""),
           email: String(user?.email ?? ""),
-          password: "",
           licenseExpiry: expiryRaw,
           currentStatus: String(data.currentStatus ?? "AVAILABLE"),
         });
@@ -73,15 +68,12 @@ export default function EditValetPage() {
     if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim() || licenseTypes.length === 0) return;
     setSubmitting(true); setError(null);
     try {
-      const userPayload: Record<string, string> = {
-        firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
-        email: form.email.trim(),
-      };
-      if (form.password) userPayload.password = form.password;
-
       await Promise.all([
-        apiClient.patch(`/users/${userId}`, userPayload),
+        apiClient.patch(`/users/${userId}`, {
+          firstName: form.firstName.trim(),
+          lastName: form.lastName.trim(),
+          email: form.email.trim(),
+        }),
         apiClient.patch(`/valets/${id}`, {
           licenseNumber: licenseTypes.join(", "),
           ...(form.licenseExpiry ? { licenseExpiry: new Date(form.licenseExpiry).toISOString() } : {}),
@@ -138,26 +130,6 @@ export default function EditValetPage() {
               <div className="relative group">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
                 <input type="email" value={form.email} onChange={set("email")} className={IL} />
-              </div>
-            </div>
-            <div>
-              <label className={LABEL}>
-                {t("users.password")}
-                <span className="ml-2 text-[10px] text-text-muted font-normal">{t("common.passwordHint")}</span>
-              </label>
-              <div className="relative group">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input
-                  type={showPass ? "text" : "password"}
-                  value={form.password} onChange={set("password")}
-                  placeholder={t("common.placeholderPassword")} autoComplete="new-password"
-                  className={IL + " pr-10"}
-                />
-                <button type="button" onClick={() => setShowPass(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-muted hover:text-text-secondary transition-colors"
-                  aria-label={showPass ? t("common.hidePassword") : t("common.showPassword")}>
-                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
               </div>
             </div>
           </div>

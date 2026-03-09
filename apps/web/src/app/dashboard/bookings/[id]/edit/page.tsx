@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { CalendarCheck, Users, Car, MapPin, Calendar, ArrowRight, Loader2 } from "lucide-react";
+import { Users, Car, MapPin, ArrowRight, Loader2 } from "lucide-react";
 import { SelectField } from "@/components/SelectField";
+import { DateTimePickerField } from "@/components/DateTimePickerField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
@@ -65,7 +66,7 @@ export default function EditBookingPage() {
   }, [id]);
 
   const set = (k: keyof typeof defaultForm) =>
-    (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => setForm(p => ({ ...p, [k]: e.target.value }));
+    (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
   const handleSubmit = async () => {
     if (!form.clientId || !form.vehicleId || !form.parkingId || !form.scheduledEntryTime) return;
@@ -143,10 +144,10 @@ export default function EditBookingPage() {
             </div>
             <div>
               <label className={LABEL}>{t("bookings.scheduledEntry")} <span className="text-sky-500">*</span></label>
-              <div className="relative group">
-                <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input type="datetime-local" value={form.scheduledEntryTime} onChange={set("scheduledEntryTime")} className={IL} />
-              </div>
+              <DateTimePickerField
+                value={form.scheduledEntryTime}
+                onChange={(v) => setForm((p) => ({ ...p, scheduledEntryTime: v }))}
+              />
             </div>
           </div>
         </div>
@@ -164,10 +165,10 @@ export default function EditBookingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <div>
               <label className={LABEL}>{t("bookings.scheduledExitOptional")}</label>
-              <div className="relative group">
-                <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-sky-500 transition-colors pointer-events-none" />
-                <input type="datetime-local" value={form.scheduledExitTime} onChange={set("scheduledExitTime")} className={IL} />
-              </div>
+              <DateTimePickerField
+                value={form.scheduledExitTime}
+                onChange={(v) => setForm((p) => ({ ...p, scheduledExitTime: v }))}
+              />
             </div>
           </div>
         </div>
