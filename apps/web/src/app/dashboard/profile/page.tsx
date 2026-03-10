@@ -198,25 +198,25 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="shrink-0 flex items-center justify-between gap-4 pt-4 flex-wrap border-t border-card-border mt-4 pt-4">
-          <div />
-          <div className="flex items-center gap-3 ml-auto">
-            <Link
-              href="/dashboard"
-              className="px-5 py-3 rounded-lg border border-company-secondary-muted text-sm font-medium text-company-secondary hover:bg-company-secondary-subtle hover:text-company-secondary transition-colors"
-            >
-              {t("common.cancel")}
-            </Link>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={submitting || !isValid}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors"
-            >
-              {submitting ? <><Loader2 className="w-4 h-4 animate-spin" />{t("common.saving")}</> : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}
-            </button>
-          </div>
+      <div className="shrink-0 flex items-center justify-between gap-4 pt-4 flex-wrap border-t border-card-border mt-4 pt-4">
+        <div />
+        <div className="flex items-center gap-3 ml-auto">
+          <Link
+            href="/dashboard"
+            className="px-5 py-3 rounded-lg border border-company-secondary-muted text-sm font-medium text-company-secondary hover:bg-company-secondary-subtle hover:text-company-secondary transition-colors"
+          >
+            {t("common.cancel")}
+          </Link>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={submitting || !isValid}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors"
+          >
+            {submitting ? <><Loader2 className="w-4 h-4 animate-spin" />{t("common.saving")}</> : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}
+          </button>
         </div>
       </div>
     </div>
