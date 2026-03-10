@@ -21,7 +21,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
         redirecting.current = true;
         router.replace("/login");
       }
-    }, 150);
+    }, 0);
     return () => clearTimeout(timer);
   }, [hydrate, router]);
 

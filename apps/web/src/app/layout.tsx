@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import "leaflet/dist/leaflet.css";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 
 export const metadata: Metadata = {
-  title: "Parkit Dashboard Console",
+  title: "Parkit Admin Console",
   description: "Parking management system admin dashboard",
   icons: {
     icon: "/icon",

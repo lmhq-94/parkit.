@@ -18,17 +18,21 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import dynamic from "next/dynamic";
 import { DatePickerField } from "@/components/DatePickerField";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageLoader } from "@/components/PageLoader";
+
+const DashboardTicketsChart = dynamic(
+  () =>
+    import("@/components/DashboardTicketsChart").then((m) => m.DashboardTicketsChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex-1 min-h-[240px] flex items-center justify-center bg-input-bg/50 rounded-lg animate-pulse" />
+    ),
+  }
+);
 
 interface DashboardStats {
   companiesCount: number;
@@ -488,54 +492,10 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="flex-1 min-h-[240px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="ticketsGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="var(--company-primary, #2563eb)" stopOpacity={0.4} />
-                          <stop offset="100%" stopColor="var(--company-primary, #2563eb)" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke="var(--card-border)"
-                        vertical={false}
-                      />
-                      <XAxis
-                        dataKey="label"
-                        tick={{ fontSize: 11, fill: "var(--text-muted)" }}
-                        axisLine={{ stroke: "var(--card-border)" }}
-                        tickLine={false}
-                      />
-                      <YAxis
-                        tick={{ fontSize: 11, fill: "var(--text-muted)" }}
-                        axisLine={false}
-                        tickLine={false}
-                        allowDecimals={false}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "var(--card-bg)",
-                          border: "1px solid var(--card-border)",
-                          borderRadius: "12px",
-                          fontSize: "12px",
-                        }}
-                        labelStyle={{ color: "var(--text-primary)" }}
-                        formatter={(value: number | undefined) => [
-                          value ?? 0,
-                          t("dashboard.ticketsLabel"),
-                        ]}
-                        labelFormatter={(label) => label}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="count"
-                        stroke="var(--company-primary, #2563eb)"
-                        strokeWidth={2}
-                        fill="url(#ticketsGradient)"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                  <DashboardTicketsChart
+                    data={chartData}
+                    ticketsLabel={t("dashboard.ticketsLabel")}
+                  />
                 </div>
               </div>
 

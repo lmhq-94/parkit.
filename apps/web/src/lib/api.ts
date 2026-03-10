@@ -12,8 +12,18 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+const GET_CACHE_TTL_MS = 30_000; // 30s para branding y datos que no cambian a cada rato
+const CACHEABLE_GET_PREFIXES = ["/companies/me", "/companies/"];
+
+function isCacheableGet(url: string): boolean {
+  return CACHEABLE_GET_PREFIXES.some((p) => url.includes(p));
+}
+
+type CacheEntry<T> = { data: T; expiresAt: number };
+
 class ApiClient {
   private client: AxiosInstance;
+  private getCache = new Map<string, CacheEntry<unknown>>();
 
   constructor() {
     this.client = axios.create({
@@ -80,8 +90,25 @@ class ApiClient {
 
   // API methods
   public async get<T>(url: string): Promise<T> {
+    const cacheKey = url;
+    if (typeof window !== "undefined" && isCacheableGet(url)) {
+      const hit = this.getCache.get(cacheKey) as CacheEntry<T> | undefined;
+      if (hit && hit.expiresAt > Date.now()) return hit.data;
+    }
     const response = await this.client.get<ApiResponse<T>>(url);
-    return response.data.data as T;
+    const data = response.data.data as T;
+    if (typeof window !== "undefined" && isCacheableGet(url)) {
+      this.getCache.set(cacheKey, {
+        data,
+        expiresAt: Date.now() + GET_CACHE_TTL_MS,
+      });
+    }
+    return data;
+  }
+
+  /** Invalida la caché de GET (p. ej. tras actualizar branding). */
+  public clearGetCache(): void {
+    this.getCache.clear();
   }
 
   public async post<T>(url: string, data?: unknown): Promise<T> {

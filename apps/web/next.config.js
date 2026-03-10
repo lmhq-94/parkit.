@@ -12,6 +12,10 @@ const nextConfig = {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000",
   },
   outputFileTracingRoot: __dirname,
+  // Mejora rendimiento: compilación más rápida y bundles más pequeños
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
+  },
 };
 
 module.exports = nextConfig;

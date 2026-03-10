@@ -2,10 +2,16 @@
 
 import { useCallback, useMemo } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Check, X, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { ICellRendererParams } from "ag-grid-community";
-import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
+import { PageLoader } from "@/components/PageLoader";
+
+const DashboardDataTablePage = dynamic(
+  () => import("@/components/DashboardDataTablePage").then((m) => ({ default: m.DashboardDataTablePage })),
+  { ssr: false, loading: () => <div className="flex flex-1 items-center justify-center p-8"><PageLoader /></div> }
+);
 import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDashboardStore } from "@/lib/store";

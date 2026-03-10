@@ -1,3 +1,4 @@
+import compression from "compression";
 import express from "express";
 import authRoutes from "./modules/auth/auth.routes";
 import companyRoutes from "./modules/companies/companies.routes";
@@ -13,6 +14,8 @@ import vehiclesRoutes from "./modules/vehicles/vehicles.routes";
 import dashboardRoutes from "./modules/dashboard/dashboard.routes";
 
 export const app = express();
+
+app.use(compression());
 
 const allowedOrigins = new Set([
   "http://localhost:3000",
