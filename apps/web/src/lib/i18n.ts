@@ -415,8 +415,16 @@ export const translations = {
       sectionInfoDesc: "Nombre, correo y datos de contacto.",
       avatarImage: "Foto de perfil",
       avatarImageDescription: "Imagen que aparece en el sidebar y en la app.",
+      avatarFieldLabel: "Imagen",
       saveSuccess: "Perfil actualizado.",
       saveError: "Error al guardar. Intenta de nuevo.",
+      createSuperAdmin: "Crear super administrador",
+    },
+    superAdmins: {
+      newSuperAdmin: "Crear super administrador",
+      newSuperAdminDescription: "Completa los datos del nuevo super administrador. Tendrá acceso global a todas las empresas. Si no asignas contraseña, recibirá un correo de invitación.",
+      createSuperAdmin: "Crear super administrador",
+      invitationNote: "Si dejas la contraseña en blanco, se enviará un correo de invitación para que configure su acceso.",
     },
     enums: {
       systemRole: {
@@ -999,8 +1007,16 @@ export const translations = {
       sectionInfoDesc: "Name, email and contact details.",
       avatarImage: "Profile picture",
       avatarImageDescription: "Image shown in the sidebar and across the app.",
+      avatarFieldLabel: "Image",
       saveSuccess: "Profile updated.",
       saveError: "Error saving. Please try again.",
+      createSuperAdmin: "Create super admin",
+    },
+    superAdmins: {
+      newSuperAdmin: "Create super admin",
+      newSuperAdminDescription: "Enter the details for the new super admin. They will have global access to all companies. If you leave the password empty, they will receive an invitation email.",
+      createSuperAdmin: "Create super admin",
+      invitationNote: "If you leave the password empty, an invitation email will be sent for them to set up their access.",
     },
     enums: {
       systemRole: {

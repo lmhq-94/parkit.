@@ -2,27 +2,24 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { User, Mail, Phone, Clock, Shield } from "lucide-react";
+import { User, Mail, Shield } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";
-import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
-import { TIMEZONES } from "@/lib/companyOptions";
-import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
-const ROLES = ["CUSTOMER", "ADMIN"] as const;
 
 const defaultForm = {
-  firstName: "", lastName: "", email: "",
-  systemRole: "CUSTOMER" as const, phone: "",
-  timezone: "America/Costa_Rica",
+  firstName: "",
+  lastName: "",
+  email: "",
+  password: "",
 };
 
-export default function NewUserPage() {
-  const { t, tEnum } = useTranslation();
+export default function NewSuperAdminPage() {
+  const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
   const [form, setForm] = useState(defaultForm);
@@ -30,32 +27,35 @@ export default function NewUserPage() {
   const [error, setError] = useState<string | null>(null);
 
   const set = (k: keyof typeof defaultForm) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm(p => ({ ...p, [k]: e.target.value }));
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      setForm((p) => ({ ...p, [k]: e.target.value }));
 
   const handleSubmit = async () => {
     if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim()) return;
-    setSubmitting(true); setError(null);
+    setSubmitting(true);
+    setError(null);
     try {
-      await apiClient.post("/users", {
-        firstName: form.firstName.trim(), lastName: form.lastName.trim(),
+      await apiClient.post("/users/super-admin", {
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
         email: form.email.trim(),
-        systemRole: form.systemRole,
-        phone: form.phone.replace(/\D/g, "").length > 0 ? form.phone.replace(/\D/g, "") : undefined,
-        timezone: form.timezone.trim() || undefined,
+        password: form.password.trim() ? form.password : undefined,
       });
       showSuccess(t("common.createSuccessShort"));
-      router.push("/dashboard/users");
+      router.push("/dashboard/profile");
     } catch (err) {
       const msg = getApiErrorMessage(err);
       setError(msg);
       showError(msg);
-    } finally { setSubmitting(false); }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const steps = [
     {
-      title: t("users.sectionMain"),
-      description: t("users.sectionMainDesc"),
+      title: t("superAdmins.newSuperAdmin"),
+      description: t("superAdmins.newSuperAdminDescription"),
       badge: "required" as const,
       accentColor: "violet",
       isValid: () => !!(form.firstName.trim() && form.lastName.trim() && form.email.trim()),
@@ -82,36 +82,13 @@ export default function NewUserPage() {
               <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} />
             </div>
           </div>
-          <div>
-            <label className={LABEL}>{t("users.role")}</label>
-            <SelectField value={form.systemRole} onChange={set("systemRole")} icon={Shield}>
-              {ROLES.map(r => <option key={r} value={r}>{tEnum("systemRole", r)}</option>)}
-            </SelectField>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: t("users.sectionContact"),
-      description: t("users.sectionContactDesc"),
-      badge: "optional" as const,
-      accentColor: "indigo",
-      isValid: () => true,
-      content: (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <div>
-            <label className={LABEL}>{t("users.phone")}</label>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <label className={LABEL}>{t("users.password")}</label>
             <div className="relative group">
-              <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: formatPhoneWithCountryCode(e.target.value, "CR") }))} placeholder="+506 6216-4040" className={IL} />
+              <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+              <input type="password" value={form.password} onChange={set("password")} placeholder={t("common.placeholderPassword")} className={IL} autoComplete="new-password" />
             </div>
-          </div>
-          <div>
-            <label className={LABEL}>{t("users.timezone")}</label>
-            <SelectField value={form.timezone} onChange={set("timezone")} icon={Clock}>
-              <option value="">{t("common.selectPlaceholder")}</option>
-              {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
-            </SelectField>
+            <p className="text-xs text-text-muted mt-1">{t("superAdmins.invitationNote")}</p>
           </div>
         </div>
       ),
@@ -123,10 +100,9 @@ export default function NewUserPage() {
       steps={steps}
       onSubmit={handleSubmit}
       submitting={submitting}
-      submitLabel={t("users.createUser")}
-      cancelHref="/dashboard/users"
+      submitLabel={t("superAdmins.createSuperAdmin")}
+      cancelHref="/dashboard/profile"
       error={error}
-      footerNote={t("users.invitationNote")}
     />
   );
 }

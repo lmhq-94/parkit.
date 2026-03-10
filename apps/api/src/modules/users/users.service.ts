@@ -63,6 +63,52 @@ export class UsersService {
     });
   }
 
+  /** Crea un SUPER_ADMIN (companyId: null). Solo otros SUPER_ADMIN pueden invocar. */
+  static async createSuperAdmin(data: { email: string; firstName: string; lastName: string; password?: string }) {
+    const exists = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
+    if (exists) {
+      throw new Error("Email already in use");
+    }
+    const isInvitation = data.password == null || data.password === "";
+    if (isInvitation) {
+      const invitationToken = crypto.randomBytes(32).toString("hex");
+      const invitationTokenExpiresAt = new Date();
+      invitationTokenExpiresAt.setHours(invitationTokenExpiresAt.getHours() + INVITATION_EXPIRY_HOURS);
+      const user = await prisma.user.create({
+        data: {
+          companyId: null,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          passwordHash: null,
+          systemRole: SystemRole.SUPER_ADMIN,
+          invitationToken,
+          invitationTokenExpiresAt,
+        },
+      });
+      await sendInvitationEmail({
+        to: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        token: invitationToken,
+      });
+      return user;
+    }
+    const passwordHash = await hashPassword(data.password!);
+    return prisma.user.create({
+      data: {
+        companyId: null,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        passwordHash,
+        systemRole: SystemRole.SUPER_ADMIN,
+      },
+    });
+  }
+
   /** Select sin columnas de invitación (por si la migración no está aplicada). */
   private static readonly listSelectWithoutInvitation = {
     id: true,

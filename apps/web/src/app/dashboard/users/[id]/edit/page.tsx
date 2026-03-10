@@ -14,7 +14,7 @@ import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
-const ROLES = ["CUSTOMER", "ADMIN", "SUPER_ADMIN"] as const;
+const ROLES = ["CUSTOMER", "ADMIN"] as const;
 
 const defaultForm = {
   firstName: "", lastName: "", email: "",
@@ -38,11 +38,12 @@ export default function EditUserPage() {
       try {
         const data = await apiClient.get<Record<string, unknown>>(`/users/${id}`);
         if (data) {
+          const role = String(data.systemRole ?? "STAFF");
           setForm({
             firstName: String(data.firstName ?? ""),
             lastName: String(data.lastName ?? ""),
             email: String(data.email ?? ""),
-            systemRole: String(data.systemRole ?? "STAFF"),
+            systemRole: ROLES.includes(role as (typeof ROLES)[number]) ? role : "ADMIN",
             phone: formatPhoneWithCountryCode(String(data.phone ?? ""), "CR"),
             timezone: String(data.timezone ?? ""),
           });

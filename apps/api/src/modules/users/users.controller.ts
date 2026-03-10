@@ -38,6 +38,20 @@ export class UsersController {
     }
   }
 
+  static async createSuperAdmin(req: Request, res: Response) {
+    try {
+      const user = await UsersService.createSuperAdmin(req.body);
+      const { invitationToken, invitationTokenExpiresAt, passwordHash, ...rest } = user;
+      return created(res, rest);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
   static async create(req: Request, res: Response) {
     try {
       const companyId = req.user.companyId!;

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Loader2, ArrowRight, User, Mail, Phone, Clock } from "lucide-react";
+import { Loader2, ArrowRight, User, Mail, Phone, Clock, UserPlus } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
@@ -12,6 +12,7 @@ import { SelectField } from "@/components/SelectField";
 import { useToast } from "@/lib/toastStore";
 import { TIMEZONES } from "@/lib/companyOptions";
 import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
+import { isSuperAdmin } from "@/lib/auth";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -132,8 +133,8 @@ export default function ProfilePage() {
                   value={form.avatarUrl}
                   onChange={(v) => setForm((p) => ({ ...p, avatarUrl: v }))}
                   onClear={() => setForm((p) => ({ ...p, avatarUrl: "" }))}
-                  label={t("profile.avatarImage")}
-                  description={t("profile.avatarImageDescription")}
+                  label={t("profile.avatarFieldLabel")}
+                  description=""
                   recommendedSize="400 × 400 px"
                   layout="row"
                   t={t}
@@ -145,13 +146,26 @@ export default function ProfilePage() {
           {/* Columna 2 — Edit info */}
           <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0">
             <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent">
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-sm font-semibold text-text-primary">{t("profile.sectionInfo")}</p>
-                <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">
-                  {t("common.requiredBadge")}
-                </span>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-semibold text-text-primary">{t("profile.sectionInfo")}</p>
+                    <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">
+                      {t("common.requiredBadge")}
+                    </span>
+                  </div>
+                  <p className="text-xs text-text-muted mt-1">{t("profile.sectionInfoDesc")}</p>
+                </div>
+                {isSuperAdmin(user) && (
+                  <Link
+                    href="/dashboard/super-admins/new"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-company-secondary-muted text-sm font-medium text-company-secondary hover:bg-company-secondary-subtle hover:text-company-secondary transition-colors shrink-0"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    {t("profile.createSuperAdmin")}
+                  </Link>
+                )}
               </div>
-              <p className="text-xs text-text-muted mt-1">{t("profile.sectionInfoDesc")}</p>
             </div>
             <div className="px-6 pb-6 pt-2">
               <div className="flex flex-col gap-5">
