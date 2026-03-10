@@ -271,7 +271,7 @@ function CompanySelector({
     <>
       <div className="relative flex items-center gap-3">
         <div
-          className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold border border-white/20 overflow-hidden bg-input-bg"
+          className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold border border-white/20 overflow-hidden bg-input-bg"
           style={
             !logoImageUrl?.trim()
               ? {
@@ -282,7 +282,7 @@ function CompanySelector({
           }
         >
           {logoImageUrl?.trim() ? (
-            <img src={logoImageUrl} alt="" className="w-full h-full object-cover" key={logoImageUrl} />
+            <img src={logoImageUrl} alt="" className="w-full h-full object-cover object-center" key={logoImageUrl} />
           ) : selectedCompanyId ? (
             selectedInitials
           ) : (
@@ -535,7 +535,7 @@ export function DashboardSidebar() {
         <>
           {superAdmin ? (
             <div className="border-b border-card-border">
-              <div className="relative overflow-hidden w-full aspect-[4/1] min-h-[7rem]">
+              <div className="relative overflow-hidden w-full aspect-[4/1] min-h-[8rem]">
                 <img
                   src={effectiveBannerSrc}
                   alt=""
@@ -545,7 +545,7 @@ export function DashboardSidebar() {
                 <p className={`absolute top-0 left-0 z-10 px-4 pt-3 text-[10px] font-semibold uppercase tracking-widest drop-shadow-sm ${bannerVariant ? "text-white/95" : "text-slate-900"}`}>
                   {t("sidebar.company")}
                 </p>
-                <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-3 pt-6 bg-gradient-to-t from-black/20 to-transparent">
+                <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-2 pt-2 bg-gradient-to-t from-black/30 to-transparent">
                   <CompanySelector
                     companies={companies}
                     selectedCompanyId={selectedCompanyId}
@@ -562,7 +562,7 @@ export function DashboardSidebar() {
             </div>
           ) : (
             <div className="border-b border-card-border">
-              <div className="relative overflow-hidden w-full aspect-[4/1] min-h-[7rem]">
+              <div className="relative overflow-hidden w-full aspect-[4/1] min-h-[8rem]">
                 <img
                   src={effectiveBannerSrc}
                   alt=""
@@ -572,13 +572,13 @@ export function DashboardSidebar() {
                 <p className={`absolute top-0 left-0 z-10 px-4 pt-3 text-[10px] font-semibold uppercase tracking-widest drop-shadow-sm ${bannerVariant ? "text-white/95" : "text-slate-900"}`}>
                   {t("sidebar.company")}
                 </p>
-                <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center gap-3 px-4 pb-3 pt-6 bg-gradient-to-t from-black/20 to-transparent">
-                  <div className="w-9 h-9 rounded-full shrink-0 border border-white/30 overflow-hidden bg-input-bg flex items-center justify-center">
+                <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center gap-3 px-4 pb-2 pt-2 bg-gradient-to-t from-black/30 to-transparent">
+                  <div className="w-10 h-10 rounded-full shrink-0 border border-white/30 overflow-hidden bg-input-bg flex items-center justify-center">
                     {companyBranding?.logoImageUrl?.trim() ? (
                       <img
                         src={companyBranding.logoImageUrl}
                         alt=""
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-center"
                       />
                     ) : (
                       <span

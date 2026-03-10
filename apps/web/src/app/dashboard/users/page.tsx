@@ -67,9 +67,6 @@ export default function UsersPage() {
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const router = useRouter();
 
-  const onDelete = useCallback(async (row: UserRow) => {
-    if (row.id) await apiClient.delete(`/users/${row.id}`);
-  }, []);
   const onUpdate = useCallback(async (row: UserRow) => {
     if (!row.id) return;
     const payload: Record<string, unknown> = {};
@@ -208,8 +205,6 @@ export default function UsersPage() {
         )}
         onEdit={(row) => router.push(`/dashboard/users/${row.id}/edit`)}
         onUpdate={onUpdate}
-        onDelete={onDelete}
-        getConfirmDeleteMessage={(row) => t("tables.employees.confirmDeleteItem").replace(/\{\{item\}\}/g, [row.firstName, row.lastName].filter(Boolean).join(" ") || row.email || "—")}
         headerAction={
           <Link
             href="/dashboard/users/new"

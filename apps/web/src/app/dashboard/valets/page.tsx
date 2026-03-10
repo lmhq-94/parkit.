@@ -56,9 +56,6 @@ export default function ValetsPage() {
     [statusFilters]
   );
 
-  const onDelete = useCallback(async (row: ValetRow) => {
-    if (row.id) await apiClient.delete(`/valets/${row.id}`);
-  }, []);
   const onUpdate = useCallback(async (row: ValetRow) => {
     if (!row.id) return;
     const userId = row.user?.id;
@@ -228,8 +225,6 @@ export default function ValetsPage() {
         }
         onEdit={superAdmin ? (row) => router.push(`/dashboard/valets/${row.id}/edit`) : undefined}
         onUpdate={superAdmin ? onUpdate : undefined}
-        onDelete={superAdmin ? onDelete : undefined}
-        getConfirmDeleteMessage={superAdmin ? (row) => t("tables.valets.confirmDeleteItem").replace(/\{\{item\}\}/g, [row.user?.firstName, row.user?.lastName].filter(Boolean).join(" ") || row.user?.email || "—") : undefined}
         headerAction={
           superAdmin ? (
             <Link

@@ -45,10 +45,6 @@ export default function VehiclesPage() {
     if (row.year !== undefined) payload.year = Number(row.year);
     await apiClient.patch(`/vehicles/${row.id}`, payload);
   }, []);
-  const onDelete = useCallback(async (row: VehicleRow) => {
-    if (!row.id) return;
-    await apiClient.delete(`/vehicles/${row.id}`);
-  }, []);
   const columns = useMemo(
     () => [
       {
@@ -107,8 +103,6 @@ export default function VehiclesPage() {
         }}
         onEdit={canManage ? (row) => router.push(`/dashboard/vehicles/${row.id}/edit`) : undefined}
         onUpdate={canManage ? onUpdate : undefined}
-        onDelete={canManage ? onDelete : undefined}
-        getConfirmDeleteMessage={canManage ? (row) => t("tables.vehicles.confirmDeleteItem").replace(/\{\{item\}\}/g, row.plate ? formatPlate(row.plate) : [row.brand, row.model].filter(Boolean).join(" ") || "—") : undefined}
         headerAction={
           canManage ? (
             <Link

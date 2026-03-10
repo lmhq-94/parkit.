@@ -160,12 +160,6 @@ export default function CompaniesPage() {
     [superAdmin, bumpCompanies, selectedCompanyId, setSelectedCompany]
   );
 
-  const onDelete = useCallback(async (row: Company) => {
-    if (!row.id) return;
-    await apiClient.delete(`/companies/${row.id}`);
-    bumpCompanies();
-  }, [bumpCompanies]);
-
   return (
     <>
       <DashboardDataTablePage<Company>
@@ -215,8 +209,6 @@ export default function CompaniesPage() {
         )}
         onEdit={superAdmin ? (row) => router.push(`/dashboard/companies/${row.id}/edit`) : undefined}
         onUpdate={onUpdate}
-        onDelete={superAdmin ? onDelete : undefined}
-        getConfirmDeleteMessage={superAdmin ? (row) => t("tables.companies.confirmDeleteItem").replace(/\{\{item\}\}/g, row.name ?? row.commercialName ?? row.legalName ?? "—") : undefined}
         headerAction={
           superAdmin ? (
             <Link

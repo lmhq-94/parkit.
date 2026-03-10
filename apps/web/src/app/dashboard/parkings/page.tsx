@@ -62,11 +62,6 @@ export default function ParkingsPage() {
     await apiClient.patch(`/parkings/${row.id}`, payload);
     bumpParkings();
   }, [bumpParkings]);
-  const onDelete = useCallback(async (row: ParkingRow) => {
-    if (!row.id) return;
-    await apiClient.delete(`/parkings/${row.id}`);
-    bumpParkings();
-  }, [bumpParkings]);
   const columns = useMemo(
     () => [
       { header: t("tables.parkings.name"), render: (p: ParkingRow) => p.name ?? "—", field: "name" as const, editable: true },
@@ -123,8 +118,6 @@ export default function ParkingsPage() {
         )}
         onEdit={(row) => router.push(`/dashboard/parkings/${row.id}/edit`)}
         onUpdate={onUpdate}
-        onDelete={onDelete}
-        getConfirmDeleteMessage={(row) => t("tables.parkings.confirmDeleteItem").replace(/\{\{item\}\}/g, row.name ?? "—")}
         headerAction={
           <Link
             href="/dashboard/parkings/new"

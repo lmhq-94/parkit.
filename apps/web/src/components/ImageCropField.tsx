@@ -15,6 +15,38 @@ function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
+/** Redimensiona la imagen si supera maxDimension para que el editor de crop la maneje bien y ocupe todo el espacio. */
+function resizeImageToFit(dataUrl: string, maxDimension: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const { naturalWidth: w, naturalHeight: h } = img;
+      const max = Math.max(w, h);
+      if (max <= maxDimension) {
+        resolve(dataUrl);
+        return;
+      }
+      const scale = maxDimension / max;
+      const outW = Math.round(w * scale);
+      const outH = Math.round(h * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = outW;
+      canvas.height = outH;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(dataUrl);
+        return;
+      }
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, outW, outH);
+      resolve(canvas.toDataURL("image/jpeg", 0.92));
+    };
+    img.onerror = () => reject(new Error("Error al cargar la imagen"));
+    img.src = dataUrl;
+  });
+}
+
 const LOGO_CROP_SIZE = 176;
 const BANNER_CROP_W = 400;
 const BANNER_CROP_H = 100;
@@ -50,11 +82,16 @@ export function ImageCropField({
   const aspectRatio: [number, number] = isLogo ? [1, 1] : [4, 1];
   const cropBoxWidth = isLogo ? LOGO_CROP_SIZE : BANNER_CROP_W;
   const cropBoxHeight = isLogo ? LOGO_CROP_SIZE : BANNER_CROP_H;
-  const outputMaxWidth = isLogo ? 400 : 1200;
+  const outputWidth = isLogo ? 400 : 1200;
+  const outputHeight = isLogo ? 400 : 300;
+  const MAX_DIMENSION_BEFORE_RESIZE = 2000;
 
   const processFile = (file: File | null) => {
     if (!file || !file.type.startsWith("image/")) return;
-    readFileAsDataUrl(file).then((dataUrl) => setPendingCrop(dataUrl)).catch(() => {});
+    readFileAsDataUrl(file)
+      .then((dataUrl) => resizeImageToFit(dataUrl, MAX_DIMENSION_BEFORE_RESIZE))
+      .then((dataUrl) => setPendingCrop(dataUrl))
+      .catch(() => {});
   };
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,7 +145,8 @@ export function ImageCropField({
         aspectRatio={aspectRatio}
         cropBoxWidth={cropBoxWidth}
         cropBoxHeight={cropBoxHeight}
-        outputMaxWidth={outputMaxWidth}
+        outputWidth={outputWidth}
+        outputHeight={outputHeight}
         onApply={(url) => {
           onChange(url);
           setPendingCrop(null);
@@ -126,13 +164,13 @@ export function ImageCropField({
   if (value) {
     const previewContent = (
       <div className="flex flex-col gap-4 flex-1 min-h-0" style={layout === "card" ? { minHeight: contentMinHeight } : undefined}>
-        <div className={`overflow-hidden rounded-xl bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 w-full ${isLogo ? "rounded-full max-w-[176px] aspect-square" : "rounded-xl aspect-[4/1] max-w-[400px] min-w-[240px]"}`}>
-          <img src={value} alt="" className={`w-full h-full ${isLogo ? "object-cover" : "object-cover object-center"}`} />
+        <div className={`overflow-hidden rounded-xl bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 w-full flex items-center justify-center ${isLogo ? "rounded-full max-w-[176px] aspect-square" : "rounded-xl aspect-[4/1] max-w-[400px] min-w-[240px]"}`}>
+          <img src={value} alt="" className={`w-full h-full object-cover object-center ${isLogo ? "rounded-full" : ""}`} />
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {[1, 2, 3].map((i) => (
-            <div key={i} className={`overflow-hidden rounded-lg bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 ${isLogo ? "rounded-full" : ""}`} style={{ width: isLogo ? 44 : 80, height: isLogo ? 44 : 20 }}>
-              <img src={value} alt="" className="w-full h-full object-cover" />
+            <div key={i} className={`overflow-hidden rounded-lg bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 flex items-center justify-center ${isLogo ? "rounded-full" : ""}`} style={{ width: isLogo ? 44 : 80, height: isLogo ? 44 : 20 }}>
+              <img src={value} alt="" className="w-full h-full object-cover object-center" />
             </div>
           ))}
         </div>

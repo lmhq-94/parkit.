@@ -192,12 +192,6 @@ export default function BookingsPage() {
     ],
     [t, tEnum, canManage, vehicles, parkings]
   );
-  const onDelete = useCallback(async (row: { id?: string }) => {
-    if (!row.id) return;
-    await apiClient.patch(`/bookings/${row.id}/cancel`);
-    setRefreshToken((x) => x + 1);
-  }, []);
-
   return (
     <>
       <DashboardDataTablePage<BookingRow>
@@ -246,14 +240,6 @@ export default function BookingsPage() {
         }}
         onEdit={canManage ? (row: { id?: string }) => router.push(`/dashboard/bookings/${row.id}/edit`) : undefined}
         onUpdate={canManage ? onUpdate : undefined}
-        onDelete={canManage ? onDelete : undefined}
-        getConfirmDeleteMessage={canManage ? (row) => {
-          const vehicleLabel = row.vehicle ? [row.vehicle.brand, row.vehicle.model].filter(Boolean).join(" ") || (row.vehicle.plate ? formatPlate(row.vehicle.plate) : "") : "";
-          const parkingName = row.parking?.name ?? row.parkingId ?? "";
-          const dateStr = row.scheduledEntryTime ? formatDateTimeDisplay(new Date(row.scheduledEntryTime), t) : "";
-          const item = [vehicleLabel || row.vehicleId, parkingName, dateStr].filter(Boolean).join(" · ") || "—";
-          return t("tables.bookings.confirmCancelItem").replace(/\{\{item\}\}/g, item);
-        } : undefined}
         headerAction={
           canManage ? (
             <Link

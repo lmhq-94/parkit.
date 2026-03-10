@@ -87,12 +87,6 @@ export default function TicketsPage() {
     [statusFilters]
   );
 
-  const onDelete = useCallback(async (row: { id?: string }) => {
-    if (!row.id) return;
-    await apiClient.patch(`/tickets/${row.id}`, { status: "CANCELLED" });
-    setRefreshToken((x) => x + 1);
-  }, []);
-
   const onUpdate = useCallback(async (row: TicketRow) => {
     if (!row.id) return;
     const payload: Record<string, unknown> = {};
@@ -247,14 +241,6 @@ export default function TicketsPage() {
         }}
         onEdit={canManage ? (row: { id?: string }) => router.push(`/dashboard/tickets/${row.id}/edit`) : undefined}
         onUpdate={canManage ? onUpdate : undefined}
-        onDelete={canManage ? onDelete : undefined}
-        getConfirmDeleteMessage={canManage ? (row) => {
-          const vehicleLabel = row.vehicle ? [row.vehicle.brand, row.vehicle.model].filter(Boolean).join(" ") || (row.vehicle.plate ? formatPlate(row.vehicle.plate) : "") : "";
-          const parkingName = row.parking?.name ?? row.parkingId ?? "";
-          const dateStr = row.entryTime ? formatDateTimeDisplay(new Date(row.entryTime), t) : "";
-          const item = [vehicleLabel || row.vehicleId, parkingName, dateStr].filter(Boolean).join(" · ") || "—";
-          return t("tables.tickets.confirmCancelItem").replace(/\{\{item\}\}/g, item);
-        } : undefined}
         headerAction={
           canManage ? (
             <Link

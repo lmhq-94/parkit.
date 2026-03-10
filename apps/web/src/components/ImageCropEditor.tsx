@@ -8,7 +8,9 @@ type Props = {
   /** Tamaño en px del área de crop (cómo se ve en la app). Ej: logo 144x144, banner 320x80 */
   cropBoxWidth: number;
   cropBoxHeight: number;
-  outputMaxWidth: number;
+  /** Ancho y alto de salida fijos (ej. logo 400×400, banner 1200×300) para que la imagen ocupe todo el espacio y mantenga calidad. */
+  outputWidth: number;
+  outputHeight: number;
   onApply: (croppedDataUrl: string) => void;
   onCancel: () => void;
   applyLabel?: string;
@@ -25,7 +27,8 @@ export function ImageCropEditor({
   aspectRatio: [aspectW, aspectH],
   cropBoxWidth,
   cropBoxHeight,
-  outputMaxWidth,
+  outputWidth,
+  outputHeight,
   onApply,
   onCancel,
   applyLabel = "Apply",
@@ -41,17 +44,23 @@ export function ImageCropEditor({
   const dragStart = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
+  /** Zoom mínimo para que imágenes muy grandes se puedan reducir y ver enteras en el recorte. */
+  const MIN_SCALE = 0.05;
+
   const imgOnLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement>) => {
       const img = e.currentTarget;
       const w = img.naturalWidth;
       const h = img.naturalHeight;
       setImageSize({ w, h });
-      // Centrar imagen en el crop box
-      const scaleToFit = Math.min(cropBoxWidth / w, cropBoxHeight / h);
-      setScale(Math.max(scaleToFit, 0.5));
-      const scaledW = w * scaleToFit;
-      const scaledH = h * scaleToFit;
+      // Scale to COVER: imagen llena todo el área (logo/banner), centrada; zoom mínimo para imágenes muy grandes
+      const scaleToCoverW = cropBoxWidth / w;
+      const scaleToCoverH = cropBoxHeight / h;
+      const scaleToCover = Math.max(scaleToCoverW, scaleToCoverH);
+      const initialScale = Math.max(scaleToCover * 1.01, MIN_SCALE);
+      setScale(initialScale);
+      const scaledW = w * initialScale;
+      const scaledH = h * initialScale;
       setPosition({
         x: (cropBoxWidth - scaledW) / 2,
         y: (cropBoxHeight - scaledH) / 2,
@@ -93,22 +102,25 @@ export function ImageCropEditor({
       const y = Math.max(0, Math.min(srcY, ih - 1));
       const w = Math.min(srcW, iw - x);
       const h = Math.min(srcH, ih - y);
-      const outW = Math.min(Math.round((w / srcW) * cropBoxWidth), outputMaxWidth);
-      const outH = Math.round(outW / (aspectW / aspectH));
       const canvas = document.createElement("canvas");
-      canvas.width = outW;
-      canvas.height = outH;
+      canvas.width = outputWidth;
+      canvas.height = outputHeight;
       const ctx = canvas.getContext("2d");
       if (!ctx) {
         onApply(sourceDataUrl);
         return;
       }
-      ctx.drawImage(img, x, y, w, h, 0, 0, outW, outH);
-      onApply(canvas.toDataURL("image/jpeg", 0.9));
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, x, y, w, h, 0, 0, outputWidth, outputHeight);
+      onApply(canvas.toDataURL("image/jpeg", 0.92));
     };
     img.onerror = () => onApply(sourceDataUrl);
     img.src = sourceDataUrl;
-  }, [sourceDataUrl, position, scale, cropBoxWidth, cropBoxHeight, aspectW, aspectH, outputMaxWidth, onApply]);
+  }, [sourceDataUrl, position, scale, cropBoxWidth, cropBoxHeight, outputWidth, outputHeight, onApply]);
+
+  const scaledW = imageSize ? imageSize.w * scale : 0;
+  const scaledH = imageSize ? imageSize.h * scale : 0;
 
   return (
     <div className="flex flex-col gap-4">
@@ -127,17 +139,18 @@ export function ImageCropEditor({
             aria-label="Área de recorte"
           >
             <div
-              className="absolute top-0 left-0 will-change-transform"
+              className="absolute left-0 top-0 overflow-hidden"
               style={{
-                transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-                transformOrigin: "0 0",
+                width: scaledW,
+                height: scaledH,
+                left: position.x,
+                top: position.y,
               }}
             >
               <img
                 src={sourceDataUrl}
                 alt=""
-                className="block pointer-events-none"
-                style={imageSize ? { width: imageSize.w, height: imageSize.h } : undefined}
+                className="block w-full h-full pointer-events-none object-cover object-center"
                 onLoad={imgOnLoad}
                 draggable={false}
               />
@@ -155,7 +168,7 @@ export function ImageCropEditor({
           <span className="text-sm font-medium text-text-secondary w-10 shrink-0">Zoom</span>
           <input
             type="range"
-            min="0.5"
+            min={MIN_SCALE}
             max="3"
             step="0.1"
             value={scale}

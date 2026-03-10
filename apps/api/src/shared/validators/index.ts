@@ -13,6 +13,7 @@ export const CreateCompanySchema = z.object({
   legalAddress: z.string().optional(),
 });
 
+// logoImageUrl y bannerImageUrl pueden ser data URLs en base64 (muy largas)
 const BrandingConfigSchema = z
   .object({
     bannerImageUrl: z.union([z.string(), z.null()]).optional(),

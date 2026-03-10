@@ -50,7 +50,10 @@ export class CompaniesService {
     if (data.email !== undefined) updateInput.email = data.email;
     if (data.contactPhone !== undefined) updateInput.contactPhone = data.contactPhone;
     if (data.legalAddress !== undefined) updateInput.legalAddress = data.legalAddress;
-    if (data.brandingConfig !== undefined) updateInput.brandingConfig = data.brandingConfig;
+    // brandingConfig se persiste completo (incl. logoImageUrl y bannerImageUrl en base64)
+    if (data.brandingConfig !== undefined) {
+      updateInput.brandingConfig = data.brandingConfig as Prisma.InputJsonValue;
+    }
     if (data.status !== undefined) updateInput.status = data.status;
     const company = await prisma.company.update({
       where: { id },
