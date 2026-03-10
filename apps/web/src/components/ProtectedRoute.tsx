@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { PageLoader } from "@/components/PageLoader";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -31,7 +31,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-page">
-        <LoadingSpinner size="lg" variant="muted" />
+        <PageLoader />
       </div>
     );
   }

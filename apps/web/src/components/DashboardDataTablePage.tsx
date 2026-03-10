@@ -21,6 +21,7 @@ import { FormattedInputCellEditor } from "@/components/FormattedInputCellEditor"
 import { BrandModelCatalogCellEditor } from "@/components/BrandModelCatalogCellEditor";
 import { AddressCellEditor } from "@/components/AddressCellEditor";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { PageLoader } from "@/components/PageLoader";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -825,8 +826,8 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
             )}
 
             {isLoading ? (
-              <div className="flex items-center justify-center py-32">
-                <LoadingSpinner size="lg" variant="muted" />
+              <div className="flex items-center justify-center flex-1 min-h-[200px]">
+                <PageLoader />
               </div>
             ) : (
               <div className="relative flex-1 flex flex-col min-h-[400px] bg-transparent">

@@ -7,7 +7,7 @@ import { useToast } from "@/lib/toastStore";
 import { useAuthStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { PageLoader } from "@/components/PageLoader";
 
 type NotificationItem = {
   id?: string;
@@ -94,8 +94,8 @@ export default function NotificationsPage() {
   if (loading && items.length === 0) {
     return (
       <div className="flex-1 flex flex-col pt-14 pb-8 px-4 md:px-10 lg:px-12 w-full">
-        <div className="flex items-center justify-center py-24">
-          <LoadingSpinner size="lg" variant="primary" />
+        <div className="flex flex-1 items-center justify-center">
+          <PageLoader />
         </div>
       </div>
     );

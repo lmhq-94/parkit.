@@ -10,6 +10,7 @@ import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Lock } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { PageLoader } from "@/components/PageLoader";
 
 function AcceptInviteForm() {
   const router = useRouter();
@@ -193,7 +194,7 @@ export default function AcceptInvitePage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-page">
-          <LoadingSpinner size="lg" variant="muted" />
+          <PageLoader />
         </div>
       }
     >

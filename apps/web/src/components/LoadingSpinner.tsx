@@ -40,7 +40,7 @@ export function LoadingSpinner({
     <span
       role="status"
       aria-label={ariaLabel}
-      className={`inline-block rounded-full animate-spin ${SIZE_CLASSES[size]} ${VARIANT_CLASSES[variant]} ${className}`.trim()}
+      className={`inline-block rounded-full loading-spinner-ring ${SIZE_CLASSES[size]} ${VARIANT_CLASSES[variant]} ${className}`.trim()}
     />
   );
 }

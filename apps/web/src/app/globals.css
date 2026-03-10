@@ -46,6 +46,15 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* Animación del spinner de carga (círculo girando) */
+@keyframes loading-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.loading-spinner-ring {
+  animation: loading-spin 0.85s linear infinite;
+}
+
 /* Utility classes */
 .container-narrow {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;

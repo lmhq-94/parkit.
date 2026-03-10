@@ -14,8 +14,8 @@ import {
   THEME_DEFAULT_TERTIARY_LIGHT,
   THEME_DEFAULT_TERTIARY_DARK,
 } from "@/lib/themeDefaults";
-import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { PageLoader } from "@/components/PageLoader";
 import { ImageCropField } from "@/components/ImageCropField";
 import { useToast } from "@/lib/toastStore";
 
@@ -214,7 +214,15 @@ export default function SettingsPage() {
     }
   };
 
-  if (loading) return <FormPageSkeleton />;
+  if (loading) {
+    return (
+      <div className="flex-1 flex flex-col pt-14 pb-8 px-4 md:px-10 lg:px-12 w-full">
+        <div className="flex flex-1 items-center justify-center">
+          <PageLoader />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col flex-1 min-h-0 pt-6 pb-8 px-4 md:px-10 lg:px-12 w-full">
