@@ -1,6 +1,6 @@
 import { Text, View, StyleSheet, useColorScheme } from "react-native";
 
-export function Logo({ size = 42, style }: { size?: number; style?: any }) {
+export function Logo({ size = 42, style }: { size?: number; style?: object }) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
 

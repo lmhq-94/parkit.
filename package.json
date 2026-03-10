@@ -1,4 +1,11 @@
 {
+  "name": "parkit",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/mobile/mobile-client",
+    "apps/mobile/mobile-valet"
+  ],
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "jsonwebtoken": "^9.0.3"

@@ -1,13 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
+import type { User } from "@parkit/shared";
 
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  systemRole: 'ADMIN' | 'STAFF' | 'CUSTOMER';
-  companyId: string;
-}
+export type { User };
 
 export const saveUser = async (user: User) => {
   await SecureStore.setItemAsync('user', JSON.stringify(user));

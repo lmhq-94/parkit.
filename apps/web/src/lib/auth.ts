@@ -1,10 +1,7 @@
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  systemRole: "SUPER_ADMIN" | "ADMIN" | "STAFF" | "CUSTOMER";
-  companyId?: string;
+import type { User as BaseUser, SystemRole } from "../../../../packages/shared/src";
+
+export interface User extends BaseUser {
+  systemRole: SystemRole;
   avatar?: string;
   avatarUrl?: string;
   phone?: string;

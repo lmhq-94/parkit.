@@ -2,14 +2,16 @@
 
 This `docs/` folder contains high-level documentation for the Parkit monorepo.
 
-Contents:
+## Contents
 
-- `architecture/` - architecture notes and DB schema.
-- `openapi.yaml` - placeholder for the API OpenAPI spec.
-- `api/` - API-specific developer notes.
+- `architecture/` - architecture notes and backend overview.
+- `bd/parkit.sql` - canonical SQL schema for the core domain.
+- `openapi.yaml` - API OpenAPI specification for the HTTP contract.
+- `api/` - API-specific developer notes and quickstart.
 - `env.md` - required environment variables and examples.
+- `ci-cd.md` - CI/CD pipeline, GitHub Actions, and local replication.
 
-How to use:
+## How to use
 
 - Edit the Markdown files here to document features, runbooks, and guides.
 - Keep generated documentation (site builds, compiled assets) out of git.

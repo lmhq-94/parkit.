@@ -1,14 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import type { User } from "@parkit/shared";
 import { setAuthToken, clearAuthToken } from "./api";
 
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  systemRole: "ADMIN" | "STAFF" | "CUSTOMER";
-  companyId: string;
-}
+export type { User };
 
 const USER_KEY = "parkit_user";
 const TOKEN_KEY = "parkit_token";

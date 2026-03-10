@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useRef, useState } from "react";
 import { useRouter } from "expo-router";
-import { Logo } from "@/components/Logo";
+import { Logo } from "@parkit/shared";
 import { setHasSeenOnboarding } from "@/lib/onboarding";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 

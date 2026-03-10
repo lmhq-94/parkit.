@@ -173,20 +173,23 @@ parkit/
 │   │   ├── package.json
 │   │   ├── tsconfig.json
 │   │   └── .eslintrc.cjs
-│   ├── web/                           # Web admin dashboard (Next.js) [WIP]
-│   └── mobile/                        # Mobile app (React Native) [WIP]
+│   ├── web/                          # Web admin dashboard (Next.js)
+│   └── mobile/                       # Mobile apps (React Native)
+│       ├── mobile-client/            # Customer-facing app
+│       └── mobile-valet/             # Valet/operations app
 ├── packages/
-│   └── shared/                        # Shared types & utilities [WIP]
+│   └── shared/                        # Shared types, UI components & utilities
 ├── docs/
 │   ├── README.md                      # Documentation index
 │   ├── api/
 │   │   └── README.md                  # API developer notes & quickstart
 │   ├── architecture/
-│   │   ├── README.md                  # Architecture overview
-│   │   └── parkit.sql                 # Canonical database schema
+│   │   └── README.md                  # Architecture overview
+│   ├── bd/
+│   │   └── parkit.sql                 # Canonical database schema (SQL)
 │   ├── env.md                         # Environment variables reference
-│   ├── openapi.yaml                   # OpenAPI specification (placeholder)
-│   └── bd/                            # Additional database docs
+│   ├── openapi.yaml                   # OpenAPI specification
+│   └── ci-cd.md                       # CI/CD pipeline details
 ├── tsconfig.json                      # Root TypeScript config
 ├── package.json                       # Root package manifest
 ├── package-lock.json
@@ -374,10 +377,13 @@ All data is scoped by `companyId` to ensure isolation and multi-tenancy.
 All project documentation is in the `docs/` folder:
 
 - `docs/README.md` – Documentation index
-- `docs/architecture/` – System architecture and schema
+- `docs/architecture/` – System architecture and backend overview
+- `docs/bd/parkit.sql` – Canonical SQL schema
 - `docs/api/` – API developer notes and quickstart
 - `docs/env.md` – Environment variables reference
-- `docs/openapi.yaml` – OpenAPI spec (placeholder)
+- `docs/openapi.yaml` – OpenAPI spec
+- `docs/ci-cd.md` – CI/CD pipeline (GitHub Actions)
+- `docs/mobile.md` – Mobile apps quickstart (client & valet)
 
 ---
 

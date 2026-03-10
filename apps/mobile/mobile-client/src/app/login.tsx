@@ -13,7 +13,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useState } from "react";
-import { Logo } from "@/components/Logo";
+import { Logo } from "@parkit/shared";
 import { Redirect, useRouter } from "expo-router";
 import apiClient, { setAuthToken } from "@/lib/api";
 import { saveUser } from "@/lib/auth";

@@ -17,7 +17,7 @@ import { useState } from "react";
 import api, { setAuthToken } from "@/lib/api";
 import { saveUser } from "@/lib/auth";
 import { useAuthStore } from "@/lib/store";
-import { Logo } from "@/components/Logo";
+import { Logo } from "@parkit/shared";
 
 export default function LoginScreen() {
   const router = useRouter();

@@ -1,6 +1,8 @@
 # Architecture
 
-This folder contains architecture notes and the canonical SQL schema at `docs/architecture/parkit.sql`.
+This folder contains high-level architecture notes for the backend and platform.
+
+The **canonical SQL schema** is maintained in `docs/bd/parkit.sql`, which mirrors the domain modeled in Prisma.
 
 Overview:
 
