@@ -111,6 +111,10 @@ export default function UsersPage() {
         },
         cellRenderer: UserStatusCellRenderer,
         cellRendererParams: { t },
+        getStatusStyle: (value: string) =>
+          value === t("tables.employees.active")
+            ? { text: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500" }
+            : { text: "text-red-600 dark:text-red-400", dot: "bg-red-500" },
       },
     ],
     [t]

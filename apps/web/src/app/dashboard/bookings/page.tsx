@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { Plus } from "lucide-react";
+import { Plus, QrCode } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { BookingQRModal } from "@/components/BookingQRModal";
 import { PageLoader } from "@/components/PageLoader";
 
 const DashboardDataTablePage = dynamic(
@@ -63,6 +64,7 @@ export default function BookingsPage() {
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
   const [parkings, setParkings] = useState<ParkingOption[]>([]);
+  const [qrModalBooking, setQrModalBooking] = useState<BookingRow | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -255,6 +257,13 @@ export default function BookingsPage() {
         }}
         onEdit={canManage ? (row: { id?: string }) => router.push(`/dashboard/bookings/${row.id}/edit`) : undefined}
         onUpdate={canManage ? onUpdate : undefined}
+        customActions={[
+          {
+            icon: <QrCode className="w-4 h-4" />,
+            label: t("bookings.showQR"),
+            onClick: (row) => setQrModalBooking(row),
+          },
+        ]}
         headerAction={
           canManage ? (
             <Link
@@ -266,6 +275,11 @@ export default function BookingsPage() {
             </Link>
           ) : undefined
         }
+      />
+      <BookingQRModal
+        booking={qrModalBooking}
+        open={qrModalBooking != null}
+        onClose={() => setQrModalBooking(null)}
       />
     </>
   );

@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 
+export type StatusStyle = { text: string; dot: string };
+
 interface SelectCellEditorProps {
   value?: string | null;
   initialValue?: string | null;
@@ -12,6 +14,8 @@ interface SelectCellEditorProps {
   /** Etiquetas para mostrar (mismo orden que values). Si no se define, se muestran los valores crudos. */
   labels?: string[];
   stopEditing?: (preventFocus?: boolean) => void;
+  /** Para columnas de estado: devuelve clases de color (text + dot) por valor. Mantiene el estilo badge en el editor. */
+  getStatusStyle?: (value: string) => StatusStyle;
 }
 
 /**
@@ -25,6 +29,7 @@ export function SelectCellEditor({
   values = [],
   labels,
   stopEditing,
+  getStatusStyle,
 }: SelectCellEditorProps) {
   const value = valueProp ?? initialValue ?? null;
   const [open, setOpen] = useState(true);
@@ -43,6 +48,7 @@ export function SelectCellEditor({
   };
   const selectedLabel = value != null ? getLabel(String(value)) : "";
   const displayValues = Array.isArray(values) && values.length > 0 ? values : [];
+  const selectedStyle = getStatusStyle && value != null ? getStatusStyle(String(value)) : null;
 
   const updatePosition = () => {
     if (!triggerRef.current) return;
@@ -126,20 +132,24 @@ export function SelectCellEditor({
         }}
       >
         <div className="overflow-y-auto overscroll-contain min-h-0 flex-1">
-          {displayValues.map((opt, idx) => (
-            <button
-              key={`${opt}-${idx}`}
-              type="button"
-              onClick={() => handleSelect(opt)}
-              className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg ${
-                opt === value
-                  ? "bg-company-primary-muted text-company-primary font-medium"
-                  : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-              }`}
-            >
-              {labels != null && labels[idx] != null ? labels[idx] : opt}
-            </button>
-          ))}
+          {displayValues.map((opt, idx) => {
+            const optLabel = labels != null && labels[idx] != null ? labels[idx]! : opt;
+            const isSelected = opt === value;
+            return (
+              <button
+                key={`${opt}-${idx}`}
+                type="button"
+                onClick={() => handleSelect(opt)}
+                className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg ${
+                  isSelected
+                    ? "bg-company-primary-muted text-company-primary font-medium"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                {optLabel}
+              </button>
+            );
+          })}
         </div>
       </div>,
       document.body
@@ -151,10 +161,15 @@ export function SelectCellEditor({
         ref={triggerRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full h-full flex items-center justify-between gap-2 px-2 text-text-primary text-sm text-left cursor-pointer focus:outline-none"
+        className={`w-full h-full flex items-center gap-2 px-2 text-sm text-left cursor-pointer focus:outline-none min-w-0 ${selectedStyle ? selectedStyle.text : "text-text-primary"}`}
       >
-        <span className="truncate">{selectedLabel || "—"}</span>
-        <ChevronDown className="w-4 h-4 shrink-0 text-text-muted" />
+        <span className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
+          {selectedStyle && (
+            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${selectedStyle.dot}`} />
+          )}
+          <span className="truncate">{selectedLabel || "—"}</span>
+        </span>
+        <ChevronDown className="w-4 h-4 shrink-0 text-text-muted ml-auto" />
       </button>
       {dropdown}
     </div>

@@ -67,6 +67,8 @@ type TableColumn<T> = {
   statusBadge?: StatusBadgeVariant;
   /** Campo para leer el valor crudo del estado (ej. "status", "currentStatus", "isActive"). Por defecto "status". */
   statusField?: keyof T & string;
+  /** Para editores select: devuelve estilo (text + dot) por valor, así la celda en edición mantiene el mismo look. Si no se pasa, se usa statusBadge cuando existe. */
+  getStatusStyle?: (value: string) => { text: string; dot: string };
   /** Renderer personalizado para la celda (ej. iconos). Si se define, se usa en lugar del texto de render(). */
   cellRenderer?: React.ComponentType<ICellRendererParams<T> & Record<string, unknown>>;
   /** Parámetros adicionales para cellRenderer. */
@@ -258,6 +260,8 @@ interface DashboardDataTablePageProps<T> {
   onUpdate?: (row: T) => void | Promise<void>;
   /** Callback para crear un registro nuevo (opcional). Si se pasa, se muestra el botón Agregar y una fila editable temporal. */
   onCreate?: (draft: Partial<T>) => void | Promise<void>;
+  /** Botones de acción extra en la columna Actions (icono, etiqueta, onClick por fila). */
+  customActions?: Array<{ icon: React.ReactNode; label: string; onClick: (row: T) => void }>;
 }
 
 function ActionsCellRenderer<T extends { id?: string | number }>(
@@ -278,9 +282,11 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
   /** Crear/Cancelar creación para filas temporales */
   onCreate?: (draft: Partial<T>) => void | Promise<void>;
   onCancelCreate?: () => void;
+  /** Acciones extra (ej. Ver QR) */
+  customActions?: Array<{ icon: React.ReactNode; label: string; onClick: (row: T) => void }>;
   }
 ) {
-  const { data, onView, onEdit, onRequestDelete, viewLabel, editLabel, deleteLabel, saveLabel, cancelLabel, firstEditableColId, onCreate, onCancelCreate, renderRowDetail } = params;
+  const { data, onView, onEdit, onRequestDelete, viewLabel, editLabel, deleteLabel, saveLabel, cancelLabel, firstEditableColId, onCreate, onCancelCreate, renderRowDetail, customActions } = params;
   const [saving, setSaving] = useState(false);
 
   if (!data) return null;
@@ -289,6 +295,7 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
   const hasEdit = !isNew && (typeof onEdit === "function" || firstEditableColId != null);
   const hasDelete = typeof onRequestDelete === "function";
   const hasCreate = isNew && typeof onCreate === "function";
+  const hasCustomActions = !isNew && Array.isArray(customActions) && customActions.length > 0;
 
   const handleEdit = () => {
     if (typeof onEdit === "function") {
@@ -310,7 +317,7 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
     }
   };
 
-  if (!hasView && !hasEdit && !hasDelete && !hasCreate) return null;
+  if (!hasView && !hasEdit && !hasDelete && !hasCreate && !hasCustomActions) return null;
 
   return (
     <div className="flex items-center justify-center gap-1 h-full">
@@ -351,6 +358,21 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
           <Eye className="w-4 h-4" />
         </button>
       )}
+      {hasCustomActions && customActions!.map((action, idx) => (
+        <button
+          key={idx}
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            action.onClick(data);
+          }}
+          className="p-2 rounded-lg text-text-muted hover:text-company-primary hover:bg-company-primary/10 transition-colors"
+          title={action.label}
+          aria-label={action.label}
+        >
+          {action.icon}
+        </button>
+      ))}
       {hasEdit && (
         <button
           type="button"
@@ -402,6 +424,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   onCreate,
   renderRowDetail,
   hasRowDetail,
+  customActions,
 }: DashboardDataTablePageProps<T>) {
   const { resolvedTheme } = useTheme();
   const { user } = useAuthStore();
@@ -632,6 +655,14 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                           cellEditorParams: {
                             values: column.cellEditorValues,
                             labels: column.cellEditorLabels,
+                            ...((column.getStatusStyle != null || column.statusBadge != null) && {
+                              getStatusStyle: column.getStatusStyle ?? (column.statusBadge
+                                ? (value: string) => {
+                                    const variant = getStatusBadgeVariant(column.statusBadge!, value);
+                                    return (STATUS_TEXT_STYLES[variant] ?? STATUS_TEXT_STYLES.muted) as { text: string; dot: string };
+                                  }
+                                : undefined),
+                            }),
                           },
                         }
                       : {};
@@ -721,8 +752,8 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
         filter: false,
         resizable: false,
         flex: 0,
-        minWidth: (onEdit != null || onView != null || renderRowDetail != null) && onEdit != null ? 145 : 110,
-        maxWidth: (onEdit != null || onView != null || renderRowDetail != null) && onEdit != null ? 145 : 110,
+        minWidth: (onEdit != null || onView != null || renderRowDetail != null || (customActions?.length ?? 0) > 0) ? 145 : 110,
+        maxWidth: (onEdit != null || onView != null || renderRowDetail != null || (customActions?.length ?? 0) > 0) ? 180 : 110,
         cellRenderer: ActionsCellRenderer,
         cellRendererParams: {
           onView: onView ?? undefined,
@@ -737,11 +768,12 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
           firstEditableColId,
           onCreate: onCreate ? handleCreate : undefined,
           onCancelCreate: () => setDraftRow(null),
+          customActions: customActions ?? undefined,
         },
       });
     }
     return dataCols;
-  }, [columns, locale, onView, onEdit, onDelete, onCreate, onRequestDelete, handleCreate, onUpdate, renderRowDetail, hasRowDetail, expandedRowId]);
+  }, [columns, locale, onView, onEdit, onDelete, onCreate, onRequestDelete, handleCreate, onUpdate, renderRowDetail, hasRowDetail, expandedRowId, customActions]);
 
   const hasEditableColumns = useMemo(
     () => columns.some((c) => Boolean(c.editable && c.field)),

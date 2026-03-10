@@ -354,6 +354,11 @@ export const translations = {
       editBookingDescription: "Modifica los datos de la reserva.",
       qrCodeReference: "Código QR",
       qrScanHint: "El valet puede escanear este código para validar la reserva al llegar el vehículo.",
+      showQR: "Ver código QR",
+      qrModalTitle: "Código de reserva",
+      qrModalSubtitle: "Presenta este código al llegar al parqueo para validar tu reserva.",
+      qrModalDownload: "Descargar imagen",
+      qrNotAvailable: "No hay código QR para esta reserva.",
     },
     tickets: {
       newTicket: "Nuevo tiquete",
@@ -985,6 +990,11 @@ export const translations = {
       editBookingDescription: "Update booking details.",
       qrCodeReference: "QR code",
       qrScanHint: "Valet can scan this code to validate the reservation when the vehicle arrives.",
+      showQR: "View QR code",
+      qrModalTitle: "Reservation code",
+      qrModalSubtitle: "Show this code when you arrive to validate your reservation.",
+      qrModalDownload: "Download image",
+      qrNotAvailable: "No QR code available for this booking.",
     },
     tickets: {
       newTicket: "New ticket",

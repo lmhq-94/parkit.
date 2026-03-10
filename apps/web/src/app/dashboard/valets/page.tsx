@@ -128,6 +128,12 @@ export default function ValetsPage() {
         editable: superAdmin,
         cellEditorValues: ["AVAILABLE", "BUSY", "AWAY"],
         cellEditorLabels: ["AVAILABLE", "BUSY", "AWAY"].map((v) => tEnum("valetStatus", v)),
+        getStatusStyle: (value: string) =>
+          value === "AVAILABLE"
+            ? { text: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500" }
+            : value === "BUSY"
+              ? { text: "text-amber-600 dark:text-amber-400", dot: "bg-amber-500" }
+              : { text: "text-slate-500 dark:text-slate-400", dot: "bg-slate-400" },
         cellRenderer: function ValetStatusCell(
           params: ICellRendererParams<ValetRow> & { t: (k: string) => string; tEnum: (ns: string, v?: string | null) => string }
         ) {
