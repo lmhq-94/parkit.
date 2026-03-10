@@ -49,7 +49,8 @@ const BOOKING_STATUS_OPTIONS = [
 export default function BookingsPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
   const user = useAuthStore((s) => s.user);
-  const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
+  const selectedCompanyId = useDashboardStore((s: { selectedCompanyId: string | null }) => s.selectedCompanyId);
+  const selectedCompanyName = useDashboardStore((s: { selectedCompanyName: string | null }) => s.selectedCompanyName);
   const superAdmin = isSuperAdmin(user);
   const canManage = superAdmin || user?.systemRole === "ADMIN";
   const router = useRouter();
@@ -72,7 +73,7 @@ export default function BookingsPage() {
         setParkings([]);
       }
     })();
-  }, []);
+  }, [selectedCompanyId]);
 
   const fetchData = useCallback(
     async (_userId: string) => {

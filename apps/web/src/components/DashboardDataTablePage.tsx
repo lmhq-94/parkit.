@@ -11,7 +11,7 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 import "@/app/ag-grid-parkit-overrides.css";
 import { Check, ChevronDown, ChevronRight, Eye, Pencil, Plus, Trash2, X, Search } from "lucide-react";
 import { apiClient } from "@/lib/api";
-import { useAuthStore, useLocaleStore } from "@/lib/store";
+import { useAuthStore, useDashboardStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { useToast } from "@/lib/toastStore";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
@@ -403,6 +403,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
 }: DashboardDataTablePageProps<T>) {
   const { resolvedTheme } = useTheme();
   const { user } = useAuthStore();
+  const selectedCompanyId = useDashboardStore((s: { selectedCompanyId: string | null }) => s.selectedCompanyId);
   const locale = useLocaleStore((s) => s.locale);
   const { showError: showToastError } = useToast();
   const [rows, setRows] = useState<T[]>([]);
@@ -471,7 +472,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
 
   useEffect(() => {
     loadData();
-  }, [loadData, refreshToken]);
+  }, [loadData, refreshToken, selectedCompanyId]);
 
   const handleDeleteConfirm = useCallback(
     async (row: T) => {

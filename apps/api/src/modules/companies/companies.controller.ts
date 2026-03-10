@@ -39,6 +39,39 @@ export class CompaniesController {
     }
   }
 
+  static async meBranding(req: Request, res: Response) {
+    try {
+      const companyId = req.user.companyId;
+      if (!companyId) {
+        return fail(res, 400, "Company context required");
+      }
+      const data = await CompaniesService.getBrandingById(companyId);
+      if (!data) return notFound(res, "Company not found");
+      return ok(res, data);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
+  static async brandingById(req: Request, res: Response) {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const data = await CompaniesService.getBrandingById(id);
+      if (!data) return notFound(res, "Company not found");
+      return ok(res, data);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
   static async update(req: Request, res: Response) {
     try {
       const companyId = req.user.companyId;

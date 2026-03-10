@@ -104,6 +104,10 @@ interface DashboardStore {
   bumpParkings: () => void;
   companyBranding: CompanyBranding;
   setCompanyBranding: (b: CompanyBranding) => void;
+  /** Caché de branding por companyId para mostrar al instante al cambiar de empresa (super admin). */
+  brandingCache: Record<string, CompanyBranding>;
+  setBrandingInCache: (companyId: string, b: CompanyBranding) => void;
+  getBrandingFromCache: (companyId: string) => CompanyBranding | undefined;
 }
 
 const SELECTED_COMPANY_KEY = "parkit_selected_company_id";
@@ -141,4 +145,10 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
   bumpParkings: () => set((s) => ({ parkingsVersion: s.parkingsVersion + 1 })),
   companyBranding: null,
   setCompanyBranding: (b) => set({ companyBranding: b }),
+  brandingCache: {},
+  setBrandingInCache: (companyId, b) =>
+    set((s) => ({
+      brandingCache: { ...s.brandingCache, [companyId]: b ?? null },
+    })),
+  getBrandingFromCache: (companyId) => useDashboardStore.getState().brandingCache[companyId],
 }));

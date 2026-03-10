@@ -66,6 +66,8 @@ export default function SettingsPage() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
   const setCompanyBranding = useDashboardStore((s) => s.setCompanyBranding);
+  const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
+  const setBrandingInCache = useDashboardStore((s) => s.setBrandingInCache);
   const [form, setForm] = useState<BrandingConfig>({
     bannerImageUrl: "",
     logoImageUrl: "",
@@ -96,7 +98,7 @@ export default function SettingsPage() {
     let cancelled = false;
     (async () => {
       try {
-        const data = await apiClient.get<{ brandingConfig?: BrandingConfig | null }>("/companies/me");
+        const data = await apiClient.get<{ brandingConfig?: BrandingConfig | null }>("/companies/me/branding");
         if (!cancelled && data?.brandingConfig && typeof data.brandingConfig === "object") {
           const bc = data.brandingConfig as BrandingConfig;
           setForm({
@@ -117,8 +119,7 @@ export default function SettingsPage() {
       }
     })();
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- carga inicial única para no pisar cambios del usuario
-  }, []);
+  }, [selectedCompanyId]);
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -153,7 +154,7 @@ export default function SettingsPage() {
           tertiaryColorDark: tertiaryColorDark || null,
         },
       });
-      setCompanyBranding({
+      const branding = {
         bannerImageUrl: form.bannerImageUrl?.trim() || null,
         logoImageUrl: form.logoImageUrl?.trim() || null,
         primaryColor: primaryColor || null,
@@ -162,7 +163,9 @@ export default function SettingsPage() {
         secondaryColorDark: secondaryColorDark || null,
         tertiaryColor: tertiaryColor || null,
         tertiaryColorDark: tertiaryColorDark || null,
-      });
+      };
+      setCompanyBranding(branding);
+      if (selectedCompanyId) setBrandingInCache(selectedCompanyId, branding);
       showSuccess(t("settings.saveSuccess"));
     } catch {
       showError(t("settings.saveError"));
@@ -186,7 +189,7 @@ export default function SettingsPage() {
           tertiaryColorDark: THEME_DEFAULT_TERTIARY_DARK,
         },
       });
-      setCompanyBranding({
+      const defaultBranding = {
         bannerImageUrl: null,
         logoImageUrl: null,
         primaryColor: THEME_DEFAULT_PRIMARY_LIGHT,
@@ -195,7 +198,9 @@ export default function SettingsPage() {
         secondaryColorDark: THEME_DEFAULT_SECONDARY_DARK,
         tertiaryColor: THEME_DEFAULT_TERTIARY_LIGHT,
         tertiaryColorDark: THEME_DEFAULT_TERTIARY_DARK,
-      });
+      };
+      setCompanyBranding(defaultBranding);
+      if (selectedCompanyId) setBrandingInCache(selectedCompanyId, defaultBranding);
       setForm({
         bannerImageUrl: "",
         logoImageUrl: "",

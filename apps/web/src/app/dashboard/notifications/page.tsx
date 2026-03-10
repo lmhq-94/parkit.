@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Bell, Check, Trash2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/lib/toastStore";
-import { useAuthStore } from "@/lib/store";
+import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { PageLoader } from "@/components/PageLoader";
@@ -42,6 +42,7 @@ export default function NotificationsPage() {
   const { t, tEnum } = useTranslation();
   const { showError: showToastError } = useToast();
   const user = useAuthStore((s) => s.user);
+  const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +67,7 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     load();
-  }, [load]);
+  }, [load, selectedCompanyId]);
 
   const handleMarkAsRead = useCallback(async (row: NotificationItem) => {
     if (!row.id) return;

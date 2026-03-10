@@ -7,6 +7,7 @@ import { Ticket, Users, Car, MapPin, ArrowRight } from "lucide-react";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { useDashboardStore } from "@/lib/store";
 import { useToast } from "@/lib/toastStore";
 import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -23,6 +24,7 @@ export default function NewTicketPage() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
+  const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
   const [form, setForm] = useState(defaultForm);
   const [clients, setClients] = useState<ClientOption[]>([]);
   const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
@@ -50,7 +52,7 @@ export default function NewTicketPage() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [selectedCompanyId]);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLSelectElement>) => setForm((p) => ({ ...p, [k]: e.target.value }));

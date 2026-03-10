@@ -50,6 +50,7 @@ const TICKET_STATUS_OPTIONS = [
 export default function TicketsPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
   const user = useAuthStore((s) => s.user);
+  const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const superAdmin = isSuperAdmin(user);
   const canManage = superAdmin || user?.systemRole === "ADMIN";
@@ -73,7 +74,7 @@ export default function TicketsPage() {
         setParkings([]);
       }
     })();
-  }, []);
+  }, [selectedCompanyId]);
 
   const fetchData = useCallback(
     async (_userId: string) => {

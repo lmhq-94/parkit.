@@ -6,7 +6,7 @@ import { useTheme } from "next-themes";
 import { ArrowRight, User, Mail, Phone, Clock, UserPlus, Sun, Moon, Globe } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
-import { useAuthStore, useLocaleStore } from "@/lib/store";
+import { useAuthStore, useDashboardStore, useLocaleStore } from "@/lib/store";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageLoader } from "@/components/PageLoader";
 import { ImageCropField } from "@/components/ImageCropField";
@@ -42,6 +42,7 @@ export default function ProfilePage() {
   const { showSuccess, showError } = useToast();
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
+  const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
   const { theme, setTheme } = useTheme();
   const locale = useLocaleStore((s) => s.locale);
   const setLocale = useLocaleStore((s) => s.setLocale);
@@ -77,7 +78,7 @@ export default function ProfilePage() {
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [selectedCompanyId]);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>

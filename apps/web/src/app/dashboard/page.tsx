@@ -2,6 +2,7 @@
 
 import { useTranslation } from "@/hooks/useTranslation";
 import { getStoredUser, isSuperAdmin } from "@/lib/auth";
+import { useDashboardStore } from "@/lib/store";
 import { useToast } from "@/lib/toastStore";
 import { apiClient } from "@/lib/api";
 import { formatPlate } from "@/lib/inputMasks";
@@ -116,6 +117,7 @@ function clampRange(from: string, to: string): { from: string; to: string } {
 export default function DashboardPage() {
   const { t, tEnum, locale } = useTranslation();
   const { showError: showToastError } = useToast();
+  const selectedCompanyId = useDashboardStore((s: { selectedCompanyId: string | null }) => s.selectedCompanyId);
   const user = getStoredUser();
   const superAdmin = isSuperAdmin(user);
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -152,7 +154,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [query]);
+  }, [query, selectedCompanyId]);
 
   // Después de abrir el rango personalizado por primera vez, reseteamos el flag
   useEffect(() => {
@@ -371,15 +373,15 @@ export default function DashboardPage() {
               </div>
             </header>
 
-            {/* Stat cards */}
-            <section>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            {/* Stat cards: ocupan todo el row tanto con bookings como sin ellos */}
+            <section className="w-full">
+              <div className="flex flex-wrap gap-4">
                 {statCards.map((card) => {
                   const c = colorClasses[card.color] ?? defaultCardStyle;
                   return (
                     <div
                       key={card.key}
-                      className="group relative rounded-2xl border border-card-border bg-card p-5 backdrop-blur-sm transition-all duration-200 hover:border-company-primary-muted hover:shadow-lg"
+                      className="group relative flex-1 min-w-[160px] rounded-2xl border border-card-border bg-card p-5 backdrop-blur-sm transition-all duration-200 hover:border-company-primary-muted hover:shadow-lg"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">

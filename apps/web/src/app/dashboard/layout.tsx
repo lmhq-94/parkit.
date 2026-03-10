@@ -7,6 +7,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
+import type { CompanyBranding } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LocaleToggle } from "@/components/LocaleToggle";
@@ -107,37 +108,50 @@ export default function DashboardLayout({
 
   const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
   const setCompanyBranding = useDashboardStore((s) => s.setCompanyBranding);
+  const getBrandingFromCache = useDashboardStore((s) => s.getBrandingFromCache);
+  const setBrandingInCache = useDashboardStore((s) => s.setBrandingInCache);
   const superAdmin = isSuperAdmin(user);
 
-  // Cargar branding: super admin por company seleccionada; admin siempre por /companies/me (aunque selectedCompanyId llegue después)
+  // Cargar branding (logo, banner, colores) para el dashboard y el sidebar. Puede estar ya precargado en login.
   useEffect(() => {
     if (superAdmin && !selectedCompanyId) {
       setCompanyBranding(null);
       return;
     }
     if (!superAdmin && !user?.id) return;
-    const url = superAdmin ? `/companies/${selectedCompanyId}` : "/companies/me";
+
+    const companyId = superAdmin ? selectedCompanyId! : "me";
+    const cached = superAdmin ? getBrandingFromCache(companyId) : undefined;
+    if (cached !== undefined) {
+      setCompanyBranding(cached);
+    }
+
+    const url = superAdmin ? `/companies/${selectedCompanyId}/branding` : "/companies/me/branding";
     apiClient
       .get<{ brandingConfig?: Record<string, string | null | undefined> | null }>(url)
       .then((data) => {
         const bc = data?.brandingConfig && typeof data.brandingConfig === "object" ? data.brandingConfig : null;
-        if (!bc) {
-          setCompanyBranding(null);
-          return;
-        }
-        setCompanyBranding({
-          bannerImageUrl: bc.bannerImageUrl ?? null,
-          logoImageUrl: bc.logoImageUrl ?? null,
-          primaryColor: bc.primaryColor ?? null,
-          primaryColorDark: bc.primaryColorDark ?? null,
-          secondaryColor: bc.secondaryColor ?? null,
-          secondaryColorDark: bc.secondaryColorDark ?? null,
-          tertiaryColor: bc.tertiaryColor ?? null,
-          tertiaryColorDark: bc.tertiaryColorDark ?? null,
-        });
+        const branding: CompanyBranding = bc
+          ? {
+              bannerImageUrl: bc.bannerImageUrl ?? null,
+              logoImageUrl: bc.logoImageUrl ?? null,
+              primaryColor: bc.primaryColor ?? null,
+              primaryColorDark: bc.primaryColorDark ?? null,
+              secondaryColor: bc.secondaryColor ?? null,
+              secondaryColorDark: bc.secondaryColorDark ?? null,
+              tertiaryColor: bc.tertiaryColor ?? null,
+              tertiaryColorDark: bc.tertiaryColorDark ?? null,
+            }
+          : null;
+        setCompanyBranding(branding);
+        if (superAdmin && selectedCompanyId) setBrandingInCache(selectedCompanyId, branding);
       })
-      .catch(() => setCompanyBranding(null));
-  }, [selectedCompanyId, superAdmin, setCompanyBranding, user?.id]);
+      .catch(() => {
+        // No pisar branding si ya está (p. ej. precargado en login); así el sidebar no pierde logo/banner.
+        const current = useDashboardStore.getState().companyBranding;
+        if (!current) setCompanyBranding(null);
+      });
+  }, [selectedCompanyId, superAdmin, setCompanyBranding, getBrandingFromCache, setBrandingInCache, user?.id]);
 
   return (
     <ProtectedRoute>

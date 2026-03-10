@@ -8,6 +8,7 @@ import { SelectField } from "@/components/SelectField";
 import { DateTimePickerField } from "@/components/DateTimePickerField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { useDashboardStore } from "@/lib/store";
 import { useToast } from "@/lib/toastStore";
 import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -26,6 +27,7 @@ export default function EditBookingPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
   const [form, setForm] = useState(defaultForm);
   const [clients, setClients] = useState<ClientOption[]>([]);
   const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
@@ -66,7 +68,7 @@ export default function EditBookingPage() {
         setLoading(false);
       }
     })();
-  }, [id]);
+  }, [id, selectedCompanyId]);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) =>

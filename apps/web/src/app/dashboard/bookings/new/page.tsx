@@ -8,6 +8,7 @@ import { SelectField } from "@/components/SelectField";
 import { DateTimePickerField } from "@/components/DateTimePickerField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { useDashboardStore } from "@/lib/store";
 import { useToast } from "@/lib/toastStore";
 
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -22,6 +23,7 @@ export default function NewBookingPage() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
+  const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
   const [form, setForm] = useState(defaultForm);
   const [clients, setClients] = useState<ClientOption[]>([]);
   const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
@@ -49,7 +51,7 @@ export default function NewBookingPage() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [selectedCompanyId]);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) =>

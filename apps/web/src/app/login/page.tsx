@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { apiClient, getApiErrorMessage } from "@/lib/api";
-import { useAuthStore, useLocaleStore } from "@/lib/store";
+import { useAuthStore, useLocaleStore, useDashboardStore } from "@/lib/store";
+import { isSuperAdmin } from "@/lib/auth";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -17,6 +18,8 @@ export default function LoginPage() {
   const { t } = useTranslation();
   const { login, setError, error } = useAuthStore();
   const setLocale = useLocaleStore((s) => s.setLocale);
+  const setCompanyBranding = useDashboardStore((s) => s.setCompanyBranding);
+  const setBrandingInCache = useDashboardStore((s) => s.setBrandingInCache);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -91,6 +94,61 @@ export default function LoginPage() {
           .catch(() => {
             // Silenciar errores de preferencia; no deben impedir el login.
           });
+
+        // Cargar branding durante el loading para que el dashboard no muestre primero defaults y luego salte al tema de la empresa.
+        const loadBranding = async () => {
+          try {
+            const superAdminUser = isSuperAdmin(response.user);
+            if (superAdminUser) {
+              const selectedId =
+                typeof window !== "undefined" ? localStorage.getItem("parkit_selected_company_id") : null;
+              if (selectedId) {
+                const data = await apiClient.get<{
+                  brandingConfig?: Record<string, string | null | undefined> | null;
+                }>(`/companies/${selectedId}/branding`);
+                const bc = data?.brandingConfig && typeof data.brandingConfig === "object" ? data.brandingConfig : null;
+                const branding = bc
+                  ? {
+                      bannerImageUrl: bc.bannerImageUrl ?? null,
+                      logoImageUrl: bc.logoImageUrl ?? null,
+                      primaryColor: bc.primaryColor ?? null,
+                      primaryColorDark: bc.primaryColorDark ?? null,
+                      secondaryColor: bc.secondaryColor ?? null,
+                      secondaryColorDark: bc.secondaryColorDark ?? null,
+                      tertiaryColor: bc.tertiaryColor ?? null,
+                      tertiaryColorDark: bc.tertiaryColorDark ?? null,
+                    }
+                  : null;
+                setCompanyBranding(branding);
+                if (branding) setBrandingInCache(selectedId, branding);
+              } else {
+                setCompanyBranding(null);
+              }
+            } else {
+              const data = await apiClient.get<{
+                brandingConfig?: Record<string, string | null | undefined> | null;
+              }>("/companies/me/branding");
+              const bc = data?.brandingConfig && typeof data.brandingConfig === "object" ? data.brandingConfig : null;
+              const branding = bc
+                ? {
+                    bannerImageUrl: bc.bannerImageUrl ?? null,
+                    logoImageUrl: bc.logoImageUrl ?? null,
+                    primaryColor: bc.primaryColor ?? null,
+                    primaryColorDark: bc.primaryColorDark ?? null,
+                    secondaryColor: bc.secondaryColor ?? null,
+                    secondaryColorDark: bc.secondaryColorDark ?? null,
+                    tertiaryColor: bc.tertiaryColor ?? null,
+                    tertiaryColorDark: bc.tertiaryColorDark ?? null,
+                  }
+                : null;
+              setCompanyBranding(branding);
+            }
+          } catch {
+            setCompanyBranding(null);
+          }
+        };
+        await loadBranding();
+
         // Mantener el spinner activo mientras la navegación ocurre —
         // setIsSubmitting(false) NO se llama en el path exitoso para evitar
         // el flash del formulario antes de que el dashboard cargue.

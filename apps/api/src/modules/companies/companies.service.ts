@@ -39,6 +39,19 @@ export class CompaniesService {
     return company ? withNormalizedBranding(company) : null;
   }
 
+  /** Solo branding (respuesta ligera para cargar rápido en login/cambio de empresa). */
+  static async getBrandingById(id: string) {
+    const row = await prisma.company.findUnique({
+      where: { id },
+      select: { brandingConfig: true },
+    });
+    if (!row) return null;
+    const brandingConfig = normalizeBrandingConfig(
+      row.brandingConfig as Parameters<typeof normalizeBrandingConfig>[0]
+    );
+    return { brandingConfig };
+  }
+
   static async update(id: string, data: UpdateCompanyDTO) {
     const updateInput: Prisma.CompanyUpdateInput = {};
     if (data.legalName !== undefined) updateInput.legalName = data.legalName;

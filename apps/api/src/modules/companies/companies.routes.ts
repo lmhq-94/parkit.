@@ -33,6 +33,14 @@ router.get(
   CompaniesController.me
 );
 
+router.get(
+  "/me/branding",
+  requireAuth,
+  requireCompany,
+  requireRole("ADMIN"),
+  CompaniesController.meBranding
+);
+
 router.patch(
   "/me",
   validateRequest(UpdateCompanySchema),
@@ -47,6 +55,13 @@ router.get(
   requireAuth,
   requireRole("SUPER_ADMIN"),
   CompaniesController.getById
+);
+
+router.get(
+  "/:id/branding",
+  requireAuth,
+  requireRole("SUPER_ADMIN"),
+  CompaniesController.brandingById
 );
 
 router.patch(
