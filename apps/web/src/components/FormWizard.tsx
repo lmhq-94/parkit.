@@ -93,54 +93,6 @@ export function FormWizard({
   return (
     <div className="flex-1 flex flex-col pt-14 pb-8 px-4 md:px-10 lg:px-12 max-w-[1600px] mx-auto w-full gap-8">
 
-      {/* ── Stepper (top) ───────────────────────────── */}
-      {steps.length > 1 && (
-        <div className="select-none px-2 mb-10">
-          {/* Step labels row */}
-          <div className="flex items-center mb-3">
-            {steps.map((s, i) => {
-              const done = i < current;
-              const active = i === current;
-              return (
-                <React.Fragment key={i}>
-                  <div className="flex flex-col items-center gap-1.5">
-                    <span
-                      className={[
-                        "flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-bold transition-all duration-300",
-                        done
-                          ? "bg-company-primary text-white shadow-sm"
-                          : active
-                          ? "border-2 border-company-primary text-company-primary bg-company-primary-subtle"
-                          : "border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500",
-                      ].join(" ")}
-                    >
-                      {done ? <Check className="w-3 h-3" strokeWidth={3} /> : i + 1}
-                    </span>
-                    <span
-                      className={[
-                        "text-[11px] font-medium whitespace-nowrap transition-colors duration-200",
-                        active ? "text-text-primary" : done ? "text-company-primary" : "text-text-muted/50",
-                      ].join(" ")}
-                    >
-                      {s.title}
-                    </span>
-                  </div>
-
-                  {i < steps.length - 1 && (
-                    <div className="flex-1 mx-3 mb-4 h-[2px] rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700/60">
-                      <div
-                        className="h-full rounded-full bg-company-primary transition-all duration-500 ease-out"
-                        style={{ width: i < current ? "100%" : "0%" }}
-                      />
-                    </div>
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* ── Error ───────────────────────────────────── */}
       {error && (
         <div className="flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/8 px-4 py-3 text-sm text-red-600 dark:text-red-400">
@@ -187,20 +139,65 @@ export function FormWizard({
         </div>
       </div>
 
-      {/* ── Action bar ──────────────────────────────── */}
-      <div className="flex items-center justify-between gap-4 pt-2">
-        <div className="hidden sm:flex flex-col gap-1">
-          {footerNote && (
-            <p className="text-xs text-text-muted">
-              {footerNote}
-            </p>
-          )}
-          <p className="text-xs text-text-muted/50">
-            {step.badge === "required" ? t("common.requiredNote") : t("common.optionalNote")}
-          </p>
+      {/* ── Stepper (above separator line) ─ */}
+      {steps.length > 1 && (
+        <div className="select-none flex items-center justify-center gap-2 flex-wrap pt-2 pb-1">
+          {steps.map((s, i) => {
+            const done = i < current;
+            const active = i === current;
+            return (
+              <React.Fragment key={i}>
+                <div className="flex flex-col items-center gap-1">
+                  <span
+                    className={[
+                      "flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-semibold transition-all duration-300",
+                      done
+                        ? "bg-company-primary text-white"
+                        : active
+                        ? "border border-company-primary text-company-primary bg-company-primary-subtle"
+                        : "border border-slate-200 dark:border-slate-600 text-slate-400 dark:text-slate-500",
+                    ].join(" ")}
+                  >
+                    {done ? <Check className="w-3 h-3" strokeWidth={3} /> : i + 1}
+                  </span>
+                  <span
+                    className={[
+                      "text-[11px] font-medium whitespace-nowrap transition-colors duration-200",
+                      active ? "text-text-primary" : done ? "text-company-primary" : "text-text-muted/50",
+                    ].join(" ")}
+                  >
+                    {s.title}
+                  </span>
+                </div>
+                {i < steps.length - 1 && (
+                  <div className="flex-1 min-w-[64px] max-w-[120px] h-[1px] rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600/60 shrink-0">
+                    <div
+                      className="h-full rounded-full bg-company-primary transition-all duration-500 ease-out"
+                      style={{ width: i < current ? "100%" : "0%" }}
+                    />
+                  </div>
+                )}
+              </React.Fragment>
+            );
+          })}
         </div>
+      )}
 
-        <div className="flex items-center gap-2.5 ml-auto">
+      {/* ── Action bar (below separator line) ─ */}
+      <div className="flex flex-col gap-3 pt-4 border-t border-slate-200/60 dark:border-slate-700/50">
+        <div className="flex items-center justify-between gap-4">
+          <div className="hidden sm:flex flex-col gap-1">
+            {footerNote && (
+              <p className="text-xs text-text-muted">
+                {footerNote}
+              </p>
+            )}
+            <p className="text-xs text-text-muted/50">
+              {step.badge === "required" ? t("common.requiredNote") : t("common.optionalNote")}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5 ml-auto">
           {current === 0 ? (
             <Link
               href={cancelHref}
@@ -247,6 +244,7 @@ export function FormWizard({
               </>
             )}
           </button>
+          </div>
         </div>
       </div>
     </div>

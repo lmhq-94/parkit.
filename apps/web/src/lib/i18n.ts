@@ -352,7 +352,8 @@ export const translations = {
       sectionExitDesc: "Tiempo estimado de salida del vehículo",
       editBooking: "Editar reserva",
       editBookingDescription: "Modifica los datos de la reserva.",
-      qrCodeReference: "Referencia QR",
+      qrCodeReference: "Código QR",
+      qrScanHint: "El valet puede escanear este código para validar la reserva al llegar el vehículo.",
     },
     tickets: {
       newTicket: "Nuevo tiquete",
@@ -982,7 +983,8 @@ export const translations = {
       sectionExitDesc: "Estimated exit time of the vehicle",
       editBooking: "Edit booking",
       editBookingDescription: "Update booking details.",
-      qrCodeReference: "QR code reference",
+      qrCodeReference: "QR code",
+      qrScanHint: "Valet can scan this code to validate the reservation when the vehicle arrives.",
     },
     tickets: {
       newTicket: "New ticket",

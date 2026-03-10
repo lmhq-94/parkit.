@@ -8,6 +8,8 @@ interface DateTimeCellEditorProps {
   initialValue?: string | null;
   onValueChange: (value: string | null) => void;
   stopEditing?: (preventFocus?: boolean) => void;
+  /** Si true, no se pueden elegir fechas/horas anteriores a ahora (ej. scheduled entry). */
+  minNow?: boolean;
 }
 
 /**
@@ -19,6 +21,7 @@ export function DateTimeCellEditor({
   initialValue,
   onValueChange,
   stopEditing,
+  minNow,
 }: DateTimeCellEditorProps) {
   const current = (valueProp ?? initialValue ?? "") as string;
 
@@ -33,6 +36,7 @@ export function DateTimeCellEditor({
         onChange={handleChange}
         autoOpenOnMount
         variant="inline"
+        min={minNow ? new Date().toISOString() : undefined}
       />
     </div>
   );

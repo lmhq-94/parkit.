@@ -23,9 +23,39 @@ interface BookingFilters {
   clientId?: string;
 }
 
+const bookingInclude = {
+  client: {
+    select: {
+      id: true,
+      user: {
+        select: {
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+    },
+  },
+  vehicle: {
+    select: {
+      id: true,
+      plate: true,
+      brand: true,
+      model: true,
+    },
+  },
+  parking: {
+    select: {
+      id: true,
+      name: true,
+      address: true,
+    },
+  },
+} as const;
+
 export class BookingsService {
   static async create(companyId: string, data: CreateBookingDTO) {
-    return prisma.booking.create({
+    const created = await prisma.booking.create({
       data: {
         companyId,
         clientId: data.clientId,
@@ -36,36 +66,13 @@ export class BookingsService {
           ? new Date(data.scheduledExitTime)
           : null,
       },
-      include: {
-        client: {
-          select: {
-            id: true,
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
-              },
-            },
-          },
-        },
-        vehicle: {
-          select: {
-            id: true,
-            plate: true,
-            brand: true,
-            model: true,
-          },
-        },
-        parking: {
-          select: {
-            id: true,
-            name: true,
-            address: true,
-          },
-        },
-      },
+      include: bookingInclude,
     });
+    await prisma.booking.update({
+      where: { id: created.id },
+      data: { qrCodeReference: created.id },
+    });
+    return { ...created, qrCodeReference: created.id };
   }
 
   static async list(companyId: string, filters: BookingFilters) {

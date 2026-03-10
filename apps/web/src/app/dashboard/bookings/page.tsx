@@ -14,6 +14,11 @@ const DashboardDataTablePage = dynamic(
 import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+
+const QRCode = dynamic(
+  () => import("react-qr-code"),
+  { ssr: false }
+);
 import { formatDateTimeDisplay } from "@/lib/dateFormat";
 import { formatPlate } from "@/lib/inputMasks";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
@@ -181,6 +186,7 @@ export default function BookingsPage() {
         field: "scheduledEntryTime" as const,
         editable: canManage,
         cellEditorDateTime: true,
+        cellEditorDateTimeMinNow: true,
       },
       {
         header: t("tables.bookings.exit"),
@@ -224,14 +230,22 @@ export default function BookingsPage() {
           const ownerName = booking.client?.user
             ? [booking.client.user.firstName, booking.client.user.lastName].filter(Boolean).join(" ").trim()
             : null;
+          const qrRef = booking.qrCodeReference ?? booking.id ?? "";
+          const showQr = qrRef !== "";
           return (
             <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
               <DetailSectionLabel text={t("common.additionalInfo")} />
               {ownerName != null && ownerName !== "" && (
                 <DetailField label={t("bookings.client")} value={ownerName} />
               )}
-              {booking.qrCodeReference != null && booking.qrCodeReference !== "" && (
-                <DetailField label={t("bookings.qrCodeReference")} value={booking.qrCodeReference} />
+              {showQr && (
+                <div className="col-span-full flex flex-col gap-2">
+                  <span className="text-sm font-medium text-text-secondary">{t("bookings.qrCodeReference")}</span>
+                  <p className="text-xs text-text-muted">{t("bookings.qrScanHint")}</p>
+                  <div className="inline-flex rounded-lg border border-input-border bg-white p-3 dark:bg-white">
+                    <QRCode value={qrRef} size={128} level="M" />
+                  </div>
+                </div>
               )}
               {booking.createdAt != null && (
                 <DetailField label={t("tables.notifications.createdAt")} value={formatDateTimeDisplay(new Date(booking.createdAt), t)} />

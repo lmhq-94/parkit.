@@ -14,6 +14,8 @@ interface DateTimePickerFieldProps {
   autoOpenOnMount?: boolean;
   /** Variantes de estilo: "default" (formularios) o "inline" (edición en celdas de tabla). */
   variant?: "default" | "inline";
+  /** Fecha-hora mínima (ISO o "YYYY-MM-DDTHH:mm"). No se pueden elegir días ni horas anteriores. */
+  min?: string;
 }
 
 function parseDateTime(v: string): Date | null {
@@ -52,6 +54,14 @@ function hour12AmPmTo24(hour12: number, ampm: "AM" | "PM"): number {
   return hour12 === 12 ? 12 : hour12 + 12;
 }
 
+function sameCalendarDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
 export function DateTimePickerField({
   value,
   onChange,
@@ -59,10 +69,12 @@ export function DateTimePickerField({
   className,
   autoOpenOnMount,
   variant = "default",
+  min: minStr,
 }: DateTimePickerFieldProps) {
   const { t } = useTranslation();
   const today = new Date();
   const parsed = parseDateTime(value);
+  const minDate = minStr ? parseDateTime(minStr) : null;
 
   const monthNames = useMemo(
     () => Array.from({ length: 12 }, (_, i) => t(`datepicker.month${i}`)),
@@ -188,7 +200,10 @@ export function DateTimePickerField({
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
+  const canGoPrevMonth = !minDate || new Date(view.year, view.month, 1).getTime() > new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate()).getTime();
+
   const prevMonth = () => {
+    if (!canGoPrevMonth) return;
     setView((v) => {
       if (v.month === 0) return { year: v.year - 1, month: 11 };
       return { ...v, month: v.month - 1 };
@@ -210,8 +225,28 @@ export function DateTimePickerField({
     [onChange]
   );
 
+  const isDayDisabled = useCallback(
+    (day: number) => {
+      if (!minDate) return false;
+      const cellStart = new Date(view.year, view.month, day);
+      const minDayStart = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
+      return cellStart.getTime() < minDayStart.getTime();
+    },
+    [minDate, view.year, view.month]
+  );
+
   const selectDay = (day: number) => {
-    commitDateTime(view.year, view.month, day, time.hour, time.minute);
+    if (isDayDisabled(day)) return;
+    let h = time.hour;
+    let m = time.minute;
+    if (minDate) {
+      const chosen = new Date(view.year, view.month, day, h, m, 0, 0);
+      if (chosen.getTime() < minDate.getTime() && sameCalendarDay(chosen, minDate)) {
+        h = minDate.getHours();
+        m = minDate.getMinutes();
+      }
+    }
+    commitDateTime(view.year, view.month, day, h, m);
   };
 
   const getCurrentDateParts = useCallback(() => {
@@ -225,14 +260,30 @@ export function DateTimePickerField({
 
   const setHour = (h: number) => {
     const { year, month, day } = getCurrentDateParts();
-    commitDateTime(year, month, day, h, time.minute);
-    setTime((prev) => ({ ...prev, hour: h }));
+    let minute = time.minute;
+    if (minDate && sameCalendarDay(new Date(year, month, day), minDate)) {
+      const composed = new Date(year, month, day, h, minute, 0, 0);
+      if (composed.getTime() < minDate.getTime()) {
+        h = minDate.getHours();
+        minute = minDate.getMinutes();
+      }
+    }
+    commitDateTime(year, month, day, h, minute);
+    setTime((prev) => ({ ...prev, hour: h, minute }));
   };
 
   const setMinute = (m: number) => {
     const { year, month, day } = getCurrentDateParts();
-    commitDateTime(year, month, day, time.hour, m);
-    setTime((prev) => ({ ...prev, minute: m }));
+    let hour = time.hour;
+    if (minDate && sameCalendarDay(new Date(year, month, day), minDate)) {
+      const composed = new Date(year, month, day, hour, m, 0, 0);
+      if (composed.getTime() < minDate.getTime()) {
+        hour = minDate.getHours();
+        m = minDate.getMinutes();
+      }
+    }
+    commitDateTime(year, month, day, hour, m);
+    setTime((prev) => ({ ...prev, hour, minute: m }));
   };
 
   const daysInMonth = getDaysInMonth(view.year, view.month);
@@ -244,6 +295,13 @@ export function DateTimePickerField({
   const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
   const hour24 = parsed?.getHours() ?? time.hour;
   const { hour12, ampm } = hour24To12(hour24);
+  const isMinDay = minDate && parsed !== null && sameCalendarDay(parsed, minDate);
+  const minHour = minDate?.getHours() ?? 0;
+  const minMinute = minDate?.getMinutes() ?? 0;
+  const isHourDisabled = (h12: number) =>
+    isMinDay && hour12AmPmTo24(h12, ampm) < minHour;
+  const isMinuteDisabled = (m: number) =>
+    isMinDay && hour24 === minHour && m < minMinute;
 
   const calendarDropdown =
     open &&
@@ -264,7 +322,8 @@ export function DateTimePickerField({
           <button
             type="button"
             onClick={prevMonth}
-            className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors touch-manipulation"
+            disabled={!canGoPrevMonth}
+            className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors touch-manipulation disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
@@ -299,15 +358,19 @@ export function DateTimePickerField({
             const dateStr = `${view.year}-${String(view.month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
             const isSelected = selectedStr === dateStr;
             const isToday = todayStr === dateStr;
+            const disabled = isDayDisabled(day);
 
             return (
               <button
                 key={day}
                 type="button"
+                disabled={disabled}
                 onClick={() => selectDay(day)}
                 className={[
                   "w-full aspect-square min-w-0 rounded-md text-xs transition-colors flex items-center justify-center font-medium touch-manipulation",
-                  isSelected
+                  disabled
+                    ? "text-slate-300 dark:text-slate-600 cursor-not-allowed"
+                    : isSelected
                     ? "bg-company-primary text-white shadow-sm"
                     : isToday
                     ? "bg-company-primary-subtle text-company-primary hover:bg-company-primary-muted"
@@ -334,7 +397,7 @@ export function DateTimePickerField({
                 className="w-[3rem] rounded-md border border-input-border bg-input-bg text-slate-800 dark:text-slate-200 text-xs py-1.5 px-1.5"
               >
                 {hours12.map((h) => (
-                  <option key={h} value={h}>
+                  <option key={h} value={h} disabled={isHourDisabled(h)}>
                     {h}
                   </option>
                 ))}
@@ -346,7 +409,7 @@ export function DateTimePickerField({
                 className="w-[3rem] rounded-md border border-input-border bg-input-bg text-slate-800 dark:text-slate-200 text-xs py-1.5 px-1.5"
               >
                 {minutes.map((m) => (
-                  <option key={m} value={m}>
+                  <option key={m} value={m} disabled={isMinuteDisabled(m)}>
                     {String(m).padStart(2, "0")}
                   </option>
                 ))}

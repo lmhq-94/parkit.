@@ -55,6 +55,8 @@ type TableColumn<T> = {
   cellEditorInputFormat?: (value: string) => string;
   /** Si true, usa el mismo selector de fecha/hora que los formularios para edición inline. */
   cellEditorDateTime?: boolean;
+  /** Si true y cellEditorDateTime, no se permiten fechas/horas anteriores a ahora (ej. entrada programada). */
+  cellEditorDateTimeMinNow?: boolean;
   /** "make" | "model" para dropdown de catálogo de vehículos (marca/modelo). Carga opciones desde API. */
   cellEditorCatalogType?: "make" | "model";
   /** Si true, al editar la celda se abre el modal AddressPickerModal para elegir dirección en mapa. */
@@ -615,6 +617,9 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                 : column.cellEditorDateTime === true
                   ? {
                       cellEditor: DateTimeCellEditor,
+                      cellEditorParams: {
+                        minNow: column.cellEditorDateTimeMinNow === true,
+                      },
                     }
                   : column.cellEditorInputFormat != null
                     ? {

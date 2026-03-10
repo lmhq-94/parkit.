@@ -158,6 +158,7 @@ export default function NewBookingPage() {
             <DateTimePickerField
               value={form.scheduledEntryTime}
               onChange={(v) => setForm((p) => ({ ...p, scheduledEntryTime: v }))}
+              min={new Date().toISOString()}
             />
           </div>
         </div>
