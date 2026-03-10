@@ -10,7 +10,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
-import { formatPlate } from "@/lib/inputMasks";
+import { formatPlate, toTitleCase } from "@/lib/inputMasks";
 
 type VehicleRow = {
   id?: string;
@@ -45,9 +45,31 @@ export default function VehiclesPage() {
   }, []);
   const columns = useMemo(
     () => [
-      { header: t("tables.vehicles.plate"), render: (v: VehicleRow) => (v.plate ? formatPlate(v.plate) : "—"), field: "plate" as const, editable: canManage },
-      { header: t("tables.vehicles.brand"), render: (v: VehicleRow) => v.brand || "—", field: "brand" as const, editable: canManage },
-      { header: t("tables.vehicles.model"), render: (v: VehicleRow) => v.model || "—", field: "model" as const, editable: canManage },
+      {
+        header: t("tables.vehicles.plate"),
+        render: (v: VehicleRow) => (v.plate ? formatPlate(v.plate) : "—"),
+        field: "plate" as const,
+        editable: canManage,
+        cellEditorInputFormat: formatPlate,
+      },
+      {
+        header: t("tables.vehicles.brand"),
+        render: (v: VehicleRow) => (v.brand ? toTitleCase(v.brand) : "—"),
+        field: "brand" as const,
+        editable: canManage,
+        cellEditorCatalogType: "make",
+        valueSetter: (row, value) => {
+          (row as VehicleRow).brand = value as string;
+          (row as VehicleRow).model = "";
+        },
+      },
+      {
+        header: t("tables.vehicles.model"),
+        render: (v: VehicleRow) => (v.model ? toTitleCase(v.model) : "—"),
+        field: "model" as const,
+        editable: canManage,
+        cellEditorCatalogType: "model",
+      },
       { header: t("tables.vehicles.year"), render: (v: VehicleRow) => (v.year != null ? String(v.year) : "—"), field: "year" as const, editable: canManage },
     ],
     [t, canManage]

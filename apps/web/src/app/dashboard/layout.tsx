@@ -30,6 +30,7 @@ type PathHeader = {
 
 const PATH_HEADERS: Record<string, PathHeader> = {
   "/dashboard": { title: "dashboard.title", description: "dashboard.summary" },
+  "/dashboard/profile": { title: "profile.title", description: "profile.description" },
   "/dashboard/settings": { title: "settings.title", description: "settings.description" },
   "/dashboard/users": { title: "tables.employees.title", description: "tables.employees.description" },
   "/dashboard/users/new": { title: "users.newUser", description: "users.newUserDescription", backHref: "/dashboard/users", backLabel: "tables.employees.title" },

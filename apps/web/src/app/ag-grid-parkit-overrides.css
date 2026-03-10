@@ -203,11 +203,15 @@
 }
 
 /* Dropdown de condición (Contains, Equals…) — idéntico a LocaleToggle: rounded-xl, border-slate-200/700, shadow-2xl, bg white/slate-900 */
+/* Incluye popup del select cell editor (empresas, empleados, etc.) */
 .ag-select-list,
 .ag-list-box,
 .ag-popup-child,
 .ag-picker-field-wrapper .ag-root-wrapper,
-.ag-filter .ag-popup-child {
+.ag-filter .ag-popup-child,
+.ag-popup .ag-list-box,
+.ag-popup .ag-select-list,
+.ag-popup .ag-root-wrapper .ag-list-box {
   background: #ffffff !important;
   border: 1px solid #e2e8f0 !important;
   border-radius: 0.75rem !important;
@@ -223,17 +227,27 @@
 .dark .ag-list-box,
 .dark .ag-popup-child,
 .dark .ag-picker-field-wrapper .ag-root-wrapper,
-.dark .ag-filter .ag-popup-child {
+.dark .ag-filter .ag-popup-child,
+.dark .ag-popup .ag-list-box,
+.dark .ag-popup .ag-select-list,
+.dark .ag-popup .ag-root-wrapper .ag-list-box,
+.ag-theme-quartz-dark .ag-popup .ag-list-box,
+.ag-theme-quartz-dark .ag-popup .ag-select-list {
   background: #0f172a !important;
   border-color: #334155 !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
 }
 
 /* Items del dropdown — mismo estilo que LocaleToggle: px-3 py-2, rounded-lg, selected sky-500/20 */
+/* Incluye items del select cell editor (empresas, empleados, etc.) */
 .ag-select-list-item,
 .ag-list-item,
 .ag-theme-quartz .ag-list-item,
-.ag-theme-quartz-dark .ag-list-item {
+.ag-theme-quartz-dark .ag-list-item,
+.ag-popup .ag-list-item,
+.ag-popup .ag-select-list-item,
+.ag-list-box .ag-list-item,
+.ag-select-list .ag-list-item {
   padding: 0.5rem 0.75rem !important;  /* px-3 py-2 */
   font-size: 0.875rem !important;    /* text-sm */
   border-radius: 0.5rem !important;   /* rounded-lg */
@@ -243,7 +257,13 @@
 
 .dark .ag-select-list-item,
 .dark .ag-list-item,
-.dark .ag-theme-quartz .ag-list-item {
+.dark .ag-theme-quartz .ag-list-item,
+.dark .ag-popup .ag-list-item,
+.dark .ag-popup .ag-select-list-item,
+.dark .ag-list-box .ag-list-item,
+.ag-theme-quartz-dark .ag-select-list-item,
+.ag-theme-quartz-dark .ag-list-item,
+.ag-theme-quartz-dark .ag-popup .ag-list-item {
   color: #cbd5e1 !important;         /* slate-300 dark */
 }
 
@@ -323,4 +343,62 @@
 .ag-picker-field-wrapper.ag-display-enabled {
   padding: 0.5rem 0.75rem !important;
   font-size: 0.875rem !important;
+}
+
+/* Celdas en edición inline: sin doble borde, input llena la celda */
+.ag-theme-parkit .ag-cell.ag-cell-inline-editing {
+  padding: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+
+.ag-theme-parkit .ag-cell.ag-cell-inline-editing .ag-cell-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Input de edición: un solo borde, llena la celda */
+.ag-theme-parkit .ag-cell-inline-editing .ag-cell-edit-input,
+.ag-theme-parkit .ag-cell-inline-editing input.ag-input-field-input,
+.ag-theme-parkit .ag-cell-inline-editing .ag-select-cell-editor {
+  width: 100% !important;
+  min-height: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 0.5rem !important;
+  background: var(--input-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--company-primary, #2563eb) !important;
+  border-radius: 0.375rem !important;
+  font-size: 0.875rem !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.ag-theme-parkit .ag-cell-inline-editing .ag-cell-edit-input:focus,
+.ag-theme-parkit .ag-cell-inline-editing input.ag-input-field-input:focus,
+.ag-theme-parkit .ag-cell-inline-editing .ag-select-cell-editor:focus {
+  border-color: var(--company-primary, #2563eb) !important;
+  box-shadow: 0 0 0 1px var(--company-primary, #2563eb) !important;
+}
+
+/* Dropdown del select editor */
+.ag-theme-parkit .ag-cell-inline-editing .ag-select-cell-editor {
+  min-width: 0;
+  cursor: pointer;
+}
+
+/* Si usa select nativo: opciones visibles en dark mode */
+.dark .ag-select-cell-editor select,
+.ag-theme-quartz-dark .ag-select-cell-editor select {
+  background: #0f172a !important;
+  color: #cbd5e1 !important;
+}
+
+.dark .ag-select-cell-editor select option,
+.ag-theme-quartz-dark .ag-select-cell-editor select option {
+  background: #0f172a !important;
+  color: #cbd5e1 !important;
 }

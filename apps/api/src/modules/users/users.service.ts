@@ -180,6 +180,31 @@ export class UsersService {
     });
   }
 
+  static async getProfile(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) return null;
+    return user;
+  }
+
+  static async updateProfile(
+    userId: string,
+    data: { firstName?: string; lastName?: string; email?: string; phone?: string; timezone?: string; avatarUrl?: string }
+  ) {
+    const updateData: Record<string, unknown> = {};
+    if (data.firstName !== undefined) updateData.firstName = data.firstName.trim();
+    if (data.lastName !== undefined) updateData.lastName = data.lastName.trim();
+    if (data.email !== undefined) updateData.email = data.email.trim();
+    if (data.phone !== undefined) updateData.phone = data.phone?.trim() || null;
+    if (data.timezone !== undefined) updateData.timezone = data.timezone?.trim() || "UTC";
+    if (data.avatarUrl !== undefined) updateData.avatarUrl = data.avatarUrl || null;
+    return prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+    });
+  }
+
   static async deactivate(companyId: string, userId: string) {
     return prisma.user.update({
       where: {

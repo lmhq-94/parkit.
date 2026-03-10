@@ -62,9 +62,20 @@ export const CreateUserSchema = z.object({
 export const UpdateUserSchema = z.object({
   firstName: z.string().min(1).optional(),
   lastName: z.string().min(1).optional(),
+  email: z.string().email().optional(),
   phone: z.string().optional(),
   isActive: z.boolean().optional(),
   systemRole: z.enum(["SUPER_ADMIN", "ADMIN", "STAFF", "CUSTOMER"]).optional(),
+  avatarUrl: z.string().optional(),
+});
+
+export const UpdateProfileSchema = z.object({
+  firstName: z.string().min(1).optional(),
+  lastName: z.string().min(1).optional(),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  timezone: z.string().optional(),
+  avatarUrl: z.string().optional(),
 });
 
 export type CreateUserInput = z.infer<typeof CreateUserSchema>;

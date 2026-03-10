@@ -66,11 +66,20 @@ export default function CompaniesPage() {
       {
         header: t("tables.companies.status"),
         render: (c: Company) => tEnum("companyStatus", c.status),
+        field: "status" as const,
+        editable: superAdmin,
         statusBadge: "company",
         statusField: "status",
+        cellEditorValues: ["PENDING", "ACTIVE", "SUSPENDED", "INACTIVE"],
+        cellEditorLabels: [
+          tEnum("companyStatus", "PENDING"),
+          tEnum("companyStatus", "ACTIVE"),
+          tEnum("companyStatus", "SUSPENDED"),
+          tEnum("companyStatus", "INACTIVE"),
+        ],
       },
     ],
-    [t, tEnum]
+    [t, tEnum, superAdmin]
   );
 
   const title = superAdmin
@@ -89,17 +98,22 @@ export default function CompaniesPage() {
         email?: string;
         contactPhone?: string;
         legalAddress?: string;
+        status?: string;
       } = {};
       if (row.legalName !== undefined) payload.legalName = String(row.legalName).trim();
       if (row.commercialName !== undefined) payload.commercialName = String(row.commercialName).trim();
       if (row.email !== undefined) payload.email = String(row.email).trim() || undefined;
       if (row.contactPhone !== undefined) payload.contactPhone = String(row.contactPhone).trim();
       if (row.legalAddress !== undefined) payload.legalAddress = String(row.legalAddress).trim();
+      if (row.status !== undefined && superAdmin) payload.status = row.status;
       if (Object.keys(payload).length === 0) return;
       if (superAdmin) {
         await apiClient.patch(`/companies/${row.id}`, payload);
       } else {
-        await apiClient.patch("/companies/me", payload);
+        const { status: _s, ...mePayload } = payload;
+        if (Object.keys(mePayload).length > 0) {
+          await apiClient.patch("/companies/me", mePayload);
+        }
       }
       bumpCompanies();
     },

@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
-import { Crown, Mail, Plus, Shield, User, UserCog } from "lucide-react";
+import { Mail, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { ICellRendererParams } from "ag-grid-community";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
@@ -12,32 +12,11 @@ import { useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
 
-const ROLE_ICONS: Record<string, React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>> = {
-  SUPER_ADMIN: Crown,
-  ADMIN: Shield,
-  STAFF: UserCog,
-  CUSTOMER: User,
-};
-
-function RoleIconCellRenderer(
-  params: ICellRendererParams<{ systemRole?: string }> & {
-    tEnum: (ns: string, val?: string | null) => string;
-    t: (key: string) => string;
-  }
-) {
-  const { data, tEnum, t } = params;
-  const role = data?.systemRole;
-  if (!role) return <span className="text-company-tertiary">—</span>;
-  const Icon = ROLE_ICONS[role] ?? User;
-  const label = tEnum("systemRole", role);
-  const tooltipDesc = t(`enums.systemRoleTooltip.${role}`);
-  const title = tooltipDesc ? `${label} — ${tooltipDesc}` : label;
-  return (
-    <span className="inline-flex items-center justify-center" title={title}>
-      <Icon className="w-4 h-4 text-company-secondary" aria-hidden />
-    </span>
-  );
-}
+const ROLE_FILTER_OPTIONS = [
+  { value: null as string | null, key: "filterAll" },
+  { value: "ADMIN", key: "filterAdmins" },
+  { value: "CUSTOMER", key: "filterCustomer" },
+] as const;
 
 function UserStatusCellRenderer(
   params: ICellRendererParams<{ isActive?: boolean; pendingInvitation?: boolean }> & { t: (key: string) => string }
@@ -90,19 +69,13 @@ export default function UsersPage() {
     const payload: Record<string, unknown> = {};
     if (row.firstName !== undefined) payload.firstName = String(row.firstName).trim();
     if (row.lastName !== undefined) payload.lastName = String(row.lastName).trim();
+    if (row.email !== undefined) payload.email = String(row.email).trim();
+    if (row.isActive !== undefined) payload.isActive = row.isActive === true || row.isActive === "true";
     if (Object.keys(payload).length === 0) return;
     await apiClient.patch(`/users/${row.id}`, payload);
   }, []);
   const columns = useMemo(
     () => [
-      {
-        header: t("tables.employees.role"),
-        render: (user: { systemRole?: string }) => tEnum("systemRole", user.systemRole),
-        cellRenderer: RoleIconCellRenderer,
-        cellRendererParams: { tEnum, t },
-        maxWidth: 80,
-        minWidth: 64,
-      },
       {
         header: t("tables.employees.firstName"),
         render: (user: { firstName?: string }) => user.firstName || "—",
@@ -118,20 +91,41 @@ export default function UsersPage() {
       {
         header: t("tables.employees.email"),
         render: (user: { email?: string }) => user.email || "—",
+        field: "email" as const,
+        editable: true,
         linkType: "email",
       },
       {
         header: t("tables.employees.status"),
         render: (user: { isActive?: boolean; pendingInvitation?: boolean }) =>
           user.pendingInvitation ? t("tables.employees.pendingInvitation") : (user.isActive ? t("tables.employees.active") : t("tables.employees.inactive")),
+        field: "isActive" as const,
+        editable: (user) => !user.pendingInvitation,
+        cellEditorValues: [t("tables.employees.active"), t("tables.employees.inactive")],
+        valueGetter: (user) => (user.isActive ? t("tables.employees.active") : t("tables.employees.inactive")),
+        valueSetter: (user, v) => {
+          (user as Record<string, unknown>).isActive = v === t("tables.employees.active");
+        },
         cellRenderer: UserStatusCellRenderer,
         cellRendererParams: { t },
       },
     ],
-    [t, tEnum]
+    [t]
   );
 
   const [refreshToken, setRefreshToken] = useState(0);
+  const [roleFilter, setRoleFilter] = useState<string | null>(null);
+
+  const fetchData = useCallback(
+    async (_userId: string) => {
+      const data = await apiClient.get<UserRow[]>("/users?excludeValets=true");
+      if (roleFilter) {
+        return data.filter((u) => u.systemRole === roleFilter);
+      }
+      return data;
+    },
+    [roleFilter]
+  );
 
   const handleResendInvitation = useCallback(async (row: UserRow) => {
     if (!row.id) return;
@@ -144,16 +138,30 @@ export default function UsersPage() {
       <DashboardDataTablePage<UserRow>
         title={t("tables.employees.title")}
         description={tWithCompany("tables.employees.description", selectedCompanyName)}
-        endpoint="/users?excludeValets=true"
+        endpoint=""
+        fetchData={fetchData}
         emptyMessage={t("tables.employees.empty")}
         columns={columns}
         refreshToken={refreshToken}
-        hasRowDetail={(user) =>
-          user.pendingInvitation === true ||
-          (user.timezone != null && user.timezone !== "") ||
-          user.lastLogin != null ||
-          (user.phone != null && user.phone !== "")
+        toolbar={
+          <div className="flex gap-2 mb-4">
+            {ROLE_FILTER_OPTIONS.map((opt) => (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => setRoleFilter(opt.value)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  roleFilter === opt.value
+                    ? "bg-company-primary text-white"
+                    : "bg-input-bg text-text-secondary hover:bg-company-primary-subtle hover:text-company-primary border border-input-border"
+                }`}
+              >
+                {t(`tables.employees.${opt.key}`)}
+              </button>
+            ))}
+          </div>
         }
+        hasRowDetail={() => true}
         renderRowDetail={(user) => (
           <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
             {user.pendingInvitation && (
@@ -172,6 +180,7 @@ export default function UsersPage() {
               </>
             )}
             <DetailSectionLabel text={t("common.additionalInfo")} />
+            <DetailField label={t("tables.employees.role")} value={tEnum("systemRole", user.systemRole)} />
             <DetailField label={t("tables.employees.phone")} value={user.phone ? formatPhoneWithCountryCode(user.phone, "CR") : undefined} linkType="phone" />
             <DetailField label={t("tables.employees.timezone")} value={user.timezone} />
             <DetailField label={t("tables.employees.lastLogin")} value={user.lastLogin ? new Date(user.lastLogin).toLocaleString() : undefined} />

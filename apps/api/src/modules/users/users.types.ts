@@ -10,8 +10,10 @@ export interface CreateUserDTO {
   export interface UpdateUserDTO {
     firstName?: string;
     lastName?: string;
+    email?: string;
     phone?: string;
     isActive?: boolean;
     systemRole?: "SUPER_ADMIN" | "ADMIN" | "STAFF" | "CUSTOMER";
+    avatarUrl?: string;
   }
   

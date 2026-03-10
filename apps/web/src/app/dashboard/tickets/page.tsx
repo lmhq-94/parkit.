@@ -78,7 +78,16 @@ export default function TicketsPage() {
         render: (ticket: { vehicle?: { plate?: string } }) =>
           ticket.vehicle?.plate ? formatPlate(ticket.vehicle.plate) : "—",
       },
-      { header: t("tables.tickets.status"), render: (ticket: { status?: string }) => tEnum("ticketStatus", ticket.status), field: "status" as const, editable: canManage, statusBadge: "ticket" as const, statusField: "status" as const },
+      {
+        header: t("tables.tickets.status"),
+        render: (ticket: { status?: string }) => tEnum("ticketStatus", ticket.status),
+        field: "status" as const,
+        editable: canManage,
+        statusBadge: "ticket" as const,
+        statusField: "status" as const,
+        cellEditorValues: ["PARKED", "REQUESTED", "DELIVERED", "CANCELLED"],
+        cellEditorLabels: ["PARKED", "REQUESTED", "DELIVERED", "CANCELLED"].map((v) => tEnum("ticketStatus", v)),
+      },
       {
         header: t("tables.tickets.entry"),
         render: (ticket: { entryTime?: string }) =>

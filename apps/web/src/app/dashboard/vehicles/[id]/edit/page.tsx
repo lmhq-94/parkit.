@@ -9,6 +9,7 @@ import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 import { SelectField } from "@/components/SelectField";
+import { BrandModelComboField } from "@/components/BrandModelComboField";
 import { COUNTRIES } from "@/lib/companyOptions";
 import { formatPlate, toTitleCase } from "@/lib/inputMasks";
 
@@ -110,9 +111,13 @@ export default function EditVehiclePage() {
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((p) => ({ ...p, [k]: e.target.value }));
 
-  const setBrand = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setForm((p) => ({ ...p, brand: e.target.value, model: "" }));
+  const setBrand = useCallback((v: string) => {
+    setForm((p) => ({ ...p, brand: v, model: "" }));
   }, []);
+
+  const brandInCatalog = makes.some(
+    (m) => m.name.toLowerCase() === form.brand.trim().toLowerCase()
+  );
 
   useEffect(() => {
     if (loading || !form.brand.trim() || !form.model.trim() || !form.year.trim()) return;
@@ -194,21 +199,40 @@ export default function EditVehiclePage() {
             </div>
             <div>
               <label className={LABEL}>{t("vehicles.brand")} <span className="text-company-primary">*</span></label>
-              <SelectField value={form.brand} onChange={setBrand} icon={Car}>
-                <option value="">{t("common.selectPlaceholder")}</option>
-                {makes.map((m) => (
-                  <option key={m.id} value={m.name}>{toTitleCase(m.name)}</option>
-                ))}
-              </SelectField>
+              <BrandModelComboField
+                value={form.brand}
+                onChange={setBrand}
+                options={makes.map((m) => ({ value: m.name, label: toTitleCase(m.name) }))}
+                loading={false}
+                placeholder={t("common.selectOrType")}
+                icon={Car}
+              />
             </div>
             <div>
               <label className={LABEL}>{t("vehicles.model")} <span className="text-company-primary">*</span></label>
-              <SelectField value={form.model} onChange={set("model")} icon={Car}>
-                <option value="">{loadingModels ? t("common.loading") : form.brand ? t("common.selectPlaceholder") : t("vehicles.selectBrandFirst")}</option>
-                {models.map((m) => (
-                  <option key={m.id} value={m.name}>{toTitleCase(m.name)}</option>
-                ))}
-              </SelectField>
+              {brandInCatalog ? (
+                <BrandModelComboField
+                  value={form.model}
+                  onChange={(v) => setForm((p) => ({ ...p, model: v }))}
+                  options={models.map((m) => ({ value: m.name, label: toTitleCase(m.name) }))}
+                  loading={loadingModels}
+                  placeholder={t("common.selectOrType")}
+                  icon={Car}
+                  disabled={!form.brand.trim()}
+                  disabledPlaceholder={t("vehicles.selectBrandFirst")}
+                />
+              ) : (
+                <div className="relative group">
+                  <Car className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+                  <input
+                    type="text"
+                    value={form.model}
+                    onChange={set("model")}
+                    placeholder={t("common.selectOrType")}
+                    className={IL}
+                  />
+                </div>
+              )}
             </div>
             <div>
               <label className={LABEL}>{t("vehicles.year")}</label>

@@ -3,6 +3,41 @@ import { UsersService } from "./users.service";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
 
 export class UsersController {
+  static async getProfile(req: Request, res: Response) {
+    try {
+      const userId = req.user.userId;
+      const user = await UsersService.getProfile(userId);
+      if (!user) return notFound(res, "User not found");
+      const { passwordHash, invitationToken, invitationTokenExpiresAt, ...rest } = user;
+      const pendingInvitation =
+        invitationTokenExpiresAt != null && new Date(invitationTokenExpiresAt) > new Date();
+      return ok(res, { ...rest, pendingInvitation });
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
+  static async updateProfile(req: Request, res: Response) {
+    try {
+      const userId = req.user.userId;
+      const user = await UsersService.updateProfile(userId, req.body);
+      const { passwordHash, invitationToken, invitationTokenExpiresAt, ...rest } = user;
+      const pendingInvitation =
+        invitationTokenExpiresAt != null && new Date(invitationTokenExpiresAt) > new Date();
+      return ok(res, { ...rest, pendingInvitation });
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
   static async create(req: Request, res: Response) {
     try {
       const companyId = req.user.companyId!;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useTheme } from "next-themes";
 import { useHeaderAction } from "@/app/dashboard/layout";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ICellRendererParams, ValueGetterParams, ValueSetterParams } from "ag-grid-community";
@@ -14,6 +15,10 @@ import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { useToast } from "@/lib/toastStore";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
+import { SelectCellEditor } from "@/components/SelectCellEditor";
+import { MultiSelectCellEditor } from "@/components/MultiSelectCellEditor";
+import { FormattedInputCellEditor } from "@/components/FormattedInputCellEditor";
+import { BrandModelCatalogCellEditor } from "@/components/BrandModelCatalogCellEditor";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -28,10 +33,24 @@ export type StatusBadgeVariant =
 type TableColumn<T> = {
   header: string;
   render: (item: T) => string | number | boolean | null | undefined;
-  /** Campo en el objeto row para edición inline. Si se usa con editable: true, la celda es editable. */
-  field?: keyof T & string;
-  /** Si true y field está definido, la celda es editable directamente en el grid. */
-  editable?: boolean;
+  /** Campo en el objeto row para edición inline. Si se usa con editable: true, la celda es editable. Para rutas anidadas usar valueGetter/valueSetter. */
+  field?: (keyof T & string) | string;
+  /** Si true y field está definido, la celda es editable. Puede ser función (row) => boolean para condicional. */
+  editable?: boolean | ((row: T) => boolean);
+  /** Valores para dropdown (raw, para API). Si se define con editable, la celda usa select en lugar de input. */
+  cellEditorValues?: string[];
+  /** Etiquetas traducidas para el dropdown (mismo orden que cellEditorValues). Si no se define, se muestran los valores crudos. */
+  cellEditorLabels?: string[];
+  /** Si true, usa MultiSelectCellEditor con cellEditorOptions. Valor almacenado como string separado por valueSeparator. */
+  cellEditorMultiSelect?: boolean;
+  /** Opciones para multi-select [{ value, label }]. Requiere cellEditorMultiSelect. */
+  cellEditorOptions?: Array<{ value: string; label: string }>;
+  /** Separador para valores en multi-select (default: ", "). */
+  cellEditorValueSeparator?: string;
+  /** Función para formatear el input mientras se escribe (ej. formatPlate). Si se define, usa FormattedInputCellEditor. */
+  cellEditorInputFormat?: (value: string) => string;
+  /** "make" | "model" para dropdown de catálogo de vehículos (marca/modelo). Carga opciones desde API. */
+  cellEditorCatalogType?: "make" | "model";
   /** Si se define, la columna de estado se muestra con color y punto indicador (minimalista). */
   statusBadge?: StatusBadgeVariant;
   /** Campo para leer el valor crudo del estado (ej. "status", "currentStatus", "isActive"). Por defecto "status". */
@@ -46,6 +65,10 @@ type TableColumn<T> = {
   maxWidth?: number;
   /** Si es "email" o "phone", la celda se muestra como enlace mailto: o tel: al hacer clic. */
   linkType?: "email" | "phone";
+  /** Getter personalizado para el valor (ej. convertir boolean a "true"/"false" para select). */
+  valueGetter?: (data: T) => unknown;
+  /** Setter personalizado al editar (ej. convertir "true"/"false" a boolean). */
+  valueSetter?: (data: T, value: unknown) => void;
 };
 
 const STATUS_TEXT_STYLES: Record<string, { text: string; dot: string }> = {
@@ -196,6 +219,8 @@ interface DashboardDataTablePageProps<T> {
   fetchData?: (userId: string) => Promise<T[] | T | null | undefined>;
   columns: Array<TableColumn<T>>;
   emptyMessage: string;
+  /** Contenido opcional entre el header y la tabla (ej. filtros, tabs) */
+  toolbar?: React.ReactNode;
   /** Acción opcional en el header (ej. botón "Nueva empresa") */
   headerAction?: React.ReactNode;
   /** Fuerza recargar los datos cuando cambia */
@@ -339,6 +364,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   fetchData,
   columns,
   emptyMessage,
+  toolbar,
   headerAction,
   refreshToken,
   onView,
@@ -350,6 +376,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   renderRowDetail,
   hasRowDetail,
 }: DashboardDataTablePageProps<T>) {
+  const { resolvedTheme } = useTheme();
   const { user } = useAuthStore();
   const locale = useLocaleStore((s) => s.locale);
   const { showError: showToastError } = useToast();
@@ -483,7 +510,8 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
       } as ColDef<T>);
     }
     columns.forEach((column) => {
-      const hasField = Boolean(column.editable && column.field);
+      const isEditable = typeof column.editable === "function" ? column.editable : column.editable;
+      const hasField = Boolean(isEditable && column.field);
       const statusFieldKey = (column.statusField ?? column.field ?? "status") as keyof T & string;
       const widthProps =
         column.width != null || column.minWidth != null || column.maxWidth != null
@@ -520,22 +548,77 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                 cellRendererParams: { linkType: column.linkType },
               }
             : {};
+        const customCellForEditable =
+          column.cellRenderer != null && !column.statusBadge
+            ? {
+                cellRenderer: column.cellRenderer,
+                cellRendererParams: column.cellRendererParams ?? {},
+              }
+            : {};
+        const cellEditorProps =
+          column.cellEditorMultiSelect && column.cellEditorOptions != null && column.cellEditorOptions.length > 0
+            ? {
+                cellEditor: MultiSelectCellEditor,
+                cellEditorParams: {
+                  options: column.cellEditorOptions,
+                  valueSeparator: column.cellEditorValueSeparator ?? ", ",
+                },
+              }
+            : column.cellEditorCatalogType != null
+              ? {
+                  cellEditor: BrandModelCatalogCellEditor,
+                  cellEditorParams: { catalogType: column.cellEditorCatalogType },
+                }
+              : column.cellEditorInputFormat != null
+                ? {
+                    cellEditor: FormattedInputCellEditor,
+                    cellEditorParams: { format: column.cellEditorInputFormat },
+                  }
+                : column.cellEditorValues != null && column.cellEditorValues.length > 0
+                  ? {
+                      cellEditor: SelectCellEditor,
+                      cellEditorParams: {
+                        values: column.cellEditorValues,
+                        labels: column.cellEditorLabels,
+                      },
+                    }
+                  : {};
+        const customValueGetter =
+          column.valueGetter != null
+            ? (params: ValueGetterParams<T>) =>
+                params.data != null ? column.valueGetter!(params.data) : undefined
+            : (params: ValueGetterParams<T>) =>
+                params.data != null ? (params.data as Record<string, unknown>)[field] : undefined;
+        const customValueSetter =
+          column.valueSetter != null
+            ? (params: ValueSetterParams<T>) => {
+                if (params.data != null) {
+                  column.valueSetter!(params.data, params.newValue);
+                }
+              }
+            : (params: ValueSetterParams<T>) => {
+                if (params.data != null) {
+                  (params.data as Record<string, unknown>)[field] = params.newValue;
+                }
+              };
         dataCols.push({
           ...base,
           ...badgeParams,
           ...linkProps,
+          ...customCellForEditable,
+          ...cellEditorProps,
           field,
-          editable: (params: { data?: unknown }) =>
-            Boolean((params.data as { __isNew?: boolean } | undefined)?.__isNew) || Boolean(onUpdate),
-          valueGetter: (params: ValueGetterParams<T>) =>
-            params.data != null ? (params.data as Record<string, unknown>)[field] : undefined,
+          editable: (params: { data?: unknown }) => {
+            const data = params.data as T & { __isNew?: boolean } | undefined;
+            if (data?.__isNew) return true;
+            if (!onUpdate) return false;
+            const colEditable = typeof column.editable === "function" ? (data ? column.editable(data) : false) : column.editable;
+            return Boolean(colEditable);
+          },
+          valueGetter: customValueGetter,
           valueFormatter: (params: ValueGetterParams<T>) =>
             params.data ? String(column.render(params.data) ?? "") : "",
-          valueSetter: (params: ValueSetterParams<T>) => {
-            if (params.data != null) {
-              (params.data as Record<string, unknown>)[field] = params.newValue;
-            }
-          },
+          valueSetter: customValueSetter,
         } as unknown as ColDef<T>);
         return;
       }
@@ -720,6 +803,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
 
   return (
     <div className="flex-1 flex flex-col min-h-0 pt-6 md:pt-8 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 w-full">
+            {toolbar}
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-200 rounded-xl">
                 <span className="font-medium">{error}</span>
@@ -732,7 +816,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
               </div>
             ) : (
               <div className="relative flex-1 flex flex-col min-h-[400px] bg-transparent">
-                <div className="ag-theme-quartz ag-theme-parkit flex-1 min-h-0 w-full">
+                <div className={`ag-theme-quartz ag-theme-parkit flex-1 min-h-0 w-full ${resolvedTheme === "dark" ? "ag-theme-quartz-dark" : ""}`}>
                   <AgGridReact<T | DetailRow<T>>
                     key={locale}
                     theme="legacy"

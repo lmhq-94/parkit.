@@ -6,6 +6,9 @@ import { Providers } from "@/components/Providers";
 export const metadata: Metadata = {
   title: "Parkit Dashboard Console",
   description: "Parking management system admin dashboard",
+  icons: {
+    icon: "/icon",
+  },
 };
 
 export default function RootLayout({

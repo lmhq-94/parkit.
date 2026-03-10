@@ -663,42 +663,42 @@ export function DashboardSidebar() {
 
       {/* User + logout */}
       <div className="px-3 pb-3 pt-2 border-t border-card-border shrink-0">
-        {/* User info */}
-        <SidebarTooltip
-          show={collapsed}
-          label={getFullName(user) || user?.email || ""}
-        >
-          <div
-            className={`flex items-center gap-3 px-3 py-2.5 mb-0.5 ${
-              collapsed ? "justify-center" : ""
+        {/* User info — link a perfil */}
+        <SidebarTooltip show={collapsed} label={t("sidebar.profile")}>
+          <Link
+            href="/dashboard/profile"
+            className={`flex items-center gap-3 px-3 py-2.5 mb-0.5 rounded-xl text-text-primary hover:bg-input-bg transition-colors min-w-0 w-full ${
+              collapsed ? "justify-center flex-col gap-1" : ""
             }`}
           >
-            <div className="w-9 h-9 rounded-full shrink-0 border border-card-border overflow-hidden bg-input-bg flex items-center justify-center">
-              {user?.avatar?.trim() ? (
-                <img
-                  src={user.avatar}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span
-                  className="w-full h-full flex items-center justify-center text-xs font-semibold text-white"
-                  style={{
-                    backgroundColor: getAvatarColor(user?.id) ?? "var(--input-bg)",
-                    color: getAvatarColor(user?.id) ? "white" : "var(--text-muted)",
-                  }}
-                >
-                  {user?.id ? getInitials(user) : "?"}
-                </span>
+            <div className={`flex items-center gap-3 min-w-0 ${!collapsed ? "flex-1" : ""}`}>
+              <div className="w-9 h-9 rounded-full shrink-0 border border-card-border overflow-hidden bg-input-bg flex items-center justify-center">
+                {(user?.avatarUrl ?? user?.avatar)?.trim() ? (
+                  <img
+                    src={user.avatarUrl ?? user.avatar}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span
+                    className="w-full h-full flex items-center justify-center text-xs font-semibold text-white"
+                    style={{
+                      backgroundColor: getAvatarColor(user?.id) ?? "var(--input-bg)",
+                      color: getAvatarColor(user?.id) ? "white" : "var(--text-muted)",
+                    }}
+                  >
+                    {user?.id ? getInitials(user) : "?"}
+                  </span>
+                )}
+              </div>
+              {!collapsed && (
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-text-primary text-sm truncate leading-tight">{getFullName(user)}</p>
+                  <p className="text-text-muted text-xs truncate leading-tight mt-0.5">{user?.email}</p>
+                </div>
               )}
             </div>
-            {!collapsed && (
-              <div className="min-w-0 flex-1">
-                <p className="font-medium text-text-primary text-sm truncate leading-tight">{getFullName(user)}</p>
-                <p className="text-text-muted text-xs truncate leading-tight mt-0.5">{user?.email}</p>
-              </div>
-            )}
-          </div>
+          </Link>
         </SidebarTooltip>
 
         {/* Logout */}

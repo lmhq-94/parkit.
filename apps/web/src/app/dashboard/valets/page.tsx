@@ -35,11 +35,26 @@ export default function ValetsPage() {
   }, []);
   const onUpdate = useCallback(async (row: ValetRow) => {
     if (!row.id) return;
-    const payload: Record<string, unknown> = {};
-    if (row.licenseNumber !== undefined) payload.licenseNumber = String(row.licenseNumber).trim();
-    if (row.licenseExpiry !== undefined) payload.licenseExpiry = row.licenseExpiry;
-    if (Object.keys(payload).length === 0) return;
-    await apiClient.patch(`/valets/${row.id}`, payload);
+    const userId = row.user?.id;
+    const userPayload: Record<string, unknown> = {};
+    if (row.user) {
+      if (row.user.firstName !== undefined) userPayload.firstName = String(row.user.firstName).trim();
+      if (row.user.lastName !== undefined) userPayload.lastName = String(row.user.lastName).trim();
+      if (row.user.email !== undefined) userPayload.email = String(row.user.email).trim();
+    }
+    if (userId && Object.keys(userPayload).length > 0) {
+      await apiClient.patch(`/users/${userId}`, userPayload);
+    }
+    if (row.currentStatus !== undefined) {
+      await apiClient.patch(`/valets/${row.id}/status`, { status: row.currentStatus });
+    }
+    const valetPayload: Record<string, unknown> = {};
+    if (row.licenseNumber !== undefined) valetPayload.licenseNumber = String(row.licenseNumber).trim();
+    if (row.licenseExpiry !== undefined) valetPayload.licenseExpiry = row.licenseExpiry;
+    if (Object.keys(valetPayload).length > 0) {
+      await apiClient.patch(`/valets/${row.id}`, valetPayload);
+    }
+    setRefreshToken((prev) => prev + 1);
   }, []);
 
   const handleResendInvitation = useCallback(async (row: ValetRow) => {
@@ -54,20 +69,42 @@ export default function ValetsPage() {
       {
         header: t("tables.employees.firstName"),
         render: (valet: { user?: { firstName?: string } }) => valet.user?.firstName ?? "—",
+        field: "userFirstName",
+        editable: superAdmin,
+        valueGetter: (valet: ValetRow) => valet.user?.firstName,
+        valueSetter: (valet: ValetRow, v: unknown) => {
+          if (valet.user) valet.user.firstName = String(v ?? "");
+        },
       },
       {
         header: t("tables.employees.lastName"),
         render: (valet: { user?: { lastName?: string } }) => valet.user?.lastName ?? "—",
+        field: "userLastName",
+        editable: superAdmin,
+        valueGetter: (valet: ValetRow) => valet.user?.lastName,
+        valueSetter: (valet: ValetRow, v: unknown) => {
+          if (valet.user) valet.user.lastName = String(v ?? "");
+        },
       },
       {
         header: t("tables.valets.email"),
         render: (valet: { user?: { email?: string } }) => valet.user?.email ?? "—",
+        field: "userEmail",
+        editable: superAdmin,
         linkType: "email",
+        valueGetter: (valet: ValetRow) => valet.user?.email,
+        valueSetter: (valet: ValetRow, v: unknown) => {
+          if (valet.user) valet.user.email = String(v ?? "");
+        },
       },
       {
         header: t("tables.valets.status"),
         render: (valet: { user?: { pendingInvitation?: boolean }; currentStatus?: string }) =>
           valet.user?.pendingInvitation ? t("tables.employees.pendingInvitation") : tEnum("valetStatus", valet.currentStatus),
+        field: "currentStatus" as const,
+        editable: superAdmin,
+        cellEditorValues: ["AVAILABLE", "BUSY", "AWAY"],
+        cellEditorLabels: ["AVAILABLE", "BUSY", "AWAY"].map((v) => tEnum("valetStatus", v)),
         cellRenderer: function ValetStatusCell(
           params: ICellRendererParams<ValetRow> & { t: (k: string) => string; tEnum: (ns: string, v?: string | null) => string }
         ) {
@@ -97,7 +134,7 @@ export default function ValetsPage() {
         cellRendererParams: { t, tEnum },
       },
     ],
-    [t, tEnum]
+    [t, tEnum, superAdmin]
   );
   return (
     <>

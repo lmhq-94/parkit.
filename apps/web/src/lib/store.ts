@@ -9,6 +9,7 @@ interface AuthStore {
   login: (user: User, token: string) => void;
   logout: () => void;
   hydrate: () => void;
+  setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
 }
@@ -34,6 +35,11 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   hydrate: () => {
     const user = getStoredUser();
+    set({ user });
+  },
+
+  setUser: (user: User | null) => {
+    if (user) setStoredUser(user);
     set({ user });
   },
 

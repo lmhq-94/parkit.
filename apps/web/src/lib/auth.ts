@@ -6,6 +6,9 @@ export interface User {
   systemRole: "SUPER_ADMIN" | "ADMIN" | "STAFF" | "CUSTOMER";
   companyId?: string;
   avatar?: string;
+  avatarUrl?: string;
+  phone?: string;
+  timezone?: string;
 }
 
 export interface AuthCredentials {

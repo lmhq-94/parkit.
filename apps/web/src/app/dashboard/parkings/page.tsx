@@ -44,12 +44,15 @@ export default function ParkingsPage() {
       row.totalSlots == null || row.totalSlots === ("" as unknown as number)
         ? undefined
         : Number(row.totalSlots);
+    const requiresBooking =
+      row.requiresBooking === true || row.requiresBooking === "true";
 
     const payload: Record<string, unknown> = {};
     if (name) payload.name = name;
     if (address) payload.address = address;
     if (type) payload.type = type;
     if (totalSlots !== undefined) payload.totalSlots = totalSlots;
+    payload.requiresBooking = requiresBooking;
 
     await apiClient.patch(`/parkings/${row.id}`, payload);
   }, []);
@@ -61,11 +64,26 @@ export default function ParkingsPage() {
     () => [
       { header: t("tables.parkings.name"), render: (p: ParkingRow) => p.name ?? "—", field: "name" as const, editable: true },
       { header: t("tables.parkings.address"), render: (p: ParkingRow) => p.address || "—", field: "address" as const, editable: true },
-      { header: t("tables.parkings.type"), render: (p: ParkingRow) => tEnum("parkingType", p.type), field: "type" as const, editable: true },
+      {
+        header: t("tables.parkings.type"),
+        render: (p: ParkingRow) => tEnum("parkingType", p.type),
+        field: "type" as const,
+        editable: true,
+        cellEditorValues: ["OPEN", "COVERED", "TOWER", "UNDERGROUND", "ELEVATOR"],
+        cellEditorLabels: ["OPEN", "COVERED", "TOWER", "UNDERGROUND", "ELEVATOR"].map((v) => tEnum("parkingType", v)),
+      },
       { header: t("tables.parkings.totalSlots"), render: (p: ParkingRow) => (p.totalSlots != null ? String(p.totalSlots) : "—"), field: "totalSlots" as const, editable: true },
       {
         header: t("tables.parkings.requiresBooking"),
         render: (p: ParkingRow) => (p.requiresBooking ? t("common.yes") : t("common.no")),
+        field: "requiresBooking" as const,
+        editable: true,
+        cellEditorValues: ["true", "false"],
+        cellEditorLabels: [t("common.yes"), t("common.no")],
+        valueGetter: (p) => (p.requiresBooking === true ? "true" : "false"),
+        valueSetter: (p, v) => {
+          (p as Record<string, unknown>).requiresBooking = v === "true";
+        },
         cellRenderer: RequiresBookingIconCellRenderer,
         cellRendererParams: { t },
         minWidth: 130,

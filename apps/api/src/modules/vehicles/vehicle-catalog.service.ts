@@ -154,7 +154,7 @@ async function getMakesFromNhtsa(): Promise<MakeItem[]> {
   return list.sort((a, b) => a.Make_Name.localeCompare(b.Make_Name));
 }
 
-/** Excluir modelos comerciales, incompletos o variantes no habituales. */
+/** Excluir modelos comerciales, buses, camiones, motos, incompletos o variantes no habituales. Solo SUV, sedan, hatchback, convertible y modelos comunes. */
 const EXCLUDED_MODEL_PATTERNS = [
   /\bcommercial\b/i,
   /\bcutaway\b/i,
@@ -171,6 +171,25 @@ const EXCLUDED_MODEL_PATTERNS = [
   /\bheavy\s+duty\b/i,
   /\bclass\s+[4-8]\b/i,
   /\bstep\s+van\b/i,
+  /\bmotorcycle\b/i,
+  /\bmoto\b/i,
+  /\bscooter\b/i,
+  /\bmotorbike\b/i,
+  /\btruck\b/i,
+  /\bsemi\b/i,
+  /\btractor\b/i,
+  /\btrailer\b/i,
+  /\bflatbed\b/i,
+  /\bdelivery\s+truck\b/i,
+  /\bbox\s+truck\b/i,
+  /\bdump\s+truck\b/i,
+  /\btow\s+truck\b/i,
+  /\bfire\s+truck\b/i,
+  /\bambulance\b/i,
+  /\btransit\s+bus\b/i,
+  /\bschool\s+bus\b/i,
+  /\bcoach\b/i,
+  /\barticulated\b/i,
 ];
 
 function isExcludedModel(name: string): boolean {
