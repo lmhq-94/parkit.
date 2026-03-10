@@ -90,6 +90,12 @@ export const UpdateProfileSchema = z.object({
   phone: z.string().optional(),
   timezone: z.string().optional(),
   avatarUrl: z.string().optional(),
+  appPreferences: z
+    .object({
+      theme: z.enum(["light", "dark"]).optional(),
+      locale: z.enum(["es", "en"]).optional(),
+    })
+    .optional(),
 });
 
 export type CreateUserInput = z.infer<typeof CreateUserSchema>;
@@ -158,14 +164,22 @@ export type CreateVehicleInput = z.infer<typeof CreateVehicleSchema>;
 export type UpdateVehicleInput = z.infer<typeof UpdateVehicleSchema>;
 
 // Parkings
+const SlotTypeEnum = z.enum(["REGULAR", "PREMIUM", "ELECTRIC", "HANDICAPPED"]);
+
+export const CreateParkingSlotSchema = z.object({
+  label: z.string().min(1, "Slot label required"),
+  slotType: SlotTypeEnum.optional().default("REGULAR"),
+});
+
 export const CreateParkingSchema = z.object({
   name: z.string().min(1, "Parking name required"),
   address: z.string().min(1, "Address required"),
   type: z.string().min(1, "Type required"),
-  totalSlots: z.number().positive("Total slots must be positive"),
+  slots: z.array(CreateParkingSlotSchema).min(1, "At least one slot required"),
   requiresBooking: z.boolean().optional(),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
+  geofenceRadius: z.number().optional(),
 });
 
 export const UpdateParkingSchema = z.object({

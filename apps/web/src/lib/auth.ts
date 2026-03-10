@@ -9,6 +9,10 @@ export interface User {
   avatarUrl?: string;
   phone?: string;
   timezone?: string;
+  appPreferences?: {
+    theme?: "light" | "dark";
+    locale?: "es" | "en";
+  };
 }
 
 export interface AuthCredentials {

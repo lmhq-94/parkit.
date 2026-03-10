@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Loader2, ArrowRight, Copy, Check, Undo2 } from "lucide-react";
+import { ArrowRight, Copy, Check, Undo2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useDashboardStore } from "@/lib/store";
@@ -15,6 +15,7 @@ import {
   THEME_DEFAULT_TERTIARY_DARK,
 } from "@/lib/themeDefaults";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ImageCropField } from "@/components/ImageCropField";
 import { useToast } from "@/lib/toastStore";
 
@@ -351,7 +352,7 @@ export default function SettingsPage() {
           className="text-xs text-company-tertiary hover:text-company-secondary transition-colors disabled:opacity-50 disabled:pointer-events-none inline-flex items-center gap-1.5"
         >
           {reverting ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+            <LoadingSpinner size="sm" className="shrink-0" />
           ) : (
             <Undo2 className="w-3.5 h-3.5 shrink-0" />
           )}
@@ -370,7 +371,7 @@ export default function SettingsPage() {
             disabled={submitting}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors"
           >
-            {submitting ? <><Loader2 className="w-4 h-4 animate-spin" />{t("common.saving")}</> : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}
+            {submitting ? <><LoadingSpinner size="sm" />{t("common.saving")}</> : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}
           </button>
         </div>
       </div>

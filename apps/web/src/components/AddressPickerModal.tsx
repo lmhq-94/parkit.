@@ -25,9 +25,11 @@ export interface AddressPickerCoords {
 interface AddressPickerModalProps {
   open: boolean;
   onClose: () => void;
-  onSelect: (address: string, coords?: AddressPickerCoords) => void;
+  onSelect: (address: string, coords?: AddressPickerCoords, geofenceRadius?: number) => void;
   initialValue?: string;
   countryCode?: string;
+  /** Si se define, se muestra el campo "Radio de geovalla" y se devuelve en onSelect. */
+  initialGeofenceRadius?: number;
 }
 
 async function searchAddress(
@@ -80,6 +82,7 @@ export function AddressPickerModal({
   onSelect,
   initialValue = "",
   countryCode,
+  initialGeofenceRadius,
 }: AddressPickerModalProps) {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -89,12 +92,19 @@ export function AddressPickerModal({
   const [selected, setSelected] = useState<NominatimResult | null>(null);
   const [defaultCenter, setDefaultCenter] = useState<{ lat: number; lon: number }>({ lat: FALLBACK_LAT, lon: FALLBACK_LON });
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showNoResultsHint, setShowNoResultsHint] = useState(false);
+  const showGeofence = initialGeofenceRadius != null;
+  const [geofenceRadius, setGeofenceRadius] = useState(() =>
+    Math.min(150, Math.max(10, initialGeofenceRadius ?? 50))
+  );
 
   useEffect(() => {
     if (!open) return;
+    setShowNoResultsHint(false);
     setSearchValue(initialValue);
     setResults([]);
     setSelected(null);
+    setGeofenceRadius(Math.min(150, Math.max(10, initialGeofenceRadius ?? 50)));
     setDefaultCenter({ lat: FALLBACK_LAT, lon: FALLBACK_LON });
     if (typeof navigator !== "undefined" && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -105,7 +115,7 @@ export function AddressPickerModal({
         { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
       );
     }
-  }, [open, initialValue]);
+  }, [open, initialValue, initialGeofenceRadius]);
 
   useEffect(() => {
     if (!open) return;
@@ -125,14 +135,17 @@ export function AddressPickerModal({
     }
     debounceRef.current = setTimeout(() => {
       setLoading(true);
+      setShowNoResultsHint(false);
       searchAddress(searchValue, countryCode)
         .then((list) => {
           setResults(list);
           setLoading(false);
+          setShowNoResultsHint(list.length === 0);
         })
         .catch(() => {
           setResults([]);
           setLoading(false);
+          setShowNoResultsHint(true);
         });
     }, 1000);
     return () => {
@@ -161,7 +174,8 @@ export function AddressPickerModal({
       const coords = selected
         ? { lat: parseFloat(selected.lat), lon: parseFloat(selected.lon) }
         : undefined;
-      onSelect(toUse, coords);
+      const radius = showGeofence ? Math.max(1, Math.min(9999, geofenceRadius)) : undefined;
+      onSelect(toUse, coords, radius);
     }
     onClose();
   };
@@ -201,9 +215,6 @@ export function AddressPickerModal({
         </div>
 
         <div className="p-6 space-y-4 overflow-auto">
-          <p className="text-xs text-text-muted">
-            © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline">OpenStreetMap</a> contributors
-          </p>
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
             <input
@@ -250,6 +261,7 @@ export function AddressPickerModal({
               lat={selected ? parseFloat(selected.lat) : defaultCenter.lat}
               lon={selected ? parseFloat(selected.lon) : defaultCenter.lon}
               showMarker={!!selected}
+              geofenceRadius={showGeofence && selected ? geofenceRadius : undefined}
               onMapClick={handleMapClick}
             />
             <p className="text-xs text-text-muted">
@@ -257,7 +269,27 @@ export function AddressPickerModal({
             </p>
           </div>
 
-          {!selected && searchValue.trim().length >= 3 && !loading && results.length === 0 && (
+          {showGeofence && selected && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <label className="text-sm font-medium text-text-secondary">
+                  {t("parkings.geofenceRadius")}
+                </label>
+                <span className="text-sm font-medium text-text-primary tabular-nums">{geofenceRadius} m</span>
+              </div>
+              <input
+                type="range"
+                min={10}
+                max={150}
+                step={10}
+                value={Math.min(150, Math.max(10, geofenceRadius))}
+                onChange={(e) => setGeofenceRadius(Number(e.target.value))}
+                className="address-picker-geofence-slider w-full"
+              />
+            </div>
+          )}
+
+          {!selected && searchValue.trim().length >= 3 && !loading && showNoResultsHint && (
             <p className="text-sm text-text-muted">{t("companies.addressPickerHint")}</p>
           )}
         </div>

@@ -99,6 +99,9 @@ interface DashboardStore {
   /** Incrementar para forzar recarga de la lista de companies en el sidebar */
   companiesVersion: number;
   bumpCompanies: () => void;
+  /** Incrementar cuando cambian parkings (ej. requiere reserva) para que el sidebar actualice "Reservas" */
+  parkingsVersion: number;
+  bumpParkings: () => void;
   companyBranding: CompanyBranding;
   setCompanyBranding: (b: CompanyBranding) => void;
 }
@@ -134,6 +137,8 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
   },
   companiesVersion: 0,
   bumpCompanies: () => set((s) => ({ companiesVersion: s.companiesVersion + 1 })),
+  parkingsVersion: 0,
+  bumpParkings: () => set((s) => ({ parkingsVersion: s.parkingsVersion + 1 })),
   companyBranding: null,
   setCompanyBranding: (b) => set({ companyBranding: b }),
 }));

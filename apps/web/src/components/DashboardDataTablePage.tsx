@@ -19,6 +19,8 @@ import { SelectCellEditor } from "@/components/SelectCellEditor";
 import { MultiSelectCellEditor } from "@/components/MultiSelectCellEditor";
 import { FormattedInputCellEditor } from "@/components/FormattedInputCellEditor";
 import { BrandModelCatalogCellEditor } from "@/components/BrandModelCatalogCellEditor";
+import { AddressCellEditor } from "@/components/AddressCellEditor";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -51,6 +53,10 @@ type TableColumn<T> = {
   cellEditorInputFormat?: (value: string) => string;
   /** "make" | "model" para dropdown de catálogo de vehículos (marca/modelo). Carga opciones desde API. */
   cellEditorCatalogType?: "make" | "model";
+  /** Si true, al editar la celda se abre el modal AddressPickerModal para elegir dirección en mapa. */
+  cellEditorAddress?: boolean;
+  /** Código de país para el selector de dirección (ej. "CR"). Opcional. */
+  cellEditorAddressCountryCode?: string;
   /** Si se define, la columna de estado se muestra con color y punto indicador (minimalista). */
   statusBadge?: StatusBadgeVariant;
   /** Campo para leer el valor crudo del estado (ej. "status", "currentStatus", "isActive"). Por defecto "status". */
@@ -478,13 +484,14 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
         if ((e.data as unknown as { __isNew?: boolean }).__isNew) return;
         try {
           await onUpdate(e.data);
-          await loadData();
+          // No recargar todo el grid: los valores ya están actualizados en la fila.
+          // Evita re-render completo y parpadeo; el sidebar u otros consumen refreshToken o store.
         } catch (err) {
           setError(err instanceof Error ? err.message : "Failed to update");
         }
       }
     },
-    [onUpdate, loadData]
+    [onUpdate]
   );
 
   const columnDefs = useMemo<ColDef<T>[]>(() => {
@@ -569,20 +576,27 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                   cellEditor: BrandModelCatalogCellEditor,
                   cellEditorParams: { catalogType: column.cellEditorCatalogType },
                 }
-              : column.cellEditorInputFormat != null
+              : column.cellEditorAddress === true
                 ? {
-                    cellEditor: FormattedInputCellEditor,
-                    cellEditorParams: { format: column.cellEditorInputFormat },
+                    cellEditor: AddressCellEditor,
+                    cellEditorParams: {
+                      countryCode: column.cellEditorAddressCountryCode,
+                    },
                   }
-                : column.cellEditorValues != null && column.cellEditorValues.length > 0
+                : column.cellEditorInputFormat != null
                   ? {
-                      cellEditor: SelectCellEditor,
-                      cellEditorParams: {
-                        values: column.cellEditorValues,
-                        labels: column.cellEditorLabels,
-                      },
+                      cellEditor: FormattedInputCellEditor,
+                      cellEditorParams: { format: column.cellEditorInputFormat },
                     }
-                  : {};
+                  : column.cellEditorValues != null && column.cellEditorValues.length > 0
+                    ? {
+                        cellEditor: SelectCellEditor,
+                        cellEditorParams: {
+                          values: column.cellEditorValues,
+                          labels: column.cellEditorLabels,
+                        },
+                      }
+                    : {};
         const customValueGetter =
           column.valueGetter != null
             ? (params: ValueGetterParams<T>) =>
@@ -812,7 +826,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
 
             {isLoading ? (
               <div className="flex items-center justify-center py-32">
-                <div className="w-10 h-10 border-2 border-company-primary-muted border-t-company-primary rounded-full animate-spin" />
+                <LoadingSpinner size="lg" variant="muted" />
               </div>
             ) : (
               <div className="relative flex-1 flex flex-col min-h-[400px] bg-transparent">

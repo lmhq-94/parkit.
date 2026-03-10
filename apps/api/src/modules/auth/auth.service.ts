@@ -36,6 +36,11 @@ export class AuthService {
   static async login(data: LoginDTO) {
     const user = await prisma.user.findUnique({
       where: { email: data.email },
+      include: {
+        company: {
+          select: { status: true },
+        },
+      },
     });
 
     if (!user) {
@@ -48,6 +53,10 @@ export class AuthService {
       );
     }
 
+    if (user.isActive === false) {
+      throw new Error("USER_INACTIVE");
+    }
+
     const isValid = await comparePassword(
       data.password,
       user.passwordHash
@@ -55,6 +64,13 @@ export class AuthService {
 
     if (!isValid) {
       throw new Error("Invalid credentials");
+    }
+
+    // SUPER_ADMIN no depende del estado de una empresa.
+    if (user.systemRole !== "SUPER_ADMIN") {
+      if (!user.company || user.company.status !== "ACTIVE") {
+        throw new Error("COMPANY_INACTIVE");
+      }
     }
 
     const token = signToken({

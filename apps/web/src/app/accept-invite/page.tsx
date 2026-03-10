@@ -7,10 +7,9 @@ import Link from "next/link";
 import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { Logo } from "@/components/Logo";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { LocaleToggle } from "@/components/LocaleToggle";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Lock } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 function AcceptInviteForm() {
   const router = useRouter();
@@ -63,11 +62,7 @@ function AcceptInviteForm() {
 
   if (!token?.trim()) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-page px-4">
-        <div className="absolute top-4 right-4 flex items-center gap-2">
-          <ThemeToggle />
-          <LocaleToggle />
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-page px-4 relative">
         <div className="w-full max-w-[360px] text-center">
           <Logo variant={logoVariant} className="text-4xl mx-auto" />
           <p className="mt-6 text-sm text-text-muted">{t("auth.inviteExpiredOrInvalid")}</p>
@@ -78,16 +73,23 @@ function AcceptInviteForm() {
             {t("auth.backToSignIn")}
           </Link>
         </div>
+        <footer className="absolute bottom-0 left-0 right-0 py-4 text-center">
+          <p className="text-xs text-text-muted">
+            {t("auth.supportHint")}{" "}
+            <a
+              href="mailto:soporte@parkit.app"
+              className="font-medium text-company-primary hover:text-company-primary underline-offset-2 hover:underline"
+            >
+              {t("auth.supportLinkLabel")}
+            </a>
+          </p>
+        </footer>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-page px-4">
-      <div className="absolute top-4 right-4 flex items-center gap-2">
-        <ThemeToggle />
-        <LocaleToggle />
-      </div>
 
       <div className="w-full max-w-[360px]">
         <div className="flex flex-col items-center mb-10">
@@ -157,7 +159,7 @@ function AcceptInviteForm() {
             className="w-full flex items-center justify-center gap-2 rounded-lg bg-company-primary py-3 text-sm font-medium text-white hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none"
           >
             {isSubmitting ? (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              <LoadingSpinner size="sm" variant="white" />
             ) : (
               t("auth.setPassword")
             )}
@@ -170,6 +172,18 @@ function AcceptInviteForm() {
           </p>
         </form>
       </div>
+
+      <footer className="absolute bottom-0 left-0 right-0 py-4 text-center">
+        <p className="text-xs text-text-muted">
+          {t("auth.supportHint")}{" "}
+          <a
+            href="mailto:soporte@parkit.app"
+            className="font-medium text-company-primary hover:text-company-primary underline-offset-2 hover:underline"
+          >
+            {t("auth.supportLinkLabel")}
+          </a>
+        </p>
+      </footer>
     </div>
   );
 }
@@ -179,7 +193,7 @@ export default function AcceptInvitePage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-page">
-          <span className="h-8 w-8 animate-spin rounded-full border-2 border-company-primary-muted border-t-company-primary" />
+          <LoadingSpinner size="lg" variant="muted" />
         </div>
       }
     >

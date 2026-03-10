@@ -3,6 +3,19 @@ import { ParkingsService } from "./parkings.service";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
 
 export class ParkingsController {
+  static async hasAnyRequiringBooking(req: Request, res: Response) {
+    try {
+      const hasBookable = await ParkingsService.hasAnyRequiringBooking(req.user.companyId!);
+      return ok(res, { hasBookable });
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
   static async create(req: Request, res: Response) {
     try {
       const parking = await ParkingsService.create(

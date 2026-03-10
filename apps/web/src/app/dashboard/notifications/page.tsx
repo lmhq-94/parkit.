@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Bell, Check, Loader2, Trash2 } from "lucide-react";
+import { Bell, Check, Trash2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/lib/toastStore";
 import { useAuthStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 type NotificationItem = {
   id?: string;
@@ -94,7 +95,7 @@ export default function NotificationsPage() {
     return (
       <div className="flex-1 flex flex-col pt-14 pb-8 px-4 md:px-10 lg:px-12 w-full">
         <div className="flex items-center justify-center py-24">
-          <Loader2 className="w-8 h-8 animate-spin text-company-primary" />
+          <LoadingSpinner size="lg" variant="primary" />
         </div>
       </div>
     );
@@ -147,7 +148,7 @@ export default function NotificationsPage() {
                   className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-company-primary hover:bg-company-primary-subtle disabled:opacity-50 disabled:pointer-events-none transition-colors"
                 >
                   {markingId === n.id ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <LoadingSpinner size="sm" />
                   ) : (
                     <Check className="w-4 h-4" />
                   )}

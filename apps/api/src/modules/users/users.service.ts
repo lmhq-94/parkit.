@@ -236,7 +236,18 @@ export class UsersService {
 
   static async updateProfile(
     userId: string,
-    data: { firstName?: string; lastName?: string; email?: string; phone?: string; timezone?: string; avatarUrl?: string }
+    data: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      phone?: string;
+      timezone?: string;
+      avatarUrl?: string;
+      appPreferences?: {
+        theme?: "light" | "dark";
+        locale?: "es" | "en";
+      };
+    }
   ) {
     const updateData: Record<string, unknown> = {};
     if (data.firstName !== undefined) updateData.firstName = data.firstName.trim();
@@ -245,6 +256,20 @@ export class UsersService {
     if (data.phone !== undefined) updateData.phone = data.phone?.trim() || null;
     if (data.timezone !== undefined) updateData.timezone = data.timezone?.trim() || "UTC";
     if (data.avatarUrl !== undefined) updateData.avatarUrl = data.avatarUrl || null;
+    if (data.appPreferences !== undefined) {
+      const current = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { appPreferences: true },
+      });
+      const existingPrefs =
+        current && current.appPreferences && typeof current.appPreferences === "object"
+          ? (current.appPreferences as Record<string, unknown>)
+          : {};
+      updateData.appPreferences = {
+        ...existingPrefs,
+        ...data.appPreferences,
+      };
+    }
     return prisma.user.update({
       where: { id: userId },
       data: updateData,

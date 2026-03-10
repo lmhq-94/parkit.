@@ -33,6 +33,7 @@ function RequiresBookingIconCellRenderer(
 export default function ParkingsPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
+  const bumpParkings = useDashboardStore((s) => s.bumpParkings);
   const router = useRouter();
 
   const onUpdate = useCallback(async (row: ParkingRow) => {
@@ -55,15 +56,17 @@ export default function ParkingsPage() {
     payload.requiresBooking = requiresBooking;
 
     await apiClient.patch(`/parkings/${row.id}`, payload);
-  }, []);
+    bumpParkings();
+  }, [bumpParkings]);
   const onDelete = useCallback(async (row: ParkingRow) => {
     if (!row.id) return;
     await apiClient.delete(`/parkings/${row.id}`);
-  }, []);
+    bumpParkings();
+  }, [bumpParkings]);
   const columns = useMemo(
     () => [
       { header: t("tables.parkings.name"), render: (p: ParkingRow) => p.name ?? "—", field: "name" as const, editable: true },
-      { header: t("tables.parkings.address"), render: (p: ParkingRow) => p.address || "—", field: "address" as const, editable: true },
+      { header: t("tables.parkings.address"), render: (p: ParkingRow) => p.address || "—", field: "address" as const, editable: true, cellEditorAddress: true },
       {
         header: t("tables.parkings.type"),
         render: (p: ParkingRow) => tEnum("parkingType", p.type),

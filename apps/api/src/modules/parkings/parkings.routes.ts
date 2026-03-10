@@ -8,6 +8,7 @@ import { CreateParkingSchema, UpdateParkingSchema } from "../../shared/validator
 
 const router = Router();
 
+router.get("/has-bookable", requireAuth, requireCompany, ParkingsController.hasAnyRequiringBooking);
 router.post("/", validateRequest(CreateParkingSchema), requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ParkingsController.create);
 router.get("/", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ParkingsController.list);
 router.get("/:id", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ParkingsController.getById);

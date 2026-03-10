@@ -1,14 +1,20 @@
 import { prisma } from "../../shared/prisma";
 import type { ParkingType, SlotType } from "@prisma/client";
 
+interface CreateParkingSlotDTO {
+  label: string;
+  slotType?: SlotType;
+}
+
 interface CreateParkingDTO {
   name: string;
   address: string;
   latitude?: number;
   longitude?: number;
   type?: ParkingType;
-  totalSlots: number;
+  slots: CreateParkingSlotDTO[];
   requiresBooking?: boolean;
+  geofenceRadius?: number;
 }
 
 interface UpdateParkingDTO {
@@ -23,21 +29,44 @@ interface UpdateParkingDTO {
 
 export class ParkingsService {
   static async create(companyId: string, data: CreateParkingDTO) {
-    return prisma.parking.create({
-      data: {
-        companyId,
-        name: data.name,
-        address: data.address,
-        latitude: data.latitude,
-        longitude: data.longitude,
-        type: data.type || "OPEN",
-        totalSlots: data.totalSlots,
-        requiresBooking: data.requiresBooking || false,
-      },
-      include: {
-        slots: true,
-      },
+    const slots = data.slots ?? [];
+    const totalSlots = slots.length;
+    return prisma.$transaction(async (tx) => {
+      const parking = await tx.parking.create({
+        data: {
+          companyId,
+          name: data.name,
+          address: data.address,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          geofenceRadius: data.geofenceRadius,
+          type: data.type || "OPEN",
+          totalSlots,
+          requiresBooking: data.requiresBooking || false,
+        },
+      });
+      if (slots.length > 0) {
+        await tx.parkingSlot.createMany({
+          data: slots.map((s) => ({
+            parkingId: parking.id,
+            label: s.label.trim(),
+            slotType: s.slotType || "REGULAR",
+          })),
+        });
+      }
+      return tx.parking.findUniqueOrThrow({
+        where: { id: parking.id },
+        include: { slots: true },
+      });
     });
+  }
+
+  /** True si la empresa tiene al menos un estacionamiento con requiresBooking. */
+  static async hasAnyRequiringBooking(companyId: string): Promise<boolean> {
+    const count = await prisma.parking.count({
+      where: { companyId, requiresBooking: true },
+    });
+    return count > 0;
   }
 
   static async list(companyId: string) {

@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { MapPin, Hash, Tag, Navigation, Radius, ArrowRight, Loader2 } from "lucide-react";
+import { MapPin, Hash, Tag, Navigation, Radius, ArrowRight } from "lucide-react";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
+import { useDashboardStore } from "@/lib/store";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -26,6 +28,7 @@ export default function EditParkingPage() {
   const { showSuccess, showError } = useToast();
   const router = useRouter();
   const params = useParams();
+  const bumpParkings = useDashboardStore((s) => s.bumpParkings);
   const id = params.id as string;
   const [form, setForm] = useState(defaultForm);
   const [loading, setLoading] = useState(true);
@@ -74,6 +77,7 @@ export default function EditParkingPage() {
         geofenceRadius: form.geofenceRadius !== "" ? Number(form.geofenceRadius) : undefined,
       });
       showSuccess(t("common.saveSuccessShort"));
+      bumpParkings();
       router.push("/dashboard/parkings");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Error al actualizar el estacionamiento";
@@ -203,7 +207,7 @@ export default function EditParkingPage() {
           </Link>
           <button type="button" onClick={handleSubmit} disabled={submitting || !isValid}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors">
-            {submitting ? <><Loader2 className="w-4 h-4 animate-spin" />{t("common.saving")}</> : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}
+            {submitting ? <><LoadingSpinner size="sm" />{t("common.saving")}</> : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}
           </button>
         </div>
       </div>
@@ -211,19 +215,20 @@ export default function EditParkingPage() {
       <AddressPickerModal
         open={addressPickerOpen}
         onClose={() => setAddressPickerOpen(false)}
-        onSelect={(address, coords) => {
+        onSelect={(address, coords, geofenceRadius) => {
           setForm((p) => ({
             ...p,
             address,
             ...(coords && {
               latitude: String(coords.lat),
               longitude: String(coords.lon),
-              geofenceRadius: "50",
+              geofenceRadius: String(geofenceRadius ?? 50),
             }),
           }));
           setAddressPickerOpen(false);
         }}
         initialValue={form.address}
+        initialGeofenceRadius={form.geofenceRadius !== "" ? Number(form.geofenceRadius) : 50}
       />
     </div>
   );

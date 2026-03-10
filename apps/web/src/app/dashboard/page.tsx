@@ -28,6 +28,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { DatePickerField } from "@/components/DatePickerField";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 interface DashboardStats {
   companiesCount: number;
@@ -162,7 +163,7 @@ export default function DashboardPage() {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 rounded-full border-2 border-company-primary border-t-transparent animate-spin" />
+          <LoadingSpinner size="lg" variant="primary" />
           <p className="text-text-muted text-sm">{t("common.loading")}</p>
         </div>
       </div>
@@ -483,7 +484,7 @@ export default function DashboardPage() {
                           </button>
                         </div>
                         {loading && (
-                          <div className="h-5 w-5 rounded-full border-2 border-company-primary border-t-transparent animate-spin shrink-0" aria-hidden />
+                          <LoadingSpinner size="sm" className="shrink-0" aria-label="" />
                         )}
                       </>
                     )}

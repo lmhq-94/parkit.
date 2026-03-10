@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { LocaleToggle } from "@/components/LocaleToggle";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTheme } from "next-themes";
 import { ArrowLeft } from "lucide-react";
@@ -25,10 +23,6 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-page px-4">
-      <div className="absolute top-4 right-4 flex items-center gap-2">
-        <ThemeToggle />
-        <LocaleToggle />
-      </div>
 
       <div className="w-full max-w-[360px]">
         <div className="flex flex-col items-center mb-10">
@@ -84,6 +78,18 @@ export default function ForgotPasswordPage() {
           </>
         )}
       </div>
+
+      <footer className="absolute bottom-0 left-0 right-0 py-4 text-center">
+        <p className="text-xs text-text-muted">
+          {t("auth.supportHint")}{" "}
+          <a
+            href="mailto:soporte@parkit.app"
+            className="font-medium text-company-primary hover:text-company-primary underline-offset-2 hover:underline"
+          >
+            {t("auth.supportLinkLabel")}
+          </a>
+        </p>
+      </footer>
     </div>
   );
 }

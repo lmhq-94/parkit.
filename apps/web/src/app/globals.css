@@ -400,3 +400,92 @@ body {
   min-height: 200px;
   font: inherit;
 }
+
+/* Modo oscuro: mismo mapa OSM colorido pero oscurecido (solo las tiles, no el marcador) */
+.map-dark .leaflet-tile-pane {
+  filter: brightness(0.6) saturate(0.85) contrast(1.08);
+}
+
+/* Leaflet zoom: mismo aspecto que los botones del resto de la app */
+.leaflet-control-zoom {
+  border: 1px solid var(--input-border) !important;
+  border-radius: 0.5rem !important;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.leaflet-control-zoom a {
+  width: 2rem !important;
+  height: 2rem !important;
+  line-height: 2rem !important;
+  font-size: 1.125rem !important;
+  font-weight: 500 !important;
+  color: var(--text-secondary) !important;
+  background-color: var(--input-bg) !important;
+  border: none !important;
+  border-bottom: 1px solid var(--input-border) !important;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.leaflet-control-zoom a:last-child {
+  border-bottom: none !important;
+}
+
+.leaflet-control-zoom a:hover {
+  color: var(--company-primary, #2563eb) !important;
+  background-color: color-mix(in srgb, var(--company-primary, #2563eb) 10%, transparent) !important;
+}
+
+.dark .leaflet-control-zoom a:hover {
+  color: var(--company-primary) !important;
+}
+
+/* Slider de radio de geovalla: track y thumb visibles */
+.address-picker-geofence-slider {
+  height: 0.5rem;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 9999px;
+}
+.address-picker-geofence-slider::-webkit-slider-runnable-track {
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: var(--input-bg);
+}
+.address-picker-geofence-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--company-primary, #2563eb);
+  border: 2px solid white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  margin-top: -0.25rem;
+}
+.address-picker-geofence-slider::-moz-range-track {
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: var(--input-bg);
+}
+.address-picker-geofence-slider::-moz-range-thumb {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--company-primary, #2563eb);
+  border: 2px solid white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+.address-picker-geofence-slider:focus {
+  outline: none;
+}
+.address-picker-geofence-slider:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px var(--company-primary);
+}
+.address-picker-geofence-slider:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 2px var(--company-primary);
+}

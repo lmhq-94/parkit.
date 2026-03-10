@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, Car } from "lucide-react";
+import { LoadingSpinner } from "./LoadingSpinner";
 import { toTitleCase } from "@/lib/inputMasks";
 
 export interface BrandModelComboOption {
@@ -224,7 +225,10 @@ export function BrandModelComboField({
       >
         <div className="overflow-y-auto overscroll-contain min-h-0 flex-1">
           {loading ? (
-            <p className="px-3 py-3 text-sm text-slate-400 text-center">Cargando…</p>
+            <div className="flex items-center justify-center gap-2 px-3 py-3 text-sm text-slate-400">
+              <LoadingSpinner size="sm" />
+              <span>Cargando…</span>
+            </div>
           ) : filtered.length > 0 ? (
             filtered.map((opt, idx) => (
               <button

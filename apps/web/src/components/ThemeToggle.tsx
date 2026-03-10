@@ -3,6 +3,7 @@
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Sun, Moon } from "lucide-react";
+import { apiClient } from "@/lib/api";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -20,10 +21,22 @@ export function ThemeToggle() {
 
   const isDark = theme === "dark";
 
+  const handleToggle = () => {
+    const nextTheme: "light" | "dark" = isDark ? "light" : "dark";
+    setTheme(nextTheme);
+    apiClient
+      .patch("/users/me", {
+        appPreferences: { theme: nextTheme },
+      })
+      .catch(() => {
+        // No bloquear la UI si falla guardar la preferencia.
+      });
+  };
+
   return (
     <button
       type="button"
-      onClick={() => setTheme(isDark ? "light" : "dark")}
+      onClick={handleToggle}
       className="p-2 rounded-xl bg-card border border-card-border text-company-secondary hover:text-text-primary hover:bg-company-tertiary-subtle transition-colors"
       title={isDark ? "Cambiar a tema claro" : "Switch to dark theme"}
       aria-label={isDark ? "Tema claro" : "Dark theme"}

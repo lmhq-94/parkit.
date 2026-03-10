@@ -43,11 +43,16 @@ class ApiClient {
     this.client.interceptors.response.use(
       (response) => response,
       (error: AxiosError<ApiError>) => {
-        // Handle 401 - redirect to login
+        // Handle 401 - redirect to login (except on auth endpoints like /auth/login)
         if (error.response?.status === 401) {
-          this.clearToken();
-          if (typeof window !== "undefined") {
-            window.location.href = "/login";
+          const url = error.config?.url ?? "";
+          // Para errores en endpoints de autenticación dejamos que la UI maneje el mensaje
+          const isAuthEndpoint = typeof url === "string" && url.startsWith("/auth/");
+          if (!isAuthEndpoint) {
+            this.clearToken();
+            if (typeof window !== "undefined") {
+              window.location.href = "/login";
+            }
           }
         }
         return Promise.reject(error);

@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Ticket, Users, Car, MapPin, ArrowRight, Loader2 } from "lucide-react";
+import { Ticket, Users, Car, MapPin, ArrowRight } from "lucide-react";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
@@ -177,7 +178,7 @@ export default function NewTicketPage() {
           >
             {submitting ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <LoadingSpinner size="sm" />
                 {t("common.saving")}
               </>
             ) : (

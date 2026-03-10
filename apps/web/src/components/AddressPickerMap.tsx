@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
+import { useTheme } from "next-themes";
+import { MapContainer, TileLayer, Marker, Circle, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
 
-const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+/** OpenStreetMap estándar: azul agua, verde parques, beige calles — colorido en light; en dark se oscurece con CSS. */
 const OSM_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
 const defaultIcon = L.icon({
@@ -21,6 +22,8 @@ interface AddressPickerMapProps {
   lat: number;
   lon: number;
   showMarker?: boolean;
+  /** Radio de geovalla en metros; si está definido, se dibuja un círculo en el mapa. */
+  geofenceRadius?: number;
   onMapClick?: (lat: number, lon: number) => void;
 }
 
@@ -54,27 +57,57 @@ function MapResizeFix() {
   return null;
 }
 
-export function AddressPickerMap({ lat, lon, showMarker = true, onMapClick }: AddressPickerMapProps) {
+export function AddressPickerMap({ lat, lon, showMarker = true, geofenceRadius, onMapClick }: AddressPickerMapProps) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const center: [number, number] = [lat, lon];
+  const radiusM = geofenceRadius != null && geofenceRadius > 0 ? geofenceRadius : undefined;
 
   return (
-    <div
-      className="w-full rounded-lg overflow-hidden border border-input-border bg-input-bg"
-      style={{ height: MAP_HEIGHT }}
-    >
-      <MapContainer
-        center={center}
-        zoom={16}
-        className="h-full w-full"
+    <div className="w-full space-y-1">
+      <div
+        className={`w-full rounded-lg overflow-hidden border border-input-border bg-input-bg ${isDark ? "map-dark" : ""}`}
         style={{ height: MAP_HEIGHT }}
-        scrollWheelZoom
       >
-        <TileLayer attribution={OSM_ATTRIBUTION} url={OSM_URL} />
-        {showMarker && <Marker position={center} icon={defaultIcon} />}
-        <SetCenter lat={lat} lon={lon} />
-        <MapClickHandler onMapClick={onMapClick} />
-        <MapResizeFix />
-      </MapContainer>
+        <MapContainer
+          center={center}
+          zoom={16}
+          className="h-full w-full"
+          style={{ height: MAP_HEIGHT }}
+          scrollWheelZoom
+          attributionControl={false}
+        >
+          <TileLayer url={OSM_URL} />
+          {radiusM != null && (
+            <Circle
+              center={center}
+              radius={radiusM}
+              pathOptions={{
+                color: "var(--company-primary, #2563eb)",
+                fillColor: "var(--company-primary, #2563eb)",
+                fillOpacity: 0.15,
+                weight: 2,
+              }}
+            />
+          )}
+          {showMarker && <Marker position={center} icon={defaultIcon} />}
+          <SetCenter lat={lat} lon={lon} />
+          <MapClickHandler onMapClick={onMapClick} />
+          <MapResizeFix />
+        </MapContainer>
+      </div>
+      <p className="text-[10px] text-text-muted" aria-hidden>
+        ©{" "}
+        <a
+          href="https://www.openstreetmap.org/copyright"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-text-secondary"
+        >
+          OpenStreetMap
+        </a>{" "}
+        contributors
+      </p>
     </div>
   );
 }

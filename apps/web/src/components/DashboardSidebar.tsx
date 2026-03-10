@@ -315,13 +315,14 @@ export function DashboardSidebar() {
   const { resolvedTheme } = useTheme();
   const { t } = useTranslation();
   const { user, logout } = useAuthStore();
-  const { selectedCompanyId, selectedCompanyName, setSelectedCompany, sidebarCollapsed: collapsed, setSidebarCollapsed, sidebarOpen, toggleSidebar, companiesVersion, companyBranding } = useDashboardStore();
+  const { selectedCompanyId, selectedCompanyName, setSelectedCompany, sidebarCollapsed: collapsed, setSidebarCollapsed, sidebarOpen, toggleSidebar, companiesVersion, parkingsVersion, companyBranding } = useDashboardStore();
   const [mounted, setMounted] = useState(false);
   const [companies, setCompanies] = useState<{ id: string; commercialName?: string; legalName?: string }[]>([]);
   const [adminCompanyName, setAdminCompanyName] = useState<string | null>(null);
   const [adminCompanyEmail, setAdminCompanyEmail] = useState<string | null>(null);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [bannerIsDark, setBannerIsDark] = useState<boolean | null>(null);
+  const [hasBookableParkings, setHasBookableParkings] = useState(false);
 
   const superAdmin = isSuperAdmin(user);
   const isAdminRole = user?.systemRole === "ADMIN";
@@ -403,6 +404,19 @@ export function DashboardSidebar() {
       .catch(() => setUnreadNotificationsCount(0));
   }, [user?.id, pathname]);
 
+  // Mostrar "Reservas" solo si la empresa tiene al menos un estacionamiento que requiere reserva
+  useEffect(() => {
+    const hasCompanyContext = superAdmin ? Boolean(selectedCompanyId) : Boolean(user?.id);
+    if (!hasCompanyContext) {
+      setHasBookableParkings(false);
+      return;
+    }
+    apiClient
+      .get<{ hasBookable?: boolean }>("/parkings/has-bookable")
+      .then((data) => setHasBookableParkings(Boolean(data?.hasBookable)))
+      .catch(() => setHasBookableParkings(false));
+  }, [superAdmin, selectedCompanyId, user?.id, companiesVersion, parkingsVersion, pathname]);
+
   const toggleCollapsed = () => setSidebarCollapsed(!collapsed);
 
   const handleLogout = () => {
@@ -414,19 +428,20 @@ export function DashboardSidebar() {
     setSelectedCompany(id, name);
   };
 
-  const navGroups = useMemo(
-    () => [
+  const navGroups = useMemo(() => {
+    const mainItems = [
+      { label: t("sidebar.overview"), href: "/dashboard", icon: LayoutDashboard },
+      { label: t("sidebar.employees"), href: "/dashboard/users", icon: Users },
+      { label: t("sidebar.valets"), href: "/dashboard/valets", icon: UserRound },
+      { label: t("sidebar.vehicles"), href: "/dashboard/vehicles", icon: Car },
+      { label: t("sidebar.parkings"), href: "/dashboard/parkings", icon: MapPin },
+      ...(hasBookableParkings ? [{ label: t("sidebar.bookings"), href: "/dashboard/bookings", icon: CalendarCheck }] : []),
+      { label: t("sidebar.tickets"), href: "/dashboard/tickets", icon: Ticket },
+    ];
+    return [
       {
         label: t("sidebar.main"),
-        items: [
-          { label: t("sidebar.overview"), href: "/dashboard", icon: LayoutDashboard },
-          { label: t("sidebar.employees"), href: "/dashboard/users", icon: Users },
-          { label: t("sidebar.valets"), href: "/dashboard/valets", icon: UserRound },
-          { label: t("sidebar.vehicles"), href: "/dashboard/vehicles", icon: Car },
-          { label: t("sidebar.parkings"), href: "/dashboard/parkings", icon: MapPin },
-          { label: t("sidebar.bookings"), href: "/dashboard/bookings", icon: CalendarCheck },
-          { label: t("sidebar.tickets"), href: "/dashboard/tickets", icon: Ticket },
-        ],
+        items: mainItems,
       },
       {
         label: t("sidebar.account"),
@@ -435,9 +450,8 @@ export function DashboardSidebar() {
           { label: t("sidebar.settings"), href: "/dashboard/settings", icon: Settings },
         ],
       },
-    ],
-    [t]
-  );
+    ];
+  }, [t, hasBookableParkings]);
 
   return (
     <>

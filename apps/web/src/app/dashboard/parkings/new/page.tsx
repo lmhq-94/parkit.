@@ -2,50 +2,118 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Hash, Tag, Navigation, Radius } from "lucide-react";
+import { MapPin, Plus, Tag, Navigation, Radius, Trash2 } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
+import { useDashboardStore } from "@/lib/store";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
+/** Input sin icono (mismo estilo que IL en otros formularios). */
+const INPUT = "w-full px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
 const PARKING_TYPES = ["OPEN", "COVERED", "TOWER", "UNDERGROUND", "ELEVATOR"] as const;
+const SLOT_TYPES = ["REGULAR", "PREMIUM", "ELECTRIC", "HANDICAPPED"] as const;
+
+type SlotRow = { id: string; label: string; slotType: (typeof SLOT_TYPES)[number] };
 
 const defaultForm = {
-  name: "", address: "", type: "OPEN", totalSlots: "",
-  requiresBooking: false, latitude: "", longitude: "", geofenceRadius: "50",
+  name: "",
+  address: "",
+  type: "OPEN",
+  requiresBooking: false,
+  latitude: "",
+  longitude: "",
+  geofenceRadius: "50",
 };
+
+const defaultSlot = (): SlotRow => ({
+  id: crypto.randomUUID?.() ?? `slot-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  label: "",
+  slotType: "REGULAR",
+});
 
 export default function NewParkingPage() {
   const { t, tEnum } = useTranslation();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
+  const bumpParkings = useDashboardStore((s) => s.bumpParkings);
   const [form, setForm] = useState(defaultForm);
+  const [slots, setSlots] = useState<SlotRow[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [addressPickerOpen, setAddressPickerOpen] = useState(false);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-      setForm(p => ({ ...p, [k]: e.target.value }));
+      setForm((p) => ({ ...p, [k]: e.target.value }));
+
+  const setSlot = (id: string, updates: Partial<SlotRow>) => {
+    setSlots((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, ...updates } : s))
+    );
+  };
+
+  const addSlot = () => setSlots((prev) => [...prev, defaultSlot()]);
+
+  const [batchPrefix, setBatchPrefix] = useState("");
+  const [batchCount, setBatchCount] = useState(5);
+  const [batchType, setBatchType] = useState<SlotRow["slotType"]>("REGULAR");
+
+  const addSlotsBatch = () => {
+    const prefix = batchPrefix.trim();
+    const count = Math.min(100, Math.max(1, batchCount || 1));
+    const match = prefix.match(/^(.+?)(\d+)$/);
+    let labels: string[];
+    if (match) {
+      const prefixPart = match[1];
+      const base = parseInt(match[2], 10);
+      const numDigits = match[2].length;
+      labels = Array.from({ length: count }, (_, i) =>
+        `${prefixPart}${String(base + i).padStart(numDigits, "0")}`
+      );
+    } else {
+      const pad = count >= 10 ? 2 : 1;
+      labels = Array.from({ length: count }, (_, i) =>
+        `${prefix}${String(i + 1).padStart(pad, "0")}`
+      );
+    }
+    const newSlots: SlotRow[] = labels.map((label) => ({
+      ...defaultSlot(),
+      label,
+      slotType: batchType,
+    }));
+    setSlots((prev) => [...prev, ...newSlots]);
+    setBatchPrefix("");
+    setBatchCount(5);
+  };
+
+  const removeSlot = (id: string) => {
+    setSlots((prev) => prev.filter((s) => s.id !== id));
+  };
 
   const handleSubmit = async () => {
-    const totalSlots = Number(form.totalSlots);
-    if (!form.name.trim() || !form.address.trim() || !form.type || !Number.isFinite(totalSlots) || totalSlots <= 0) return;
-    setSubmitting(true); setError(null);
+    if (!form.name.trim() || !form.address.trim() || !form.type || !step2Valid) return;
+    const slotList = slots.map((s) => ({ label: s.label.trim(), slotType: s.slotType }));
+    setSubmitting(true);
+    setError(null);
     try {
       await apiClient.post("/parkings", {
-        name: form.name.trim(), address: form.address.trim(), type: form.type, totalSlots,
+        name: form.name.trim(),
+        address: form.address.trim(),
+        type: form.type,
         requiresBooking: form.requiresBooking,
         latitude: form.latitude !== "" ? Number(form.latitude) : undefined,
         longitude: form.longitude !== "" ? Number(form.longitude) : undefined,
         geofenceRadius: form.geofenceRadius !== "" ? Number(form.geofenceRadius) : undefined,
+        slots: slotList,
       });
       showSuccess(t("common.createSuccessShort"));
+      bumpParkings();
       router.push("/dashboard/parkings");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Error al crear el estacionamiento";
@@ -55,8 +123,8 @@ export default function NewParkingPage() {
     }
   };
 
-  const n = Number(form.totalSlots);
-  const step1Valid = !!(form.name.trim() && form.address.trim() && form.type && form.totalSlots !== "" && Number.isFinite(n) && n > 0);
+  const step1Valid = !!(form.name.trim() && form.address.trim() && form.type);
+  const step2Valid = slots.length > 0 && slots.every((s) => s.label.trim().length > 0);
 
   const steps = [
     {
@@ -94,17 +162,12 @@ export default function NewParkingPage() {
           <div>
             <label className={LABEL}>{t("parkings.type")} <span className="text-company-primary">*</span></label>
             <SelectField value={form.type} onChange={set("type")} icon={Tag}>
-              {PARKING_TYPES.map(pt => <option key={pt} value={pt}>{tEnum("parkingType", pt)}</option>)}
+              {PARKING_TYPES.map((pt) => (
+                <option key={pt} value={pt}>{tEnum("parkingType", pt)}</option>
+              ))}
             </SelectField>
           </div>
-          <div>
-            <label className={LABEL}>{t("parkings.totalSlots")} <span className="text-company-primary">*</span></label>
-            <div className="relative group">
-              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="number" min={1} value={form.totalSlots} onChange={set("totalSlots")} placeholder={t("common.placeholderNumber")} className={IL} />
-            </div>
-          </div>
-          <div className="flex items-center gap-4 pt-1 sm:pt-7">
+          <div className="flex items-center gap-4 pt-1 sm:pt-7 sm:col-span-2">
             <button
               type="button" role="switch" aria-checked={form.requiresBooking}
               onClick={() => setForm(p => ({ ...p, requiresBooking: !p.requiresBooking }))}
@@ -116,6 +179,114 @@ export default function NewParkingPage() {
               <p className="text-sm font-medium text-text-secondary">{t("parkings.requiresBooking")}</p>
               <p className="text-xs text-text-muted">{form.requiresBooking ? t("parkings.requiresBookingOn") : t("parkings.requiresBookingOff")}</p>
             </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: t("parkings.sectionSlots"),
+      description: t("parkings.sectionSlotsDesc"),
+      badge: "required" as const,
+      accentColor: "blue",
+      isValid: () => step2Valid,
+      content: (
+        <div className="space-y-5">
+          {/* Agregar varios a la vez */}
+          <div className="flex flex-wrap items-end gap-3 p-4 rounded-xl bg-input-bg/60 border border-input-border">
+            <div className="flex-1 min-w-[120px]">
+              <label className={LABEL}>{t("parkings.slotPrefixPlaceholder")}</label>
+              <input
+                type="text"
+                value={batchPrefix}
+                onChange={(e) => setBatchPrefix(e.target.value)}
+                placeholder="ATP-01"
+                className={INPUT}
+              />
+            </div>
+            <div className="w-28">
+              <label className={LABEL}>{t("parkings.slotCount")}</label>
+              <input
+                type="number"
+                min={1}
+                max={100}
+                value={batchCount}
+                onChange={(e) => setBatchCount(Number(e.target.value) || 1)}
+                className={INPUT}
+              />
+            </div>
+            <div className="w-[160px] min-w-[140px]">
+              <label className={LABEL}>{t("parkings.slotType")}</label>
+              <SelectField
+                value={batchType}
+                onChange={(e) => setBatchType(e.target.value as SlotRow["slotType"])}
+                icon={Tag}
+              >
+                {SLOT_TYPES.map((st) => (
+                  <option key={st} value={st}>{tEnum("slotType", st)}</option>
+                ))}
+              </SelectField>
+            </div>
+            <button
+              type="button"
+              onClick={addSlotsBatch}
+              className="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2"
+            >
+              <Plus className="w-4 h-4" />
+              {t("parkings.addSlotsBatch")}
+            </button>
+          </div>
+
+          {/* Lista de slots */}
+          <div>
+            <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-center mb-2 px-1 text-xs font-medium text-text-muted uppercase tracking-wide">
+              <span>{t("parkings.slotLabel")}</span>
+              <span className="w-[160px]">{t("parkings.slotType")}</span>
+              <span className="w-9" aria-hidden />
+            </div>
+            <ul className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
+              {slots.map((slot) => (
+                <li
+                  key={slot.id}
+                  className="grid grid-cols-[1fr_auto_auto] gap-2 items-center"
+                >
+                  <input
+                    type="text"
+                    value={slot.label}
+                    onChange={(e) => setSlot(slot.id, { label: e.target.value })}
+                    placeholder="ATP-02"
+                    className={INPUT}
+                  />
+                  <div className="w-[160px] min-w-[140px]">
+                    <SelectField
+                      value={slot.slotType}
+                      onChange={(e) => setSlot(slot.id, { slotType: e.target.value as SlotRow["slotType"] })}
+                      icon={Tag}
+                    >
+                      {SLOT_TYPES.map((st) => (
+                        <option key={st} value={st}>{tEnum("slotType", st)}</option>
+                      ))}
+                    </SelectField>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeSlot(slot.id)}
+                    title={t("parkings.removeSlot")}
+                    className="p-2 rounded-lg text-text-muted hover:text-red-600 hover:bg-red-500/10 transition-colors"
+                    aria-label={t("parkings.removeSlot")}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              onClick={addSlot}
+              className="mt-3 w-full py-2.5 rounded-lg border border-dashed border-input-border text-text-muted text-sm font-medium hover:border-company-primary hover:text-company-primary hover:bg-company-primary-subtle/50 transition-colors flex items-center justify-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              {t("parkings.addSlot")}
+            </button>
           </div>
         </div>
       ),
@@ -167,19 +338,20 @@ export default function NewParkingPage() {
       <AddressPickerModal
         open={addressPickerOpen}
         onClose={() => setAddressPickerOpen(false)}
-        onSelect={(address, coords) => {
+        onSelect={(address, coords, geofenceRadius) => {
           setForm((p) => ({
             ...p,
             address,
             ...(coords && {
               latitude: String(coords.lat),
               longitude: String(coords.lon),
-              geofenceRadius: "50",
+              geofenceRadius: String(geofenceRadius ?? 50),
             }),
           }));
           setAddressPickerOpen(false);
         }}
         initialValue={form.address}
+        initialGeofenceRadius={form.geofenceRadius !== "" ? Number(form.geofenceRadius) : 50}
       />
     </>
   );

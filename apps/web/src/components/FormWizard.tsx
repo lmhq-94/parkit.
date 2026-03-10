@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ArrowRight, Loader2, Check, AlertCircle } from "lucide-react";
+import { ChevronLeft, ArrowRight, Check, AlertCircle } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export interface WizardStep {
   title: string;
@@ -226,12 +227,12 @@ export function FormWizard({
           >
             {submitting ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <LoadingSpinner size="sm" />
                 {t("common.saving")}
               </>
             ) : nextLoading ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <LoadingSpinner size="sm" />
                 {t("common.loading")}
               </>
             ) : isLast ? (

@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Building2, Receipt, Mail, Phone, Globe,
-  DollarSign, Clock, MapPin, ArrowRight, Loader2,
+  DollarSign, Clock, MapPin, ArrowRight,
   Activity,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -13,6 +13,7 @@ import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { useDashboardStore } from "@/lib/store";
 import { FormPageSkeleton } from "@/components/FormPageSkeleton";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { COUNTRIES, CURRENCIES, TIMEZONES } from "@/lib/companyOptions";
@@ -274,7 +275,7 @@ export default function EditCompanyPage() {
           </Link>
           <button type="button" onClick={handleSubmit} disabled={submitting || !isValid}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors">
-            {submitting ? <><Loader2 className="w-4 h-4 animate-spin" />{t("common.saving")}</> : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}
+            {submitting ? <><LoadingSpinner size="sm" />{t("common.saving")}</> : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}
           </button>
         </div>
       </div>

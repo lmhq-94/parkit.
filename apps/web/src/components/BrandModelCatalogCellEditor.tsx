@@ -7,6 +7,7 @@ import { useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { CatalogComboCellEditor } from "./CatalogComboCellEditor";
 import { FormattedInputCellEditor } from "./FormattedInputCellEditor";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 type CatalogMake = { id: number; name: string };
 type CatalogModel = { id: number; name: string };
@@ -82,7 +83,8 @@ export function BrandModelCatalogCellEditor({
 
   if (loading) {
     return (
-      <div className="w-full h-full flex items-center px-2 text-sm text-text-muted">
+      <div className="w-full h-full flex items-center gap-2 px-2 text-sm text-text-muted">
+        <LoadingSpinner size="sm" />
         {t(locale, "common.loading")}
       </div>
     );

@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { useLocaleStore } from "@/lib/store";
 import { Globe } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { apiClient } from "@/lib/api";
 
 export function LocaleToggle() {
   const { locale, setLocale } = useLocaleStore();
@@ -66,6 +67,13 @@ export function LocaleToggle() {
           onClick={() => {
             setLocale("es");
             setOpen(false);
+            apiClient
+              .patch("/users/me", {
+                appPreferences: { locale: "es" },
+              })
+              .catch(() => {
+                // Preferencia de idioma no debe romper la UI si falla.
+              });
           }}
           className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg ${
             locale === "es"
@@ -80,6 +88,13 @@ export function LocaleToggle() {
           onClick={() => {
             setLocale("en");
             setOpen(false);
+            apiClient
+              .patch("/users/me", {
+                appPreferences: { locale: "en" },
+              })
+              .catch(() => {
+                // Preferencia de idioma no debe romper la UI si falla.
+              });
           }}
           className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg ${
             locale === "en"

@@ -3,20 +3,20 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { apiClient } from "@/lib/api";
-import { useAuthStore } from "@/lib/store";
+import { apiClient, getApiErrorMessage } from "@/lib/api";
+import { useAuthStore, useLocaleStore } from "@/lib/store";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { LocaleToggle } from "@/components/LocaleToggle";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ArrowRight } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { resolvedTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const { t } = useTranslation();
   const { login, setError, error } = useAuthStore();
+  const setLocale = useLocaleStore((s) => s.setLocale);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -35,12 +35,62 @@ export default function LoginPage() {
     setError(null);
     try {
       const response = await apiClient.post<{
-        user: { id: string; email: string; firstName: string; lastName: string; systemRole: "SUPER_ADMIN" | "ADMIN" | "STAFF" | "CUSTOMER"; companyId?: string };
+        user: {
+          id: string;
+          email: string;
+          firstName: string;
+          lastName: string;
+          systemRole: "SUPER_ADMIN" | "ADMIN" | "STAFF" | "CUSTOMER";
+          companyId?: string;
+          appPreferences?: {
+            theme?: "light" | "dark";
+            locale?: "es" | "en";
+          };
+        };
         token: string;
       }>("/auth/login", formData);
       if (response) {
         login(response.user, response.token);
         apiClient.setToken(response.token);
+        const prefs = response.user.appPreferences;
+
+        const detectDeviceTheme = (): "light" | "dark" => {
+          if (typeof window !== "undefined" && "matchMedia" in window) {
+            try {
+              return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+            } catch {
+              // ignore
+            }
+          }
+          const rt = resolvedTheme;
+          return rt === "dark" ? "dark" : "light";
+        };
+
+        const detectDeviceLocale = (): "es" | "en" => {
+          if (typeof navigator !== "undefined") {
+            const lang = (navigator.language || navigator.languages?.[0] || "es").toLowerCase();
+            if (lang.startsWith("en")) return "en";
+          }
+          return "es";
+        };
+
+        const finalTheme: "light" | "dark" = prefs?.theme ?? detectDeviceTheme();
+        const finalLocale: "es" | "en" = prefs?.locale ?? detectDeviceLocale();
+
+        setTheme(finalTheme);
+        setLocale(finalLocale);
+
+        // Sincronizar preferencias en la base de datos (no bloquea la navegación).
+        apiClient
+          .patch("/users/me", {
+            appPreferences: {
+              theme: finalTheme,
+              locale: finalLocale,
+            },
+          })
+          .catch(() => {
+            // Silenciar errores de preferencia; no deben impedir el login.
+          });
         // Mantener el spinner activo mientras la navegación ocurre —
         // setIsSubmitting(false) NO se llama en el path exitoso para evitar
         // el flash del formulario antes de que el dashboard cargue.
@@ -48,29 +98,26 @@ export default function LoginPage() {
         return;
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      const raw = getApiErrorMessage(err);
+      if (raw === "USER_INACTIVE") {
+        setError(t("auth.errorUserInactive"));
+      } else if (raw === "COMPANY_INACTIVE") {
+        setError(t("auth.errorCompanyInactive"));
+      } else {
+        setError(raw);
+      }
     }
     setIsSubmitting(false);
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-page px-4">
-      <div className="absolute top-4 right-4 flex items-center gap-2">
-        <ThemeToggle />
-        <LocaleToggle />
-      </div>
 
       <div className="w-full max-w-[360px]">
         <div className="flex flex-col items-center mb-10">
           <Logo variant={logoVariant} className="text-4xl" />
           <p className="mt-4 text-sm text-text-muted">{t("auth.signInToContinue")}</p>
         </div>
-
-        {error && (
-          <div className="mb-6 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400" role="alert">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
@@ -130,7 +177,7 @@ export default function LoginPage() {
             className="w-full flex items-center justify-center gap-2 rounded-lg bg-company-primary py-3 text-sm font-medium text-white hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none"
           >
             {isSubmitting ? (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              <LoadingSpinner size="sm" variant="white" />
             ) : (
               <>
                 {t("auth.signIn")}
@@ -139,7 +186,25 @@ export default function LoginPage() {
             )}
           </button>
         </form>
+
+        {error && (
+          <p className="mt-4 text-xs text-red-600 dark:text-red-400 text-center">
+            {error}
+          </p>
+        )}
       </div>
+
+      <footer className="absolute bottom-0 left-0 right-0 py-4 text-center">
+        <p className="text-xs text-text-muted">
+          {t("auth.supportHint")}{" "}
+          <a
+            href="mailto:soporte@parkit.app"
+            className="font-medium text-company-primary hover:text-company-primary underline-offset-2 hover:underline"
+          >
+            {t("auth.supportLinkLabel")}
+          </a>
+        </p>
+      </footer>
     </div>
   );
 }
