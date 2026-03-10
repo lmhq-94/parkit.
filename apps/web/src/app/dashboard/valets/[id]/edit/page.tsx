@@ -10,7 +10,7 @@ import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
-import { FormPageSkeleton } from "@/components/FormPageSkeleton";
+import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { LICENSE_TYPES } from "@/lib/companyOptions";
 
@@ -96,7 +96,13 @@ export default function EditValetPage() {
 
   const isValid = form.firstName.trim() && form.lastName.trim() && form.email.trim() && licenseTypes.length > 0;
 
-  if (loading) return <FormPageSkeleton />;
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center min-h-[200px]">
+        <PageLoader />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col pt-6 pb-8 px-4 md:px-10 lg:px-12 w-full gap-5">
@@ -107,8 +113,8 @@ export default function EditValetPage() {
       )}
 
       {/* Sección — datos del empleado */}
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-emerald-500/8 to-transparent">
+      <div className="overflow-hidden">
+        <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("valets.sectionEmployee")}</p>
             <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">{t("common.requiredBadge")}</span>
@@ -143,8 +149,8 @@ export default function EditValetPage() {
       </div>
 
       {/* Sección — licencia */}
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-company-primary-8 to-transparent flex items-center gap-3">
+      <div className="overflow-hidden">
+        <div className="px-6 py-4 flex items-center gap-3">
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("valets.sectionLicense")}</p>
             <p className="text-xs text-text-muted">{t("valets.sectionLicenseDesc")}</p>
@@ -174,8 +180,8 @@ export default function EditValetPage() {
       </div>
 
       {/* Sección — estado */}
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-indigo-500/8 to-transparent">
+      <div className="overflow-hidden">
+        <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("valets.sectionStatusEdit")}</p>
             <span className="text-[10px] font-semibold text-company-tertiary bg-company-tertiary-subtle px-2.5 py-1 rounded-full border border-company-secondary-muted">{t("common.optionalBadge")}</span>

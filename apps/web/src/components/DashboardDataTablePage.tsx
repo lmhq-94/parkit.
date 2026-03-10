@@ -136,7 +136,10 @@ function StatusCellRenderer<T>(
   const label = getLabel(data);
   const raw = getValue(data);
   const variant = getStatusBadgeVariant(statusType, raw);
-  const style = STATUS_TEXT_STYLES[variant] ?? STATUS_TEXT_STYLES.muted;
+  const style = (STATUS_TEXT_STYLES[variant] ?? STATUS_TEXT_STYLES.muted) as {
+    text: string;
+    dot: string;
+  };
   return (
     <span className={`inline-flex items-center gap-2 text-sm ${style.text}`}>
       <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${style.dot}`} />
@@ -330,7 +333,10 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
       {hasView && (
         <button
           type="button"
-          onClick={() => onView!(data)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onView?.(data);
+          }}
           className="p-2 rounded-lg text-text-muted hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
           title={viewLabel}
           aria-label={viewLabel}
@@ -341,7 +347,10 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
       {hasEdit && (
         <button
           type="button"
-          onClick={handleEdit}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleEdit();
+          }}
           className="p-2 rounded-lg text-text-muted hover:text-company-primary hover:bg-company-primary-subtle transition-colors"
           title={editLabel}
           aria-label={editLabel}
@@ -352,7 +361,10 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
       {hasDelete && (
         <button
           type="button"
-          onClick={() => onRequestDelete?.(data)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onRequestDelete?.(data);
+          }}
           className="p-2 rounded-lg text-text-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
           title={deleteLabel}
           aria-label={deleteLabel}
@@ -395,6 +407,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   const [error, setError] = useState<string | null>(null);
   const [pendingDeleteRow, setPendingDeleteRow] = useState<T | null>(null);
   const [deletingInProgress, setDeletingInProgress] = useState(false);
+  const [navigating, setNavigating] = useState(false);
   const gridRef = useRef<AgGridReact<T>>(null);
 
   useEffect(() => {
@@ -479,24 +492,31 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
     [onCreate, loadData]
   );
 
+  const handleEditRow = useCallback(
+    (row: T) => {
+      if (!onEdit) return;
+      setNavigating(true);
+      onEdit(row);
+    },
+    [onEdit]
+  );
+
   const handleCellValueChanged = useCallback(
-    async (e: { data?: T }) => {
-      if (e.data && onUpdate) {
-        if ((e.data as unknown as { __isNew?: boolean }).__isNew) return;
-        try {
-          await onUpdate(e.data);
-          // No recargar todo el grid: los valores ya están actualizados en la fila.
-          // Evita re-render completo y parpadeo; el sidebar u otros consumen refreshToken o store.
-        } catch (err) {
-          setError(err instanceof Error ? err.message : "Failed to update");
-        }
+    async (e: { data?: T | DetailRow<T> }) => {
+      if (!onUpdate || !e.data) return;
+      const row = e.data as T & { __isNew?: boolean };
+      if (row.__isNew) return;
+      try {
+        await onUpdate(row);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to update");
       }
     },
     [onUpdate]
   );
 
-  const columnDefs = useMemo<ColDef<T>[]>(() => {
-    const dataCols: ColDef<T>[] = [];
+  const columnDefs = useMemo<ColDef<T | DetailRow<T>>[]>(() => {
+    const dataCols: ColDef<T | DetailRow<T>>[] = [];
     if (renderRowDetail != null) {
       dataCols.push({
         headerName: "",
@@ -689,7 +709,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
         cellRenderer: ActionsCellRenderer,
         cellRendererParams: {
           onView: onView ?? undefined,
-          onEdit: onEdit ?? undefined,
+          onEdit: onEdit ? handleEditRow : undefined,
           onRequestDelete: onDelete ? onRequestDelete : undefined,
           viewLabel: t(locale, "common.view"),
           editLabel: t(locale, "common.edit"),
@@ -825,7 +845,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
               </div>
             )}
 
-            {isLoading ? (
+            {isLoading || navigating ? (
               <div className="flex items-center justify-center flex-1 min-h-[200px]">
                 <PageLoader />
               </div>

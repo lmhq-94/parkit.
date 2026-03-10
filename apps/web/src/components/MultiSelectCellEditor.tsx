@@ -177,7 +177,7 @@ export function MultiSelectCellEditor({
         ref={triggerRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full h-full flex items-center justify-between gap-2 px-2 rounded border border-company-primary bg-input-bg text-text-primary text-sm text-left cursor-pointer hover:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary"
+        className="w-full h-full flex items-center justify-between gap-2 px-2 text-text-primary text-sm text-left cursor-pointer focus:outline-none"
       >
         <span className="truncate">{displayLabel}</span>
         <ChevronDown className="w-4 h-4 shrink-0 text-text-muted" />

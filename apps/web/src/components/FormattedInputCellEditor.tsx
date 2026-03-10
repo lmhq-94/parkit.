@@ -54,7 +54,7 @@ export function FormattedInputCellEditor({
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onBlur={() => stopEditing?.()}
-        className="w-full h-full px-2 rounded border border-company-primary bg-input-bg text-text-primary text-sm outline-none focus:ring-1 focus:ring-company-primary"
+        className="w-full h-full px-2 text-text-primary text-sm outline-none"
       />
     </div>
   );

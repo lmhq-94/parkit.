@@ -7,7 +7,7 @@ import { Car, Hash, Globe, ArrowRight } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
-import { FormPageSkeleton } from "@/components/FormPageSkeleton";
+import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { SelectField } from "@/components/SelectField";
 import { BrandModelComboField } from "@/components/BrandModelComboField";
@@ -171,7 +171,13 @@ export default function EditVehiclePage() {
 
   const isValid = form.plate.trim() && form.brand.trim() && form.model.trim();
 
-  if (loading) return <FormPageSkeleton />;
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center min-h-[200px]">
+        <PageLoader />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col pt-6 pb-8 px-4 md:px-10 lg:px-12 w-full gap-5">
@@ -181,8 +187,8 @@ export default function EditVehiclePage() {
         </div>
       )}
 
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-company-primary-8 to-transparent">
+      <div className="overflow-hidden">
+        <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("vehicles.sectionMain")}</p>
             <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">{t("common.requiredBadge")}</span>
@@ -246,8 +252,8 @@ export default function EditVehiclePage() {
         </div>
       </div>
 
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-company-primary-8 to-transparent">
+      <div className="overflow-hidden">
+        <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("vehicles.sectionExtra")}</p>
             <span className="text-[10px] font-semibold text-text-muted/60 bg-input-bg px-2.5 py-1 rounded-full border border-input-border/60">{t("common.optionalBadge")}</span>

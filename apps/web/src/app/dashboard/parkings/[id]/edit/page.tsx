@@ -10,7 +10,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { useDashboardStore } from "@/lib/store";
-import { FormPageSkeleton } from "@/components/FormPageSkeleton";
+import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
@@ -89,7 +89,13 @@ export default function EditParkingPage() {
   const n = Number(form.totalSlots);
   const isValid = form.name.trim() && form.address.trim() && form.type && form.totalSlots !== "" && Number.isFinite(n) && n > 0;
 
-  if (loading) return <FormPageSkeleton />;
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center min-h-[200px]">
+        <PageLoader />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col pt-6 pb-8 px-4 md:px-10 lg:px-12 w-full gap-5">
@@ -99,8 +105,8 @@ export default function EditParkingPage() {
         </div>
       )}
 
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-orange-500/8 to-transparent">
+      <div className="overflow-hidden">
+        <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("parkings.sectionMain")}</p>
             <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">{t("common.requiredBadge")}</span>
@@ -163,8 +169,8 @@ export default function EditParkingPage() {
         </div>
       </div>
 
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-emerald-500/8 to-transparent">
+      <div className="overflow-hidden">
+        <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("parkings.sectionGeo")}</p>
             <span className="text-[10px] font-semibold text-text-muted/60 bg-input-bg px-2.5 py-1 rounded-full border border-input-border/60">{t("common.optionalBadge")}</span>

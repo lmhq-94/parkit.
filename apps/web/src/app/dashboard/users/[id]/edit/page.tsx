@@ -8,7 +8,7 @@ import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
-import { FormPageSkeleton } from "@/components/FormPageSkeleton";
+import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { TIMEZONES } from "@/lib/companyOptions";
 import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
@@ -84,7 +84,13 @@ export default function EditUserPage() {
 
   const isValid = form.firstName.trim() && form.lastName.trim() && form.email.trim();
 
-  if (loading) return <FormPageSkeleton />;
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center min-h-[200px]">
+        <PageLoader />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col pt-6 pb-8 px-4 md:px-10 lg:px-12 w-full gap-5">
@@ -94,8 +100,8 @@ export default function EditUserPage() {
         </div>
       )}
 
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent">
+      <div className="overflow-hidden">
+        <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("users.sectionMain")}</p>
             <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">{t("common.requiredBadge")}</span>
@@ -135,8 +141,8 @@ export default function EditUserPage() {
         </div>
       </div>
 
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-indigo-500/8 to-transparent">
+      <div className="overflow-hidden">
+        <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("users.sectionContact")}</p>
             <span className="text-[10px] font-semibold text-text-muted/60 bg-input-bg px-2.5 py-1 rounded-full border border-input-border/60">{t("common.optionalBadge")}</span>

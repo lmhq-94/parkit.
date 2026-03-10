@@ -315,7 +315,18 @@ export function DashboardSidebar() {
   const { resolvedTheme } = useTheme();
   const { t } = useTranslation();
   const { user, logout } = useAuthStore();
-  const { selectedCompanyId, selectedCompanyName, setSelectedCompany, sidebarCollapsed: collapsed, setSidebarCollapsed, sidebarOpen, toggleSidebar, companiesVersion, parkingsVersion, companyBranding } = useDashboardStore();
+  const {
+    selectedCompanyId,
+    selectedCompanyName,
+    setSelectedCompany,
+    sidebarCollapsed: collapsed,
+    setSidebarCollapsed,
+    sidebarOpen,
+    toggleSidebar,
+    companiesVersion,
+    parkingsVersion,
+    companyBranding,
+  } = useDashboardStore();
   const [mounted, setMounted] = useState(false);
   const [companies, setCompanies] = useState<{ id: string; commercialName?: string; legalName?: string }[]>([]);
   const [adminCompanyName, setAdminCompanyName] = useState<string | null>(null);
@@ -418,6 +429,12 @@ export function DashboardSidebar() {
   }, [superAdmin, selectedCompanyId, user?.id, companiesVersion, parkingsVersion, pathname]);
 
   const toggleCollapsed = () => setSidebarCollapsed(!collapsed);
+
+  const handleNavClick = () => {
+    if (sidebarOpen) {
+      toggleSidebar();
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -656,6 +673,7 @@ export function DashboardSidebar() {
                     <SidebarTooltip show={collapsed} label={item.label}>
                       <Link
                         href={item.href}
+                        onClick={handleNavClick}
                         className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
                           collapsed ? "justify-center" : ""
                         } ${

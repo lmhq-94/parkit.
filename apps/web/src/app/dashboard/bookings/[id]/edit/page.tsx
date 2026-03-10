@@ -9,7 +9,7 @@ import { DateTimePickerField } from "@/components/DateTimePickerField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
-import { FormPageSkeleton } from "@/components/FormPageSkeleton";
+import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -91,7 +91,13 @@ export default function EditBookingPage() {
 
   const isValid = form.clientId && form.vehicleId && form.parkingId && form.scheduledEntryTime;
 
-  if (loading) return <FormPageSkeleton />;
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center min-h-[200px]">
+        <PageLoader />
+      </div>
+    );
+  }
 
   const skel = <div className="h-[46px] rounded-lg bg-input-bg border border-input-border animate-pulse" />;
 
@@ -103,8 +109,8 @@ export default function EditBookingPage() {
         </div>
       )}
 
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-teal-500/8 to-transparent">
+      <div className="overflow-hidden">
+        <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("bookings.sectionMain")}</p>
             <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">{t("common.requiredBadge")}</span>
@@ -159,8 +165,8 @@ export default function EditBookingPage() {
         </div>
       </div>
 
-      <div className="bg-card/60 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 bg-gradient-to-r from-company-primary-8 to-transparent">
+      <div className="overflow-hidden">
+        <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("bookings.sectionExit")}</p>
             <span className="text-[10px] font-semibold text-text-muted/60 bg-input-bg px-2.5 py-1 rounded-full border border-input-border/60">{t("common.optionalBadge")}</span>

@@ -12,7 +12,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { useDashboardStore } from "@/lib/store";
-import { FormPageSkeleton } from "@/components/FormPageSkeleton";
+import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
@@ -128,7 +128,13 @@ export default function EditCompanyPage() {
 
   const isValid = form.legalName.trim() && form.taxId.trim();
 
-  if (loading) return <FormPageSkeleton />;
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center min-h-[200px]">
+        <PageLoader />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col pt-6 pb-8 px-4 md:px-10 lg:px-12 w-full gap-5">
@@ -139,7 +145,7 @@ export default function EditCompanyPage() {
       )}
 
       {/* Sección — datos legales */}
-      <div className="rounded-2xl overflow-hidden">
+      <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("companies.sectionMain")}</p>
@@ -183,7 +189,7 @@ export default function EditCompanyPage() {
       </div>
 
       {/* Sección — contacto */}
-      <div className="rounded-2xl overflow-hidden">
+      <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("companies.sectionContact")}</p>
@@ -231,7 +237,7 @@ export default function EditCompanyPage() {
       </div>
 
       {/* Sección — configuración regional */}
-      <div className="rounded-2xl overflow-hidden">
+      <div className="overflow-hidden">
         <div className="px-6 py-4 flex items-center gap-3">
           <div>
             <p className="text-sm font-semibold text-text-primary">{t("companies.sectionRegional")}</p>
