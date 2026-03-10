@@ -207,7 +207,6 @@ export default function TicketsPage() {
         refreshToken={refreshToken}
         toolbar={
           <StatusFilterToolbar
-            className="mb-4"
             tableKey="tickets"
             allLabel={t("tables.tickets.filterAll")}
             placeholder={t("tables.tickets.filterStatusPlaceholder")}

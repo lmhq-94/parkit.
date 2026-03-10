@@ -111,11 +111,13 @@ export function DetailField({
   value,
   wide,
   linkType,
+  multiline,
 }: {
   label: string;
   value?: string | number | null;
   wide?: boolean;
   linkType?: "email" | "phone";
+  multiline?: boolean;
 }) {
   if (value === undefined || value === null || value === "") return null;
   const str = String(value);
@@ -125,7 +127,14 @@ export function DetailField({
       <dt className="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">
         {label}
       </dt>
-      <dd className="text-sm text-slate-900 dark:text-slate-100 font-normal leading-snug">
+      <dd
+        className={
+          multiline
+            ? "text-sm text-slate-900 dark:text-slate-100 font-normal leading-snug break-words whitespace-pre-wrap max-h-24 overflow-y-auto pr-1"
+            : "text-sm text-slate-900 dark:text-slate-100 font-normal leading-snug"
+        }
+        title={multiline ? str : undefined}
+      >
         {href ? (
           <a href={href} className="text-company-primary hover:underline">
             {str}

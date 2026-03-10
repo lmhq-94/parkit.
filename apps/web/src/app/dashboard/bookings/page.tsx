@@ -210,7 +210,6 @@ export default function BookingsPage() {
         refreshToken={refreshToken}
         toolbar={
           <StatusFilterToolbar
-            className="mb-4"
             tableKey="bookings"
             allLabel={t("tables.bookings.filterAll")}
             placeholder={t("tables.bookings.filterStatusPlaceholder")}

@@ -108,15 +108,18 @@ export function StatusFilterToolbar({
 
   const isAll = selected.length === 0;
 
+  const formControlBase =
+    "rounded-lg border border-input-border bg-input-bg text-sm font-medium transition-colors min-h-[42px] px-4 py-3";
+
   return (
     <div className={`flex flex-wrap items-center gap-2 ${className ?? ""}`}>
       <button
         type="button"
         onClick={() => onChange([])}
-        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+        className={`${formControlBase} ${
           isAll
-            ? "bg-company-primary text-white"
-            : "bg-input-bg text-text-secondary hover:bg-company-primary-subtle hover:text-company-primary border border-input-border"
+            ? "bg-company-primary text-white border-company-primary"
+            : "text-text-secondary hover:bg-company-primary-subtle hover:text-company-primary"
         }`}
       >
         {allLabel}
@@ -126,10 +129,10 @@ export function StatusFilterToolbar({
           ref={triggerRef}
           type="button"
           onClick={handleOpen}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border min-w-[140px] justify-between ${
+          className={`inline-flex items-center gap-2 min-w-[140px] justify-between ${formControlBase} ${
             open
-              ? "border-company-primary ring-1 ring-company-primary-full bg-input-bg"
-              : "bg-input-bg text-text-secondary hover:bg-company-primary-subtle hover:text-company-primary border-input-border"
+              ? "border-company-primary ring-1 ring-company-primary focus:ring-company-primary"
+              : "text-text-secondary hover:bg-company-primary-subtle hover:text-company-primary"
           }`}
         >
           <span className="truncate">
@@ -150,12 +153,12 @@ export function StatusFilterToolbar({
           createPortal(
             <div
               data-status-filter-dropdown={tableKey}
-              className="fixed z-[99999] flex flex-col rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl bg-white dark:bg-slate-900 py-1.5 px-1.5 overflow-hidden"
+              className="fixed z-[99999] flex flex-col rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl bg-white dark:bg-slate-900 py-1.5 px-1.5 min-w-[220px] overflow-hidden"
               style={{
                 top: position.top,
                 bottom: position.bottom,
                 left: position.left,
-                width: Math.max(position.width, 200),
+                width: Math.max(position.width, 220),
                 maxHeight: position.maxHeight,
               }}
             >
@@ -167,9 +170,9 @@ export function StatusFilterToolbar({
                       key={opt.value}
                       type="button"
                       onClick={() => toggle(opt.value)}
-                      className={`w-full px-3 py-2.5 text-left text-sm transition-colors rounded-lg flex items-center gap-3 ${
+                      className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg flex items-center gap-3 ${
                         isSelected
-                          ? "bg-company-primary-subtle text-company-primary"
+                          ? "bg-company-primary-muted text-company-primary font-medium"
                           : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                       }`}
                     >
@@ -177,7 +180,7 @@ export function StatusFilterToolbar({
                         className={`shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors ${
                           isSelected
                             ? "bg-company-primary border-company-primary"
-                            : "border-slate-300 dark:border-slate-600"
+                            : "border-input-border"
                         }`}
                       >
                         {isSelected && (
@@ -190,11 +193,11 @@ export function StatusFilterToolbar({
                 })}
               </div>
               {selected.length > 0 && (
-                <div className="border-t border-slate-100 dark:border-slate-800 pt-1.5 mt-1 px-2 pb-0.5 shrink-0">
+                <div className="border-t border-input-border pt-2 mt-1 px-2 pb-1 shrink-0">
                   <button
                     type="button"
                     onClick={() => onChange([])}
-                    className="text-xs text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                    className="text-sm text-text-muted hover:text-red-500 dark:hover:text-red-400 transition-colors"
                   >
                     {clearSelectionLabel}
                   </button>

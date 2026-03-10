@@ -45,7 +45,6 @@ export default function ParkingsPage() {
   const onUpdate = useCallback(async (row: ParkingRow) => {
     if (!row.id) return;
     const name = (row.name ?? "").toString().trim();
-    const address = (row.address ?? "").toString().trim();
     const type = (row.type ?? "").toString().trim();
     const totalSlots =
       row.totalSlots == null || row.totalSlots === ("" as unknown as number)
@@ -56,7 +55,6 @@ export default function ParkingsPage() {
 
     const payload: Record<string, unknown> = {};
     if (name) payload.name = name;
-    if (address) payload.address = address;
     if (type) payload.type = type;
     if (totalSlots !== undefined) payload.totalSlots = totalSlots;
     payload.requiresBooking = requiresBooking;
@@ -72,7 +70,6 @@ export default function ParkingsPage() {
   const columns = useMemo(
     () => [
       { header: t("tables.parkings.name"), render: (p: ParkingRow) => p.name ?? "—", field: "name" as const, editable: true },
-      { header: t("tables.parkings.address"), render: (p: ParkingRow) => p.address || "—", field: "address" as const, editable: true, cellEditorAddress: true },
       {
         header: t("tables.parkings.type"),
         render: (p: ParkingRow) => tEnum("parkingType", p.type),
@@ -110,11 +107,15 @@ export default function ParkingsPage() {
         emptyMessage={t("tables.parkings.empty")}
         columns={columns}
         hasRowDetail={(parking) =>
-          parking.latitude != null || parking.longitude != null || parking.geofenceRadius != null
+          (parking.address != null && parking.address !== "") ||
+          parking.latitude != null ||
+          parking.longitude != null ||
+          parking.geofenceRadius != null
         }
         renderRowDetail={(parking) => (
           <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
             <DetailSectionLabel text={t("common.additionalInfo")} />
+            <DetailField label={t("parkings.address")} value={parking.address} wide multiline />
             <DetailField label={t("parkings.latitude")} value={parking.latitude != null ? String(parking.latitude) : undefined} />
             <DetailField label={t("parkings.longitude")} value={parking.longitude != null ? String(parking.longitude) : undefined} />
             <DetailField label={t("parkings.geofenceRadius")} value={parking.geofenceRadius != null ? String(parking.geofenceRadius) : undefined} />

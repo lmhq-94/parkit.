@@ -188,18 +188,30 @@ export class ParkingsService {
     parkingId: string,
     slots: Array<{ label: string; slotType?: SlotType }>
   ) {
-    const createdSlots = [];
+    if (slots.length === 0) return [];
 
-    for (const slot of slots) {
-      const created = await prisma.parkingSlot.create({
+    const createdSlots = await prisma.$transaction(async (tx) => {
+      const created: typeof prisma.parkingSlot[] = [];
+      for (const slot of slots) {
+        const s = await tx.parkingSlot.create({
+          data: {
+            parkingId,
+            label: slot.label,
+            slotType: slot.slotType || "REGULAR",
+          },
+        });
+        created.push(s);
+      }
+      await tx.parking.update({
+        where: { id: parkingId },
         data: {
-          parkingId,
-          label: slot.label,
-          slotType: slot.slotType || "REGULAR",
+          totalSlots: {
+            increment: created.length,
+          },
         },
       });
-      createdSlots.push(created);
-    }
+      return created;
+    });
 
     return createdSlots;
   }

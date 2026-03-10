@@ -44,8 +44,10 @@ const COMPANY_STATUS_OPTIONS = [
 export default function CompaniesPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
   const user = useAuthStore((s) => s.user);
+  const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const bumpCompanies = useDashboardStore((s) => s.bumpCompanies);
+  const setSelectedCompany = useDashboardStore((s) => s.setSelectedCompany);
   const superAdmin = isSuperAdmin(user);
   const router = useRouter();
   const [refreshToken, setRefreshToken] = useState(0);
@@ -135,6 +137,17 @@ export default function CompaniesPage() {
       if (Object.keys(payload).length === 0) return;
       if (superAdmin) {
         await apiClient.patch(`/companies/${row.id}`, payload);
+        // Si el super admin está editando la empresa seleccionada, actualizar el nombre en el selector.
+        if (row.id === selectedCompanyId) {
+          const newName =
+            (payload.commercialName as string | undefined)?.trim() ||
+            (payload.legalName as string | undefined)?.trim() ||
+            row.commercialName?.trim() ||
+            row.legalName?.trim() ||
+            row.name?.trim() ||
+            row.id;
+          setSelectedCompany(row.id, newName);
+        }
       } else {
         const { status: _s, ...mePayload } = payload;
         if (Object.keys(mePayload).length > 0) {
@@ -144,7 +157,7 @@ export default function CompaniesPage() {
       bumpCompanies();
       setRefreshToken((x) => x + 1);
     },
-    [superAdmin, bumpCompanies]
+    [superAdmin, bumpCompanies, selectedCompanyId, setSelectedCompany]
   );
 
   const onDelete = useCallback(async (row: Company) => {
@@ -166,7 +179,6 @@ export default function CompaniesPage() {
         toolbar={
           superAdmin ? (
             <StatusFilterToolbar
-              className="mb-4"
               tableKey="companies"
               allLabel={t("tables.companies.filterAll")}
               placeholder={t("tables.companies.filterStatusPlaceholder")}
@@ -194,7 +206,7 @@ export default function CompaniesPage() {
             <DetailSectionLabel text={t("common.additionalInfo")} />
             <DetailField label={t("companies.legalName")} value={company.legalName} />
             <DetailField label={t("companies.taxId")} value={company.taxId} />
-            <DetailField label={t("companies.legalAddress")} value={company.legalAddress} />
+            <DetailField label={t("companies.legalAddress")} value={company.legalAddress} wide multiline />
             <DetailField label={t("companies.contactPhone")} value={company.contactPhone ? formatPhoneWithCountryCode(company.contactPhone, company.countryCode ?? "CR") : undefined} linkType="phone" />
             <DetailField label={t("companies.countryCode")} value={company.countryCode} />
             <DetailField label={t("companies.currency")} value={company.currency} />

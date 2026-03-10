@@ -124,6 +124,22 @@ export class ParkingsController {
     }
   }
 
+  static async createSlots(req: Request, res: Response) {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const body = (req.body ?? {}) as { slots?: Array<{ label: string; slotType?: string }> };
+      const slots = Array.isArray(body.slots) ? body.slots : [];
+      const created = await ParkingsService.createSlots(id, slots);
+      return ok(res, created);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
   static async delete(req: Request, res: Response) {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;

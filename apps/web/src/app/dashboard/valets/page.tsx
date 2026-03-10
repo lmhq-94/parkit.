@@ -174,7 +174,6 @@ export default function ValetsPage() {
         refreshToken={refreshToken}
         toolbar={
           <StatusFilterToolbar
-            className="mb-4"
             tableKey="valets"
             allLabel={t("tables.valets.filterAll")}
             placeholder={t("tables.valets.filterStatusPlaceholder")}

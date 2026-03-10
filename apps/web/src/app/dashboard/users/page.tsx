@@ -21,7 +21,6 @@ import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
 
 const EMPLOYEE_ROLE_OPTIONS = [
   { value: "ADMIN", key: "ADMIN" },
-  { value: "STAFF", key: "STAFF" },
   { value: "CUSTOMER", key: "CUSTOMER" },
 ] as const;
 
@@ -155,32 +154,32 @@ export default function UsersPage() {
         columns={columns}
         refreshToken={refreshToken}
         toolbar={
-          <div className="flex flex-wrap items-center gap-6 mb-4">
-            <StatusFilterToolbar
-              tableKey="employees"
-              allLabel={t("tables.employees.filterAll")}
-              placeholder={t("tables.employees.filterStatusPlaceholder")}
-              clearSelectionLabel={t("grid.clearSelection")}
-              options={EMPLOYEE_ROLE_OPTIONS.map((o) => ({
-                value: o.value,
-                label: tEnum("systemRole", o.key),
-              }))}
-              selected={roleFilters}
-              onChange={setRoleFilters}
-            />
-            <label className="flex items-center gap-3 cursor-pointer select-none">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={includeInactives}
-                onClick={() => setIncludeInactives((v) => !v)}
-                className={`relative w-11 h-6 rounded-full shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page ${includeInactives ? "bg-company-primary" : "bg-input-border"}`}
-              >
-                <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${includeInactives ? "translate-x-5" : "translate-x-0"}`} />
-              </button>
-              <span className="text-sm text-text-secondary">{t("tables.employees.includeInactives")}</span>
-            </label>
-          </div>
+          <StatusFilterToolbar
+            tableKey="employees"
+            allLabel={t("tables.employees.filterAll")}
+            placeholder={t("tables.employees.filterStatusPlaceholder")}
+            clearSelectionLabel={t("grid.clearSelection")}
+            options={EMPLOYEE_ROLE_OPTIONS.map((o) => ({
+              value: o.value,
+              label: tEnum("systemRole", o.key),
+            }))}
+            selected={roleFilters}
+            onChange={setRoleFilters}
+          />
+        }
+        toolbarRight={
+          <label className="flex items-center gap-3 cursor-pointer select-none min-h-[42px] px-4 py-3">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={includeInactives}
+              onClick={() => setIncludeInactives((v) => !v)}
+              className={`relative w-11 h-6 rounded-full shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page ${includeInactives ? "bg-company-primary" : "bg-input-border"}`}
+            >
+              <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${includeInactives ? "translate-x-5" : "translate-x-0"}`} />
+            </button>
+            <span className="text-sm font-medium text-text-secondary">{t("tables.employees.includeInactives")}</span>
+          </label>
         }
         hasRowDetail={() => true}
         renderRowDetail={(user) => (

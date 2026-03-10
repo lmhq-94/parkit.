@@ -9,7 +9,7 @@ import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "@/app/ag-grid-parkit-overrides.css";
-import { Check, ChevronDown, ChevronRight, Eye, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Eye, Pencil, Plus, Trash2, X, Search } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
@@ -234,6 +234,8 @@ interface DashboardDataTablePageProps<T> {
   emptyMessage: string;
   /** Contenido opcional entre el header y la tabla (ej. filtros, tabs) */
   toolbar?: React.ReactNode;
+  /** Contenido opcional alineado a la derecha de la barra (ej. include inactives) */
+  toolbarRight?: React.ReactNode;
   /** Acción opcional en el header (ej. botón "Nueva empresa") */
   headerAction?: React.ReactNode;
   /** Fuerza recargar los datos cuando cambia */
@@ -387,6 +389,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   columns,
   emptyMessage,
   toolbar,
+  toolbarRight,
   headerAction,
   refreshToken,
   onView,
@@ -412,6 +415,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   const [deletingInProgress, setDeletingInProgress] = useState(false);
   const [navigating, setNavigating] = useState(false);
   const gridRef = useRef<AgGridReact<T>>(null);
+  const [quickFilter, setQuickFilter] = useState("");
 
   useEffect(() => {
     setDetailRowHeight(DETAIL_ROW_MIN_HEIGHT);
@@ -769,6 +773,17 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
     });
   }, [draftRow, rows, renderRowDetail, hasRowDetail, expandedRowId]);
 
+  // Sincronizar rowData con la API del grid para evitar que a veces no se pinten las filas (race/hydration).
+  useEffect(() => {
+    const api = gridRef.current?.api as { setGridOption: (k: string, v: unknown) => void; refreshCells: (o?: { force?: boolean }) => void } | undefined;
+    if (!api) return;
+    api.setGridOption("rowData", rowData);
+    const id = requestAnimationFrame(() => {
+      api.refreshCells({ force: true });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [rowData]);
+
   const fullWidthCellRenderer = useCallback(
     (params: ICellRendererParams<T | DetailRow<T>>) => {
       const data = params.data as DetailRow<T>;
@@ -845,7 +860,22 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
 
   return (
     <div className="flex-1 flex flex-col min-h-0 pt-6 md:pt-8 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 w-full">
-            {toolbar}
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <div className="flex flex-wrap items-center gap-3 shrink-0">
+                {toolbar}
+              </div>
+              <div className="relative w-full max-w-sm shrink-0">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+                <input
+                  type="text"
+                  value={quickFilter}
+                  onChange={(e) => setQuickFilter(e.target.value)}
+                  placeholder={t(locale, "grid.filterOoo")}
+                  className="w-full min-h-[42px] pl-9 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-sm text-text-primary placeholder:text-text-muted transition-colors focus:outline-none focus:ring-1 focus:ring-company-primary focus:border-company-primary"
+                />
+              </div>
+              {toolbarRight != null ? <div className="shrink-0 ml-auto">{toolbarRight}</div> : null}
+            </div>
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-200 rounded-xl">
                 <span className="font-medium">{error}</span>
@@ -865,9 +895,10 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                     ref={gridRef as React.RefObject<AgGridReact<T | DetailRow<T>>>}
                     rowData={rowData}
                     columnDefs={columnDefs}
+                    quickFilterText={quickFilter || undefined}
                     defaultColDef={{
                       sortable: true,
-                      filter: true,
+                      filter: false,
                       resizable: true,
                       flex: 1,
                       minWidth: 140,
