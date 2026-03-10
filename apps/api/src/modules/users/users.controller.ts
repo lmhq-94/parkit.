@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { UsersService } from "./users.service";
+import { parseQueryParamArray } from "../../shared/utils/queryParser";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
 
 export class UsersController {
@@ -75,7 +76,13 @@ export class UsersController {
   static async list(req: Request, res: Response) {
     try {
       const excludeValets = req.query.excludeValets === "true" || req.query.excludeValets === "1";
-      const users = await UsersService.list(req.user.companyId!, { excludeValets });
+      const systemRoles = parseQueryParamArray(req.query.systemRole as string | string[] | undefined);
+      const includeInactives = req.query.includeInactives === "true" || req.query.includeInactives === "1";
+      const users = await UsersService.list(req.user.companyId!, {
+        excludeValets,
+        systemRoles: systemRoles.length > 0 ? systemRoles : undefined,
+        includeInactives,
+      });
       return ok(res, users);
     } catch (error: unknown) {
       return fail(

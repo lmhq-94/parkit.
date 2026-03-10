@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { TicketsService } from "./tickets.service";
-import { parseQueryParam } from "../../shared/utils/queryParser";
+import { parseQueryParam, parseQueryParamArray } from "../../shared/utils/queryParser";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
 
 export class TicketsController {
@@ -23,14 +23,14 @@ export class TicketsController {
 
   static async list(req: Request, res: Response) {
     try {
-      const statusStr = parseQueryParam(req.query.status as string | string[] | undefined);
+      const statusArr = parseQueryParamArray(req.query.status as string | string[] | undefined);
       const clientIdStr = parseQueryParam(req.query.clientId as string | string[] | undefined);
       const valetIdStr = parseQueryParam(req.query.valetId as string | string[] | undefined);
 
       const tickets = await TicketsService.list(
         req.user.companyId!,
         {
-          status: statusStr,
+          statuses: statusArr.length > 0 ? statusArr : undefined,
           clientId: clientIdStr,
           valetId: valetIdStr,
         }

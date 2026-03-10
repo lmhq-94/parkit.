@@ -127,10 +127,17 @@ export class UsersService {
     updatedAt: true,
   } as const;
 
-  static async list(companyId: string, options?: { excludeValets?: boolean }) {
+  static async list(
+    companyId: string,
+    options?: { excludeValets?: boolean; systemRoles?: string[]; includeInactives?: boolean }
+  ) {
     const where = {
       companyId,
       ...(options?.excludeValets === true ? { valet: null } : {}),
+      ...(options?.systemRoles?.length
+        ? { systemRole: { in: options.systemRoles as SystemRole[] } }
+        : {}),
+      ...(options?.includeInactives === false ? { isActive: true } : {}),
     };
     const orderBy = { createdAt: "desc" as const };
 

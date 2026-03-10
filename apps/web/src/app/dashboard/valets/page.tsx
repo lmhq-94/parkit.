@@ -18,6 +18,7 @@ import { apiClient } from "@/lib/api";
 import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
+import { StatusFilterToolbar } from "@/components/StatusFilterToolbar";
 
 type ValetRow = {
   id?: string;
@@ -28,6 +29,12 @@ type ValetRow = {
   ratingAvg?: number;
 };
 
+const VALET_STATUS_OPTIONS = [
+  { value: "AVAILABLE", key: "AVAILABLE" },
+  { value: "BUSY", key: "BUSY" },
+  { value: "AWAY", key: "AWAY" },
+] as const;
+
 export default function ValetsPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
   const user = useAuthStore((s) => s.user);
@@ -35,6 +42,19 @@ export default function ValetsPage() {
   const superAdmin = isSuperAdmin(user);
   const router = useRouter();
   const [refreshToken, setRefreshToken] = useState(0);
+  const [statusFilters, setStatusFilters] = useState<string[]>([]);
+
+  const fetchData = useCallback(
+    async (_userId: string) => {
+      const params =
+        statusFilters.length > 0
+          ? statusFilters.map((s) => `status=${encodeURIComponent(s)}`).join("&")
+          : "";
+      const url = params ? `/valets?${params}` : "/valets";
+      return apiClient.get<ValetRow[]>(url);
+    },
+    [statusFilters]
+  );
 
   const onDelete = useCallback(async (row: ValetRow) => {
     if (row.id) await apiClient.delete(`/valets/${row.id}`);
@@ -147,10 +167,26 @@ export default function ValetsPage() {
       <DashboardDataTablePage<ValetRow>
         title={t("tables.valets.title")}
         description={tWithCompany("tables.valets.description", selectedCompanyName)}
-        endpoint="/valets"
+        endpoint=""
+        fetchData={fetchData}
         emptyMessage={t("tables.valets.empty")}
         columns={columns}
         refreshToken={refreshToken}
+        toolbar={
+          <StatusFilterToolbar
+            className="mb-4"
+            tableKey="valets"
+            allLabel={t("tables.valets.filterAll")}
+            placeholder={t("tables.valets.filterStatusPlaceholder")}
+            clearSelectionLabel={t("grid.clearSelection")}
+            options={VALET_STATUS_OPTIONS.map((o) => ({
+              value: o.value,
+              label: tEnum("valetStatus", o.key),
+            }))}
+            selected={statusFilters}
+            onChange={setStatusFilters}
+          />
+        }
         hasRowDetail={
           superAdmin
             ? (valet) =>

@@ -20,6 +20,7 @@ import { MultiSelectCellEditor } from "@/components/MultiSelectCellEditor";
 import { FormattedInputCellEditor } from "@/components/FormattedInputCellEditor";
 import { BrandModelCatalogCellEditor } from "@/components/BrandModelCatalogCellEditor";
 import { AddressCellEditor } from "@/components/AddressCellEditor";
+import { DateTimeCellEditor } from "@/components/DateTimeCellEditor";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageLoader } from "@/components/PageLoader";
 
@@ -52,6 +53,8 @@ type TableColumn<T> = {
   cellEditorValueSeparator?: string;
   /** Función para formatear el input mientras se escribe (ej. formatPlate). Si se define, usa FormattedInputCellEditor. */
   cellEditorInputFormat?: (value: string) => string;
+  /** Si true, usa el mismo selector de fecha/hora que los formularios para edición inline. */
+  cellEditorDateTime?: boolean;
   /** "make" | "model" para dropdown de catálogo de vehículos (marca/modelo). Carga opciones desde API. */
   cellEditorCatalogType?: "make" | "model";
   /** Si true, al editar la celda se abre el modal AddressPickerModal para elegir dirección en mapa. */
@@ -604,20 +607,24 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                       countryCode: column.cellEditorAddressCountryCode,
                     },
                   }
-                : column.cellEditorInputFormat != null
+                : column.cellEditorDateTime === true
                   ? {
-                      cellEditor: FormattedInputCellEditor,
-                      cellEditorParams: { format: column.cellEditorInputFormat },
+                      cellEditor: DateTimeCellEditor,
                     }
-                  : column.cellEditorValues != null && column.cellEditorValues.length > 0
+                  : column.cellEditorInputFormat != null
                     ? {
-                        cellEditor: SelectCellEditor,
-                        cellEditorParams: {
-                          values: column.cellEditorValues,
-                          labels: column.cellEditorLabels,
-                        },
+                        cellEditor: FormattedInputCellEditor,
+                        cellEditorParams: { format: column.cellEditorInputFormat },
                       }
-                    : {};
+                    : column.cellEditorValues != null && column.cellEditorValues.length > 0
+                      ? {
+                          cellEditor: SelectCellEditor,
+                          cellEditorParams: {
+                            values: column.cellEditorValues,
+                            labels: column.cellEditorLabels,
+                          },
+                        }
+                      : {};
         const customValueGetter =
           column.valueGetter != null
             ? (params: ValueGetterParams<T>) =>

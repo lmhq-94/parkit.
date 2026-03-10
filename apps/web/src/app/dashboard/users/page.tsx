@@ -13,15 +13,16 @@ const DashboardDataTablePage = dynamic(
   { ssr: false, loading: () => <div className="flex flex-1 items-center justify-center p-8"><PageLoader /></div> }
 );
 import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
+import { StatusFilterToolbar } from "@/components/StatusFilterToolbar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
 
-const ROLE_FILTER_OPTIONS = [
-  { value: null as string | null, key: "filterAll" },
-  { value: "ADMIN", key: "filterAdmins" },
-  { value: "CUSTOMER", key: "filterCustomer" },
+const EMPLOYEE_ROLE_OPTIONS = [
+  { value: "ADMIN", key: "ADMIN" },
+  { value: "STAFF", key: "STAFF" },
+  { value: "CUSTOMER", key: "CUSTOMER" },
 ] as const;
 
 function UserStatusCellRenderer(
@@ -120,19 +121,21 @@ export default function UsersPage() {
   );
 
   const [refreshToken, setRefreshToken] = useState(0);
-  const [roleFilter, setRoleFilter] = useState<string | null>(null);
+  const [roleFilters, setRoleFilters] = useState<string[]>([]);
   const [includeInactives, setIncludeInactives] = useState(false);
 
   const fetchData = useCallback(
     async (_userId: string) => {
-      const data = await apiClient.get<UserRow[]>("/users?excludeValets=true");
-      return data.filter((u) => {
-        if (roleFilter && u.systemRole !== roleFilter) return false;
-        if (!includeInactives && !u.pendingInvitation && u.isActive === false) return false;
-        return true;
-      });
+      const params = new URLSearchParams();
+      params.set("excludeValets", "true");
+      if (roleFilters.length > 0) {
+        roleFilters.forEach((r) => params.append("systemRole", r));
+      }
+      if (includeInactives) params.set("includeInactives", "true");
+      const url = `/users?${params.toString()}`;
+      return apiClient.get<UserRow[]>(url);
     },
-    [roleFilter, includeInactives]
+    [roleFilters, includeInactives]
   );
 
   const handleResendInvitation = useCallback(async (row: UserRow) => {
@@ -153,22 +156,18 @@ export default function UsersPage() {
         refreshToken={refreshToken}
         toolbar={
           <div className="flex flex-wrap items-center gap-6 mb-4">
-            <div className="flex gap-2 items-center">
-              {ROLE_FILTER_OPTIONS.map((opt) => (
-                <button
-                  key={opt.key}
-                  type="button"
-                  onClick={() => setRoleFilter(opt.value)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    roleFilter === opt.value
-                      ? "bg-company-primary text-white"
-                      : "bg-input-bg text-text-secondary hover:bg-company-primary-subtle hover:text-company-primary border border-input-border"
-                  }`}
-                >
-                  {t(`tables.employees.${opt.key}`)}
-                </button>
-              ))}
-            </div>
+            <StatusFilterToolbar
+              tableKey="employees"
+              allLabel={t("tables.employees.filterAll")}
+              placeholder={t("tables.employees.filterStatusPlaceholder")}
+              clearSelectionLabel={t("grid.clearSelection")}
+              options={EMPLOYEE_ROLE_OPTIONS.map((o) => ({
+                value: o.value,
+                label: tEnum("systemRole", o.key),
+              }))}
+              selected={roleFilters}
+              onChange={setRoleFilters}
+            />
             <label className="flex items-center gap-3 cursor-pointer select-none">
               <button
                 type="button"

@@ -1,5 +1,5 @@
 import { prisma } from "../../shared/prisma";
-import type { Prisma } from "@prisma/client";
+import type { CompanyStatus, Prisma } from "@prisma/client";
 import { CreateCompanyDTO, UpdateCompanyDTO } from "./companies.types";
 import { normalizeBrandingConfig, DEFAULT_BRANDING_CONFIG } from "./branding-defaults";
 
@@ -59,7 +59,7 @@ export class CompaniesService {
     return withNormalizedBranding(company);
   }
 
-  static async list() {
+  static async list(statuses?: string[]) {
     const companies = await prisma.company.findMany({
       select: {
         id: true,
@@ -76,6 +76,9 @@ export class CompaniesService {
         status: true,
         createdAt: true,
         updatedAt: true,
+      },
+      where: {
+        status: statuses?.length ? { in: statuses as CompanyStatus[] } : undefined,
       },
       orderBy: { createdAt: "desc" },
     });

@@ -13,10 +13,13 @@ interface UpdateBookingDTO {
   status?: BookingStatus;
   scheduledEntryTime?: string;
   scheduledExitTime?: string;
+  clientId?: string;
+  vehicleId?: string;
+  parkingId?: string;
 }
 
 interface BookingFilters {
-  status?: string;
+  statuses?: string[];
   clientId?: string;
 }
 
@@ -69,7 +72,9 @@ export class BookingsService {
     return prisma.booking.findMany({
       where: {
         companyId,
-        status: filters.status ? (filters.status as BookingStatus) : undefined,
+        status: filters.statuses?.length
+          ? { in: filters.statuses as BookingStatus[] }
+          : undefined,
         clientId: filters.clientId,
       },
       include: {
@@ -161,6 +166,9 @@ export class BookingsService {
         scheduledExitTime: data.scheduledExitTime
           ? new Date(data.scheduledExitTime)
           : undefined,
+        clientId: data.clientId,
+        vehicleId: data.vehicleId,
+        parkingId: data.parkingId,
       },
       include: {
         client: true,

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { ValetsService } from "./valets.service";
-import { parseQueryParam } from "../../shared/utils/queryParser";
+import { parseQueryParamArray } from "../../shared/utils/queryParser";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
 
 export class ValetsController {
@@ -23,11 +23,11 @@ export class ValetsController {
 
   static async list(req: Request, res: Response) {
     try {
-      const statusStr = parseQueryParam(req.query.status as string | string[] | undefined);
+      const statusArr = parseQueryParamArray(req.query.status as string | string[] | undefined);
 
       const valets = await ValetsService.list(
         req.user.companyId!,
-        statusStr
+        statusArr.length > 0 ? statusArr : undefined
       );
 
       return ok(res, valets);

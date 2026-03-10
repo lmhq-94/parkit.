@@ -47,10 +47,12 @@ export class ValetsService {
     });
   }
 
-  static async list(companyId: string, status?: string) {
+  static async list(companyId: string, statuses?: string[]) {
     const where = {
       companyId,
-      currentStatus: status ? (status as ValetStatus) : undefined,
+      currentStatus: statuses?.length
+        ? { in: statuses as ValetStatus[] }
+        : undefined,
     };
     const userSelectWithInvitation = {
       id: true,

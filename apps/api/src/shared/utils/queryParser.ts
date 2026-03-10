@@ -11,3 +11,16 @@ export function parseQueryParam(
   }
   return undefined;
 }
+
+/** Devuelve un array de strings para parámetros como status (acepta ?status=A&status=B o ?status=A,B) */
+export function parseQueryParamArray(
+  value: string | string[] | ParsedQs | ParsedQs[] | undefined
+): string[] {
+  if (typeof value === "string") {
+    return value.split(",").map((s) => s.trim()).filter(Boolean);
+  }
+  if (Array.isArray(value)) {
+    return value.filter((v): v is string => typeof v === "string");
+  }
+  return [];
+}

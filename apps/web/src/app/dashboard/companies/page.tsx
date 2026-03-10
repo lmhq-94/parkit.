@@ -17,6 +17,7 @@ import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 import { apiClient } from "@/lib/api";
 import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
+import { StatusFilterToolbar } from "@/components/StatusFilterToolbar";
 
 interface Company {
   id: string;
@@ -33,6 +34,13 @@ interface Company {
   name?: string;
 }
 
+const COMPANY_STATUS_OPTIONS = [
+  { value: "PENDING", key: "PENDING" },
+  { value: "ACTIVE", key: "ACTIVE" },
+  { value: "SUSPENDED", key: "SUSPENDED" },
+  { value: "INACTIVE", key: "INACTIVE" },
+] as const;
+
 export default function CompaniesPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
   const user = useAuthStore((s) => s.user);
@@ -40,22 +48,24 @@ export default function CompaniesPage() {
   const bumpCompanies = useDashboardStore((s) => s.bumpCompanies);
   const superAdmin = isSuperAdmin(user);
   const router = useRouter();
-  const [includeInactives, setIncludeInactives] = useState(false);
+  const [refreshToken, setRefreshToken] = useState(0);
+  const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const fetchData = useCallback(
     async (_userId: string): Promise<Company[]> => {
       const u = useAuthStore.getState().user;
       if (isSuperAdmin(u)) {
-        const data = await apiClient.get<Company[]>("/companies");
-        const list = Array.isArray(data) ? data : [];
-        if (!includeInactives) {
-          return list.filter((c) => c.status !== "INACTIVE");
-        }
-        return list;
+        const params =
+          statusFilters.length > 0
+            ? statusFilters.map((s) => `status=${encodeURIComponent(s)}`).join("&")
+            : "";
+        const url = params ? `/companies?${params}` : "/companies";
+        const data = await apiClient.get<Company[]>(url);
+        return Array.isArray(data) ? data : [];
       }
       const data = await apiClient.get<Company>("/companies/me");
       return data ? [data] : [];
     },
-    [includeInactives]
+    [statusFilters]
   );
 
   const columns = useMemo(
@@ -66,6 +76,11 @@ export default function CompaniesPage() {
           c.name ?? c.commercialName ?? c.legalName ?? "—",
         field: "commercialName" as const,
         editable: true,
+        valueGetter: (c: Company) =>
+          c.name ?? c.commercialName ?? c.legalName ?? "",
+        valueSetter: (c: Company, v: unknown) => {
+          c.commercialName = String(v ?? "").trim() || undefined;
+        },
       },
       {
         header: t("tables.companies.email"),
@@ -127,6 +142,7 @@ export default function CompaniesPage() {
         }
       }
       bumpCompanies();
+      setRefreshToken((x) => x + 1);
     },
     [superAdmin, bumpCompanies]
   );
@@ -145,23 +161,23 @@ export default function CompaniesPage() {
         endpoint="/companies"
         fetchData={fetchData}
         columns={columns}
+        refreshToken={refreshToken}
         emptyMessage={t("tables.companies.empty")}
         toolbar={
           superAdmin ? (
-            <div className="flex items-center gap-6 mb-4">
-              <label className="flex items-center gap-3 cursor-pointer select-none">
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={includeInactives}
-                  onClick={() => setIncludeInactives((v) => !v)}
-                  className={`relative w-11 h-6 rounded-full shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page ${includeInactives ? "bg-company-primary" : "bg-input-border"}`}
-                >
-                  <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${includeInactives ? "translate-x-5" : "translate-x-0"}`} />
-                </button>
-                <span className="text-sm text-text-secondary">{t("tables.companies.includeInactives")}</span>
-              </label>
-            </div>
+            <StatusFilterToolbar
+              className="mb-4"
+              tableKey="companies"
+              allLabel={t("tables.companies.filterAll")}
+              placeholder={t("tables.companies.filterStatusPlaceholder")}
+              clearSelectionLabel={t("grid.clearSelection")}
+              options={COMPANY_STATUS_OPTIONS.map((o) => ({
+                value: o.value,
+                label: tEnum("companyStatus", o.key),
+              }))}
+              selected={statusFilters}
+              onChange={setStatusFilters}
+            />
           ) : undefined
         }
         hasRowDetail={(company) =>

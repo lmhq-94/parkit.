@@ -41,22 +41,33 @@ export default function NewBookingPage() {
         setClients(Array.isArray(c) ? c : []);
         setVehicles(Array.isArray(v) ? v : []);
         setParkings(Array.isArray(p) ? p : []);
-      } catch { setClients([]); setVehicles([]); setParkings([]); }
-      finally { setLoading(false); }
+      } catch {
+        setClients([]);
+        setVehicles([]);
+        setParkings([]);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 
   const set = (k: keyof typeof defaultForm) =>
-    (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => setForm((p) => ({ ...p, [k]: e.target.value }));
+    (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) =>
+      setForm((p) => ({ ...p, [k]: e.target.value }));
 
   const handleSubmit = async () => {
     if (!form.clientId || !form.vehicleId || !form.parkingId || !form.scheduledEntryTime) return;
-    setSubmitting(true); setError(null);
+    setSubmitting(true);
+    setError(null);
     try {
       await apiClient.post("/bookings", {
-        clientId: form.clientId, vehicleId: form.vehicleId, parkingId: form.parkingId,
+        clientId: form.clientId,
+        vehicleId: form.vehicleId,
+        parkingId: form.parkingId,
         scheduledEntryTime: new Date(form.scheduledEntryTime).toISOString(),
-        ...(form.scheduledExitTime ? { scheduledExitTime: new Date(form.scheduledExitTime).toISOString() } : {}),
+        ...(form.scheduledExitTime
+          ? { scheduledExitTime: new Date(form.scheduledExitTime).toISOString() }
+          : {}),
       });
       showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/bookings");
@@ -68,7 +79,9 @@ export default function NewBookingPage() {
     }
   };
 
-  const skel = <div className="h-[46px] rounded-lg bg-input-bg border border-input-border animate-pulse" />;
+  const skel = (
+    <div className="h-[46px] rounded-lg bg-input-bg border border-input-border animate-pulse" />
+  );
 
   const steps = [
     {
@@ -76,46 +89,70 @@ export default function NewBookingPage() {
       description: t("bookings.sectionMainDesc"),
       badge: "required" as const,
       accentColor: "teal",
-      isValid: () => !!(form.clientId && form.vehicleId && form.parkingId && form.scheduledEntryTime) && !loading,
+      isValid: () =>
+        !!(form.clientId && form.vehicleId && form.parkingId && form.scheduledEntryTime) &&
+        !loading,
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <div>
-            <label className={LABEL}>{t("bookings.client")} <span className="text-company-primary">*</span></label>
-            {loading ? skel : (
+            <label className={LABEL}>
+              {t("bookings.client")} <span className="text-company-primary">*</span>
+            </label>
+            {loading ? (
+              skel
+            ) : (
               <SelectField value={form.clientId} onChange={set("clientId")} icon={Users}>
                 <option value="">{t("common.selectPlaceholder")}</option>
-                {clients.map(c => (
+                {clients.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {`${c.user?.firstName ?? ""} ${c.user?.lastName ?? ""}`.trim() || c.user?.email || c.id}
+                    {`${c.user?.firstName ?? ""} ${c.user?.lastName ?? ""}`.trim() ||
+                      c.user?.email ||
+                      c.id}
                   </option>
                 ))}
               </SelectField>
             )}
           </div>
           <div>
-            <label className={LABEL}>{t("bookings.vehicle")} <span className="text-company-primary">*</span></label>
-            {loading ? skel : (
+            <label className={LABEL}>
+              {t("bookings.vehicle")} <span className="text-company-primary">*</span>
+            </label>
+            {loading ? (
+              skel
+            ) : (
               <SelectField value={form.vehicleId} onChange={set("vehicleId")} icon={Car}>
                 <option value="">{t("common.selectPlaceholder")}</option>
-                {vehicles.map(v => (
+                {vehicles.map((v) => (
                   <option key={v.id} value={v.id}>
-                    {v.plate ? `${v.plate} — ${[v.brand, v.model].filter(Boolean).join(" ")}` : v.id}
+                    {v.plate
+                      ? `${v.plate} — ${[v.brand, v.model].filter(Boolean).join(" ")}`
+                      : v.id}
                   </option>
                 ))}
               </SelectField>
             )}
           </div>
           <div>
-            <label className={LABEL}>{t("bookings.parking")} <span className="text-company-primary">*</span></label>
-            {loading ? skel : (
+            <label className={LABEL}>
+              {t("bookings.parking")} <span className="text-company-primary">*</span>
+            </label>
+            {loading ? (
+              skel
+            ) : (
               <SelectField value={form.parkingId} onChange={set("parkingId")} icon={MapPin}>
                 <option value="">{t("common.selectPlaceholder")}</option>
-                {parkings.map(p => <option key={p.id} value={p.id}>{p.name ?? p.id}</option>)}
+                {parkings.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name ?? p.id}
+                  </option>
+                ))}
               </SelectField>
             )}
           </div>
           <div>
-            <label className={LABEL}>{t("bookings.scheduledEntry")} <span className="text-company-primary">*</span></label>
+            <label className={LABEL}>
+              {t("bookings.scheduledEntry")} <span className="text-company-primary">*</span>
+            </label>
             <DateTimePickerField
               value={form.scheduledEntryTime}
               onChange={(v) => setForm((p) => ({ ...p, scheduledEntryTime: v }))}
@@ -155,3 +192,4 @@ export default function NewBookingPage() {
     />
   );
 }
+

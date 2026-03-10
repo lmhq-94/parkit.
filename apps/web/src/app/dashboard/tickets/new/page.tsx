@@ -8,7 +8,7 @@ import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
-import { FormPageSkeleton } from "@/components/FormPageSkeleton";
+import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -78,7 +78,13 @@ export default function NewTicketPage() {
 
   const isValid = form.clientId && form.vehicleId && form.parkingId;
 
-  if (loading) return <FormPageSkeleton />;
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center min-h-[200px]">
+        <PageLoader />
+      </div>
+    );
+  }
 
   const skel = <div className="h-[46px] rounded-lg bg-input-bg border border-input-border animate-pulse" />;
 
@@ -148,16 +154,16 @@ export default function NewTicketPage() {
               )}
             </div>
           </div>
+        </div>
+      </div>
 
-          <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 px-5 py-4 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-rose-500/15 border border-rose-500/20 flex items-center justify-center shrink-0 mt-0.5">
-              <Ticket className="w-4 h-4 text-rose-500" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-text-primary">{t("tickets.entryTicket")}</p>
-              <p className="text-xs text-text-muted mt-0.5">{t("tickets.entryTicketNote")}</p>
-            </div>
-          </div>
+      <div className="px-5 py-4 flex items-start gap-3 bg-rose-500/5 rounded-xl">
+        <div className="w-8 h-8 rounded-lg bg-rose-500/15 flex items-center justify-center shrink-0 mt-0.5">
+          <Ticket className="w-4 h-4 text-rose-500" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-text-primary">{t("tickets.entryTicket")}</p>
+          <p className="text-xs text-text-muted mt-0.5">{t("tickets.entryTicketNote")}</p>
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { CompaniesService } from "./companies.service";
+import { parseQueryParamArray } from "../../shared/utils/queryParser";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
 
 export class CompaniesController {
@@ -72,7 +73,8 @@ export class CompaniesController {
 
   static async list(_req: Request, res: Response) {
     try {
-      const companies = await CompaniesService.list();
+      const statuses = parseQueryParamArray(_req.query.status as string | string[] | undefined);
+      const companies = await CompaniesService.list(statuses.length > 0 ? statuses : undefined);
       return ok(res, companies);
     } catch (error: unknown) {
       return fail(

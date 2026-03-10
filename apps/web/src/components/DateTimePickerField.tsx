@@ -10,6 +10,10 @@ interface DateTimePickerFieldProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  /** Si true, abre el popup automáticamente al montarse (útil para inline edits en tablas). */
+  autoOpenOnMount?: boolean;
+  /** Variantes de estilo: "default" (formularios) o "inline" (edición en celdas de tabla). */
+  variant?: "default" | "inline";
 }
 
 function parseDateTime(v: string): Date | null {
@@ -53,6 +57,8 @@ export function DateTimePickerField({
   onChange,
   placeholder,
   className,
+  autoOpenOnMount,
+  variant = "default",
 }: DateTimePickerFieldProps) {
   const { t } = useTranslation();
   const today = new Date();
@@ -94,26 +100,20 @@ export function DateTimePickerField({
 
   const triggerRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    if (parsed) {
-      setTime({ hour: parsed.getHours(), minute: parsed.getMinutes() });
-    }
-  }, [value, open]);
-
   const updatePosition = useCallback(() => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const CALENDAR_HEIGHT = 400;
+    const CALENDAR_HEIGHT = 300;
     const MARGIN = 12;
-    const minWidth = 280;
+    const popupWidth = 260;
     const isNarrow = vw < 400;
-    const width = isNarrow ? vw - MARGIN * 2 : Math.max(minWidth, Math.min(rect.width, vw - MARGIN * 2));
+    const width = isNarrow ? vw - MARGIN * 2 : Math.min(popupWidth, vw - MARGIN * 2);
     const left = isNarrow ? MARGIN : (() => {
-      let L = rect.left;
-      if (L + width > vw - MARGIN) L = vw - width - MARGIN;
+      let L = rect.right - width;
       if (L < MARGIN) L = MARGIN;
+      if (L + width > vw - MARGIN) L = vw - width - MARGIN;
       return L;
     })();
     const spaceBelow = vh - rect.bottom - MARGIN;
@@ -137,6 +137,22 @@ export function DateTimePickerField({
     }
     setOpen((o) => !o);
   };
+
+  // Abrir automáticamente al montarse (para inline edit: primer clic ya muestra el popup)
+  useEffect(() => {
+    if (!autoOpenOnMount) return;
+    const id = window.setTimeout(() => {
+      updatePosition();
+      setOpen(true);
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, [autoOpenOnMount, updatePosition]);
+
+  useEffect(() => {
+    if (parsed) {
+      setTime({ hour: parsed.getHours(), minute: parsed.getMinutes() });
+    }
+  }, [value, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -235,7 +251,7 @@ export function DateTimePickerField({
     createPortal(
       <div
         data-datetimepicker-dropdown
-        className="fixed z-[99999] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl bg-white dark:bg-slate-900 overflow-hidden select-none max-w-[calc(100vw-24px)]"
+        className="fixed z-[99999] rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl bg-white dark:bg-slate-900 overflow-hidden select-none max-w-[calc(100vw-24px)]"
         style={{
           top: position.top,
           bottom: position.bottom,
@@ -244,37 +260,37 @@ export function DateTimePickerField({
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-between px-2.5 py-2 border-b border-slate-100 dark:border-slate-800">
           <button
             type="button"
             onClick={prevMonth}
-            className="w-8 h-8 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors touch-manipulation"
+            className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors touch-manipulation"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-3.5 h-3.5" />
           </button>
-          <span className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 tracking-wide truncate">
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 tracking-wide truncate">
             {monthNames[view.month]} {view.year}
           </span>
           <button
             type="button"
             onClick={nextMonth}
-            className="w-8 h-8 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors touch-manipulation"
+            className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors touch-manipulation"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
         {/* Day of week headers */}
-        <div className="grid grid-cols-7 px-2 sm:px-3 pt-2 pb-1 gap-px">
+        <div className="grid grid-cols-7 px-2 pt-1 pb-0.5 gap-px">
           {dowLabels.map((d, i) => (
-            <div key={i} className="text-center text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider py-0.5 sm:py-1">
+            <div key={i} className="text-center text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
               {d}
             </div>
           ))}
         </div>
 
         {/* Days grid */}
-        <div className="grid grid-cols-7 px-2 sm:px-3 pb-2 gap-0.5 sm:gap-y-0.5">
+        <div className="grid grid-cols-7 px-2 pb-1.5 gap-0.5">
           {Array.from({ length: firstDow }).map((_, i) => (
             <div key={`empty-${i}`} />
           ))}
@@ -290,7 +306,7 @@ export function DateTimePickerField({
                 type="button"
                 onClick={() => selectDay(day)}
                 className={[
-                  "w-full aspect-square min-w-0 rounded-lg text-xs sm:text-sm transition-colors flex items-center justify-center font-medium touch-manipulation",
+                  "w-full aspect-square min-w-0 rounded-md text-xs transition-colors flex items-center justify-center font-medium touch-manipulation",
                   isSelected
                     ? "bg-company-primary text-white shadow-sm"
                     : isToday
@@ -305,45 +321,51 @@ export function DateTimePickerField({
         </div>
 
         {/* Time row — 12h con AM/PM */}
-        <div className="px-3 sm:px-4 py-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 flex-wrap">
-          <Clock className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
-          <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{t("datepicker.time")}</span>
-          <select
-            value={hour12}
-            onChange={(e) => setHour(hour12AmPmTo24(Number(e.target.value), ampm))}
-            className="flex-1 min-w-0 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 text-sm py-2 px-2"
-          >
-            {hours12.map((h) => (
-              <option key={h} value={h}>
-                {h}
-              </option>
-            ))}
-          </select>
-          <span className="text-slate-400 dark:text-slate-500">:</span>
-          <select
-            value={parsed ? parsed.getMinutes() : time.minute}
-            onChange={(e) => setMinute(Number(e.target.value))}
-            className="flex-1 min-w-0 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 text-sm py-2 px-2"
-          >
-            {minutes.map((m) => (
-              <option key={m} value={m}>
-                {String(m).padStart(2, "0")}
-              </option>
-            ))}
-          </select>
-          <select
-            value={ampm}
-            onChange={(e) => setHour(hour12AmPmTo24(hour12, e.target.value as "AM" | "PM"))}
-            className="min-w-[4rem] rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 text-sm py-2 px-2"
-          >
-            <option value="AM">{t("datepicker.am")}</option>
-            <option value="PM">{t("datepicker.pm")}</option>
-          </select>
+        <div className="px-2.5 py-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-2 flex-nowrap">
+            <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+            <span className="text-xs font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
+              {t("datepicker.time")}
+            </span>
+            <div className="flex items-center gap-1.5 ml-auto">
+              <select
+                value={hour12}
+                onChange={(e) => setHour(hour12AmPmTo24(Number(e.target.value), ampm))}
+                className="w-[3rem] rounded-md border border-input-border bg-input-bg text-slate-800 dark:text-slate-200 text-xs py-1.5 px-1.5"
+              >
+                {hours12.map((h) => (
+                  <option key={h} value={h}>
+                    {h}
+                  </option>
+                ))}
+              </select>
+              <span className="text-slate-400 dark:text-slate-500">:</span>
+              <select
+                value={parsed ? parsed.getMinutes() : time.minute}
+                onChange={(e) => setMinute(Number(e.target.value))}
+                className="w-[3rem] rounded-md border border-input-border bg-input-bg text-slate-800 dark:text-slate-200 text-xs py-1.5 px-1.5"
+              >
+                {minutes.map((m) => (
+                  <option key={m} value={m}>
+                    {String(m).padStart(2, "0")}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={ampm}
+                onChange={(e) => setHour(hour12AmPmTo24(hour12, e.target.value as "AM" | "PM"))}
+                className="w-[3.25rem] rounded-md border border-input-border bg-input-bg text-slate-800 dark:text-slate-200 text-xs py-1.5 px-1.5"
+              >
+                <option value="AM">{t("datepicker.am")}</option>
+                <option value="PM">{t("datepicker.pm")}</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
         {value && (
-          <div className="border-t border-slate-100 dark:border-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between">
+          <div className="border-t border-slate-100 dark:border-slate-800 px-2.5 py-1.5 flex items-center justify-between">
             <span className="text-xs text-slate-500 dark:text-slate-400">
               {formatDisplay(value)}
             </span>
@@ -366,18 +388,25 @@ export function DateTimePickerField({
   return (
     <>
       <div className={["relative group w-full", className ?? ""].join(" ")}>
-        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none z-10 transition-colors group-focus-within:text-company-primary" />
+        {variant === "default" && (
+          <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none z-10 transition-colors group-focus-within:text-company-primary" />
+        )}
         <button
           ref={triggerRef}
           type="button"
           onClick={handleOpen}
           className={[
-            "w-full py-3 pl-10 pr-4 rounded-lg border bg-input-bg text-sm text-left transition-colors cursor-pointer",
-            open
-              ? "border-company-primary ring-1 ring-company-primary-full"
-              : "border-input-border hover:border-company-primary-muted",
+            variant === "inline"
+              ? "w-full py-2 px-2 text-xs sm:text-sm text-left cursor-pointer bg-transparent border-none shadow-none"
+              : "w-full py-3 pl-10 pr-4 rounded-lg border bg-input-bg text-sm text-left transition-colors cursor-pointer",
+            variant === "default" &&
+              (open
+                ? "border-company-primary ring-1 ring-company-primary-full"
+                : "border-input-border hover:border-company-primary-muted"),
             displayValue ? "text-text-primary" : "text-text-muted",
-          ].join(" ")}
+          ]
+            .filter(Boolean)
+            .join(" ")}
         >
           {displayValue || (placeholder ?? t("datepicker.placeholderDateTime"))}
         </button>
@@ -386,3 +415,4 @@ export function DateTimePickerField({
     </>
   );
 }
+

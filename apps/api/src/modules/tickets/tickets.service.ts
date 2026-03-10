@@ -12,6 +12,10 @@ interface CreateTicketDTO {
 interface UpdateTicketDTO {
   status?: TicketStatus;
   slotId?: string;
+  parkingId?: string;
+  vehicleId?: string;
+  entryTime?: string;
+  exitTime?: string;
 }
 
 interface AssignValet {
@@ -31,7 +35,7 @@ interface AddReviewDTO {
 }
 
 interface TicketFilters {
-  status?: string;
+  statuses?: string[];
   clientId?: string;
   valetId?: string;
 }
@@ -84,7 +88,9 @@ export class TicketsService {
     return prisma.ticket.findMany({
       where: {
         companyId,
-        status: filters.status ? (filters.status as TicketStatus) : undefined,
+        status: filters.statuses?.length
+          ? { in: filters.statuses as TicketStatus[] }
+          : undefined,
         clientId: filters.clientId,
         assignments: filters.valetId
           ? {
@@ -197,6 +203,10 @@ export class TicketsService {
       data: {
         status: data.status,
         slotId: data.slotId,
+        parkingId: data.parkingId,
+        vehicleId: data.vehicleId,
+        entryTime: data.entryTime ? new Date(data.entryTime) : undefined,
+        exitTime: data.exitTime ? new Date(data.exitTime) : undefined,
       },
       include: {
         vehicle: true,

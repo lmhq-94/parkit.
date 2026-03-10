@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Plus } from "lucide-react";
@@ -18,6 +18,7 @@ import { formatDateTimeDisplay } from "@/lib/dateFormat";
 import { formatPlate } from "@/lib/inputMasks";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
+import { StatusFilterToolbar } from "@/components/StatusFilterToolbar";
 
 type TicketRow = {
   id?: string;
@@ -36,6 +37,16 @@ type TicketRow = {
   createdAt?: string | null;
 };
 
+type VehicleOption = { id: string; plate?: string; brand?: string; model?: string };
+type ParkingOption = { id: string; name?: string };
+
+const TICKET_STATUS_OPTIONS = [
+  { value: "PARKED", key: "PARKED" },
+  { value: "REQUESTED", key: "REQUESTED" },
+  { value: "DELIVERED", key: "DELIVERED" },
+  { value: "CANCELLED", key: "CANCELLED" },
+] as const;
+
 export default function TicketsPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
   const user = useAuthStore((s) => s.user);
@@ -44,6 +55,37 @@ export default function TicketsPage() {
   const canManage = superAdmin || user?.systemRole === "ADMIN";
   const router = useRouter();
   const [refreshToken, setRefreshToken] = useState(0);
+  const [statusFilters, setStatusFilters] = useState<string[]>([]);
+  const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
+  const [parkings, setParkings] = useState<ParkingOption[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const [v, p] = await Promise.all([
+          apiClient.get<VehicleOption[]>("/vehicles"),
+          apiClient.get<ParkingOption[]>("/parkings"),
+        ]);
+        setVehicles(Array.isArray(v) ? v : []);
+        setParkings(Array.isArray(p) ? p : []);
+      } catch {
+        setVehicles([]);
+        setParkings([]);
+      }
+    })();
+  }, []);
+
+  const fetchData = useCallback(
+    async (_userId: string) => {
+      const params =
+        statusFilters.length > 0
+          ? statusFilters.map((s) => `status=${encodeURIComponent(s)}`).join("&")
+          : "";
+      const url = params ? `/tickets?${params}` : "/tickets";
+      return apiClient.get<TicketRow[]>(url);
+    },
+    [statusFilters]
+  );
 
   const onDelete = useCallback(async (row: { id?: string }) => {
     if (!row.id) return;
@@ -51,9 +93,15 @@ export default function TicketsPage() {
     setRefreshToken((x) => x + 1);
   }, []);
 
-  const onUpdate = useCallback(async (row: { id?: string; status?: string }) => {
+  const onUpdate = useCallback(async (row: TicketRow) => {
     if (!row.id) return;
-    if (row.status != null) await apiClient.patch(`/tickets/${row.id}`, { status: row.status });
+    const payload: Record<string, unknown> = {};
+    if (row.status != null) payload.status = row.status;
+    if (row.parkingId) payload.parkingId = row.parkingId;
+    if (row.vehicleId) payload.vehicleId = row.vehicleId;
+    if (row.entryTime) payload.entryTime = new Date(row.entryTime).toISOString();
+    if (row.exitTime) payload.exitTime = new Date(row.exitTime).toISOString();
+    await apiClient.patch(`/tickets/${row.id}`, payload);
     setRefreshToken((x) => x + 1);
   }, []);
 
@@ -61,28 +109,62 @@ export default function TicketsPage() {
     () => [
       {
         header: t("tables.tickets.parkingId"),
-        render: (ticket: { parkingId?: string; parking?: { name?: string } }) =>
-          ticket.parking?.name ?? ticket.parkingId ?? "—",
+        render: (ticket: TicketRow) => {
+          if (ticket.parking?.name) return ticket.parking.name;
+          const opt = parkings.find((p) => p.id === ticket.parkingId);
+          if (opt) return opt.name ?? opt.id ?? "—";
+          return ticket.parkingId ?? "—";
+        },
+        field: "parkingId" as const,
+        editable: canManage,
+        cellEditorValues: parkings.map((p) => p.id),
+        cellEditorLabels: parkings.map((p) => p.name ?? p.id),
       },
       {
         colId: "ticket-vehicle",
         header: t("tables.tickets.vehicleId"),
-        render: (ticket: {
-          vehicleId?: string;
-          vehicle?: { brand?: string; model?: string };
-        }) => {
+        render: (ticket: TicketRow) => {
           const v = ticket.vehicle;
-          if (v && (v.brand || v.model)) {
-            return [v.brand, v.model].filter(Boolean).join(" ").trim() || "—";
+          if (v && (v.plate || v.brand || v.model)) {
+            const label = [
+              v.plate ? formatPlate(v.plate) : null,
+              [v.brand, v.model].filter(Boolean).join(" "),
+            ]
+              .filter(Boolean)
+              .join(" — ")
+              .trim();
+            if (label) return label;
           }
-          return ticket.vehicleId ?? "—";
+          if (ticket.vehicleId) {
+            const opt = vehicles.find((x) => x.id === ticket.vehicleId);
+            if (opt) {
+              const label = [
+                opt.plate ? formatPlate(opt.plate) : null,
+                [opt.brand, opt.model].filter(Boolean).join(" "),
+              ]
+                .filter(Boolean)
+                .join(" — ")
+                .trim();
+              if (label) return label;
+              return opt.id;
+            }
+            return ticket.vehicleId;
+          }
+          return "—";
         },
-      },
-      {
-        colId: "ticket-plate",
-        header: t("tables.vehicles.plate"),
-        render: (ticket: { vehicle?: { plate?: string } }) =>
-          ticket.vehicle?.plate ? formatPlate(ticket.vehicle.plate) : "—",
+        field: "vehicleId" as const,
+        editable: canManage,
+        cellEditorValues: vehicles.map((v) => v.id),
+        cellEditorLabels: vehicles.map((v) => {
+          const label = [
+            v.plate ? formatPlate(v.plate) : null,
+            [v.brand, v.model].filter(Boolean).join(" "),
+          ]
+            .filter(Boolean)
+            .join(" — ")
+            .trim();
+          return label || v.id;
+        }),
       },
       {
         header: t("tables.tickets.status"),
@@ -98,24 +180,46 @@ export default function TicketsPage() {
         header: t("tables.tickets.entry"),
         render: (ticket: { entryTime?: string }) =>
           ticket.entryTime ? formatDateTimeDisplay(new Date(ticket.entryTime), t) : "—",
+        field: "entryTime" as const,
+        editable: canManage,
+        cellEditorDateTime: true,
       },
       {
         header: t("tables.tickets.exit"),
         render: (ticket: { exitTime?: string }) =>
           ticket.exitTime ? formatDateTimeDisplay(new Date(ticket.exitTime), t) : "—",
+        field: "exitTime" as const,
+        editable: canManage,
+        cellEditorDateTime: true,
       },
     ],
-    [t, tEnum, canManage]
+    [t, tEnum, canManage, vehicles, parkings]
   );
   return (
     <>
       <DashboardDataTablePage<TicketRow>
         title={t("tables.tickets.title")}
         description={tWithCompany("tables.tickets.description", selectedCompanyName)}
-        endpoint="/tickets"
+        endpoint=""
+        fetchData={fetchData}
         emptyMessage={t("tables.tickets.empty")}
         columns={columns}
         refreshToken={refreshToken}
+        toolbar={
+          <StatusFilterToolbar
+            className="mb-4"
+            tableKey="tickets"
+            allLabel={t("tables.tickets.filterAll")}
+            placeholder={t("tables.tickets.filterStatusPlaceholder")}
+            clearSelectionLabel={t("grid.clearSelection")}
+            options={TICKET_STATUS_OPTIONS.map((o) => ({
+              value: o.value,
+              label: tEnum("ticketStatus", o.key),
+            }))}
+            selected={statusFilters}
+            onChange={setStatusFilters}
+          />
+        }
         hasRowDetail={() => true}
         renderRowDetail={(ticket) => {
           const ownerName = ticket.client?.user
