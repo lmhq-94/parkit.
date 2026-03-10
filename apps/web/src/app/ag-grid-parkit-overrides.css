@@ -305,6 +305,38 @@
   border-color: var(--input-border) !important;
 }
 
+/* Separadores entre columnas: solo en el centro del alto, finos, sin tocar el contenido */
+.ag-theme-quartz.ag-theme-parkit .ag-header-cell,
+.ag-theme-quartz.ag-theme-parkit .ag-header-group-cell {
+  border-right: 1px solid transparent;
+  border-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 35%,
+    rgba(148, 163, 184, 0.35) 35%,
+    rgba(148, 163, 184, 0.35) 65%,
+    transparent 65%,
+    transparent 100%
+  ) 1;
+}
+
+.dark .ag-theme-quartz.ag-theme-parkit .ag-header-cell,
+.dark .ag-theme-quartz.ag-theme-parkit .ag-header-group-cell {
+  border-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 35%,
+    rgba(148, 163, 184, 0.22) 35%,
+    rgba(148, 163, 184, 0.22) 65%,
+    transparent 65%,
+    transparent 100%
+  ) 1;
+}
+
+.ag-theme-quartz.ag-theme-parkit .ag-header-row:not(.ag-header-row-column-group) .ag-header-cell:last-child {
+  border-right: none;
+}
+
 .ag-theme-parkit .ag-checkbox-input-wrapper.ag-checked,
 .ag-theme-quartz .ag-checkbox-input-wrapper.ag-checked,
 .ag-filter .ag-checkbox-input-wrapper.ag-checked {
