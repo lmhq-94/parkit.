@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -40,17 +40,22 @@ export default function CompaniesPage() {
   const bumpCompanies = useDashboardStore((s) => s.bumpCompanies);
   const superAdmin = isSuperAdmin(user);
   const router = useRouter();
-  const fetchData = useMemo(
-    () => async (_userId: string): Promise<Company[]> => {
+  const [includeInactives, setIncludeInactives] = useState(false);
+  const fetchData = useCallback(
+    async (_userId: string): Promise<Company[]> => {
       const u = useAuthStore.getState().user;
       if (isSuperAdmin(u)) {
         const data = await apiClient.get<Company[]>("/companies");
-        return Array.isArray(data) ? data : [];
+        const list = Array.isArray(data) ? data : [];
+        if (!includeInactives) {
+          return list.filter((c) => c.status !== "INACTIVE");
+        }
+        return list;
       }
       const data = await apiClient.get<Company>("/companies/me");
       return data ? [data] : [];
     },
-    []
+    [includeInactives]
   );
 
   const columns = useMemo(
@@ -141,6 +146,24 @@ export default function CompaniesPage() {
         fetchData={fetchData}
         columns={columns}
         emptyMessage={t("tables.companies.empty")}
+        toolbar={
+          superAdmin ? (
+            <div className="flex items-center gap-6 mb-4">
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={includeInactives}
+                  onClick={() => setIncludeInactives((v) => !v)}
+                  className={`relative w-11 h-6 rounded-full shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page ${includeInactives ? "bg-company-primary" : "bg-input-border"}`}
+                >
+                  <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${includeInactives ? "translate-x-5" : "translate-x-0"}`} />
+                </button>
+                <span className="text-sm text-text-secondary">{t("tables.companies.includeInactives")}</span>
+              </label>
+            </div>
+          ) : undefined
+        }
         hasRowDetail={(company) =>
           (company.legalName != null && company.legalName !== "") ||
           (company.taxId != null && company.taxId !== "") ||

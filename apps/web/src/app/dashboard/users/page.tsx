@@ -121,16 +121,18 @@ export default function UsersPage() {
 
   const [refreshToken, setRefreshToken] = useState(0);
   const [roleFilter, setRoleFilter] = useState<string | null>(null);
+  const [includeInactives, setIncludeInactives] = useState(false);
 
   const fetchData = useCallback(
     async (_userId: string) => {
       const data = await apiClient.get<UserRow[]>("/users?excludeValets=true");
-      if (roleFilter) {
-        return data.filter((u) => u.systemRole === roleFilter);
-      }
-      return data;
+      return data.filter((u) => {
+        if (roleFilter && u.systemRole !== roleFilter) return false;
+        if (!includeInactives && !u.pendingInvitation && u.isActive === false) return false;
+        return true;
+      });
     },
-    [roleFilter]
+    [roleFilter, includeInactives]
   );
 
   const handleResendInvitation = useCallback(async (row: UserRow) => {
@@ -150,21 +152,35 @@ export default function UsersPage() {
         columns={columns}
         refreshToken={refreshToken}
         toolbar={
-          <div className="flex gap-2 mb-4">
-            {ROLE_FILTER_OPTIONS.map((opt) => (
+          <div className="flex flex-wrap items-center gap-6 mb-4">
+            <div className="flex gap-2 items-center">
+              {ROLE_FILTER_OPTIONS.map((opt) => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => setRoleFilter(opt.value)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    roleFilter === opt.value
+                      ? "bg-company-primary text-white"
+                      : "bg-input-bg text-text-secondary hover:bg-company-primary-subtle hover:text-company-primary border border-input-border"
+                  }`}
+                >
+                  {t(`tables.employees.${opt.key}`)}
+                </button>
+              ))}
+            </div>
+            <label className="flex items-center gap-3 cursor-pointer select-none">
               <button
-                key={opt.key}
                 type="button"
-                onClick={() => setRoleFilter(opt.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  roleFilter === opt.value
-                    ? "bg-company-primary text-white"
-                    : "bg-input-bg text-text-secondary hover:bg-company-primary-subtle hover:text-company-primary border border-input-border"
-                }`}
+                role="switch"
+                aria-checked={includeInactives}
+                onClick={() => setIncludeInactives((v) => !v)}
+                className={`relative w-11 h-6 rounded-full shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page ${includeInactives ? "bg-company-primary" : "bg-input-border"}`}
               >
-                {t(`tables.employees.${opt.key}`)}
+                <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${includeInactives ? "translate-x-5" : "translate-x-0"}`} />
               </button>
-            ))}
+              <span className="text-sm text-text-secondary">{t("tables.employees.includeInactives")}</span>
+            </label>
           </div>
         }
         hasRowDetail={() => true}
