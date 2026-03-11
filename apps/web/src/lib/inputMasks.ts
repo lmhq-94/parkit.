@@ -42,27 +42,43 @@ export function formatPhone(value: string): string {
   return (hasPlus ? "+" : "") + digits;
 }
 
+/** Códigos de marcación únicos ordenados por longitud descendente (para emparejar el más largo primero, ej. 1264 antes de 1). */
+const DIAL_CODES_SORTED = [...new Set(Object.values(COUNTRY_DIAL_CODES))].sort(
+  (a, b) => b.length - a.length
+);
+
+/** Devuelve un código de país ISO para un código de marcación (si varios comparten, devuelve el primero). */
+function countryCodeFromDialCode(dialCode: string): string | undefined {
+  return Object.entries(COUNTRY_DIAL_CODES).find(([, d]) => d === dialCode)?.[0];
+}
+
 /**
- * Teléfono con máscara de código de país. Ej: Costa Rica → "+506 6216-4040".
- * @param value - Valor actual del input (puede incluir o no el + y el código de país).
- * @param countryCode - Código ISO del país (ej. "CR"). Por defecto "CR".
+ * Teléfono internacional: detecta el código de país por el prefijo y formatea.
+ * Acepta cualquier código (ej. +1, +34, +506). Para input y para mostrar.
+ * @param value - Valor actual (puede ser "+506 6216-4040", "50662164040", "+1 555 1234567", etc.).
  */
-export function formatPhoneWithCountryCode(value: string, countryCode: string = "CR"): string {
-  const dial = COUNTRY_DIAL_CODES[countryCode] ?? "506";
-  const digits = value.replace(/\D/g, "");
+export function formatPhoneInternational(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 15);
   if (digits.length === 0) return "";
 
-  // Si el valor ya empieza con el código de país, usar solo la parte local para formatear
-  let localDigits: string;
-  if (digits.startsWith(dial)) {
-    localDigits = digits.slice(dial.length);
-  } else {
-    localDigits = digits;
+  let dial = "";
+  let localDigits = digits;
+  for (const d of DIAL_CODES_SORTED) {
+    if (digits.startsWith(d)) {
+      dial = d;
+      localDigits = digits.slice(d.length);
+      break;
+    }
   }
-  localDigits = localDigits.slice(0, 15);
+  if (!dial) {
+    dial = digits;
+    localDigits = "";
+  }
 
   const prefix = `+${dial}`;
-  if (localDigits.length === 0) return prefix + " ";
+  if (localDigits.length === 0) return prefix + (dial === digits ? "" : " ");
+
+  const countryCode = countryCodeFromDialCode(dial);
 
   // Costa Rica: +506 XXXX-XXXX (8 dígitos locales)
   if (countryCode === "CR" && dial === "506") {
@@ -77,12 +93,55 @@ export function formatPhoneWithCountryCode(value: string, countryCode: string = 
     const a = localDigits.slice(0, 3);
     const b = localDigits.slice(3, 6);
     const c = localDigits.slice(6, 10);
-    if (c.length === 0 && b.length === 0) return `${prefix} ${a.length ? `(${a})` : ""}`;
+    if (c.length === 0 && b.length === 0) return `${prefix} ${a.length ? `(${a})` : ""}`.trim();
     if (c.length === 0) return `${prefix} (${a}) ${b}`;
     return `${prefix} (${a}) ${b}-${c}`;
   }
 
   // Genérico: +dial XXXX-XXXX-...
+  const parts: string[] = [];
+  for (let i = 0; i < localDigits.length; i += 4) parts.push(localDigits.slice(i, i + 4));
+  return `${prefix} ${parts.join("-")}`;
+}
+
+/**
+ * Teléfono con máscara de código de país (cuando ya conoces el país, ej. empresa).
+ * Ej: Costa Rica → "+506 6216-4040". Para compatibilidad y cuando el contexto tiene countryCode.
+ * @param value - Valor actual del input (puede incluir o no el + y el código de país).
+ * @param countryCode - Código ISO del país (ej. "CR"). Por defecto "CR".
+ */
+export function formatPhoneWithCountryCode(value: string, countryCode: string = "CR"): string {
+  const dial = COUNTRY_DIAL_CODES[countryCode] ?? "506";
+  const digits = value.replace(/\D/g, "");
+  if (digits.length === 0) return "";
+
+  let localDigits: string;
+  if (digits.startsWith(dial)) {
+    localDigits = digits.slice(dial.length);
+  } else {
+    localDigits = digits;
+  }
+  localDigits = localDigits.slice(0, 15);
+
+  const prefix = `+${dial}`;
+  if (localDigits.length === 0) return prefix + " ";
+
+  if (countryCode === "CR" && dial === "506") {
+    const a = localDigits.slice(0, 4);
+    const b = localDigits.slice(4, 8);
+    if (b.length === 0) return `${prefix} ${a}`;
+    return `${prefix} ${a}-${b}`;
+  }
+
+  if (dial === "1" && localDigits.length <= 10) {
+    const a = localDigits.slice(0, 3);
+    const b = localDigits.slice(3, 6);
+    const c = localDigits.slice(6, 10);
+    if (c.length === 0 && b.length === 0) return `${prefix} ${a.length ? `(${a})` : ""}`;
+    if (c.length === 0) return `${prefix} (${a}) ${b}`;
+    return `${prefix} (${a}) ${b}-${c}`;
+  }
+
   const parts: string[] = [];
   for (let i = 0; i < localDigits.length; i += 4) parts.push(localDigits.slice(i, i + 4));
   return `${prefix} ${parts.join("-")}`;

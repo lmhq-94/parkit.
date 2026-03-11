@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Ticket, Users, Car, MapPin, ArrowRight } from "lucide-react";
@@ -28,6 +28,7 @@ export default function EditTicketPage() {
   const id = params.id as string;
   const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
   const [form, setForm] = useState(defaultForm);
+  const [initialForm, setInitialForm] = useState(defaultForm);
   const [clients, setClients] = useState<ClientOption[]>([]);
   const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
   const [parkings, setParkings] = useState<ParkingOption[]>([]);
@@ -45,11 +46,13 @@ export default function EditTicketPage() {
           apiClient.get<ParkingOption[]>("/parkings"),
         ]);
         if (ticket) {
-          setForm({
+          const loaded = {
             clientId: String(ticket.clientId ?? ""),
             vehicleId: String(ticket.vehicleId ?? ""),
             parkingId: String(ticket.parkingId ?? ""),
-          });
+          };
+          setForm(loaded);
+          setInitialForm(loaded);
         }
         setClients(Array.isArray(c) ? c : []);
         setVehicles(Array.isArray(v) ? v : []);
@@ -80,6 +83,10 @@ export default function EditTicketPage() {
     } finally { setSubmitting(false); }
   };
 
+  const isDirty = useMemo(
+    () => JSON.stringify(form) !== JSON.stringify(initialForm),
+    [form, initialForm]
+  );
   const isValid = form.clientId && form.vehicleId && form.parkingId;
 
   if (loading) {
@@ -156,7 +163,7 @@ export default function EditTicketPage() {
             className="px-5 py-3 rounded-lg border border-input-border text-sm font-medium text-text-secondary hover:bg-input-bg hover:text-text-primary transition-colors">
             {t("common.cancel")}
           </Link>
-          <button type="button" onClick={handleSubmit} disabled={submitting || !isValid}
+          <button type="button" onClick={handleSubmit} disabled={submitting || !isDirty || !isValid}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors">
             {submitting ? <><LoadingSpinner size="sm" />{t("common.saving")}</> : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}
           </button>

@@ -15,7 +15,7 @@ const DashboardDataTablePage = dynamic(
 import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
-import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
+import { formatPhoneInternational } from "@/lib/inputMasks";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 import { StatusFilterToolbar } from "@/components/StatusFilterToolbar";
@@ -219,7 +219,7 @@ export default function ValetsPage() {
                     </>
                   )}
                   <DetailSectionLabel text={t("common.additionalInfo")} />
-                  <DetailField label={t("tables.employees.phone")} value={valet.user?.phone ? formatPhoneWithCountryCode(valet.user.phone, "CR") : undefined} linkType="phone" />
+                  <DetailField label={t("tables.employees.phone")} value={valet.user?.phone ? formatPhoneInternational(valet.user.phone) : undefined} linkType="phone" />
                   <DetailField label={t("tables.valets.license")} value={valet.licenseNumber} />
                   <DetailField label={t("valets.licenseExpiry")} value={valet.licenseExpiry ? new Date(valet.licenseExpiry).toLocaleDateString() : undefined} />
                   {valet.ratingAvg != null && (

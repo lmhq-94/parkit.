@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useToast } from "@/lib/toastStore";
 
 interface FormattedInputCellEditorProps {
   value?: string | null;
@@ -9,6 +10,8 @@ interface FormattedInputCellEditorProps {
   /** Función para formatear el valor mientras se escribe (ej. formatPlate). */
   format?: (value: string) => string;
   stopEditing?: (preventFocus?: boolean) => void;
+  /** Si devuelve string, no se cierra el editor y se muestra el mensaje (toast). */
+  validator?: (value: unknown) => string | null;
 }
 
 /**
@@ -20,10 +23,12 @@ export function FormattedInputCellEditor({
   onValueChange,
   format,
   stopEditing,
+  validator,
 }: FormattedInputCellEditorProps) {
   const initial = String(valueProp ?? initialValue ?? "");
   const [localValue, setLocalValue] = useState(format ? format(initial) : initial);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { showError } = useToast();
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -36,9 +41,19 @@ export function FormattedInputCellEditor({
     onValueChange(formatted === "" ? null : formatted);
   };
 
+  const tryStop = () => {
+    const valueToValidate = localValue.trim() === "" ? null : localValue.trim();
+    const err = validator ? validator(valueToValidate) : null;
+    if (err) {
+      showError(err);
+      return;
+    }
+    stopEditing?.();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      stopEditing?.();
+      tryStop();
     }
     if (e.key === "Escape") {
       stopEditing?.();
@@ -53,7 +68,7 @@ export function FormattedInputCellEditor({
         value={localValue}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        onBlur={() => stopEditing?.()}
+        onBlur={tryStop}
         className="w-full h-full px-2 text-text-primary text-sm outline-none"
       />
     </div>

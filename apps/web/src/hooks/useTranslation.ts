@@ -7,7 +7,7 @@ export function useTranslation() {
   const locale = useLocaleStore((s) => s.locale);
   return {
     locale,
-    t: (key: string) => t(locale, key),
+    t: (key: string, vars?: Record<string, string | number>) => t(locale, key, vars),
     tWithCompany: (key: string, companyName: string | null) =>
       tWithCompany(locale, key, companyName),
     tEnum: (enumKey: string, value: string | null | undefined) =>

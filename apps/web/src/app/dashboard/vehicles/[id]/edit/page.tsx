@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Car, Hash, Globe, ArrowRight } from "lucide-react";
@@ -38,6 +38,7 @@ export default function EditVehiclePage() {
   const params = useParams();
   const id = params.id as string;
   const [form, setForm] = useState(defaultForm);
+  const [initialForm, setInitialForm] = useState(defaultForm);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +52,7 @@ export default function EditVehiclePage() {
         const data = await apiClient.get<Record<string, unknown>>(`/vehicles/${id}`);
         if (data) {
           const dims = data.dimensions as { lengthCm?: number; widthCm?: number; heightCm?: number } | null | undefined;
-          setForm({
+          const loaded = {
             plate: formatPlate(String(data.plate ?? "")),
             brand: String(data.brand ?? ""),
             model: String(data.model ?? ""),
@@ -60,7 +61,9 @@ export default function EditVehiclePage() {
             lengthCm: dims?.lengthCm != null ? String(dims.lengthCm) : "",
             widthCm: dims?.widthCm != null ? String(dims.widthCm) : "",
             heightCm: dims?.heightCm != null ? String(dims.heightCm) : "",
-          });
+          };
+          setForm(loaded);
+          setInitialForm(loaded);
         }
       } catch {
         setError(t("common.loadingData"));
@@ -169,6 +172,10 @@ export default function EditVehiclePage() {
     } finally { setSubmitting(false); }
   };
 
+  const isDirty = useMemo(
+    () => JSON.stringify(form) !== JSON.stringify(initialForm),
+    [form, initialForm]
+  );
   const isValid = form.plate.trim() && form.brand.trim() && form.model.trim();
 
   if (loading) {
@@ -303,7 +310,7 @@ export default function EditVehiclePage() {
             className="px-5 py-3 rounded-lg border border-input-border text-sm font-medium text-text-secondary hover:bg-input-bg hover:text-text-primary transition-colors">
             {t("common.cancel")}
           </Link>
-          <button type="button" onClick={handleSubmit} disabled={submitting || !isValid}
+          <button type="button" onClick={handleSubmit} disabled={submitting || !isDirty || !isValid}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors">
             {submitting ? <><LoadingSpinner size="sm" />{t("common.saving")}</> : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}
           </button>

@@ -16,7 +16,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 import { apiClient } from "@/lib/api";
-import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
+import { formatPhoneInternational } from "@/lib/inputMasks";
 import { StatusFilterToolbar } from "@/components/StatusFilterToolbar";
 
 interface Company {
@@ -201,7 +201,7 @@ export default function CompaniesPage() {
             <DetailField label={t("companies.legalName")} value={company.legalName} />
             <DetailField label={t("companies.taxId")} value={company.taxId} />
             <DetailField label={t("companies.legalAddress")} value={company.legalAddress} wide multiline />
-            <DetailField label={t("companies.contactPhone")} value={company.contactPhone ? formatPhoneWithCountryCode(company.contactPhone, company.countryCode ?? "CR") : undefined} linkType="phone" />
+            <DetailField label={t("companies.contactPhone")} value={company.contactPhone ? formatPhoneInternational(company.contactPhone) : undefined} linkType="phone" />
             <DetailField label={t("companies.countryCode")} value={company.countryCode} />
             <DetailField label={t("companies.currency")} value={company.currency} />
             <DetailField label={t("companies.timezone")} value={company.timezone} />

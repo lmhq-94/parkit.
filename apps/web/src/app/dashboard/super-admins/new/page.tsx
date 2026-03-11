@@ -7,6 +7,7 @@ import { FormWizard } from "@/components/FormWizard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
+import { required, email as validateEmail } from "@/lib/validation";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -25,13 +26,28 @@ export default function NewSuperAdminPage() {
   const [form, setForm] = useState(defaultForm);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Partial<Record<keyof typeof defaultForm, string>>>({});
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement>) =>
       setForm((p) => ({ ...p, [k]: e.target.value }));
 
+  const validate = (): boolean => {
+    const next: Partial<Record<keyof typeof defaultForm, string>> = {};
+    const e1 = required(t, form.firstName); if (e1) next.firstName = e1;
+    const e2 = required(t, form.lastName); if (e2) next.lastName = e2;
+    const e3 = required(t, form.email) ?? validateEmail(t, form.email); if (e3) next.email = e3;
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const validateStep = (stepIndex: number): boolean => {
+    if (stepIndex === 0) return validate();
+    return true;
+  };
+
   const handleSubmit = async () => {
-    if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim()) return;
+    if (!validate()) return;
     setSubmitting(true);
     setError(null);
     try {
@@ -65,22 +81,25 @@ export default function NewSuperAdminPage() {
             <label className={LABEL}>{t("users.firstName")} <span className="text-red-500">*</span></label>
             <div className="relative group">
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input value={form.firstName} onChange={set("firstName")} placeholder={t("common.placeholderName")} className={IL} />
+              <input value={form.firstName} onChange={set("firstName")} placeholder={t("common.placeholderName")} className={IL} aria-invalid={!!errors.firstName} />
             </div>
+            {errors.firstName && <p className="mt-1 text-sm text-red-500">{errors.firstName}</p>}
           </div>
           <div>
             <label className={LABEL}>{t("users.lastName")} <span className="text-red-500">*</span></label>
             <div className="relative group">
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input value={form.lastName} onChange={set("lastName")} placeholder={t("common.placeholderLastName")} className={IL} />
+              <input value={form.lastName} onChange={set("lastName")} placeholder={t("common.placeholderLastName")} className={IL} aria-invalid={!!errors.lastName} />
             </div>
+            {errors.lastName && <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>}
           </div>
           <div>
             <label className={LABEL}>{t("users.email")} <span className="text-red-500">*</span></label>
             <div className="relative group">
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} />
+              <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} aria-invalid={!!errors.email} />
             </div>
+            {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
           </div>
           <div className="sm:col-span-2 lg:col-span-3">
             <label className={LABEL}>{t("users.password")}</label>
@@ -103,6 +122,7 @@ export default function NewSuperAdminPage() {
       submitLabel={t("superAdmins.createSuperAdmin")}
       cancelHref="/dashboard/profile"
       error={error}
+      onValidateBeforeAction={validateStep}
     />
   );
 }

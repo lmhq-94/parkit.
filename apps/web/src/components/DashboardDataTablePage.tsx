@@ -13,6 +13,7 @@ import { Check, ChevronDown, ChevronRight, Eye, Pencil, Plus, Trash2, X, Search 
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useDashboardStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
+import type { TranslateFn } from "@/lib/validation";
 import { useToast } from "@/lib/toastStore";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { SelectCellEditor } from "@/components/SelectCellEditor";
@@ -69,6 +70,8 @@ type TableColumn<T> = {
   statusField?: keyof T & string;
   /** Para editores select: devuelve estilo (text + dot) por valor, así la celda en edición mantiene el mismo look. Si no se pasa, se usa statusBadge cuando existe. */
   getStatusStyle?: (value: string) => { text: string; dot: string };
+  /** Validación para edición inline: recibe valor y t; devuelve mensaje de error o null si es válido. */
+  validator?: (value: unknown, t: TranslateFn) => string | null;
   /** Renderer personalizado para la celda (ej. iconos). Si se define, se usa en lugar del texto de render(). */
   cellRenderer?: React.ComponentType<ICellRendererParams<T> & Record<string, unknown>>;
   /** Parámetros adicionales para cellRenderer. */
@@ -642,12 +645,20 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                       cellEditor: DateTimeCellEditor,
                       cellEditorParams: {
                         minNow: column.cellEditorDateTimeMinNow === true,
+                        ...(column.validator != null && {
+                          validator: (v: unknown) => column.validator!(v, (key, vars) => t(locale, key, vars)),
+                        }),
                       },
                     }
                   : column.cellEditorInputFormat != null
                     ? {
                         cellEditor: FormattedInputCellEditor,
-                        cellEditorParams: { format: column.cellEditorInputFormat },
+                        cellEditorParams: {
+                          format: column.cellEditorInputFormat,
+                          ...(column.validator != null && {
+                            validator: (v: unknown) => column.validator!(v, (key, vars) => t(locale, key, vars)),
+                          }),
+                        },
                       }
                     : column.cellEditorValues != null && column.cellEditorValues.length > 0
                       ? {
@@ -662,6 +673,9 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                                     return (STATUS_TEXT_STYLES[variant] ?? STATUS_TEXT_STYLES.muted) as { text: string; dot: string };
                                   }
                                 : undefined),
+                            }),
+                            ...(column.validator != null && {
+                              validator: (v: unknown) => column.validator!(v, (key, vars) => t(locale, key, vars)),
                             }),
                           },
                         }

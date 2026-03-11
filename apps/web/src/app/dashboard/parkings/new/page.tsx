@@ -126,6 +126,12 @@ export default function NewParkingPage() {
   const step1Valid = !!(form.name.trim() && form.address.trim() && form.type);
   const step2Valid = slots.length > 0 && slots.every((s) => s.label.trim().length > 0);
 
+  const validateStep = (stepIndex: number): boolean => {
+    if (stepIndex === 0) return step1Valid;
+    if (stepIndex === 1) return step2Valid;
+    return true;
+  };
+
   const steps = [
     {
       title: t("parkings.sectionMain"),
@@ -334,6 +340,7 @@ export default function NewParkingPage() {
         submitLabel={t("parkings.createParking")}
         cancelHref="/dashboard/parkings"
         error={error}
+        onValidateBeforeAction={validateStep}
       />
       <AddressPickerModal
         open={addressPickerOpen}

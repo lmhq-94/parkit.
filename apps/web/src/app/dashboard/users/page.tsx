@@ -17,7 +17,7 @@ import { StatusFilterToolbar } from "@/components/StatusFilterToolbar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
-import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
+import { formatPhoneInternational } from "@/lib/inputMasks";
 
 const EMPLOYEE_ROLE_OPTIONS = [
   { value: "ADMIN", key: "ADMIN" },
@@ -202,7 +202,7 @@ export default function UsersPage() {
             )}
             <DetailSectionLabel text={t("common.additionalInfo")} />
             <DetailField label={t("tables.employees.role")} value={tEnum("systemRole", user.systemRole)} />
-            <DetailField label={t("tables.employees.phone")} value={user.phone ? formatPhoneWithCountryCode(user.phone, "CR") : undefined} linkType="phone" />
+            <DetailField label={t("tables.employees.phone")} value={user.phone ? formatPhoneInternational(user.phone) : undefined} linkType="phone" />
             <DetailField label={t("tables.employees.timezone")} value={user.timezone} />
             <DetailField label={t("tables.employees.lastLogin")} value={user.lastLogin ? new Date(user.lastLogin).toLocaleString() : undefined} />
           </dl>

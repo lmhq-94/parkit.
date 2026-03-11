@@ -10,9 +10,10 @@ interface SelectFieldProps {
   icon?: React.ElementType;
   children: React.ReactNode;
   className?: string;
+  "aria-invalid"?: boolean;
 }
 
-export function SelectField({ value, onChange, icon: Icon, children, className }: SelectFieldProps) {
+export function SelectField({ value, onChange, icon: Icon, children, className, "aria-invalid": ariaInvalid }: SelectFieldProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [position, setPosition] = useState<{ top?: number; bottom?: number; left: number; width: number; maxHeight: number }>({ left: 0, width: 0, maxHeight: 400 });
@@ -154,6 +155,7 @@ export function SelectField({ value, onChange, icon: Icon, children, className }
           ref={triggerRef}
           type="button"
           onClick={handleOpen}
+          aria-invalid={ariaInvalid}
           className={[
             "w-full py-3 rounded-lg border bg-input-bg text-sm text-left transition-colors cursor-pointer",
             open

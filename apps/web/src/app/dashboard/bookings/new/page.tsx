@@ -10,6 +10,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useDashboardStore } from "@/lib/store";
 import { useToast } from "@/lib/toastStore";
+import { required, selectRequired } from "@/lib/validation";
 
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
@@ -31,6 +32,7 @@ export default function NewBookingPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Partial<Record<keyof typeof defaultForm, string>>>({});
 
   useEffect(() => {
     (async () => {
@@ -57,8 +59,23 @@ export default function NewBookingPage() {
     (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) =>
       setForm((p) => ({ ...p, [k]: e.target.value }));
 
+  const validate = (): boolean => {
+    const next: Partial<Record<keyof typeof defaultForm, string>> = {};
+    const e1 = selectRequired(t, form.clientId); if (e1) next.clientId = e1;
+    const e2 = selectRequired(t, form.vehicleId); if (e2) next.vehicleId = e2;
+    const e3 = selectRequired(t, form.parkingId); if (e3) next.parkingId = e3;
+    const e4 = required(t, form.scheduledEntryTime); if (e4) next.scheduledEntryTime = e4;
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const validateStep = (stepIndex: number): boolean => {
+    if (stepIndex === 0) return validate();
+    return true;
+  };
+
   const handleSubmit = async () => {
-    if (!form.clientId || !form.vehicleId || !form.parkingId || !form.scheduledEntryTime) return;
+    if (!validate()) return;
     setSubmitting(true);
     setError(null);
     try {
@@ -103,7 +120,7 @@ export default function NewBookingPage() {
             {loading ? (
               skel
             ) : (
-              <SelectField value={form.clientId} onChange={set("clientId")} icon={Users}>
+              <SelectField value={form.clientId} onChange={set("clientId")} icon={Users} aria-invalid={!!errors.clientId}>
                 <option value="">{t("common.selectPlaceholder")}</option>
                 {clients.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -114,6 +131,7 @@ export default function NewBookingPage() {
                 ))}
               </SelectField>
             )}
+            {errors.clientId && <p className="mt-1 text-sm text-red-500">{errors.clientId}</p>}
           </div>
           <div>
             <label className={LABEL}>
@@ -122,7 +140,7 @@ export default function NewBookingPage() {
             {loading ? (
               skel
             ) : (
-              <SelectField value={form.vehicleId} onChange={set("vehicleId")} icon={Car}>
+              <SelectField value={form.vehicleId} onChange={set("vehicleId")} icon={Car} aria-invalid={!!errors.vehicleId}>
                 <option value="">{t("common.selectPlaceholder")}</option>
                 {vehicles.map((v) => (
                   <option key={v.id} value={v.id}>
@@ -133,6 +151,7 @@ export default function NewBookingPage() {
                 ))}
               </SelectField>
             )}
+            {errors.vehicleId && <p className="mt-1 text-sm text-red-500">{errors.vehicleId}</p>}
           </div>
           <div>
             <label className={LABEL}>
@@ -141,7 +160,7 @@ export default function NewBookingPage() {
             {loading ? (
               skel
             ) : (
-              <SelectField value={form.parkingId} onChange={set("parkingId")} icon={MapPin}>
+              <SelectField value={form.parkingId} onChange={set("parkingId")} icon={MapPin} aria-invalid={!!errors.parkingId}>
                 <option value="">{t("common.selectPlaceholder")}</option>
                 {parkings.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -150,6 +169,7 @@ export default function NewBookingPage() {
                 ))}
               </SelectField>
             )}
+            {errors.parkingId && <p className="mt-1 text-sm text-red-500">{errors.parkingId}</p>}
           </div>
           <div>
             <label className={LABEL}>
@@ -160,6 +180,7 @@ export default function NewBookingPage() {
               onChange={(v) => setForm((p) => ({ ...p, scheduledEntryTime: v }))}
               min={new Date().toISOString()}
             />
+            {errors.scheduledEntryTime && <p className="mt-1 text-sm text-red-500">{errors.scheduledEntryTime}</p>}
           </div>
         </div>
       ),
@@ -192,6 +213,7 @@ export default function NewBookingPage() {
       submitLabel={t("bookings.createBooking")}
       cancelHref="/dashboard/bookings"
       error={error}
+      onValidateBeforeAction={validateStep}
     />
   );
 }

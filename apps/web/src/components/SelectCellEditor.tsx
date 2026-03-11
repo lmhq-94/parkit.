@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
+import { useToast } from "@/lib/toastStore";
 
 export type StatusStyle = { text: string; dot: string };
 
@@ -16,6 +17,8 @@ interface SelectCellEditorProps {
   stopEditing?: (preventFocus?: boolean) => void;
   /** Para columnas de estado: devuelve clases de color (text + dot) por valor. Mantiene el estilo badge en el editor. */
   getStatusStyle?: (value: string) => StatusStyle;
+  /** Si devuelve string, no se cierra el editor y se muestra el mensaje (toast). */
+  validator?: (value: unknown) => string | null;
 }
 
 /**
@@ -30,8 +33,10 @@ export function SelectCellEditor({
   labels,
   stopEditing,
   getStatusStyle,
+  validator,
 }: SelectCellEditorProps) {
   const value = valueProp ?? initialValue ?? null;
+  const { showError } = useToast();
   const [open, setOpen] = useState(true);
   const [position, setPosition] = useState<{
     top?: number;
@@ -49,6 +54,19 @@ export function SelectCellEditor({
   const selectedLabel = value != null ? getLabel(String(value)) : "";
   const displayValues = Array.isArray(values) && values.length > 0 ? values : [];
   const selectedStyle = getStatusStyle && value != null ? getStatusStyle(String(value)) : null;
+
+  const tryStop = useCallback(
+    (val: string | null) => {
+      const err = validator ? validator(val) : null;
+      if (err) {
+        showError(err);
+        return;
+      }
+      setOpen(false);
+      stopEditing?.();
+    },
+    [validator, showError, stopEditing]
+  );
 
   const updatePosition = () => {
     if (!triggerRef.current) return;
@@ -90,13 +108,12 @@ export function SelectCellEditor({
         !triggerRef.current?.contains(target) &&
         !target.closest("[data-select-cell-editor-dropdown]")
       ) {
-        setOpen(false);
-        stopEditing?.();
+        tryStop(value);
       }
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
-  }, [open, stopEditing]);
+  }, [open, tryStop, value]);
 
   useEffect(() => {
     if (!open) return;
@@ -112,8 +129,7 @@ export function SelectCellEditor({
 
   const handleSelect = (optValue: string) => {
     onValueChange(optValue);
-    setOpen(false);
-    stopEditing?.();
+    tryStop(optValue);
   };
 
   const dropdown =

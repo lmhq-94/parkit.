@@ -11,6 +11,7 @@ import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { COUNTRIES } from "@/lib/companyOptions";
 import { formatPlate, toTitleCase } from "@/lib/inputMasks";
+import { required, plate as validatePlate } from "@/lib/validation";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -36,6 +37,7 @@ export default function NewVehiclePage() {
   const [form, setForm] = useState(defaultForm);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Partial<Record<keyof typeof defaultForm, string>>>({});
   const [makes, setMakes] = useState<CatalogMake[]>([]);
   const [models, setModels] = useState<CatalogModel[]>([]);
   const [loadingMakes, setLoadingMakes] = useState(true);
@@ -125,8 +127,22 @@ export default function NewVehiclePage() {
     if (form.brand.trim() && form.model.trim() && form.year.trim()) fetchDimensions();
   }, [form.brand, form.model, form.year, fetchDimensions]);
 
+  const validate = (): boolean => {
+    const next: Partial<Record<keyof typeof defaultForm, string>> = {};
+    const e1 = required(t, form.plate) ?? validatePlate(t, form.plate); if (e1) next.plate = e1;
+    const e2 = required(t, form.brand); if (e2) next.brand = e2;
+    const e3 = required(t, form.model); if (e3) next.model = e3;
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const validateStep = (stepIndex: number): boolean => {
+    if (stepIndex === 0) return validate();
+    return true;
+  };
+
   const handleSubmit = async () => {
-    if (!form.plate.trim() || !form.brand.trim() || !form.model.trim()) return;
+    if (!validate()) return;
     setSubmitting(true);
     setError(null);
     try {
@@ -169,8 +185,9 @@ export default function NewVehiclePage() {
             <label className={LABEL}>{t("vehicles.plate")} <span className="text-company-primary">*</span></label>
             <div className="relative group">
               <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input value={form.plate} onChange={(e) => setForm((p) => ({ ...p, plate: formatPlate(e.target.value) }))} placeholder={t("common.placeholderPlate")} className={IL} />
+              <input value={form.plate} onChange={(e) => setForm((p) => ({ ...p, plate: formatPlate(e.target.value) }))} placeholder={t("common.placeholderPlate")} className={IL} aria-invalid={!!errors.plate} />
             </div>
+            {errors.plate && <p className="mt-1 text-sm text-red-500">{errors.plate}</p>}
           </div>
           <div>
             <label className={LABEL}>{t("vehicles.brand")} <span className="text-company-primary">*</span></label>
@@ -182,6 +199,7 @@ export default function NewVehiclePage() {
               placeholder={t("common.selectOrType")}
               icon={Car}
             />
+            {errors.brand && <p className="mt-1 text-sm text-red-500">{errors.brand}</p>}
           </div>
           <div>
             <label className={LABEL}>{t("vehicles.model")} <span className="text-company-primary">*</span></label>
@@ -205,9 +223,11 @@ export default function NewVehiclePage() {
                   onChange={set("model")}
                   placeholder={t("common.selectOrType")}
                   className={IL}
+                  aria-invalid={!!errors.model}
                 />
               </div>
             )}
+            {errors.model && <p className="mt-1 text-sm text-red-500">{errors.model}</p>}
           </div>
           <div>
             <label className={LABEL}>{t("vehicles.year")}</label>
@@ -269,6 +289,7 @@ export default function NewVehiclePage() {
       submitting={submitting}
       submitLabel={t("vehicles.createVehicle")}
       cancelHref="/dashboard/vehicles"
+      onValidateBeforeAction={validateStep}
       onBeforeNext={async (fromStep, toStep) => {
         if (fromStep === 0 && toStep === 1 && form.brand.trim() && form.model.trim() && form.year.trim()) {
           const d = await getDimensionsData();

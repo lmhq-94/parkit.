@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Users, Car, MapPin, ArrowRight } from "lucide-react";
@@ -12,6 +12,7 @@ import { useDashboardStore } from "@/lib/store";
 import { useToast } from "@/lib/toastStore";
 import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { required, selectRequired } from "@/lib/validation";
 
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
@@ -29,12 +30,14 @@ export default function EditBookingPage() {
   const id = params.id as string;
   const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
   const [form, setForm] = useState(defaultForm);
+  const [initialForm, setInitialForm] = useState(defaultForm);
   const [clients, setClients] = useState<ClientOption[]>([]);
   const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
   const [parkings, setParkings] = useState<ParkingOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Partial<Record<keyof typeof defaultForm, string>>>({});
 
   useEffect(() => {
     (async () => {
@@ -46,7 +49,7 @@ export default function EditBookingPage() {
           apiClient.get<ParkingOption[]>("/parkings"),
         ]);
         if (booking) {
-          setForm({
+          const loaded = {
             clientId: String(booking.clientId ?? ""),
             vehicleId: String(booking.vehicleId ?? ""),
             parkingId: String(booking.parkingId ?? ""),
@@ -56,7 +59,9 @@ export default function EditBookingPage() {
             scheduledExitTime: booking.scheduledExitTime
               ? new Date(String(booking.scheduledExitTime)).toISOString().slice(0, 16)
               : "",
-          });
+          };
+          setForm(loaded);
+          setInitialForm(loaded);
         }
         setClients(Array.isArray(c) ? c : []);
         setVehicles(Array.isArray(v) ? v : []);
@@ -74,8 +79,18 @@ export default function EditBookingPage() {
     (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) =>
       setForm((p) => ({ ...p, [k]: e.target.value }));
 
+  const validate = (): boolean => {
+    const next: Partial<Record<keyof typeof defaultForm, string>> = {};
+    const e1 = selectRequired(t, form.clientId); if (e1) next.clientId = e1;
+    const e2 = selectRequired(t, form.vehicleId); if (e2) next.vehicleId = e2;
+    const e3 = selectRequired(t, form.parkingId); if (e3) next.parkingId = e3;
+    const e4 = required(t, form.scheduledEntryTime); if (e4) next.scheduledEntryTime = e4;
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
   const handleSubmit = async () => {
-    if (!form.clientId || !form.vehicleId || !form.parkingId || !form.scheduledEntryTime) return;
+    if (!validate()) return;
     setSubmitting(true);
     setError(null);
     try {
@@ -99,8 +114,16 @@ export default function EditBookingPage() {
     }
   };
 
+  const isDirty = useMemo(
+    () => JSON.stringify(form) !== JSON.stringify(initialForm),
+    [form, initialForm]
+  );
   const isValid =
-    form.clientId && form.vehicleId && form.parkingId && form.scheduledEntryTime;
+    form.clientId &&
+    form.vehicleId &&
+    form.parkingId &&
+    form.scheduledEntryTime &&
+    Object.keys(errors).length === 0;
 
   if (loading) {
     return (
@@ -145,7 +168,7 @@ export default function EditBookingPage() {
               {clients.length === 0 ? (
                 skel
               ) : (
-                <SelectField value={form.clientId} onChange={set("clientId")} icon={Users}>
+                <SelectField value={form.clientId} onChange={set("clientId")} icon={Users} aria-invalid={!!errors.clientId}>
                   <option value="">{t("common.selectPlaceholder")}</option>
                   {clients.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -156,6 +179,7 @@ export default function EditBookingPage() {
                   ))}
                 </SelectField>
               )}
+              {errors.clientId && <p className="mt-1 text-sm text-red-500">{errors.clientId}</p>}
             </div>
             <div>
               <label className={LABEL}>
@@ -164,7 +188,7 @@ export default function EditBookingPage() {
               {vehicles.length === 0 ? (
                 skel
               ) : (
-                <SelectField value={form.vehicleId} onChange={set("vehicleId")} icon={Car}>
+                <SelectField value={form.vehicleId} onChange={set("vehicleId")} icon={Car} aria-invalid={!!errors.vehicleId}>
                   <option value="">{t("common.selectPlaceholder")}</option>
                   {vehicles.map((v) => (
                     <option key={v.id} value={v.id}>
@@ -175,6 +199,7 @@ export default function EditBookingPage() {
                   ))}
                 </SelectField>
               )}
+              {errors.vehicleId && <p className="mt-1 text-sm text-red-500">{errors.vehicleId}</p>}
             </div>
             <div>
               <label className={LABEL}>
@@ -183,7 +208,7 @@ export default function EditBookingPage() {
               {parkings.length === 0 ? (
                 skel
               ) : (
-                <SelectField value={form.parkingId} onChange={set("parkingId")} icon={MapPin}>
+                <SelectField value={form.parkingId} onChange={set("parkingId")} icon={MapPin} aria-invalid={!!errors.parkingId}>
                   <option value="">{t("common.selectPlaceholder")}</option>
                   {parkings.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -192,6 +217,7 @@ export default function EditBookingPage() {
                   ))}
                 </SelectField>
               )}
+              {errors.parkingId && <p className="mt-1 text-sm text-red-500">{errors.parkingId}</p>}
             </div>
             <div>
               <label className={LABEL}>
@@ -203,6 +229,7 @@ export default function EditBookingPage() {
                 onChange={(v) => setForm((p) => ({ ...p, scheduledEntryTime: v }))}
                 min={new Date().toISOString()}
               />
+              {errors.scheduledEntryTime && <p className="mt-1 text-sm text-red-500">{errors.scheduledEntryTime}</p>}
             </div>
           </div>
         </div>
@@ -249,7 +276,7 @@ export default function EditBookingPage() {
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={submitting || !isValid}
+            disabled={submitting || !isDirty || !isValid}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors"
           >
             {submitting ? (

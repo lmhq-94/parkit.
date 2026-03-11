@@ -14,7 +14,8 @@ import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { useDashboardStore } from "@/lib/store";
 import { COUNTRIES, CURRENCIES, TIMEZONES } from "@/lib/companyOptions";
-import { formatTaxId, formatPhoneWithCountryCode } from "@/lib/inputMasks";
+import { formatTaxId, formatPhoneInternational } from "@/lib/inputMasks";
+import { required, email as validateEmail, phone as validatePhone } from "@/lib/validation";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -50,14 +51,43 @@ export default function NewCompanyPage() {
   const [form, setForm] = useState(defaultForm);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Partial<Record<keyof typeof defaultForm, string>>>({});
   const [addressPickerOpen, setAddressPickerOpen] = useState(false);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm(p => ({ ...p, [k]: e.target.value }));
 
+  const validate = (): boolean => {
+    const next: Partial<Record<keyof typeof defaultForm, string>> = {};
+    const e1 = required(t, form.legalName); if (e1) next.legalName = e1;
+    const e2 = required(t, form.taxId); if (e2) next.taxId = e2;
+    if (form.email.trim()) { const ee = validateEmail(t, form.email); if (ee) next.email = ee; }
+    if (form.contactPhone.trim()) { const ep = validatePhone(t, form.contactPhone); if (ep) next.contactPhone = ep; }
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const validateStep = (stepIndex: number): boolean => {
+    if (stepIndex === 0) {
+      const next: Partial<Record<keyof typeof defaultForm, string>> = {};
+      const e1 = required(t, form.legalName); if (e1) next.legalName = e1;
+      const e2 = required(t, form.taxId); if (e2) next.taxId = e2;
+      setErrors(next);
+      return Object.keys(next).length === 0;
+    }
+    if (stepIndex === 1) {
+      const next: Partial<Record<keyof typeof defaultForm, string>> = {};
+      if (form.email.trim()) { const ee = validateEmail(t, form.email); if (ee) next.email = ee; }
+      if (form.contactPhone.trim()) { const ep = validatePhone(t, form.contactPhone); if (ep) next.contactPhone = ep; }
+      setErrors(next);
+      return Object.keys(next).length === 0;
+    }
+    return true;
+  };
+
   const handleSubmit = async () => {
-    if (!form.legalName.trim() || !form.taxId.trim()) return;
+    if (!validate()) return;
     setSubmitting(true); setError(null);
     try {
       await apiClient.post("/companies", {
@@ -92,10 +122,12 @@ export default function NewCompanyPage() {
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <Field label={t("companies.legalName")} required icon={Building2}>
-            <input value={form.legalName} onChange={set("legalName")} placeholder={t("common.placeholderLegalName")} className={IL} />
+            <input value={form.legalName} onChange={set("legalName")} placeholder={t("common.placeholderLegalName")} className={IL} aria-invalid={!!errors.legalName} />
+            {errors.legalName && <p className="mt-1 text-sm text-red-500">{errors.legalName}</p>}
           </Field>
           <Field label={t("companies.taxId")} required icon={Receipt}>
-            <input value={form.taxId} onChange={(e) => setForm((p) => ({ ...p, taxId: formatTaxId(e.target.value) }))} placeholder={t("common.placeholderTaxId")} className={IL} />
+            <input value={form.taxId} onChange={(e) => setForm((p) => ({ ...p, taxId: formatTaxId(e.target.value) }))} placeholder={t("common.placeholderTaxId")} className={IL} aria-invalid={!!errors.taxId} />
+            {errors.taxId && <p className="mt-1 text-sm text-red-500">{errors.taxId}</p>}
           </Field>
         </div>
       ),
@@ -112,10 +144,12 @@ export default function NewCompanyPage() {
             <input value={form.commercialName} onChange={set("commercialName")} placeholder={t("common.placeholderCommercialName")} className={IL} />
           </Field>
           <Field label={t("companies.email")} icon={Mail}>
-            <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} />
+            <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} aria-invalid={!!errors.email} />
+            {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
           </Field>
           <Field label={t("companies.contactPhone")} icon={Phone}>
-            <input type="tel" value={form.contactPhone} onChange={(e) => setForm((p) => ({ ...p, contactPhone: formatPhoneWithCountryCode(e.target.value, p.countryCode) }))} placeholder="+506 6216-4040" className={IL} />
+            <input type="tel" value={form.contactPhone} onChange={(e) => setForm((p) => ({ ...p, contactPhone: formatPhoneInternational(e.target.value) }))} placeholder="+1 234 567 8900" className={IL} aria-invalid={!!errors.contactPhone} />
+            {errors.contactPhone && <p className="mt-1 text-sm text-red-500">{errors.contactPhone}</p>}
           </Field>
           <div className="sm:col-span-2 lg:col-span-3">
             <label className={LABEL}>{t("companies.legalAddress")}</label>
@@ -180,6 +214,7 @@ export default function NewCompanyPage() {
         submitLabel={t("companies.createCompany")}
         cancelHref="/dashboard/companies"
         error={error}
+        onValidateBeforeAction={validateStep}
       />
       <AddressPickerModal
         open={addressPickerOpen}

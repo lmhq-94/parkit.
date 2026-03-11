@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { ArrowRight, User, Mail, Phone, Clock, UserPlus, Sun, Moon, Globe } from "lucide-react";
@@ -13,7 +13,8 @@ import { ImageCropField } from "@/components/ImageCropField";
 import { SelectField } from "@/components/SelectField";
 import { useToast } from "@/lib/toastStore";
 import { TIMEZONES } from "@/lib/companyOptions";
-import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
+import { formatPhoneInternational } from "@/lib/inputMasks";
+import { required, email as validateEmail, phone as validatePhone } from "@/lib/validation";
 import { isSuperAdmin } from "@/lib/auth";
 
 type ThemeValue = "light" | "dark";
@@ -47,6 +48,8 @@ export default function ProfilePage() {
   const locale = useLocaleStore((s) => s.locale);
   const setLocale = useLocaleStore((s) => s.setLocale);
   const [form, setForm] = useState(defaultForm);
+  const [initialForm, setInitialForm] = useState(defaultForm);
+  const [errors, setErrors] = useState<Partial<Record<keyof typeof defaultForm, string>>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -59,14 +62,16 @@ export default function ProfilePage() {
       try {
         const data = await apiClient.get<Record<string, unknown>>("/users/me");
         if (!cancelled && data) {
-          setForm({
+          const loaded = {
             firstName: String(data.firstName ?? ""),
             lastName: String(data.lastName ?? ""),
             email: String(data.email ?? ""),
-            phone: formatPhoneWithCountryCode(String(data.phone ?? ""), "CR"),
+            phone: formatPhoneInternational(String(data.phone ?? "")),
             timezone: String(data.timezone ?? ""),
             avatarUrl: String(data.avatarUrl ?? ""),
-          });
+          };
+          setForm(loaded);
+          setInitialForm(loaded);
         }
       } catch {
         if (!cancelled) {
@@ -83,9 +88,24 @@ export default function ProfilePage() {
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((p) => ({ ...p, [k]: e.target.value }));
+  const setAndClearError = (k: keyof typeof defaultForm) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      setForm((p) => ({ ...p, [k]: e.target.value }));
+      setErrors((prev) => ({ ...prev, [k]: undefined }));
+    };
+
+  const validate = (): boolean => {
+    const next: Partial<Record<keyof typeof defaultForm, string>> = {};
+    const e1 = required(t, form.firstName); if (e1) next.firstName = e1;
+    const e2 = required(t, form.lastName); if (e2) next.lastName = e2;
+    const e3 = required(t, form.email) ?? validateEmail(t, form.email); if (e3) next.email = e3;
+    if (form.phone.trim()) { const ep = validatePhone(t, form.phone); if (ep) next.phone = ep; }
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
 
   const handleSubmit = async () => {
-    if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim()) return;
+    if (!validate()) return;
     setSubmitting(true);
     setLoadError(null);
     try {
@@ -117,7 +137,15 @@ export default function ProfilePage() {
     }
   };
 
-  const isValid = form.firstName.trim() && form.lastName.trim() && form.email.trim();
+  const isDirty = useMemo(
+    () => JSON.stringify(form) !== JSON.stringify(initialForm),
+    [form, initialForm]
+  );
+  const isValid =
+    form.firstName.trim() &&
+    form.lastName.trim() &&
+    form.email.trim() &&
+    Object.keys(errors).length === 0;
 
   const currentTheme: ThemeValue = prefsMounted && theme === "dark" ? "dark" : "light";
   const currentLocale: LocaleValue = locale;
@@ -224,29 +252,33 @@ export default function ProfilePage() {
                   <label className={LABEL}>{t("users.firstName")} <span className="text-red-500">*</span></label>
                   <div className="relative group">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                    <input value={form.firstName} onChange={set("firstName")} placeholder={t("common.placeholderName")} className={IL} />
+                    <input value={form.firstName} onChange={setAndClearError("firstName")} placeholder={t("common.placeholderName")} className={IL} aria-invalid={!!errors.firstName} />
                   </div>
+                  {errors.firstName && <p className="mt-1 text-sm text-red-500">{errors.firstName}</p>}
                 </div>
                 <div>
                   <label className={LABEL}>{t("users.lastName")} <span className="text-red-500">*</span></label>
                   <div className="relative group">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                    <input value={form.lastName} onChange={set("lastName")} placeholder={t("common.placeholderLastName")} className={IL} />
+                    <input value={form.lastName} onChange={setAndClearError("lastName")} placeholder={t("common.placeholderLastName")} className={IL} aria-invalid={!!errors.lastName} />
                   </div>
+                  {errors.lastName && <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>}
                 </div>
                 <div>
                   <label className={LABEL}>{t("users.email")} <span className="text-red-500">*</span></label>
                   <div className="relative group">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                    <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} />
+                    <input type="email" value={form.email} onChange={setAndClearError("email")} placeholder={t("common.placeholderEmail")} className={IL} aria-invalid={!!errors.email} />
                   </div>
+                  {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
                 </div>
                 <div>
                   <label className={LABEL}>{t("users.phone")}</label>
                   <div className="relative group">
                     <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                    <input type="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: formatPhoneWithCountryCode(e.target.value, "CR") }))} placeholder="+506 6216-4040" className={IL} />
+                    <input type="tel" value={form.phone} onChange={(e) => { setForm((p) => ({ ...p, phone: formatPhoneInternational(e.target.value) })); setErrors((prev) => ({ ...prev, phone: undefined })); }} placeholder="+1 234 567 8900" className={IL} aria-invalid={!!errors.phone} />
                   </div>
+                  {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone}</p>}
                 </div>
                 <div>
                   <label className={LABEL}>{t("users.timezone")}</label>
@@ -334,7 +366,7 @@ export default function ProfilePage() {
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={submitting || !isValid}
+            disabled={submitting || !isDirty || !isValid}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors"
           >
             {submitting ? <><LoadingSpinner size="sm" />{t("common.saving")}</> : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { MapPin, Hash, Tag, Navigation, Radius, ArrowRight, Plus, Trash2 } from "lucide-react";
@@ -35,7 +35,9 @@ export default function EditParkingPage() {
   const bumpParkings = useDashboardStore((s) => s.bumpParkings);
   const id = params.id as string;
   const [form, setForm] = useState(defaultForm);
+  const [initialForm, setInitialForm] = useState(defaultForm);
   const [slots, setSlots] = useState<SlotRow[]>([]);
+  const [initialSlots, setInitialSlots] = useState<SlotRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export default function EditParkingPage() {
       try {
         const data = await apiClient.get<Record<string, unknown>>(`/parkings/${id}`);
         if (data) {
-          setForm({
+          const loadedForm = {
             name: String(data.name ?? ""),
             address: String(data.address ?? ""),
             type: String(data.type ?? "OPEN"),
@@ -54,17 +56,19 @@ export default function EditParkingPage() {
             latitude: data.latitude != null ? String(data.latitude) : "",
             longitude: data.longitude != null ? String(data.longitude) : "",
             geofenceRadius: data.geofenceRadius != null ? String(data.geofenceRadius) : "",
-          });
+          };
+          setForm(loadedForm);
+          setInitialForm(loadedForm);
         }
         const slotData = await apiClient.get<Array<{ id: string; label: string; slotType?: string }>>(`/parkings/${id}/slots`);
         if (Array.isArray(slotData)) {
-          setSlots(
-            slotData.map((s) => ({
-              id: s.id,
-              label: s.label,
-              slotType: (s.slotType as SlotRow["slotType"]) || "REGULAR",
-            }))
-          );
+          const loadedSlots = slotData.map((s) => ({
+            id: s.id,
+            label: s.label,
+            slotType: (s.slotType as SlotRow["slotType"]) || "REGULAR",
+          }));
+          setSlots(loadedSlots);
+          setInitialSlots(loadedSlots);
         }
       } catch {
         setError(t("common.loadingData"));
@@ -159,6 +163,14 @@ export default function EditParkingPage() {
     } finally { setSubmitting(false); }
   };
 
+  const slotsSnapshot = (list: SlotRow[]) =>
+    list.map((s) => ({ label: s.label, slotType: s.slotType })).sort((a, b) => a.label.localeCompare(b.label));
+  const isDirty = useMemo(
+    () =>
+      JSON.stringify(form) !== JSON.stringify(initialForm) ||
+      JSON.stringify(slotsSnapshot(slots)) !== JSON.stringify(slotsSnapshot(initialSlots)),
+    [form, initialForm, slots, initialSlots]
+  );
   const isValid = form.name.trim() && form.address.trim() && form.type;
 
   if (loading) {
@@ -383,7 +395,7 @@ export default function EditParkingPage() {
             className="px-5 py-3 rounded-lg border border-input-border text-sm font-medium text-text-secondary hover:bg-input-bg hover:text-text-primary transition-colors">
             {t("common.cancel")}
           </Link>
-          <button type="button" onClick={handleSubmit} disabled={submitting || !isValid}
+          <button type="button" onClick={handleSubmit} disabled={submitting || !isDirty || !isValid}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors">
             {submitting ? <><LoadingSpinner size="sm" />{t("common.saving")}</> : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}
           </button>

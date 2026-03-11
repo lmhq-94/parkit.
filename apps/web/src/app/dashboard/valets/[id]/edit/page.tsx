@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { User, Mail, CreditCard, Activity, ArrowRight } from "lucide-react";
@@ -30,7 +30,9 @@ export default function EditValetPage() {
   const params = useParams();
   const id = params.id as string;
   const [form, setForm] = useState(defaultForm);
+  const [initialForm, setInitialForm] = useState(defaultForm);
   const [licenseTypes, setLicenseTypes] = useState<string[]>([]);
+  const [initialLicenseTypes, setInitialLicenseTypes] = useState<string[]>([]);
   const [userId, setUserId] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -51,13 +53,16 @@ export default function EditValetPage() {
           ? storedLicense.split(",").map(s => s.trim()).filter(Boolean)
           : [];
         setLicenseTypes(parsedTypes);
-        setForm({
+        setInitialLicenseTypes(parsedTypes);
+        const loaded = {
           firstName: String(user?.firstName ?? ""),
           lastName: String(user?.lastName ?? ""),
           email: String(user?.email ?? ""),
           licenseExpiry: expiryRaw,
           currentStatus: String(data.currentStatus ?? "AVAILABLE"),
-        });
+        };
+        setForm(loaded);
+        setInitialForm(loaded);
       })
       .catch(() => { setError(t("common.loadingData")); showError(t("common.loadError")); })
       .finally(() => setLoading(false));
@@ -94,6 +99,12 @@ export default function EditValetPage() {
     setSubmitting(false);
   };
 
+  const isDirty = useMemo(
+    () =>
+      JSON.stringify(form) !== JSON.stringify(initialForm) ||
+      JSON.stringify([...licenseTypes].sort()) !== JSON.stringify([...initialLicenseTypes].sort()),
+    [form, initialForm, licenseTypes, initialLicenseTypes]
+  );
   const isValid = form.firstName.trim() && form.lastName.trim() && form.email.trim() && licenseTypes.length > 0;
 
   if (loading) {
@@ -207,7 +218,7 @@ export default function EditValetPage() {
             className="px-5 py-3 rounded-lg border border-company-secondary-muted text-sm font-medium text-company-secondary hover:bg-company-secondary-subtle hover:text-company-secondary transition-colors">
             {t("common.cancel")}
           </Link>
-          <button type="button" onClick={handleSubmit} disabled={submitting || !isValid}
+          <button type="button" onClick={handleSubmit} disabled={submitting || !isDirty || !isValid}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors">
             {submitting
               ? <><LoadingSpinner size="sm" />{t("common.saving")}</>

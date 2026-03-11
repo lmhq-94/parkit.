@@ -100,6 +100,15 @@ export const translations = {
       close: "Cerrar",
       additionalInfo: "Información adicional",
     },
+    validation: {
+      required: "Este campo es obligatorio.",
+      invalidEmail: "Correo electrónico no válido.",
+      minLength: "Mínimo {{min}} caracteres.",
+      maxLength: "Máximo {{max}} caracteres.",
+      selectRequired: "Selecciona una opción.",
+      invalidPlate: "Formato de placa no válido.",
+      invalidPhone: "Formato de teléfono no válido.",
+    },
     datepicker: {
       placeholder: "Seleccionar fecha…",
       placeholderDateTime: "Seleccionar fecha y hora…",
@@ -736,6 +745,15 @@ export const translations = {
       close: "Close",
       additionalInfo: "Additional information",
     },
+    validation: {
+      required: "This field is required.",
+      invalidEmail: "Invalid email address.",
+      minLength: "At least {{min}} characters.",
+      maxLength: "At most {{max}} characters.",
+      selectRequired: "Please select an option.",
+      invalidPlate: "Invalid plate format.",
+      invalidPhone: "Invalid phone format.",
+    },
     datepicker: {
       placeholder: "Select date…",
       placeholderDateTime: "Select date and time…",
@@ -1291,7 +1309,7 @@ export function setStoredLocale(locale: Locale): void {
   }
 }
 
-export function t(locale: Locale, key: string): string {
+export function t(locale: Locale, key: string, vars?: Record<string, string | number>): string {
   const keys = key.split(".");
   let value: unknown = translations[locale];
   for (const k of keys) {
@@ -1301,7 +1319,13 @@ export function t(locale: Locale, key: string): string {
       return key;
     }
   }
-  return typeof value === "string" ? value : key;
+  let out = typeof value === "string" ? value : key;
+  if (vars) {
+    for (const [k, v] of Object.entries(vars)) {
+      out = out.replace(new RegExp(`\\{\\{${k}\\}\\}`, "g"), String(v));
+    }
+  }
+  return out;
 }
 
 /** Traduce una clave y sustituye {{companyName}} por el nombre de la empresa o "tu empresa"/"your company". */

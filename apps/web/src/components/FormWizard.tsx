@@ -26,6 +26,8 @@ interface FormWizardProps {
   footerNote?: React.ReactNode;
   /** Llamado antes de avanzar al siguiente paso. Si devuelve Promise, se espera (ej. cargar dimensiones). */
   onBeforeNext?: (fromStep: number, toStep: number) => void | Promise<void>;
+  /** Llamado al hacer clic en Next o Save: valida el paso actual. Si devuelve false, no se avanza ni se envía. */
+  onValidateBeforeAction?: (stepIndex: number) => boolean | Promise<boolean>;
 }
 
 const ACCENT: Record<string, { bar: string; dot: string; text: string; bg: string }> = {
@@ -48,6 +50,7 @@ export function FormWizard({
   error,
   footerNote,
   onBeforeNext,
+  onValidateBeforeAction,
 }: FormWizardProps) {
   const { t } = useTranslation();
   const [current, setCurrent] = useState(0);
@@ -71,8 +74,14 @@ export function FormWizard({
   };
 
   const handleNext = async () => {
-    if (!canAdvance) return;
-    if (isLast) { onSubmit(); return; }
+    if (onValidateBeforeAction) {
+      const valid = await Promise.resolve(onValidateBeforeAction(current));
+      if (!valid) return;
+    } else if (!canAdvance) return;
+    if (isLast) {
+      onSubmit();
+      return;
+    }
     const next = current + 1;
     if (onBeforeNext) {
       setNextLoading(true);
@@ -219,7 +228,7 @@ export function FormWizard({
           <button
             type="button"
             onClick={handleNext}
-            disabled={submitting || nextLoading || !canAdvance}
+            disabled={submitting || nextLoading || (onValidateBeforeAction ? false : !canAdvance)}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm"
           >
             {submitting ? (
