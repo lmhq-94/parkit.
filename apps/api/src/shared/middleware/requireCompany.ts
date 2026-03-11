@@ -10,8 +10,16 @@ export async function requireCompany(
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  // Already resolved (e.g. by requireAuth from User record)
+  // Already resolved by requireAuth (e.g. from User record for ADMIN/STAFF)
   if (req.user.companyId) {
+    const company = await prisma.company.findUnique({
+      where: { id: req.user.companyId },
+    });
+    if (!company) {
+      return res.status(403).json({
+        message: "Company not found. Your account may be linked to a company that no longer exists.",
+      });
+    }
     return next();
   }
 
@@ -20,6 +28,14 @@ export async function requireCompany(
   // SUPER_ADMIN: must send x-company-id when acting in a company context
   if (req.user.role === "SUPER_ADMIN") {
     if (headerCompanyId) {
+      const company = await prisma.company.findUnique({
+        where: { id: headerCompanyId },
+      });
+      if (!company) {
+        return res.status(400).json({
+          message: "Invalid x-company-id: company not found",
+        });
+      }
       req.user.companyId = headerCompanyId;
       return next();
     }
@@ -32,6 +48,14 @@ export async function requireCompany(
   }
 
   if (headerCompanyId) {
+    const company = await prisma.company.findUnique({
+      where: { id: headerCompanyId },
+    });
+    if (!company) {
+      return res.status(400).json({
+        message: "Invalid x-company-id: company not found",
+      });
+    }
     req.user.companyId = headerCompanyId;
     return next();
   }

@@ -3,6 +3,8 @@
  * Uses Resend when RESEND_API_KEY is set; otherwise logs the link to console (dev).
  */
 
+import { getResendClient } from "./resendClient";
+
 const INVITATION_BASE_URL =
   process.env.INVITATION_BASE_URL || "http://localhost:3000";
 const FROM_EMAIL = process.env.INVITATION_FROM_EMAIL || "Parkit <onboarding@resend.dev>";
@@ -46,9 +48,9 @@ export async function sendInvitationEmail(
 </html>
 `.trim();
 
-  const apiKey = process.env.RESEND_API_KEY;
+  const client = getResendClient();
 
-  if (!apiKey) {
+  if (!client) {
     // Development: log link so you can test without email configured
     console.log("[Invitation email not sent - no RESEND_API_KEY]");
     console.log(`  To: ${to}`);
@@ -57,9 +59,7 @@ export async function sendInvitationEmail(
   }
 
   try {
-    const { Resend } = await import("resend");
-    const resend = new Resend(apiKey);
-    const { error } = await resend.emails.send({
+    const { error } = await client.emails.send({
       from: FROM_EMAIL,
       to: [to],
       subject: "You're invited to Parkit – set your password",

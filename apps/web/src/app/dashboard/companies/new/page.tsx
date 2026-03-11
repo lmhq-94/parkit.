@@ -138,7 +138,7 @@ export default function NewCompanyPage() {
                 <option value="">{t("common.selectPlaceholder")}</option>
                 {INDUSTRIES.map((ind) => (
                   <option key={ind.value} value={ind.value}>
-                    {ind.label}
+                    {t(`companies.industryOptions.${ind.value}`)}
                   </option>
                 ))}
               </SelectField>

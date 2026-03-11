@@ -17,6 +17,7 @@ export class CompaniesService {
       legalName: data.legalName,
       taxId: data.taxId,
       ...(data.commercialName && { commercialName: data.commercialName }),
+      ...(data.industry && { industry: data.industry }),
       ...(data.countryCode && { countryCode: data.countryCode }),
       ...(data.currency && { currency: data.currency }),
       ...(data.timezone && { timezone: data.timezone }),
@@ -57,6 +58,7 @@ export class CompaniesService {
     if (data.legalName !== undefined) updateInput.legalName = data.legalName;
     if (data.taxId !== undefined) updateInput.taxId = data.taxId;
     if (data.commercialName !== undefined) updateInput.commercialName = data.commercialName;
+    if (data.industry !== undefined) updateInput.industry = data.industry;
     if (data.countryCode !== undefined) updateInput.countryCode = data.countryCode;
     if (data.currency !== undefined) updateInput.currency = data.currency;
     if (data.timezone !== undefined) updateInput.timezone = data.timezone;
@@ -82,6 +84,7 @@ export class CompaniesService {
         legalName: true,
         commercialName: true,
         taxId: true,
+        industry: true,
         countryCode: true,
         currency: true,
         timezone: true,

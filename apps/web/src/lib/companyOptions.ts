@@ -358,30 +358,27 @@ export const CURRENCIES = [
   { code: "ZWL", label: "ZWL — Dólar zimbabuense" },
 ] as const;
 
+/** Industry values for company "business activity". Labels are translated via companies.industryOptions.<value> in i18n. */
 export const INDUSTRIES = [
-  // Núcleo muy relevante para Parkit
-  { value: "PARKING_OPERATOR", label: "Operador de parqueos / estacionamientos" },
-  { value: "MALL", label: "Centro comercial / retail" },
-  { value: "SUPERMARKET_RETAIL_CHAIN", label: "Supermercados y cadenas de retail" },
-  { value: "HOSPITAL_CLINIC", label: "Hospital / clínica" },
-  { value: "HOTEL", label: "Hotel / hospedaje" },
-  { value: "AIRPORT", label: "Aeropuerto" },
-  { value: "OFFICE_BUILDING", label: "Edificio de oficinas / corporativo" },
-  { value: "RESIDENTIAL", label: "Residencial / condominio" },
-  { value: "UNIVERSITY_SCHOOL", label: "Universidad / colegio" },
-  { value: "EVENT_VENUE", label: "Centro de eventos / estadio" },
-  { value: "MUNICIPALITY", label: "Municipalidad / sector público" },
-
-  // Otras actividades económicas frecuentes
-  { value: "INDUSTRIAL_MANUFACTURING", label: "Industrial / manufactura" },
-  { value: "LOGISTICS_WAREHOUSING", label: "Logística / bodegas / parques industriales" },
-  { value: "BANKING_FINANCIAL", label: "Banca / servicios financieros" },
-  { value: "TECH_SAAS", label: "Tecnología / software / SaaS" },
-  { value: "RESTAURANTS_FOOD", label: "Restaurantes / food courts" },
-  { value: "ENTERTAINMENT_LEISURE", label: "Entretenimiento / cines / ocio" },
-  { value: "EDUCATION", label: "Educación (academias, centros privados)" },
-
-  { value: "OTHER", label: "Otro" },
+  { value: "PARKING_OPERATOR" },
+  { value: "MALL" },
+  { value: "SUPERMARKET_RETAIL_CHAIN" },
+  { value: "HOSPITAL_CLINIC" },
+  { value: "HOTEL" },
+  { value: "AIRPORT" },
+  { value: "OFFICE_BUILDING" },
+  { value: "RESIDENTIAL" },
+  { value: "UNIVERSITY_SCHOOL" },
+  { value: "EVENT_VENUE" },
+  { value: "MUNICIPALITY" },
+  { value: "INDUSTRIAL_MANUFACTURING" },
+  { value: "LOGISTICS_WAREHOUSING" },
+  { value: "BANKING_FINANCIAL" },
+  { value: "TECH_SAAS" },
+  { value: "RESTAURANTS_FOOD" },
+  { value: "ENTERTAINMENT_LEISURE" },
+  { value: "EDUCATION" },
+  { value: "OTHER" },
 ] as const;
 
 export const LICENSE_TYPES = [

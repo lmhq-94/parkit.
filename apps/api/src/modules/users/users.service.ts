@@ -9,6 +9,13 @@ const INVITATION_EXPIRY_HOURS = 72;
 
 export class UsersService {
   static async create(companyId: string, data: CreateUserDTO) {
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+    });
+    if (!company) {
+      throw new Error("Company not found");
+    }
+
     const exists = await prisma.user.findUnique({
       where: { email: data.email },
     });

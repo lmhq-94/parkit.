@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
+import { useDashboardStore } from "@/lib/store";
 
 export interface ApiError {
   success: false;
@@ -53,10 +54,27 @@ class ApiClient {
     this.client.interceptors.response.use(
       (response) => response,
       (error: AxiosError<ApiError>) => {
+        const message =
+          typeof error.response?.data === "object" && error.response.data !== null && "message" in error.response.data
+            ? String((error.response.data as { message?: unknown }).message)
+            : "";
+
+        // Invalid or deleted company: clear selection so user can pick a valid one
+        if (
+          (error.response?.status === 400 || error.response?.status === 403) &&
+          (message.includes("Invalid x-company-id") || message.includes("Company not found"))
+        ) {
+          if (typeof window !== "undefined") {
+            localStorage.removeItem("parkit_selected_company_id");
+            localStorage.removeItem("parkit_selected_company_name");
+            useDashboardStore.getState().setSelectedCompany(null, null);
+            this.clearGetCache();
+          }
+        }
+
         // Handle 401 - redirect to login (except on auth endpoints like /auth/login)
         if (error.response?.status === 401) {
           const url = error.config?.url ?? "";
-          // Para errores en endpoints de autenticación dejamos que la UI maneje el mensaje
           const isAuthEndpoint = typeof url === "string" && url.startsWith("/auth/");
           if (!isAuthEndpoint) {
             this.clearToken();

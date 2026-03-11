@@ -43,10 +43,8 @@ export async function requireAuth(
       }
       if (user.companyId) {
         companyId = user.companyId;
-      } else if (user.systemRole === "SUPER_ADMIN") {
-        // SUPER_ADMIN has no company; companyId can come from x-company-id header when needed
-        companyId = req.headers["x-company-id"] as string | undefined;
       }
+      // SUPER_ADMIN: do not set companyId from header here; let requireCompany validate x-company-id and set it
       if (!companyId && user.systemRole !== "SUPER_ADMIN") {
         return res.status(401).json({ message: "Unable to resolve company context" });
       }
