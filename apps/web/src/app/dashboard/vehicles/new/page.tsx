@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Car, Hash, Globe } from "lucide-react";
+import { Car, Hash, Globe, Users } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { BrandModelComboField } from "@/components/BrandModelComboField";
@@ -11,7 +11,9 @@ import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { COUNTRIES } from "@/lib/companyOptions";
 import { formatPlate, toTitleCase } from "@/lib/inputMasks";
-import { required, plate as validatePlate } from "@/lib/validation";
+import { required, plate as validatePlate, selectRequired } from "@/lib/validation";
+
+type ClientOption = { id: string; user?: { firstName?: string; lastName?: string; email?: string } };
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -28,6 +30,7 @@ const defaultForm = {
   lengthCm: "",
   widthCm: "",
   heightCm: "",
+  clientId: "",
 };
 
 export default function NewVehiclePage() {
@@ -40,8 +43,10 @@ export default function NewVehiclePage() {
   const [errors, setErrors] = useState<Partial<Record<keyof typeof defaultForm, string>>>({});
   const [makes, setMakes] = useState<CatalogMake[]>([]);
   const [models, setModels] = useState<CatalogModel[]>([]);
+  const [clients, setClients] = useState<ClientOption[]>([]);
   const [loadingMakes, setLoadingMakes] = useState(true);
   const [loadingModels, setLoadingModels] = useState(false);
+  const [loadingClients, setLoadingClients] = useState(true);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -70,6 +75,19 @@ export default function NewVehiclePage() {
       }
     })();
   }, [form.year]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await apiClient.get<ClientOption[]>("/clients");
+        setClients(Array.isArray(data) ? data : []);
+      } catch {
+        setClients([]);
+      } finally {
+        setLoadingClients(false);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     if (!form.brand.trim()) {
@@ -133,12 +151,21 @@ export default function NewVehiclePage() {
     const e1 = required(t, form.plate) ?? validatePlate(t, form.plate); if (e1) next.plate = e1;
     const e2 = required(t, form.brand); if (e2) next.brand = e2;
     const e3 = required(t, form.model); if (e3) next.model = e3;
+    const e4 = selectRequired(t, form.clientId); if (e4) next.clientId = e4;
     setErrors(next);
     return Object.keys(next).length === 0;
   };
 
   const validateStep = (stepIndex: number): boolean => {
-    if (stepIndex === 0) return validate();
+    if (stepIndex === 0) {
+      const next: Partial<Record<keyof typeof defaultForm, string>> = {};
+      const e1 = required(t, form.plate) ?? validatePlate(t, form.plate); if (e1) next.plate = e1;
+      const e2 = required(t, form.brand); if (e2) next.brand = e2;
+      const e3 = required(t, form.model); if (e3) next.model = e3;
+      const e4 = selectRequired(t, form.clientId); if (e4) next.clientId = e4;
+      setErrors(next);
+      return Object.keys(next).length === 0;
+    }
     return true;
   };
 
@@ -155,13 +182,17 @@ export default function NewVehiclePage() {
               ...(form.heightCm !== "" && { heightCm: Number(form.heightCm) }),
             }
           : undefined;
-      await apiClient.post("/vehicles", {
+      const created = await apiClient.post<{ id: string }>("/vehicles", {
         plate: form.plate.trim().toUpperCase(),
         brand: form.brand.trim(),
         model: form.model.trim(),
         year: form.year !== "" ? Number(form.year) : undefined,
         countryCode: form.countryCode.trim() || undefined,
         ...(Object.keys(dimensions ?? {}).length > 0 && { dimensions }),
+      });
+      await apiClient.post(`/clients/${form.clientId.trim()}/vehicles`, {
+        vehicleId: created.id,
+        isPrimary: true,
       });
       showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/vehicles");
@@ -179,9 +210,27 @@ export default function NewVehiclePage() {
       description: t("vehicles.sectionMainDesc"),
       badge: "required" as const,
       accentColor: "blue",
-      isValid: () => !!(form.plate.trim() && form.brand.trim() && form.model.trim()),
+      isValid: () => !!(form.plate.trim() && form.brand.trim() && form.model.trim() && form.clientId.trim()),
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div>
+            <label className={LABEL}>{t("vehicles.owner")} <span className="text-company-primary">*</span></label>
+            {loadingClients ? (
+              <div className="h-[46px] rounded-lg bg-input-bg border border-input-border animate-pulse" />
+            ) : (
+              <SelectField value={form.clientId} onChange={set("clientId")} icon={Users} aria-invalid={!!errors.clientId}>
+                <option value="">{t("common.selectPlaceholder")}</option>
+                {clients.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {`${c.user?.firstName ?? ""} ${c.user?.lastName ?? ""}`.trim() ||
+                      c.user?.email ||
+                      c.id}
+                  </option>
+                ))}
+              </SelectField>
+            )}
+            {errors.clientId && <p className="mt-1 text-sm text-red-500">{errors.clientId}</p>}
+          </div>
           <div>
             <label className={LABEL}>{t("vehicles.plate")} <span className="text-company-primary">*</span></label>
             <div className="relative group">

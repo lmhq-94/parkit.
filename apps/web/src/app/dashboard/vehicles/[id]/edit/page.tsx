@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Car, Hash, Globe, ArrowRight } from "lucide-react";
+import { Car, Hash, Globe, ArrowRight, Users } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
@@ -13,12 +13,16 @@ import { SelectField } from "@/components/SelectField";
 import { BrandModelComboField } from "@/components/BrandModelComboField";
 import { COUNTRIES } from "@/lib/companyOptions";
 import { formatPlate, toTitleCase } from "@/lib/inputMasks";
+import { selectRequired } from "@/lib/validation";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
 type CatalogMake = { id: number; name: string };
 type CatalogModel = { id: number; name: string };
+
+type ClientOption = { id: string; user?: { firstName?: string; lastName?: string; email?: string } };
+type OwnerRef = { client?: { id: string } };
 
 const defaultForm = {
   plate: "",
@@ -29,6 +33,7 @@ const defaultForm = {
   lengthCm: "",
   widthCm: "",
   heightCm: "",
+  clientId: "",
 };
 
 export default function EditVehiclePage() {
@@ -44,14 +49,19 @@ export default function EditVehiclePage() {
   const [error, setError] = useState<string | null>(null);
   const [makes, setMakes] = useState<CatalogMake[]>([]);
   const [models, setModels] = useState<CatalogModel[]>([]);
+  const [clients, setClients] = useState<ClientOption[]>([]);
   const [loadingModels, setLoadingModels] = useState(false);
+  const [loadingClients, setLoadingClients] = useState(true);
+  const [errors, setErrors] = useState<Partial<Record<keyof typeof defaultForm, string>>>({});
 
   useEffect(() => {
     (async () => {
       try {
-        const data = await apiClient.get<Record<string, unknown>>(`/vehicles/${id}`);
+        const data = await apiClient.get<Record<string, unknown> & { owners?: OwnerRef[] }>(`/vehicles/${id}`);
         if (data) {
           const dims = data.dimensions as { lengthCm?: number; widthCm?: number; heightCm?: number } | null | undefined;
+          const owners = data.owners as OwnerRef[] | undefined;
+          const firstOwnerId = Array.isArray(owners) && owners.length > 0 ? owners[0]?.client?.id ?? "" : "";
           const loaded = {
             plate: formatPlate(String(data.plate ?? "")),
             brand: String(data.brand ?? ""),
@@ -61,6 +71,7 @@ export default function EditVehiclePage() {
             lengthCm: dims?.lengthCm != null ? String(dims.lengthCm) : "",
             widthCm: dims?.widthCm != null ? String(dims.widthCm) : "",
             heightCm: dims?.heightCm != null ? String(dims.heightCm) : "",
+            clientId: firstOwnerId,
           };
           setForm(loaded);
           setInitialForm(loaded);
@@ -73,6 +84,19 @@ export default function EditVehiclePage() {
       }
     })();
   }, [id]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await apiClient.get<ClientOption[]>("/clients");
+        setClients(Array.isArray(data) ? data : []);
+      } catch {
+        setClients([]);
+      } finally {
+        setLoadingClients(false);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -145,6 +169,12 @@ export default function EditVehiclePage() {
   }, [loading, form.brand, form.model, form.year]);
 
   const handleSubmit = async () => {
+    const clientError = selectRequired(t, form.clientId);
+    if (clientError) {
+      setErrors((e) => ({ ...e, clientId: clientError }));
+      return;
+    }
+    setErrors({});
     if (!form.plate.trim() || !form.brand.trim() || !form.model.trim()) return;
     setSubmitting(true); setError(null);
     try {
@@ -164,6 +194,16 @@ export default function EditVehiclePage() {
         countryCode: form.countryCode.trim() || undefined,
         ...(dimensions !== undefined && { dimensions }),
       });
+      if (form.clientId.trim() && form.clientId !== initialForm.clientId) {
+        try {
+          await apiClient.post(`/clients/${form.clientId.trim()}/vehicles`, {
+            vehicleId: id,
+            isPrimary: true,
+          });
+        } catch {
+          // Si ya está asignado o falla la asignación, no bloqueamos el guardado del vehículo
+        }
+      }
       showSuccess(t("common.saveSuccessShort"));
       router.push("/dashboard/vehicles");
     } catch (err) {
@@ -177,7 +217,11 @@ export default function EditVehiclePage() {
     () => JSON.stringify(form) !== JSON.stringify(initialForm),
     [form, initialForm]
   );
-  const isValid = form.plate.trim() && form.brand.trim() && form.model.trim();
+  const isValid =
+    form.plate.trim() &&
+    form.brand.trim() &&
+    form.model.trim() &&
+    !!form.clientId.trim();
 
   if (loading) {
     return (
@@ -270,6 +314,24 @@ export default function EditVehiclePage() {
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div>
+              <label className={LABEL}>{t("vehicles.owner")} <span className="text-company-primary">*</span></label>
+              {loadingClients ? (
+                <div className="h-[46px] rounded-lg bg-input-bg border border-input-border animate-pulse" />
+              ) : (
+                <SelectField value={form.clientId} onChange={set("clientId")} icon={Users} aria-invalid={!!errors.clientId}>
+                  <option value="">{t("common.selectPlaceholder")}</option>
+                  {clients.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {`${c.user?.firstName ?? ""} ${c.user?.lastName ?? ""}`.trim() ||
+                        c.user?.email ||
+                        c.id}
+                    </option>
+                  ))}
+                </SelectField>
+              )}
+              {errors.clientId && <p className="mt-1 text-sm text-red-500">{errors.clientId}</p>}
+            </div>
             <div>
               <label className={LABEL}>{t("vehicles.countryCode")}</label>
               <SelectField value={form.countryCode} onChange={set("countryCode")} icon={Globe}>

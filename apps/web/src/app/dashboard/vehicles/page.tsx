@@ -18,6 +18,9 @@ import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 import { formatPlate, toTitleCase } from "@/lib/inputMasks";
 
+type OwnerRef = {
+  client?: { id: string; user?: { firstName?: string; lastName?: string; email?: string } };
+};
 type VehicleRow = {
   id?: string;
   plate?: string;
@@ -26,7 +29,16 @@ type VehicleRow = {
   year?: number;
   countryCode?: string;
   dimensions?: { lengthCm?: number; widthCm?: number; heightCm?: number };
+  owners?: OwnerRef[];
 };
+
+function getOwnerDisplay(owners: OwnerRef[] | undefined): string {
+  const first = Array.isArray(owners) && owners.length > 0 ? owners[0]?.client : undefined;
+  if (!first?.user) return "—";
+  const { firstName, lastName, email } = first.user;
+  const name = `${firstName ?? ""} ${lastName ?? ""}`.trim();
+  return name || email || "—";
+}
 
 export default function VehiclesPage() {
   const { t, tWithCompany } = useTranslation();
@@ -47,6 +59,10 @@ export default function VehiclesPage() {
   }, []);
   const columns = useMemo(
     () => [
+      {
+        header: t("tables.vehicles.clientOwner"),
+        render: (v: VehicleRow) => getOwnerDisplay(v.owners),
+      },
       {
         header: t("tables.vehicles.plate"),
         render: (v: VehicleRow) => (v.plate ? formatPlate(v.plate) : "—"),
@@ -91,9 +107,11 @@ export default function VehiclesPage() {
         renderRowDetail={(vehicle) => {
           const dims = vehicle.dimensions as { lengthCm?: number; widthCm?: number; heightCm?: number } | null | undefined;
           const hasDims = dims && (dims.lengthCm != null || dims.widthCm != null || dims.heightCm != null);
+          const ownerDisplay = getOwnerDisplay(vehicle.owners);
           return (
             <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
               <DetailSectionLabel text={t("common.additionalInfo")} />
+              <DetailField label={t("tables.vehicles.clientOwner")} value={ownerDisplay} />
               <DetailField label={t("tables.vehicles.country")} value={vehicle.countryCode} />
               {hasDims && dims?.lengthCm != null && <DetailField label={t("vehicles.lengthCm")} value={String(dims.lengthCm)} />}
               {hasDims && dims?.widthCm != null && <DetailField label={t("vehicles.widthCm")} value={String(dims.widthCm)} />}
