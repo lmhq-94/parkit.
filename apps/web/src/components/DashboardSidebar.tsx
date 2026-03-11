@@ -149,7 +149,16 @@ function getBannerLuminance(imageSrc: string): Promise<number | null> {
 }
 
 function CompanySelector({
-  companies, selectedCompanyId, selectedCompanyName, onSelect, placeholder, allCompaniesLabel, emptyLabel, isDark = false, logoImageUrl,
+  companies,
+  selectedCompanyId,
+  selectedCompanyName,
+  onSelect,
+  placeholder,
+  allCompaniesLabel,
+  emptyLabel,
+  isDark = false,
+  logoImageUrl,
+  hideAvatar = false,
 }: {
   companies: { id: string; commercialName?: string; legalName?: string }[];
   selectedCompanyId: string | null;
@@ -160,6 +169,8 @@ function CompanySelector({
   emptyLabel: string;
   isDark?: boolean;
   logoImageUrl?: string | null;
+  /** Cuando es true, no se muestra el círculo con avatar/logo (para usar dentro del banner sin duplicar avatar). */
+  hideAvatar?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<{ top?: number; bottom?: number; left: number; width: number }>({ left: 0, width: 0 });
@@ -271,30 +282,32 @@ function CompanySelector({
   return (
     <>
       <div className="relative flex items-center gap-3">
-        <div
-          className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold border border-white/20 overflow-hidden bg-input-bg"
-          style={
-            !logoImageUrl?.trim()
-              ? {
-                  backgroundColor: selectedCompanyId ? (getAvatarColor(selectedCompanyId) ?? "var(--input-bg)") : "transparent",
-                  color: "white",
-                }
-              : undefined
-          }
-        >
-          {logoImageUrl?.trim() ? (
-            <img src={logoImageUrl} alt="" className="w-full h-full object-cover object-center" key={logoImageUrl} />
-          ) : selectedCompanyId ? (
-            selectedInitials
-          ) : (
-            <Building2 className={`w-4 h-4 ${isDark ? "text-white/60" : "text-slate-500"}`} />
-          )}
-        </div>
+        {!hideAvatar && (
+          <div
+            className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold border border-white/20 overflow-hidden bg-input-bg"
+            style={
+              !logoImageUrl?.trim()
+                ? {
+                    backgroundColor: selectedCompanyId ? (getAvatarColor(selectedCompanyId) ?? "var(--input-bg)") : "transparent",
+                    color: "white",
+                  }
+                : undefined
+            }
+          >
+            {logoImageUrl?.trim() ? (
+              <img src={logoImageUrl} alt="" className="w-full h-full object-cover object-center" key={logoImageUrl} />
+            ) : selectedCompanyId ? (
+              selectedInitials
+            ) : (
+              <Building2 className={`w-4 h-4 ${isDark ? "text-white/60" : "text-slate-500"}`} />
+            )}
+          </div>
+        )}
         <button
           ref={triggerRef}
           type="button"
           onClick={() => { if (!open) updatePosition(); setOpen((o) => !o); }}
-          className={`flex-1 flex items-center min-w-0 pl-2 pr-8 py-2.5 rounded-xl text-left text-sm transition-colors ${
+          className={`flex-1 flex items-center min-w-0 ${hideAvatar ? "pl-3" : "pl-2"} pr-8 py-2.5 rounded-xl text-left text-sm transition-colors ${
             isDark
               ? "bg-white/15 hover:bg-white/25 text-white placeholder:text-white/60"
               : "bg-black/10 hover:bg-black/15 text-slate-900 placeholder:text-slate-600"
@@ -543,20 +556,21 @@ export function DashboardSidebar() {
                     })()}
                     isDark={hasCustomBanner ? bannerVariant : isDark}
                     backgroundImageUrl={hasCustomBanner ? effectiveBannerSrc : null}
+                    renderRight={
+                      <CompanySelector
+                        companies={companies}
+                        selectedCompanyId={selectedCompanyId}
+                        selectedCompanyName={selectedCompanyName}
+                        onSelect={handleSelectCompany}
+                        placeholder={t("sidebar.selectCompany")}
+                        allCompaniesLabel={t("sidebar.allCompanies")}
+                        emptyLabel={t("companies.noCompanies")}
+                        isDark={hasCustomBanner ? bannerVariant : isDark}
+                        logoImageUrl={companyBranding?.logoImageUrl}
+                        hideAvatar
+                      />
+                    }
                   />
-                  <div className="px-4 pb-2 pt-1">
-                    <CompanySelector
-                      companies={companies}
-                      selectedCompanyId={selectedCompanyId}
-                      selectedCompanyName={selectedCompanyName}
-                      onSelect={handleSelectCompany}
-                      placeholder={t("sidebar.selectCompany")}
-                      allCompaniesLabel={t("sidebar.allCompanies")}
-                      emptyLabel={t("companies.noCompanies")}
-                      isDark={hasCustomBanner ? bannerVariant : isDark}
-                      logoImageUrl={companyBranding?.logoImageUrl}
-                    />
-                  </div>
                 </div>
               ) : (
                 <div className="border-b border-card-border">

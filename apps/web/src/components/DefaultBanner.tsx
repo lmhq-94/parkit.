@@ -12,6 +12,7 @@ export function DefaultBanner({
   backgroundImageUrl,
   subtitle,
   className = "",
+  renderRight,
 }: {
   companyName: string;
   logoImageUrl?: string | null;
@@ -22,6 +23,8 @@ export function DefaultBanner({
   /** Línea de texto sutil debajo del nombre (opcional). */
   subtitle?: string;
   className?: string;
+  /** Contenido personalizado en la parte derecha. Si se indica, reemplaza título/subtítulo por este nodo. */
+  renderRight?: React.ReactNode;
 }) {
   const hasBackgroundImage = Boolean(backgroundImageUrl?.trim());
 
@@ -86,32 +89,38 @@ export function DefaultBanner({
         </div>
       </div>
 
-      {/* Derecha: nombre de la empresa + subtítulo opcional + línea */}
+      {/* Derecha: o bien título/subtítulo por defecto o contenido personalizado (ej. selector) */}
       <div className={`relative z-10 flex-1 min-w-0 pl-3 pr-4 ${hasBackgroundImage ? "drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" : ""}`}>
-        <p
-          className="text-sm font-semibold truncate tracking-tight"
-          style={{
-            color: isDark ? "rgba(255,255,255,0.95)" : "#1a1a1a",
-          }}
-        >
-          {companyName || "Company"}
-        </p>
-        {subtitle && (
-          <p
-            className="mt-0.5 text-[11px] truncate"
-            style={{
-              color: isDark ? "rgba(226,232,240,0.8)" : "rgba(15,23,42,0.65)",
-            }}
-          >
-            {subtitle}
-          </p>
+        {renderRight ? (
+          renderRight
+        ) : (
+          <>
+            <p
+              className="text-sm font-semibold truncate tracking-tight"
+              style={{
+                color: isDark ? "rgba(255,255,255,0.95)" : "#1a1a1a",
+              }}
+            >
+              {companyName || "Company"}
+            </p>
+            {subtitle && (
+              <p
+                className="mt-0.5 text-[11px] truncate"
+                style={{
+                  color: isDark ? "rgba(226,232,240,0.8)" : "rgba(15,23,42,0.65)",
+                }}
+              >
+                {subtitle}
+              </p>
+            )}
+            <div
+              className="mt-1.5 w-8 h-0.5 rounded-sm"
+              style={{
+                backgroundColor: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.2)",
+              }}
+            />
+          </>
         )}
-        <div
-          className="mt-1.5 w-8 h-0.5 rounded-sm"
-          style={{
-            backgroundColor: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.2)",
-          }}
-        />
       </div>
     </div>
   );
