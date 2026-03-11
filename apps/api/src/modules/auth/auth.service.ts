@@ -80,6 +80,11 @@ export class AuthService {
       }
     }
 
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date() },
+    });
+
     const token = signToken({
       userId: user.id,
       role: user.systemRole,
@@ -109,6 +114,7 @@ export class AuthService {
         passwordHash,
         invitationToken: null,
         invitationTokenExpiresAt: null,
+        lastLogin: new Date(),
       },
     });
 
@@ -180,6 +186,11 @@ export class AuthService {
     await prisma.oneTimeCode.update({
       where: { id: oneTimeCode.id },
       data: { usedAt: new Date() },
+    });
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date() },
     });
 
     const token = signToken({
