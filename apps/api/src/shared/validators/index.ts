@@ -46,17 +46,36 @@ export const UpdateCompanySchema = z.object({
 export type CreateCompanyInput = z.infer<typeof CreateCompanySchema>;
 export type UpdateCompanyInput = z.infer<typeof UpdateCompanySchema>;
 
-// Users
+// Security rules for new passwords (set password, reset password). Must match frontend validation.
+const PASSWORD_MIN_LENGTH = 8;
+const hasUppercase = (s: string) => /[A-Z]/.test(s);
+const hasLowercase = (s: string) => /[a-z]/.test(s);
+const hasNumber = (s: string) => /\d/.test(s);
+const hasSpecialChar = (s: string) => /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(s);
+
+export const securePasswordSchema = z
+  .string()
+  .min(PASSWORD_MIN_LENGTH, "Password must be at least 8 characters")
+  .refine(hasUppercase, "Password must contain at least one uppercase letter")
+  .refine(hasLowercase, "Password must contain at least one lowercase letter")
+  .refine(hasNumber, "Password must contain at least one number")
+  .refine(hasSpecialChar, "Password must contain at least one special character (!@#$%^&* etc.)");
+
+export const PASSWORD_SECURITY = {
+  minLength: PASSWORD_MIN_LENGTH,
+  requireUppercase: true,
+  requireLowercase: true,
+  requireNumber: true,
+  requireSpecialChar: true,
+} as const;
+
+// Users (optional password: when provided must meet secure password rules)
 export const CreateUserSchema = z.object({
   email: z.string().email("Invalid email"),
   firstName: z.string().min(1, "First name required"),
   lastName: z.string().min(1, "Last name required"),
   password: z
-    .union([
-      z.string().min(6, "Password must be at least 6 characters"),
-      z.literal(""),
-      z.null(),
-    ])
+    .union([securePasswordSchema, z.literal(""), z.null()])
     .optional()
     .transform((v) => (v === "" || v === null ? undefined : v)),
   systemRole: z.enum(["SUPER_ADMIN", "ADMIN", "STAFF", "CUSTOMER"]).optional(),
@@ -67,11 +86,7 @@ export const CreateSuperAdminSchema = z.object({
   firstName: z.string().min(1, "First name required"),
   lastName: z.string().min(1, "Last name required"),
   password: z
-    .union([
-      z.string().min(6, "Password must be at least 6 characters"),
-      z.literal(""),
-      z.null(),
-    ])
+    .union([securePasswordSchema, z.literal(""), z.null()])
     .optional()
     .transform((v) => (v === "" || v === null ? undefined : v)),
 });
@@ -271,7 +286,7 @@ export type VerifyOtpInput = z.infer<typeof VerifyOtpSchema>;
 // Invitations (accept invite: set password via email link)
 export const AcceptInvitationSchema = z.object({
   token: z.string().min(1, "Invitation token required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: securePasswordSchema,
 });
 
 export type AcceptInvitationInput = z.infer<typeof AcceptInvitationSchema>;

@@ -46,11 +46,13 @@ export class UsersService {
         },
       });
 
+      const companyDisplayName = company.commercialName?.trim() || company.legalName || "";
       await sendInvitationEmail({
         to: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
         token: invitationToken,
+        companyName: companyDisplayName,
       });
 
       return user;
@@ -100,6 +102,7 @@ export class UsersService {
         firstName: user.firstName,
         lastName: user.lastName,
         token: invitationToken,
+        companyName: undefined,
       });
       return user;
     }
@@ -208,6 +211,13 @@ export class UsersService {
     if (!user.invitationToken || user.passwordHash != null) {
       throw new Error("User has already set their password or was not invited by email");
     }
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { commercialName: true, legalName: true },
+    });
+    const companyDisplayName = company
+      ? (company.commercialName?.trim() || company.legalName || "").trim()
+      : "";
     const invitationToken = crypto.randomBytes(32).toString("hex");
     const invitationTokenExpiresAt = new Date();
     invitationTokenExpiresAt.setHours(
@@ -222,6 +232,7 @@ export class UsersService {
       firstName: user.firstName,
       lastName: user.lastName,
       token: invitationToken,
+      companyName: companyDisplayName || undefined,
     });
     return { ok: true };
   }

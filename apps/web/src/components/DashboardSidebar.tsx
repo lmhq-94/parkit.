@@ -349,7 +349,10 @@ export function DashboardSidebar() {
   const [hasBookableParkings, setHasBookableParkings] = useState(false);
 
   const superAdmin = isSuperAdmin(user);
-  const hasCompanies = companies.length > 0 || Boolean(adminCompanyName);
+  // SUPER_ADMIN: hay empresas si la lista cargada tiene algo. ADMIN/STAFF: siempre tienen empresa; no mostrar "crear empresa" mientras carga /companies/me (evita pestañeo).
+  const hasCompanies = superAdmin
+    ? companies.length > 0
+    : Boolean(adminCompanyName) || Boolean(user?.id);
   const isDark = resolvedTheme === "dark";
 
   const bannerDefaultSrc = isDark

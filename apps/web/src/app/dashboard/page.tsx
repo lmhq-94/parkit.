@@ -170,13 +170,14 @@ export default function DashboardPage() {
     }
   }, [customRangeJustOpened]);
 
-  // Redirigir a la página de "no companies" cuando no haya empresas, usando efecto para evitar setState en render.
+  // Redirigir a "no companies" solo si es SUPER_ADMIN y no hay ninguna empresa en el sistema.
+  // Los ADMIN/STAFF pertenecen a una empresa; nunca deben ver esta página.
   useEffect(() => {
-    if (stats && stats.companiesCount === 0 && !redirectingNoCompanies) {
+    if (superAdmin && stats && stats.companiesCount === 0 && !redirectingNoCompanies) {
       setRedirectingNoCompanies(true);
       router.replace("/dashboard/no-companies");
     }
-  }, [stats, redirectingNoCompanies, router]);
+  }, [superAdmin, stats, redirectingNoCompanies, router]);
 
   // Spinner completo solo en carga inicial (sin datos). Al cambiar días se mantiene la UI y solo se actualizan los datos.
   if (loading && !stats) {

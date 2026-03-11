@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   Building2, Receipt, Mail, Phone, Globe,
   DollarSign, Clock, MapPin, ArrowRight,
-  Activity,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
@@ -16,7 +15,7 @@ import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
-import { COUNTRIES, CURRENCIES, TIMEZONES } from "@/lib/companyOptions";
+import { COUNTRIES, CURRENCIES, TIMEZONES, INDUSTRIES } from "@/lib/companyOptions";
 import { formatTaxId, formatPhoneInternational } from "@/lib/inputMasks";
 import { required, email as validateEmail, phone as validatePhone } from "@/lib/validation";
 
@@ -40,20 +39,14 @@ function Field({ label, required, icon: Icon, children }: {
   );
 }
 
-/** Todos los estados (para cargar/guardar). Al crear una company la API usa PENDING por defecto. */
-const COMPANY_STATUSES = ["PENDING", "ACTIVE", "SUSPENDED", "INACTIVE"] as const;
-/** En el edit solo se puede elegir estos; PENDING no se muestra en el dropdown. */
-const EDITABLE_STATUSES = ["ACTIVE", "SUSPENDED", "INACTIVE"] as const;
-
 const defaultForm = {
-  legalName: "", taxId: "", commercialName: "",
+  legalName: "", taxId: "", industry: "", commercialName: "",
   countryCode: "", currency: "", timezone: "",
   email: "", contactPhone: "", legalAddress: "",
-  status: "PENDING" as string,
 };
 
 export default function EditCompanyPage() {
-  const { t, tEnum } = useTranslation();
+  const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
   const params = useParams();
@@ -72,12 +65,10 @@ export default function EditCompanyPage() {
       try {
         const data = await apiClient.get<Record<string, unknown>>(`/companies/${id}`);
         if (data) {
-          const status = data.status && COMPANY_STATUSES.includes(data.status as typeof COMPANY_STATUSES[number])
-            ? String(data.status)
-            : "PENDING";
           const loaded = {
             legalName: String(data.legalName ?? ""),
             taxId: formatTaxId(String(data.taxId ?? "")),
+            industry: String(data.industry ?? ""),
             commercialName: String(data.commercialName ?? ""),
             countryCode: String(data.countryCode ?? ""),
             currency: String(data.currency ?? ""),
@@ -85,7 +76,6 @@ export default function EditCompanyPage() {
             email: String(data.email ?? ""),
             contactPhone: formatPhoneInternational(String(data.contactPhone ?? "")),
             legalAddress: String(data.legalAddress ?? ""),
-            status,
           };
           setForm(loaded);
           setInitialForm(loaded);
@@ -120,7 +110,7 @@ export default function EditCompanyPage() {
       await apiClient.patch(`/companies/${id}`, {
         legalName: form.legalName.trim(),
         taxId: form.taxId.trim(),
-        status: form.status as "PENDING" | "ACTIVE" | "SUSPENDED" | "INACTIVE",
+        industry: form.industry.trim() || undefined,
         commercialName: form.commercialName.trim() || undefined,
         countryCode: form.countryCode || undefined,
         currency: form.currency || undefined,
@@ -185,29 +175,16 @@ export default function EditCompanyPage() {
               <input value={form.taxId} onChange={(e) => setForm((p) => ({ ...p, taxId: formatTaxId(e.target.value) }))} placeholder={t("common.placeholderTaxId")} className={IL} aria-invalid={!!errors.taxId} />
               {errors.taxId && <p className="mt-1 text-sm text-red-500">{errors.taxId}</p>}
             </Field>
-            <div>
-              <label className={LABEL}>{t("tables.companies.status")}</label>
-              {form.status === "PENDING" ? (
-                <>
-                  <SelectField
-                    value=""
-                    onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
-                    icon={Activity}
-                  >
-                    <option value="">{t("companies.changeStatusTo")}</option>
-                    {EDITABLE_STATUSES.map((s) => (
-                      <option key={s} value={s}>{tEnum("companyStatus", s)}</option>
-                    ))}
-                  </SelectField>
-                </>
-              ) : (
-                <SelectField value={form.status} onChange={set("status")} icon={Activity}>
-                  {EDITABLE_STATUSES.map((s) => (
-                    <option key={s} value={s}>{tEnum("companyStatus", s)}</option>
-                  ))}
-                </SelectField>
-              )}
-            </div>
+            <Field label={t("companies.industry")} icon={Building2}>
+              <SelectField value={form.industry} onChange={set("industry")} icon={Building2}>
+                <option value="">{t("common.selectPlaceholder")}</option>
+                {INDUSTRIES.map((ind) => (
+                  <option key={ind.value} value={ind.value}>
+                    {t(`companies.industryOptions.${ind.value}`)}
+                  </option>
+                ))}
+              </SelectField>
+            </Field>
           </div>
         </div>
       </div>

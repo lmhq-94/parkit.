@@ -48,6 +48,7 @@ export default function NewCompanyPage() {
   const { showSuccess, showError } = useToast();
   const router = useRouter();
   const bumpCompanies = useDashboardStore((s) => s.bumpCompanies);
+  const setSelectedCompany = useDashboardStore((s) => s.setSelectedCompany);
   const [form, setForm] = useState(defaultForm);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,7 +93,7 @@ export default function NewCompanyPage() {
     if (!validate()) return;
     setSubmitting(true); setError(null);
     try {
-      await apiClient.post("/companies", {
+      const company = await apiClient.post<{ id: string; commercialName?: string | null; legalName: string }>("/companies", {
         legalName: form.legalName.trim(),
         taxId: form.taxId.trim(),
         industry: form.industry || undefined,
@@ -104,6 +105,8 @@ export default function NewCompanyPage() {
         contactPhone: form.contactPhone.replace(/\D/g, "").length > 0 ? form.contactPhone.replace(/\D/g, "") : undefined,
         legalAddress: form.legalAddress.trim() || undefined,
       });
+      const displayName = (company.commercialName?.trim() || company.legalName || "").trim() || form.legalName.trim();
+      setSelectedCompany(company.id, displayName);
       bumpCompanies();
       showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/companies");

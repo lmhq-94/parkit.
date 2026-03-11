@@ -374,7 +374,7 @@ export const INDUSTRIES = [
   { value: "INDUSTRIAL_MANUFACTURING" },
   { value: "LOGISTICS_WAREHOUSING" },
   { value: "BANKING_FINANCIAL" },
-  { value: "TECH_SAAS" },
+  { value: "TECH" },
   { value: "RESTAURANTS_FOOD" },
   { value: "ENTERTAINMENT_LEISURE" },
   { value: "EDUCATION" },

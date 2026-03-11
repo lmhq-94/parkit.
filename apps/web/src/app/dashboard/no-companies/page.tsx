@@ -1,11 +1,28 @@
 "use client";
 
-import { Building2, FolderX } from "lucide-react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { FolderX } from "lucide-react";
 import Link from "next/link";
 import { useTranslation } from "@/hooks/useTranslation";
+import { getStoredUser, isSuperAdmin } from "@/lib/auth";
 
 export default function NoCompaniesPage() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const user = getStoredUser();
+  const superAdmin = isSuperAdmin(user);
+
+  // Solo SUPER_ADMIN puede ver esta página. ADMIN/STAFF pertenecen a una empresa → overview.
+  useEffect(() => {
+    if (user && !superAdmin) {
+      router.replace("/dashboard");
+    }
+  }, [user, superAdmin, router]);
+
+  if (user && !superAdmin) {
+    return null;
+  }
 
   return (
     <div className="flex flex-1 items-center justify-center px-4 py-10">

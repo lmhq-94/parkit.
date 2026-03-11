@@ -23,6 +23,7 @@ interface Company {
   id: string;
   legalName?: string;
   commercialName?: string;
+  industry?: string;
   legalAddress?: string;
   taxId?: string;
   countryCode?: string;
@@ -189,6 +190,7 @@ export default function CompaniesPage() {
         hasRowDetail={(company) =>
           (company.legalName != null && company.legalName !== "") ||
           (company.taxId != null && company.taxId !== "") ||
+          (company.industry != null && company.industry !== "") ||
           (company.legalAddress != null && company.legalAddress !== "") ||
           (company.contactPhone != null && company.contactPhone !== "") ||
           (company.countryCode != null && company.countryCode !== "") ||
@@ -200,6 +202,10 @@ export default function CompaniesPage() {
             <DetailSectionLabel text={t("common.additionalInfo")} />
             <DetailField label={t("companies.legalName")} value={company.legalName} />
             <DetailField label={t("companies.taxId")} value={company.taxId} />
+            <DetailField
+              label={t("companies.industry")}
+              value={company.industry ? t(`companies.industryOptions.${company.industry}`) : undefined}
+            />
             <DetailField label={t("companies.legalAddress")} value={company.legalAddress} wide multiline />
             <DetailField label={t("companies.contactPhone")} value={company.contactPhone ? formatPhoneInternational(company.contactPhone) : undefined} linkType="phone" />
             <DetailField label={t("companies.countryCode")} value={company.countryCode} />
