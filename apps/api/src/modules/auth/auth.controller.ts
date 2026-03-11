@@ -44,4 +44,32 @@ export class AuthController {
       );
     }
   }
+
+  static async requestOtp(req: Request, res: Response) {
+    try {
+      const result = await AuthService.requestOtp(req.body);
+
+      return ok(res, result);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
+  static async verifyOtp(req: Request, res: Response) {
+    try {
+      const result = await AuthService.verifyOtp(req.body);
+
+      return ok(res, result);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
 }

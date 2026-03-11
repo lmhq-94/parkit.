@@ -161,6 +161,8 @@ export default function LoginPage() {
         setError(t("auth.errorUserInactive"));
       } else if (raw === "COMPANY_INACTIVE") {
         setError(t("auth.errorCompanyInactive"));
+      } else if (raw === "Invalid credentials") {
+        setError(t("auth.invalidCredentials"));
       } else {
         setError(raw);
       }

@@ -13,7 +13,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { useDashboardStore } from "@/lib/store";
-import { COUNTRIES, CURRENCIES, TIMEZONES } from "@/lib/companyOptions";
+import { COUNTRIES, CURRENCIES, TIMEZONES, INDUSTRIES } from "@/lib/companyOptions";
 import { formatTaxId, formatPhoneInternational } from "@/lib/inputMasks";
 import { required, email as validateEmail, phone as validatePhone } from "@/lib/validation";
 
@@ -38,7 +38,7 @@ function Field({ label, required, icon: Icon, children }: {
 }
 
 const defaultForm = {
-  legalName: "", taxId: "", commercialName: "",
+  legalName: "", taxId: "", industry: "", commercialName: "",
   countryCode: "CR", currency: "CRC", timezone: "America/Costa_Rica",
   email: "", contactPhone: "", legalAddress: "",
 };
@@ -62,6 +62,7 @@ export default function NewCompanyPage() {
     const next: Partial<Record<keyof typeof defaultForm, string>> = {};
     const e1 = required(t, form.legalName); if (e1) next.legalName = e1;
     const e2 = required(t, form.taxId); if (e2) next.taxId = e2;
+    const e3 = required(t, form.industry); if (e3) next.industry = e3;
     if (form.email.trim()) { const ee = validateEmail(t, form.email); if (ee) next.email = ee; }
     if (form.contactPhone.trim()) { const ep = validatePhone(t, form.contactPhone); if (ep) next.contactPhone = ep; }
     setErrors(next);
@@ -73,6 +74,7 @@ export default function NewCompanyPage() {
       const next: Partial<Record<keyof typeof defaultForm, string>> = {};
       const e1 = required(t, form.legalName); if (e1) next.legalName = e1;
       const e2 = required(t, form.taxId); if (e2) next.taxId = e2;
+      const e3 = required(t, form.industry); if (e3) next.industry = e3;
       setErrors(next);
       return Object.keys(next).length === 0;
     }
@@ -93,6 +95,7 @@ export default function NewCompanyPage() {
       await apiClient.post("/companies", {
         legalName: form.legalName.trim(),
         taxId: form.taxId.trim(),
+        industry: form.industry || undefined,
         commercialName: form.commercialName.trim() || undefined,
         countryCode: form.countryCode || undefined,
         currency: form.currency || undefined,
@@ -120,7 +123,7 @@ export default function NewCompanyPage() {
       accentColor: "sky",
       isValid: () => !!(form.legalName.trim() && form.taxId.trim()),
       content: (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <Field label={t("companies.legalName")} required icon={Building2}>
             <input value={form.legalName} onChange={set("legalName")} placeholder={t("common.placeholderLegalName")} className={IL} aria-invalid={!!errors.legalName} />
             {errors.legalName && <p className="mt-1 text-sm text-red-500">{errors.legalName}</p>}
@@ -129,6 +132,19 @@ export default function NewCompanyPage() {
             <input value={form.taxId} onChange={(e) => setForm((p) => ({ ...p, taxId: formatTaxId(e.target.value) }))} placeholder={t("common.placeholderTaxId")} className={IL} aria-invalid={!!errors.taxId} />
             {errors.taxId && <p className="mt-1 text-sm text-red-500">{errors.taxId}</p>}
           </Field>
+          <div className="sm:col-span-2 lg:col-span-1">
+            <Field label={t("companies.industry")} required icon={Building2}>
+              <SelectField value={form.industry} onChange={set("industry")} icon={Building2}>
+                <option value="">{t("common.selectPlaceholder")}</option>
+                {INDUSTRIES.map((ind) => (
+                  <option key={ind.value} value={ind.value}>
+                    {ind.label}
+                  </option>
+                ))}
+              </SelectField>
+              {errors.industry && <p className="mt-1 text-sm text-red-500">{errors.industry}</p>}
+            </Field>
+          </div>
         </div>
       ),
     },

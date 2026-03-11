@@ -1,4 +1,10 @@
 -- CreateEnum
+CREATE TYPE "SystemRole" AS ENUM ('SUPER_ADMIN', 'ADMIN', 'STAFF', 'CUSTOMER');
+
+-- CreateEnum
+CREATE TYPE "CompanyStatus" AS ENUM ('PENDING', 'ACTIVE', 'SUSPENDED', 'INACTIVE');
+
+-- CreateEnum
 CREATE TYPE "ValetStatus" AS ENUM ('AVAILABLE', 'BUSY', 'AWAY');
 
 -- CreateEnum
@@ -21,6 +27,51 @@ CREATE TYPE "NotificationType" AS ENUM ('PUSH', 'SMS', 'EMAIL');
 
 -- CreateEnum
 CREATE TYPE "NotificationStatus" AS ENUM ('SENT', 'DELIVERED', 'READ', 'FAILED');
+
+-- CreateTable
+CREATE TABLE "Company" (
+    "id" TEXT NOT NULL,
+    "legalName" TEXT NOT NULL,
+    "commercialName" TEXT,
+    "taxId" TEXT NOT NULL,
+    "countryCode" TEXT NOT NULL DEFAULT 'CR',
+    "currency" TEXT NOT NULL DEFAULT 'CRC',
+    "timezone" TEXT NOT NULL DEFAULT 'UTC',
+    "email" TEXT,
+    "contactPhone" TEXT,
+    "legalAddress" TEXT,
+    "brandingConfig" JSONB,
+    "status" "CompanyStatus" NOT NULL DEFAULT 'PENDING',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Company_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL,
+    "companyId" TEXT,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "passwordHash" TEXT,
+    "avatarUrl" TEXT,
+    "timezone" TEXT NOT NULL DEFAULT 'UTC',
+    "phone" TEXT,
+    "phoneVerified" BOOLEAN NOT NULL DEFAULT false,
+    "systemRole" "SystemRole" NOT NULL DEFAULT 'CUSTOMER',
+    "pushToken" TEXT,
+    "lastLogin" TIMESTAMP(3),
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "appPreferences" JSONB,
+    "invitationToken" TEXT,
+    "invitationTokenExpiresAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "Client" (
@@ -213,6 +264,29 @@ CREATE TABLE "NotificationLog" (
     CONSTRAINT "NotificationLog_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "OneTimeCode" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "codeHash" TEXT NOT NULL,
+    "purpose" TEXT NOT NULL,
+    "channel" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "usedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "OneTimeCode_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Company_taxId_key" ON "Company"("taxId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_invitationToken_key" ON "User"("invitationToken");
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Client_userId_key" ON "Client"("userId");
 
@@ -233,6 +307,12 @@ CREATE UNIQUE INDEX "Ticket_bookingId_key" ON "Ticket"("bookingId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "TicketReview_ticketId_key" ON "TicketReview"("ticketId");
+
+-- CreateIndex
+CREATE INDEX "OneTimeCode_userId_purpose_idx" ON "OneTimeCode"("userId", "purpose");
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Client" ADD CONSTRAINT "Client_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -317,3 +397,6 @@ ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_ticketId_fkey" FOREIGN KEY ("tic
 
 -- AddForeignKey
 ALTER TABLE "NotificationLog" ADD CONSTRAINT "NotificationLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "OneTimeCode" ADD CONSTRAINT "OneTimeCode_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

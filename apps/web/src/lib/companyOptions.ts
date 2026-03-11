@@ -358,6 +358,32 @@ export const CURRENCIES = [
   { code: "ZWL", label: "ZWL — Dólar zimbabuense" },
 ] as const;
 
+export const INDUSTRIES = [
+  // Núcleo muy relevante para Parkit
+  { value: "PARKING_OPERATOR", label: "Operador de parqueos / estacionamientos" },
+  { value: "MALL", label: "Centro comercial / retail" },
+  { value: "SUPERMARKET_RETAIL_CHAIN", label: "Supermercados y cadenas de retail" },
+  { value: "HOSPITAL_CLINIC", label: "Hospital / clínica" },
+  { value: "HOTEL", label: "Hotel / hospedaje" },
+  { value: "AIRPORT", label: "Aeropuerto" },
+  { value: "OFFICE_BUILDING", label: "Edificio de oficinas / corporativo" },
+  { value: "RESIDENTIAL", label: "Residencial / condominio" },
+  { value: "UNIVERSITY_SCHOOL", label: "Universidad / colegio" },
+  { value: "EVENT_VENUE", label: "Centro de eventos / estadio" },
+  { value: "MUNICIPALITY", label: "Municipalidad / sector público" },
+
+  // Otras actividades económicas frecuentes
+  { value: "INDUSTRIAL_MANUFACTURING", label: "Industrial / manufactura" },
+  { value: "LOGISTICS_WAREHOUSING", label: "Logística / bodegas / parques industriales" },
+  { value: "BANKING_FINANCIAL", label: "Banca / servicios financieros" },
+  { value: "TECH_SAAS", label: "Tecnología / software / SaaS" },
+  { value: "RESTAURANTS_FOOD", label: "Restaurantes / food courts" },
+  { value: "ENTERTAINMENT_LEISURE", label: "Entretenimiento / cines / ocio" },
+  { value: "EDUCATION", label: "Educación (academias, centros privados)" },
+
+  { value: "OTHER", label: "Otro" },
+] as const;
+
 export const LICENSE_TYPES = [
   { value: "A1", label: "A1 — Motocicletas hasta 250cc" },
   { value: "A2", label: "A2 — Motocicletas hasta 750cc" },

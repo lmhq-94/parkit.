@@ -4,6 +4,7 @@ import { z } from "zod";
 export const CreateCompanySchema = z.object({
   legalName: z.string().min(1, "Legal name required"),
   taxId: z.string().min(1, "Tax ID required"),
+  industry: z.string().min(1, "Industry required"),
   commercialName: z.string().optional(),
   countryCode: z.string().optional(),
   currency: z.string().optional(),
@@ -30,6 +31,7 @@ const BrandingConfigSchema = z
 export const UpdateCompanySchema = z.object({
   legalName: z.string().min(1).optional(),
   taxId: z.string().min(1).optional(),
+   industry: z.string().min(1).optional(),
   commercialName: z.string().optional(),
   countryCode: z.string().optional(),
   currency: z.string().optional(),
@@ -242,13 +244,29 @@ export const UpdateTicketSchema = z.object({
 export type CreateTicketInput = z.infer<typeof CreateTicketSchema>;
 export type UpdateTicketInput = z.infer<typeof UpdateTicketSchema>;
 
-// Auth
+// Auth (web + mobile)
 export const LoginSchema = z.object({
   email: z.string().email("Invalid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 export type LoginInput = z.infer<typeof LoginSchema>;
+
+// Passwordless login (OTP)
+export const RequestOtpSchema = z.object({
+  email: z.string().email("Invalid email"),
+  purpose: z.string().optional().default("LOGIN"),
+  channel: z.string().optional().default("EMAIL"),
+});
+
+export const VerifyOtpSchema = z.object({
+  email: z.string().email("Invalid email"),
+  code: z.string().min(4, "Code required"),
+  purpose: z.string().optional().default("LOGIN"),
+});
+
+export type RequestOtpInput = z.infer<typeof RequestOtpSchema>;
+export type VerifyOtpInput = z.infer<typeof VerifyOtpSchema>;
 
 // Invitations (accept invite: set password via email link)
 export const AcceptInvitationSchema = z.object({

@@ -336,6 +336,7 @@ export function DashboardSidebar() {
   const [hasBookableParkings, setHasBookableParkings] = useState(false);
 
   const superAdmin = isSuperAdmin(user);
+  const hasCompanies = companies.length > 0 || Boolean(adminCompanyName);
   const isDark = resolvedTheme === "dark";
 
   const bannerDefaultSrc = isDark
@@ -524,137 +525,159 @@ export function DashboardSidebar() {
       {/* Company banner + selector (SUPER_ADMIN) o banner con avatar (ADMIN) */}
       {!collapsed && (
         <>
-          {superAdmin ? (
-            <div className="border-b border-card-border">
-              <DefaultBanner
-                companyName={selectedCompanyName || t("sidebar.company")}
-                logoImageUrl={companyBranding?.logoImageUrl}
-                subtitle={t("sidebar.companyTagline")}
-                initials={(() => {
-                  const name = (selectedCompanyName || "").trim();
-                  const parts = name.split(/\s+/).filter(Boolean);
-                  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-                  if (name.length >= 2) return name.slice(0, 2).toUpperCase();
-                  if (name.length === 1) return name[0].toUpperCase();
-                  return "?";
-                })()}
-                isDark={hasCustomBanner ? bannerVariant : isDark}
-                backgroundImageUrl={hasCustomBanner ? effectiveBannerSrc : null}
-              />
-              <div className="px-4 pb-2 pt-1">
-                <CompanySelector
-                  companies={companies}
-                  selectedCompanyId={selectedCompanyId}
-                  selectedCompanyName={selectedCompanyName}
-                  onSelect={handleSelectCompany}
-                  placeholder={t("sidebar.selectCompany")}
-                  allCompaniesLabel={t("sidebar.allCompanies")}
-                  emptyLabel={t("companies.noCompanies")}
-                  isDark={hasCustomBanner ? bannerVariant : isDark}
-                  logoImageUrl={companyBranding?.logoImageUrl}
-                />
-              </div>
-            </div>
+          {hasCompanies ? (
+            <>
+              {superAdmin ? (
+                <div className="border-b border-card-border">
+                  <DefaultBanner
+                    companyName={selectedCompanyName || t("sidebar.company")}
+                    logoImageUrl={companyBranding?.logoImageUrl}
+                    subtitle={t("sidebar.companyTagline")}
+                    initials={(() => {
+                      const name = (selectedCompanyName || "").trim();
+                      const parts = name.split(/\s+/).filter(Boolean);
+                      if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+                      if (name.length >= 2) return name.slice(0, 2).toUpperCase();
+                      if (name.length === 1) return name[0].toUpperCase();
+                      return "?";
+                    })()}
+                    isDark={hasCustomBanner ? bannerVariant : isDark}
+                    backgroundImageUrl={hasCustomBanner ? effectiveBannerSrc : null}
+                  />
+                  <div className="px-4 pb-2 pt-1">
+                    <CompanySelector
+                      companies={companies}
+                      selectedCompanyId={selectedCompanyId}
+                      selectedCompanyName={selectedCompanyName}
+                      onSelect={handleSelectCompany}
+                      placeholder={t("sidebar.selectCompany")}
+                      allCompaniesLabel={t("sidebar.allCompanies")}
+                      emptyLabel={t("companies.noCompanies")}
+                      isDark={hasCustomBanner ? bannerVariant : isDark}
+                      logoImageUrl={companyBranding?.logoImageUrl}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="border-b border-card-border">
+                  <DefaultBanner
+                    companyName={adminCompanyName || t("companies.single") || "Company"}
+                    logoImageUrl={companyBranding?.logoImageUrl}
+                    subtitle={t("sidebar.companyTagline")}
+                    initials={(() => {
+                      const name = (adminCompanyName || "").trim();
+                      const parts = name.split(/\s+/).filter(Boolean);
+                      if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+                      if (name.length >= 2) return name.slice(0, 2).toUpperCase();
+                      if (name.length === 1) return name[0].toUpperCase();
+                      return "?";
+                    })()}
+                    isDark={hasCustomBanner ? bannerVariant : isDark}
+                    backgroundImageUrl={hasCustomBanner ? effectiveBannerSrc : null}
+                  />
+                </div>
+              )}
+            </>
           ) : (
-            <div className="border-b border-card-border">
-              <DefaultBanner
-                companyName={adminCompanyName || t("companies.single") || "Company"}
-                logoImageUrl={companyBranding?.logoImageUrl}
-                subtitle={t("sidebar.companyTagline")}
-                initials={(() => {
-                  const name = (adminCompanyName || "").trim();
-                  const parts = name.split(/\s+/).filter(Boolean);
-                  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-                  if (name.length >= 2) return name.slice(0, 2).toUpperCase();
-                  if (name.length === 1) return name[0].toUpperCase();
-                  return "?";
-                })()}
-                isDark={hasCustomBanner ? bannerVariant : isDark}
-                backgroundImageUrl={hasCustomBanner ? effectiveBannerSrc : null}
-              />
+            <div className="border-b border-card-border px-3 py-3">
+              <Link
+                href="/dashboard/companies/new?first=1"
+                className="group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-text-muted hover:bg-input-bg hover:text-text-secondary"
+              >
+                <span className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0 transition-all duration-200 bg-company-primary/10 text-company-primary group-hover:bg-company-primary/15">
+                  <Building2 className="w-5 h-5" />
+                </span>
+                <span className="font-medium truncate">
+                  {t("companies.createCompany")}
+                </span>
+              </Link>
             </div>
           )}
         </>
       )}
 
-      {/* Nav groups */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-6">
-        {navGroups.map((group) => (
-          <div key={group.label}>
-            {!collapsed && (
-              <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-company-tertiary">
-                {group.label}
-              </p>
-            )}
-            <ul className="space-y-0.5">
-              {group.items.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
-                const linkContent = (
-                  <>
-                    <span
-                      className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full bg-company-primary transition-all duration-200 ${
-                        isActive ? "opacity-100 h-6" : "opacity-0 h-0"
-                      }`}
-                    />
-                    <span className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0 transition-all duration-200">
-                      <Icon
-                        className={`w-5 h-5 ${
-                          isActive ? "text-company-primary" : "text-company-tertiary group-hover:text-company-secondary"
+      {/* Nav groups: solo cuando hay empresas, pero siempre dejamos un flex-1 para empujar el footer abajo */}
+      {hasCompanies ? (
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-6">
+          {navGroups.map((group) => (
+            <div key={group.label}>
+              {!collapsed && (
+                <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-company-tertiary">
+                  {group.label}
+                </p>
+              )}
+              <ul className="space-y-0.5">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
+                  const linkContent = (
+                    <>
+                      <span
+                        className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full bg-company-primary transition-all duration-200 ${
+                          isActive ? "opacity-100 h-6" : "opacity-0 h-0"
                         }`}
                       />
-                    </span>
-                    {!collapsed && (
-                      <>
+                      <span className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0 transition-all duration-200">
+                        <Icon
+                          className={`w-5 h-5 ${
+                            isActive ? "text-company-primary" : "text-company-tertiary group-hover:text-company-secondary"
+                          }`}
+                        />
+                      </span>
+                      {!collapsed && (
+                        <>
+                          <span
+                            className={`font-medium truncate ${
+                              isActive ? "text-text-primary" : "text-company-tertiary group-hover:text-company-secondary"
+                            }`}
+                          >
+                            {item.label}
+                          </span>
+                          {item.href === "/dashboard/notifications" && unreadNotificationsCount > 0 && (
+                            <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold shrink-0 ml-auto">
+                              {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                            </span>
+                          )}
+                          {isActive && (
+                            <ChevronRight className="w-4 h-4 text-company-primary shrink-0 ml-auto" />
+                          )}
+                        </>
+                      )}
+                      {collapsed && item.href === "/dashboard/notifications" && unreadNotificationsCount > 0 && (
                         <span
-                          className={`font-medium truncate ${
-                            isActive ? "text-text-primary" : "text-company-tertiary group-hover:text-company-secondary"
+                          className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-page"
+                          aria-label={`${unreadNotificationsCount} sin leer`}
+                        />
+                      )}
+                    </>
+                  );
+                  return (
+                    <li key={item.href}>
+                      <SidebarTooltip show={collapsed} label={item.label}>
+                        <Link
+                          href={item.href}
+                          onClick={handleNavClick}
+                          className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
+                            collapsed ? "justify-center" : ""
+                          } ${
+                            isActive
+                              ? "bg-company-primary-subtle text-text-primary"
+                              : "text-text-muted hover:bg-input-bg hover:text-text-secondary"
                           }`}
                         >
-                          {item.label}
-                        </span>
-                        {item.href === "/dashboard/notifications" && unreadNotificationsCount > 0 && (
-                          <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold shrink-0 ml-auto">
-                            {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
-                          </span>
-                        )}
-                        {isActive && (
-                          <ChevronRight className="w-4 h-4 text-company-primary shrink-0 ml-auto" />
-                        )}
-                      </>
-                    )}
-                    {collapsed && item.href === "/dashboard/notifications" && unreadNotificationsCount > 0 && (
-                      <span
-                        className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-page"
-                        aria-label={`${unreadNotificationsCount} sin leer`}
-                      />
-                    )}
-                  </>
-                );
-                return (
-                  <li key={item.href}>
-                    <SidebarTooltip show={collapsed} label={item.label}>
-                      <Link
-                        href={item.href}
-                        onClick={handleNavClick}
-                        className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
-                          collapsed ? "justify-center" : ""
-                        } ${
-                          isActive
-                            ? "bg-company-primary-subtle text-text-primary"
-                            : "text-text-muted hover:bg-input-bg hover:text-text-secondary"
-                        }`}
-                      >
-                        {linkContent}
-                      </Link>
-                    </SidebarTooltip>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </nav>
+                          {linkContent}
+                        </Link>
+                      </SidebarTooltip>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </nav>
+      ) : (
+        <div className="flex-1" />
+      )}
 
       {/* User + logout */}
       <div className="px-3 pb-3 pt-2 border-t border-card-border shrink-0">

@@ -92,6 +92,7 @@ model Company {
   legalName      String
   commercialName String?
   taxId          String        @unique
+  industry       String?
   countryCode    String        @default("CR")
   currency       String        @default("CRC")
   timezone       String        @default("UTC")
@@ -144,6 +145,7 @@ model User {
   valet            Valet?
   auditLogs        AuditLog[]
   notificationLogs NotificationLog[]
+  oneTimeCodes     OneTimeCode[]
 }
 
 /**
@@ -410,4 +412,26 @@ model NotificationLog {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | AUTH – ONE-TIME CODES (PASSWORDLESS)
+ * |--------------------------------------------------------------------------
+ */
+
+model OneTimeCode {
+  id        String   @id @default(uuid())
+  userId    String
+  codeHash  String
+  purpose   String   // e.g. "LOGIN", "EMAIL_VERIFICATION", "RESET_PASSWORD"
+  channel   String   // e.g. "EMAIL", "SMS"
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, purpose])
 }

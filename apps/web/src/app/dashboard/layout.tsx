@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
@@ -31,6 +31,7 @@ type PathHeader = {
 
 const PATH_HEADERS: Record<string, PathHeader> = {
   "/dashboard": { title: "dashboard.title", description: "dashboard.summary" },
+  "/dashboard/no-companies": { title: "companies.title", description: "companies.newCompanyDescription" },
   "/dashboard/profile": { title: "profile.title", description: "profile.description" },
   "/dashboard/super-admins/new": { title: "superAdmins.newSuperAdmin", description: "superAdmins.newSuperAdminDescription", backHref: "/dashboard/profile", backLabel: "profile.title" },
   "/dashboard/settings": { title: "settings.title", description: "settings.description" },
@@ -78,12 +79,15 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { t, tWithCompany } = useTranslation();
-  const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
-  const toggleSidebar = useDashboardStore((s) => s.toggleSidebar);
-  const user = useAuthStore((s) => s.user);
+  const selectedCompanyName = useDashboardStore((s: any) => s.selectedCompanyName);
+  const toggleSidebar = useDashboardStore((s: any) => s.toggleSidebar);
+  const user = useAuthStore((s: any) => s.user);
   const header = getHeaderForPath(pathname ?? "");
-  const isNewPage = Boolean(header.backHref);
+  const isFirstCompanyFlow =
+    (pathname ?? "") === "/dashboard/companies/new" && searchParams?.get("first") === "1";
+  const isNewPage = Boolean(header.backHref) && !isFirstCompanyFlow;
   const isCompaniesPage = (pathname ?? "") === "/dashboard/companies";
   const useMyCompany = isCompaniesPage && !isSuperAdmin(user);
   const titleKey = useMyCompany && header.titleMyCompany ? header.titleMyCompany : header.title;
@@ -106,10 +110,10 @@ export default function DashboardLayout({
     handleContentScroll();
   }, [pathname]);
 
-  const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
-  const setCompanyBranding = useDashboardStore((s) => s.setCompanyBranding);
-  const getBrandingFromCache = useDashboardStore((s) => s.getBrandingFromCache);
-  const setBrandingInCache = useDashboardStore((s) => s.setBrandingInCache);
+  const selectedCompanyId = useDashboardStore((s: any) => s.selectedCompanyId);
+  const setCompanyBranding = useDashboardStore((s: any) => s.setCompanyBranding);
+  const getBrandingFromCache = useDashboardStore((s: any) => s.getBrandingFromCache);
+  const setBrandingInCache = useDashboardStore((s: any) => s.setBrandingInCache);
   const superAdmin = isSuperAdmin(user);
 
   // Cargar branding (logo, banner, colores) para el dashboard y el sidebar. Puede estar ya precargado en login.

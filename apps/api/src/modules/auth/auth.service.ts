@@ -1,6 +1,13 @@
 import { prisma } from "../../shared/prisma";
-import { AcceptInvitationDTO, LoginDTO, RegisterDTO } from "./auth.types";
+import {
+  AcceptInvitationDTO,
+  LoginDTO,
+  RegisterDTO,
+  RequestOtpDTO,
+  VerifyOtpDTO,
+} from "./auth.types";
 import { comparePassword, hashPassword, signToken } from "./auth.utils";
+import crypto from "crypto";
 
 export class AuthService {
   static async register(data: RegisterDTO) {
@@ -112,5 +119,75 @@ export class AuthService {
     });
 
     return { user: updated, token };
+  }
+
+  static async requestOtp(data: RequestOtpDTO) {
+    const user = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
+
+    // Para no filtrar existencia de usuarios, respondemos igual aunque no exista.
+    if (!user || user.isActive === false) {
+      return { ok: true };
+    }
+
+    const rawCode = String(Math.floor(100000 + Math.random() * 900000));
+    const codeHash = crypto.createHash("sha256").update(rawCode).digest("hex");
+
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await prisma.oneTimeCode.create({
+      data: {
+        userId: user.id,
+        codeHash,
+        purpose: data.purpose ?? "LOGIN",
+        channel: data.channel ?? "EMAIL",
+        expiresAt,
+      },
+    });
+
+    // TODO: enviar correo con rawCode usando el proveedor (Resend).
+    // Por ahora solo devolvemos ok:true para que el flujo del cliente continúe.
+
+    return { ok: true };
+  }
+
+  static async verifyOtp(data: VerifyOtpDTO) {
+    const user = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
+
+    if (!user || user.isActive === false) {
+      throw new Error("Invalid code");
+    }
+
+    const codeHash = crypto.createHash("sha256").update(data.code).digest("hex");
+
+    const oneTimeCode = await prisma.oneTimeCode.findFirst({
+      where: {
+        userId: user.id,
+        purpose: data.purpose ?? "LOGIN",
+        usedAt: null,
+        expiresAt: { gt: new Date() },
+        codeHash,
+      },
+    });
+
+    if (!oneTimeCode) {
+      throw new Error("Invalid or expired code");
+    }
+
+    await prisma.oneTimeCode.update({
+      where: { id: oneTimeCode.id },
+      data: { usedAt: new Date() },
+    });
+
+    const token = signToken({
+      userId: user.id,
+      role: user.systemRole,
+      companyId: user.companyId ?? undefined,
+    });
+
+    return { user, token };
   }
 }

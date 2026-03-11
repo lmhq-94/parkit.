@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { DatePickerField } from "@/components/DatePickerField";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -55,8 +56,11 @@ interface DashboardStats {
 
 function formatShortDate(dateStr: string, locale: string) {
   // Interpretar YYYY-MM-DD como fecha de calendario (sin convertir a hora local) para que la etiqueta coincida con el día del dato
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const d2 = new Date(y, m - 1, d);
+  const [yStr, mStr, dStr] = dateStr.split("-");
+  const y = Number(yStr ?? 0);
+  const m = Number(mStr ?? 1);
+  const d = Number(dStr ?? 1);
+  const d2 = new Date(y, (m || 1) - 1, d || 1);
   return d2.toLocaleDateString(locale === "es" ? "es" : "en", {
     day: "2-digit",
     month: "short",
@@ -116,6 +120,7 @@ function clampRange(from: string, to: string): { from: string; to: string } {
 
 export default function DashboardPage() {
   const { t, tEnum, locale } = useTranslation();
+  const router = useRouter();
   const { showError: showToastError } = useToast();
   const selectedCompanyId = useDashboardStore((s: { selectedCompanyId: string | null }) => s.selectedCompanyId);
   const user = getStoredUser();
@@ -126,6 +131,7 @@ export default function DashboardPage() {
   const [days, setDays] = useState<RangeDays>(7);
   const [customRange, setCustomRange] = useState<{ from: string; to: string } | null>(null);
   const [customRangeJustOpened, setCustomRangeJustOpened] = useState(false);
+  const [redirectingNoCompanies, setRedirectingNoCompanies] = useState(false);
 
   const query = customRange
     ? `from=${encodeURIComponent(customRange.from)}&to=${encodeURIComponent(customRange.to)}`
@@ -164,6 +170,14 @@ export default function DashboardPage() {
     }
   }, [customRangeJustOpened]);
 
+  // Redirigir a la página de "no companies" cuando no haya empresas, usando efecto para evitar setState en render.
+  useEffect(() => {
+    if (stats && stats.companiesCount === 0 && !redirectingNoCompanies) {
+      setRedirectingNoCompanies(true);
+      router.replace("/dashboard/no-companies");
+    }
+  }, [stats, redirectingNoCompanies, router]);
+
   // Spinner completo solo en carga inicial (sin datos). Al cambiar días se mantiene la UI y solo se actualizan los datos.
   if (loading && !stats) {
     return (
@@ -182,6 +196,10 @@ export default function DashboardPage() {
         </div>
       </div>
     );
+  }
+
+  if (redirectingNoCompanies) {
+    return null;
   }
 
   const isAdmin = user?.systemRole === "ADMIN";
