@@ -1,6 +1,12 @@
 {
   "name": "parkit",
   "private": true,
+  "scripts": {
+    "test": "npm run test --prefix apps/web",
+    "test:web": "npm run test --prefix apps/web",
+    "test:integration": "npm run test:integration --prefix apps/web",
+    "test:e2e": "npm run test:e2e --prefix apps/web"
+  },
   "workspaces": [
     "packages/*",
     "apps/mobile/mobile-client",
