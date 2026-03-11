@@ -4,11 +4,11 @@ import { useState, useRef, useCallback } from "react";
 
 type Props = {
   sourceDataUrl: string;
-  aspectRatio: [number, number]; // [width, height] e.g. [1, 1] or [4, 1]
-  /** Tamaño en px del área de crop (cómo se ve en la app). Ej: logo 144x144, banner 320x80 */
+  aspectRatio: [number, number]; // [width, height] e.g. [1, 1] or [5, 1]
+  /** Tamaño en px del área de crop (cómo se ve en la app). Ej: logo 144x144, banner 400×80 */
   cropBoxWidth: number;
   cropBoxHeight: number;
-  /** Ancho y alto de salida fijos (ej. logo 400×400, banner 1200×300) para que la imagen ocupe todo el espacio y mantenga calidad. */
+  /** Ancho y alto de salida fijos (ej. logo 400×400, banner 1200×240) para que la imagen ocupe todo el espacio y mantenga calidad. */
   outputWidth: number;
   outputHeight: number;
   onApply: (croppedDataUrl: string) => void;

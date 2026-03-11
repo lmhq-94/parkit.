@@ -8,6 +8,7 @@ import { useTheme } from "next-themes";
 import { useAuthStore, useDashboardStore, SIDEBAR_COLLAPSED_KEY } from "@/lib/store";
 import { getFullName, getAvatarColor, getInitials, isSuperAdmin } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
+import { DefaultBanner } from "@/components/DefaultBanner";
 import { apiClient } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
@@ -330,32 +331,29 @@ export function DashboardSidebar() {
   const [mounted, setMounted] = useState(false);
   const [companies, setCompanies] = useState<{ id: string; commercialName?: string; legalName?: string }[]>([]);
   const [adminCompanyName, setAdminCompanyName] = useState<string | null>(null);
-  const [adminCompanyEmail, setAdminCompanyEmail] = useState<string | null>(null);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [bannerIsDark, setBannerIsDark] = useState<boolean | null>(null);
   const [hasBookableParkings, setHasBookableParkings] = useState(false);
 
   const superAdmin = isSuperAdmin(user);
-  const isAdminRole = user?.systemRole === "ADMIN";
   const isDark = resolvedTheme === "dark";
 
   const bannerDefaultSrc = isDark
     ? "/images/default-banner-dark.png"
     : "/images/default-banner-light.png";
   const brandingBanner = companyBranding?.bannerImageUrl;
-  const effectiveBannerSrc =
-    typeof brandingBanner === "string" && brandingBanner.trim()
-      ? brandingBanner
-      : bannerDefaultSrc;
+  const hasCustomBanner =
+    typeof brandingBanner === "string" && brandingBanner.trim().length > 0;
+  const effectiveBannerSrc = hasCustomBanner ? brandingBanner! : bannerDefaultSrc;
 
-  const bannerVariant = bannerIsDark ?? isDark;
+  const bannerVariant = hasCustomBanner ? (bannerIsDark ?? isDark) : isDark;
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!effectiveBannerSrc) return;
+    if (!hasCustomBanner || !effectiveBannerSrc) return;
     let cancelled = false;
     getBannerLuminance(effectiveBannerSrc).then((luminance) => {
       if (!cancelled) setBannerIsDark(luminance !== null ? luminance < 0.5 : null);
@@ -363,7 +361,7 @@ export function DashboardSidebar() {
     return () => {
       cancelled = true;
     };
-  }, [effectiveBannerSrc]);
+  }, [hasCustomBanner, effectiveBannerSrc]);
 
   // Hidratar estado colapsado desde localStorage (solo importa en la primera carga; al navegar el store ya tiene el valor)
   useEffect(() => {
@@ -395,14 +393,12 @@ export function DashboardSidebar() {
       .then((company) => {
         const name = company?.commercialName || company?.legalName || null;
         setAdminCompanyName(name ?? null);
-        setAdminCompanyEmail(company?.email ?? null);
         if (company?.id && name) {
           setSelectedCompany(company.id, name);
         }
       })
       .catch(() => {
         setAdminCompanyName(null);
-        setAdminCompanyEmail(null);
       });
   }, [mounted, user?.id, superAdmin, setSelectedCompany]);
 
@@ -521,11 +517,6 @@ export function DashboardSidebar() {
                 <PanelLeftClose className="w-5 h-5" />
               </button>
             </div>
-            {isAdminRole && adminCompanyName && (
-              <p className="mt-2 text-[11px] text-text-muted truncate uppercase tracking-wider font-medium" title={adminCompanyName}>
-                {t("sidebar.designedFor")} {adminCompanyName}
-              </p>
-            )}
           </>
         )}
       </div>
@@ -535,80 +526,52 @@ export function DashboardSidebar() {
         <>
           {superAdmin ? (
             <div className="border-b border-card-border">
-              <div className="relative overflow-hidden w-full aspect-[4/1] min-h-[8rem]">
-                <img
-                  src={effectiveBannerSrc}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover object-center"
+              <DefaultBanner
+                companyName={selectedCompanyName || t("sidebar.company")}
+                logoImageUrl={companyBranding?.logoImageUrl}
+                subtitle={t("sidebar.companyTagline")}
+                initials={(() => {
+                  const name = (selectedCompanyName || "").trim();
+                  const parts = name.split(/\s+/).filter(Boolean);
+                  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+                  if (name.length >= 2) return name.slice(0, 2).toUpperCase();
+                  if (name.length === 1) return name[0].toUpperCase();
+                  return "?";
+                })()}
+                isDark={hasCustomBanner ? bannerVariant : isDark}
+                backgroundImageUrl={hasCustomBanner ? effectiveBannerSrc : null}
+              />
+              <div className="px-4 pb-2 pt-1">
+                <CompanySelector
+                  companies={companies}
+                  selectedCompanyId={selectedCompanyId}
+                  selectedCompanyName={selectedCompanyName}
+                  onSelect={handleSelectCompany}
+                  placeholder={t("sidebar.selectCompany")}
+                  allCompaniesLabel={t("sidebar.allCompanies")}
+                  emptyLabel={t("companies.noCompanies")}
+                  isDark={hasCustomBanner ? bannerVariant : isDark}
+                  logoImageUrl={companyBranding?.logoImageUrl}
                 />
-                <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/5 via-transparent to-black/10" aria-hidden />
-                <p className={`absolute top-0 left-0 z-10 px-4 pt-3 text-[10px] font-semibold uppercase tracking-widest drop-shadow-sm ${bannerVariant ? "text-white/95" : "text-slate-900"}`}>
-                  {t("sidebar.company")}
-                </p>
-                <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-2 pt-2 bg-gradient-to-t from-black/30 to-transparent">
-                  <CompanySelector
-                    companies={companies}
-                    selectedCompanyId={selectedCompanyId}
-                    selectedCompanyName={selectedCompanyName}
-                    onSelect={handleSelectCompany}
-                    placeholder={t("sidebar.selectCompany")}
-                    allCompaniesLabel={t("sidebar.allCompanies")}
-                    emptyLabel={t("companies.noCompanies")}
-                    isDark={bannerVariant}
-                    logoImageUrl={companyBranding?.logoImageUrl}
-                  />
-                </div>
               </div>
             </div>
           ) : (
             <div className="border-b border-card-border">
-              <div className="relative overflow-hidden w-full aspect-[4/1] min-h-[8rem]">
-                <img
-                  src={effectiveBannerSrc}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover object-center"
-                />
-                <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/5 via-transparent to-black/10" aria-hidden />
-                <p className={`absolute top-0 left-0 z-10 px-4 pt-3 text-[10px] font-semibold uppercase tracking-widest drop-shadow-sm ${bannerVariant ? "text-white/95" : "text-slate-900"}`}>
-                  {t("sidebar.company")}
-                </p>
-                <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center gap-3 px-4 pb-2 pt-2 bg-gradient-to-t from-black/30 to-transparent">
-                  <div className="w-10 h-10 rounded-full shrink-0 border border-white/30 overflow-hidden bg-input-bg flex items-center justify-center">
-                    {companyBranding?.logoImageUrl?.trim() ? (
-                      <img
-                        src={companyBranding.logoImageUrl}
-                        alt=""
-                        className="w-full h-full object-cover object-center"
-                      />
-                    ) : (
-                      <span
-                        className="w-full h-full flex items-center justify-center text-xs font-semibold text-white"
-                        style={{
-                          backgroundColor: getAvatarColor(selectedCompanyId) ?? "rgba(0,0,0,0.4)",
-                          color: "white",
-                        }}
-                      >
-                        {(() => {
-                          const name = adminCompanyName || "";
-                          const parts = name.trim().split(/\s+/);
-                          if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-                          if (name.length >= 2) return name.slice(0, 2).toUpperCase();
-                          if (name.length === 1) return name[0].toUpperCase();
-                          return "?";
-                        })()}
-                      </span>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className={`font-medium text-sm truncate leading-tight drop-shadow-sm ${bannerVariant ? "text-white" : "text-slate-900"}`}>
-                      {adminCompanyName || t("companies.single") || "Company"}
-                    </p>
-                    <p className={`text-xs truncate leading-tight mt-0.5 drop-shadow-sm ${bannerVariant ? "text-white/85" : "text-slate-700"}`}>
-                      {adminCompanyEmail || "—"}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <DefaultBanner
+                companyName={adminCompanyName || t("companies.single") || "Company"}
+                logoImageUrl={companyBranding?.logoImageUrl}
+                subtitle={t("sidebar.companyTagline")}
+                initials={(() => {
+                  const name = (adminCompanyName || "").trim();
+                  const parts = name.split(/\s+/).filter(Boolean);
+                  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+                  if (name.length >= 2) return name.slice(0, 2).toUpperCase();
+                  if (name.length === 1) return name[0].toUpperCase();
+                  return "?";
+                })()}
+                isDark={hasCustomBanner ? bannerVariant : isDark}
+                backgroundImageUrl={hasCustomBanner ? effectiveBannerSrc : null}
+              />
             </div>
           )}
         </>

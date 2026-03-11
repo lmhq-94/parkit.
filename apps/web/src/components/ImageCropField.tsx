@@ -49,7 +49,7 @@ function resizeImageToFit(dataUrl: string, maxDimension: number): Promise<string
 
 const LOGO_CROP_SIZE = 176;
 const BANNER_CROP_W = 400;
-const BANNER_CROP_H = 100;
+const BANNER_CROP_H = 80;
 
 export function ImageCropField({
   kind,
@@ -79,11 +79,11 @@ export function ImageCropField({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isLogo = kind === "logo";
-  const aspectRatio: [number, number] = isLogo ? [1, 1] : [4, 1];
+  const aspectRatio: [number, number] = isLogo ? [1, 1] : [5, 1];
   const cropBoxWidth = isLogo ? LOGO_CROP_SIZE : BANNER_CROP_W;
   const cropBoxHeight = isLogo ? LOGO_CROP_SIZE : BANNER_CROP_H;
   const outputWidth = isLogo ? 400 : 1200;
-  const outputHeight = isLogo ? 400 : 300;
+  const outputHeight = isLogo ? 400 : 240;
   const MAX_DIMENSION_BEFORE_RESIZE = 2000;
 
   const processFile = (file: File | null) => {
@@ -155,7 +155,7 @@ export function ImageCropField({
         applyLabel={t("settings.cropApply")}
         cancelLabel={t("settings.cropCancel")}
         hintText={t("settings.cropHint")}
-        aspectLabel={isLogo ? "1:1" : "4:1"}
+        aspectLabel={isLogo ? "1:1" : "5:1"}
         circular={isLogo}
       />
     );
@@ -164,7 +164,7 @@ export function ImageCropField({
   if (value) {
     const previewContent = (
       <div className="flex flex-col gap-4 flex-1 min-h-0" style={layout === "card" ? { minHeight: contentMinHeight } : undefined}>
-        <div className={`overflow-hidden rounded-xl bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 w-full flex items-center justify-center ${isLogo ? "rounded-full max-w-[176px] aspect-square" : "rounded-xl aspect-[4/1] max-w-[400px] min-w-[240px]"}`}>
+        <div className={`overflow-hidden rounded-xl bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 w-full flex items-center justify-center ${isLogo ? "rounded-full max-w-[176px] aspect-square" : "rounded-xl aspect-[5/1] max-w-[400px] min-w-[240px]"}`}>
           <img src={value} alt="" className={`w-full h-full object-cover object-center ${isLogo ? "rounded-full" : ""}`} />
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -206,7 +206,7 @@ export function ImageCropField({
   const dropZoneState = dragOver
     ? "border-2 border-dashed border-company-primary bg-company-primary-subtle/50 ring-2 ring-company-primary/20 "
     : "border-2 border-dashed border-input-border bg-input-bg/60 hover:border-company-primary-muted hover:bg-company-primary-subtle/30 ";
-  const dropZoneShape = isLogo ? "rounded-full w-full max-w-[176px] aspect-square min-w-[120px]" : "rounded-xl w-full max-w-[400px] min-w-[240px] aspect-[4/1]";
+  const dropZoneShape = isLogo ? "rounded-full w-full max-w-[176px] aspect-square min-w-[120px]" : "rounded-xl w-full max-w-[400px] min-w-[240px] aspect-[5/1]";
   const dropZoneClass = dropZoneBase + dropZoneState + dropZoneShape;
 
   const emptyContent = (

@@ -270,7 +270,7 @@ export default function SettingsPage() {
                 onClear={() => setForm((p) => ({ ...p, bannerImageUrl: "" }))}
                 label={t("settings.bannerImage")}
                 description={t("settings.bannerImageDescription")}
-                recommendedSize="1200 × 300 px"
+                recommendedSize="1200 × 240 px"
                 layout="row"
                 t={t}
               />

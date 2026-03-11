@@ -1,18 +1,18 @@
-# Environment variables
+# Environment Variables
 
 List of environment variables used by the API and how to set them.
 
-Required (examples):
+## Required (examples)
 
-- `DATABASE_URL` - Postgres connection string for Prisma (e.g. `postgresql://user:pass@host:5432/dbname`).
-- `JWT_SECRET` - secret used to sign JWTs (keep private).
-- `PORT` - port for the API (default: `3000`).
+- `DATABASE_URL` – Postgres connection string for Prisma (e.g. `postgresql://user:pass@host:5432/dbname`).
+- `JWT_SECRET` – Secret used to sign JWTs (keep private).
+- `PORT` – Port for the API (default: `3000`).
 
-Optional / Framework / infra:
+## Optional / framework
 
-- `NODE_ENV` - `development`|`production`.
+- `NODE_ENV` – `development` | `production`.
 
-Examples:
+## Example
 
 Create a `.env` file at `apps/api/.env` with:
 
@@ -23,6 +23,6 @@ PORT=3000
 NODE_ENV=development
 ```
 
-Security:
+## Security
 
-- Do not commit `.env` or any secrets. Add `.env` to `.gitignore` if applicable.
+- Do not commit `.env` or any secrets. Ensure `.env` is in `.gitignore`.

@@ -180,15 +180,13 @@ parkit/
 │   └── shared/                        # Shared types, UI components & utilities
 ├── docs/
 │   ├── README.md                      # Documentation index
-│   ├── api/
-│   │   └── README.md                  # API developer notes & quickstart
-│   ├── architecture/
-│   │   └── README.md                  # Architecture overview
-│   ├── bd/
-│   │   └── parkit.sql                 # Canonical database schema (SQL)
+│   ├── api.md                         # API developer notes & quickstart
+│   ├── architecture.md                # Architecture overview
+│   ├── bd.md                          # Base de datos (esquema y migraciones)
+│   ├── ci-cd.md                       # CI/CD pipeline details
 │   ├── env.md                         # Environment variables reference
-│   ├── openapi.yaml                   # OpenAPI specification
-│   └── ci-cd.md                       # CI/CD pipeline details
+│   ├── mobile.md                      # Mobile apps (Expo) quickstart
+│   └── openapi.yaml                   # OpenAPI specification
 ├── tsconfig.json                      # Root TypeScript config
 ├── package.json                       # Root package manifest
 ├── package-lock.json
@@ -202,7 +200,7 @@ parkit/
 - `apps/api/prisma/schema.prisma` – Prisma database schema
 - `apps/api/.eslintrc.cjs` – Linting configuration
 - `docs/openapi.yaml` – API specification
-- `docs/architecture/parkit.sql` – Database schema reference
+- `apps/api/prisma/schema.prisma` – Database schema (Prisma)
 
 ---
 
@@ -367,7 +365,7 @@ All data is scoped by `companyId` to ensure isolation and multi-tenancy.
 
 - PostgreSQL with Prisma ORM
 - Migrations managed in `apps/api/prisma/migrations/`
-- Current schema: `docs/architecture/parkit.sql`
+- Current schema: `apps/api/prisma/schema.prisma`
 
 ---
 
@@ -376,13 +374,13 @@ All data is scoped by `companyId` to ensure isolation and multi-tenancy.
 All project documentation is in the `docs/` folder:
 
 - `docs/README.md` – Documentation index
-- `docs/architecture/` – System architecture and backend overview
-- `docs/bd/parkit.sql` – Canonical SQL schema
-- `docs/api/` – API developer notes and quickstart
-- `docs/env.md` – Environment variables reference
-- `docs/openapi.yaml` – OpenAPI spec
+- `docs/api.md` – API developer notes and quickstart
+- `docs/architecture.md` – System architecture and backend overview
+- `docs/bd.md` – Base de datos (esquema y migraciones)
 - `docs/ci-cd.md` – CI/CD pipeline (GitHub Actions)
+- `docs/env.md` – Environment variables reference
 - `docs/mobile.md` – Mobile apps quickstart (client & valet)
+- `docs/openapi.yaml` – OpenAPI spec
 
 ---
 
