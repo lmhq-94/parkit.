@@ -98,9 +98,10 @@ export default function NewVehiclePage() {
   }, [form.brand, setValue]);
 
   const getDimensionsData = useCallback(async (): Promise<{ lengthCm?: number; widthCm?: number; heightCm?: number } | null> => {
-    if (!form.brand.trim() || !form.model.trim() || !form.year.trim()) return null;
+    if (!form.brand.trim() || !form.model.trim()) return null;
     try {
-      const q = new URLSearchParams({ make: form.brand, model: form.model, year: form.year });
+      const q = new URLSearchParams({ make: form.brand, model: form.model });
+      if (form.year.trim()) q.set("year", form.year);
       const d = await apiClient.get<{ lengthCm?: number; widthCm?: number; heightCm?: number }>(
         `/vehicles/catalog/dimensions?${q.toString()}`
       );
@@ -124,7 +125,7 @@ export default function NewVehiclePage() {
   }, [getDimensionsData]);
 
   useEffect(() => {
-    if (form.brand.trim() && form.model.trim() && form.year.trim()) fetchDimensions();
+    if (form.brand.trim() && form.model.trim()) fetchDimensions();
   }, [form.brand, form.model, form.year, fetchDimensions]);
 
   const validate = (): boolean => {
@@ -260,21 +261,21 @@ export default function NewVehiclePage() {
             <label className={LABEL}>{t("vehicles.lengthCm")}</label>
             <div className="relative group">
               <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="number" min={1} value={form.lengthCm} onChange={set("lengthCm")} placeholder="cm" className={IL} />
+              <input type="number" inputMode="numeric" min={1} max={9999} value={form.lengthCm} onChange={(e) => setForm((p) => ({ ...p, lengthCm: e.target.value.replace(/\D/g, "") }))} placeholder="cm" className={IL} />
             </div>
           </div>
           <div>
             <label className={LABEL}>{t("vehicles.widthCm")}</label>
             <div className="relative group">
               <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="number" min={1} value={form.widthCm} onChange={set("widthCm")} placeholder="cm" className={IL} />
+              <input type="number" inputMode="numeric" min={1} max={9999} value={form.widthCm} onChange={(e) => setForm((p) => ({ ...p, widthCm: e.target.value.replace(/\D/g, "") }))} placeholder="cm" className={IL} />
             </div>
           </div>
           <div>
             <label className={LABEL}>{t("vehicles.heightCm")}</label>
             <div className="relative group">
               <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="number" min={1} value={form.heightCm} onChange={set("heightCm")} placeholder="cm" className={IL} />
+              <input type="number" inputMode="numeric" min={1} max={9999} value={form.heightCm} onChange={(e) => setForm((p) => ({ ...p, heightCm: e.target.value.replace(/\D/g, "") }))} placeholder="cm" className={IL} />
             </div>
           </div>
         </div>
@@ -291,8 +292,9 @@ export default function NewVehiclePage() {
       cancelHref="/dashboard/vehicles"
       onValidateBeforeAction={validateStep}
       onBeforeNext={async (fromStep, toStep) => {
-        if (fromStep === 0 && toStep === 1 && form.brand.trim() && form.model.trim() && form.year.trim()) {
+        if (fromStep === 0 && toStep === 1 && form.brand.trim() && form.model.trim()) {
           const d = await getDimensionsData();
+          console.log("[Vehicles] Respuesta dimensiones al pasar al paso 2:", d);
           if (d) {
             setForm((p) => ({
               ...p,

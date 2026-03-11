@@ -1,3 +1,4 @@
+import type { SlotType } from "@prisma/client";
 import { Request, Response } from "express";
 import { ParkingsService } from "./parkings.service";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
@@ -128,7 +129,7 @@ export class ParkingsController {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const body = (req.body ?? {}) as { slots?: Array<{ label: string; slotType?: string }> };
-      const slots = Array.isArray(body.slots) ? body.slots : [];
+      const slots = (Array.isArray(body.slots) ? body.slots : []) as Array<{ label: string; slotType?: SlotType }>;
       const created = await ParkingsService.createSlots(id, slots);
       return ok(res, created);
     } catch (error: unknown) {

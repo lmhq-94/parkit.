@@ -1,5 +1,5 @@
 import { prisma } from "../../shared/prisma";
-import type { ParkingType, SlotType } from "@prisma/client";
+import type { ParkingSlot, ParkingType, SlotType } from "@prisma/client";
 
 interface CreateParkingSlotDTO {
   label: string;
@@ -191,7 +191,7 @@ export class ParkingsService {
     if (slots.length === 0) return [];
 
     const createdSlots = await prisma.$transaction(async (tx) => {
-      const created: typeof prisma.parkingSlot[] = [];
+      const created: ParkingSlot[] = [];
       for (const slot of slots) {
         const s = await tx.parkingSlot.create({
           data: {

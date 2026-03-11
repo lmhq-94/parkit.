@@ -74,8 +74,7 @@ Super admin users are created via **seed** or internal tooling (e.g. `superadmin
 - Company and parking management
 - Support for multiple parking types and rules
 - Slot-based and capacity-based parking models
-- Vehicle registration with external dimension APIs
-  - Required for automated and tower parkings
+- Vehicle registration (optional dimensions, manual entry)
 - Optional booking system
   - Booking-based or no-booking parkings
 - Ticket lifecycle management
