@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Ticket, Users, Car, MapPin, ArrowRight } from "lucide-react";
+import { Users, Car, MapPin, ArrowRight, UserRound } from "lucide-react";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
@@ -17,8 +17,17 @@ const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 type ClientOption = { id: string; user?: { firstName?: string; lastName?: string; email?: string } };
 type VehicleOption = { id: string; plate?: string; brand?: string; model?: string };
 type ParkingOption = { id: string; name?: string };
+type ValetOption = { id: string; user?: { firstName?: string; lastName?: string; email?: string } };
+type Assignment = { role?: string; valetId?: string; valet?: { id: string } };
 
-const defaultForm = { clientId: "", vehicleId: "", parkingId: "" };
+const defaultForm = {
+  clientId: "",
+  vehicleId: "",
+  parkingId: "",
+  receptorValetId: "",
+  driverValetId: "",
+  delivererValetId: "",
+};
 
 export default function EditTicketPage() {
   const { t } = useTranslation();
@@ -32,6 +41,7 @@ export default function EditTicketPage() {
   const [clients, setClients] = useState<ClientOption[]>([]);
   const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
   const [parkings, setParkings] = useState<ParkingOption[]>([]);
+  const [valets, setValets] = useState<ValetOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,17 +49,25 @@ export default function EditTicketPage() {
   useEffect(() => {
     (async () => {
       try {
-        const [ticket, c, v, p] = await Promise.all([
-          apiClient.get<Record<string, unknown>>(`/tickets/${id}`),
+        const [ticket, c, v, p, valetsRes] = await Promise.all([
+          apiClient.get<Record<string, unknown> & { assignments?: Assignment[] }>(`/tickets/${id}`),
           apiClient.get<ClientOption[]>("/clients"),
           apiClient.get<VehicleOption[]>("/vehicles"),
           apiClient.get<ParkingOption[]>("/parkings"),
+          apiClient.get<ValetOption[]>("/valets"),
         ]);
         if (ticket) {
+          const assignments = (ticket.assignments ?? []) as Assignment[];
+          const byRole = Object.fromEntries(
+            assignments.map((a) => [a.role, a.valetId ?? a.valet?.id ?? ""])
+          );
           const loaded = {
             clientId: String(ticket.clientId ?? ""),
             vehicleId: String(ticket.vehicleId ?? ""),
             parkingId: String(ticket.parkingId ?? ""),
+            receptorValetId: String(byRole.RECEPTOR ?? ""),
+            driverValetId: String(byRole.DRIVER ?? ""),
+            delivererValetId: String(byRole.DELIVERER ?? ""),
           };
           setForm(loaded);
           setInitialForm(loaded);
@@ -57,6 +75,7 @@ export default function EditTicketPage() {
         setClients(Array.isArray(c) ? c : []);
         setVehicles(Array.isArray(v) ? v : []);
         setParkings(Array.isArray(p) ? p : []);
+        setValets(Array.isArray(valetsRes) ? valetsRes : []);
       } catch {
         setError(t("common.loadingData"));
         showError(t("common.loadError"));
@@ -67,27 +86,42 @@ export default function EditTicketPage() {
   }, [id, selectedCompanyId]);
 
   const set = (k: keyof typeof defaultForm) =>
-    (e: React.ChangeEvent<HTMLSelectElement>) => setForm(p => ({ ...p, [k]: e.target.value }));
+    (e: React.ChangeEvent<HTMLSelectElement>) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
   const handleSubmit = async () => {
-    if (!form.clientId || !form.vehicleId || !form.parkingId) return;
-    setSubmitting(true); setError(null);
+    if (!form.clientId || !form.vehicleId || !form.parkingId || !form.receptorValetId) return;
+    setSubmitting(true);
+    setError(null);
     try {
-      await apiClient.patch(`/tickets/${id}`, { clientId: form.clientId, vehicleId: form.vehicleId, parkingId: form.parkingId });
+      const payload: Record<string, string | null> = {
+        clientId: form.clientId,
+        vehicleId: form.vehicleId,
+        parkingId: form.parkingId,
+        receptorValetId: form.receptorValetId || null,
+        driverValetId: form.driverValetId || null,
+        delivererValetId: form.delivererValetId || null,
+      };
+      await apiClient.patch(`/tickets/${id}`, payload);
       showSuccess(t("common.saveSuccessShort"));
       router.push("/dashboard/tickets");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Error al actualizar el tiquete";
       setError(msg);
       showError(msg);
-    } finally { setSubmitting(false); }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const isDirty = useMemo(
     () => JSON.stringify(form) !== JSON.stringify(initialForm),
     [form, initialForm]
   );
-  const isValid = form.clientId && form.vehicleId && form.parkingId;
+  const isValid =
+    form.clientId &&
+    form.vehicleId &&
+    form.parkingId &&
+    form.receptorValetId;
 
   if (loading) {
     return (
@@ -149,6 +183,59 @@ export default function EditTicketPage() {
                 <SelectField value={form.parkingId} onChange={set("parkingId")} icon={MapPin}>
                   <option value="">{t("common.selectPlaceholder")}</option>
                   {parkings.map(p => <option key={p.id} value={p.id}>{p.name ?? p.id}</option>)}
+                </SelectField>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="overflow-hidden mt-6">
+        <div className="px-6 py-4">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-sm font-semibold text-text-primary">{t("tickets.sectionAssignments")}</p>
+            <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">{t("common.requiredBadge")}</span>
+          </div>
+          <p className="text-xs text-text-muted mt-1">{t("tickets.sectionAssignmentsDesc")}</p>
+        </div>
+        <div className="p-6 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <div>
+              <label className={LABEL}>{t("tickets.receptorValet")} <span className="text-company-primary">*</span></label>
+              {valets.length === 0 ? skel : (
+                <SelectField value={form.receptorValetId} onChange={set("receptorValetId")} icon={UserRound}>
+                  <option value="">{t("common.selectPlaceholder")}</option>
+                  {valets.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {`${v.user?.firstName ?? ""} ${v.user?.lastName ?? ""}`.trim() || v.user?.email || v.id}
+                    </option>
+                  ))}
+                </SelectField>
+              )}
+            </div>
+            <div>
+              <label className={LABEL}>{t("tickets.driverValet")}</label>
+              {valets.length === 0 ? skel : (
+                <SelectField value={form.driverValetId} onChange={set("driverValetId")} icon={UserRound}>
+                  <option value="">{t("common.selectPlaceholder")}</option>
+                  {valets.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {`${v.user?.firstName ?? ""} ${v.user?.lastName ?? ""}`.trim() || v.user?.email || v.id}
+                    </option>
+                  ))}
+                </SelectField>
+              )}
+            </div>
+            <div>
+              <label className={LABEL}>{t("tickets.delivererValet")}</label>
+              {valets.length === 0 ? skel : (
+                <SelectField value={form.delivererValetId} onChange={set("delivererValetId")} icon={UserRound}>
+                  <option value="">{t("common.selectPlaceholder")}</option>
+                  {valets.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {`${v.user?.firstName ?? ""} ${v.user?.lastName ?? ""}`.trim() || v.user?.email || v.id}
+                    </option>
+                  ))}
                 </SelectField>
               )}
             </div>

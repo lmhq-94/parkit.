@@ -221,11 +221,22 @@ export const CreateTicketSchema = z.object({
   parkingId: z.string().min(1, "Parking ID required"),
   vehicleId: z.string().min(1, "Vehicle ID required"),
   slotId: z.string().optional(),
+  receptorValetId: z.string().min(1, "Receptor valet required"),
+  driverValetId: z.string().optional(),
+  delivererValetId: z.string().optional(),
 });
 
 export const UpdateTicketSchema = z.object({
   status: z.string().optional(),
   slotId: z.string().optional(),
+  parkingId: z.string().optional(),
+  vehicleId: z.string().optional(),
+  clientId: z.string().optional(),
+  entryTime: z.string().optional(),
+  exitTime: z.string().optional(),
+  receptorValetId: z.string().optional(),
+  driverValetId: z.string().optional().nullable(),
+  delivererValetId: z.string().optional().nullable(),
 });
 
 export type CreateTicketInput = z.infer<typeof CreateTicketSchema>;

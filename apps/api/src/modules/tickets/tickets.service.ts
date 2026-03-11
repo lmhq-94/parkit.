@@ -7,6 +7,9 @@ interface CreateTicketDTO {
   vehicleId: string;
   clientId: string;
   slotId?: string;
+  receptorValetId: string;
+  driverValetId?: string;
+  delivererValetId?: string;
 }
 
 interface UpdateTicketDTO {
@@ -14,8 +17,12 @@ interface UpdateTicketDTO {
   slotId?: string;
   parkingId?: string;
   vehicleId?: string;
+  clientId?: string;
   entryTime?: string;
   exitTime?: string;
+  receptorValetId?: string | null;
+  driverValetId?: string | null;
+  delivererValetId?: string | null;
 }
 
 interface AssignValet {
@@ -42,45 +49,100 @@ interface TicketFilters {
 
 export class TicketsService {
   static async create(companyId: string, data: CreateTicketDTO) {
-    return prisma.ticket.create({
-      data: {
-        companyId,
-        bookingId: data.bookingId,
-        parkingId: data.parkingId,
-        vehicleId: data.vehicleId,
-        clientId: data.clientId,
-        slotId: data.slotId,
+    const include = {
+      client: {
+        select: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
       },
-      include: {
-        client: {
-          select: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
+      vehicle: {
+        select: {
+          plate: true,
+          brand: true,
+          model: true,
+        },
+      },
+      parking: {
+        select: {
+          name: true,
+          address: true,
+        },
+      },
+      slot: {
+        select: {
+          label: true,
+        },
+      },
+      assignments: {
+        include: {
+          valet: {
+            include: {
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
               },
             },
           },
         },
-        vehicle: {
-          select: {
-            plate: true,
-            brand: true,
-            model: true,
-          },
-        },
-        parking: {
-          select: {
-            name: true,
-            address: true,
-          },
-        },
-        slot: {
-          select: {
-            label: true,
-          },
-        },
       },
+    } as const;
+
+    return prisma.$transaction(async (tx) => {
+      const ticket = await tx.ticket.create({
+        data: {
+          companyId,
+          bookingId: data.bookingId,
+          parkingId: data.parkingId,
+          vehicleId: data.vehicleId,
+          clientId: data.clientId,
+          slotId: data.slotId,
+        },
+      });
+
+      const assignmentCreates: Promise<unknown>[] = [
+        tx.ticketAssignment.create({
+          data: {
+            ticketId: ticket.id,
+            valetId: data.receptorValetId,
+            role: "RECEPTOR",
+          },
+        }),
+      ];
+      if (data.driverValetId) {
+        assignmentCreates.push(
+          tx.ticketAssignment.create({
+            data: {
+              ticketId: ticket.id,
+              valetId: data.driverValetId,
+              role: "DRIVER",
+            },
+          })
+        );
+      }
+      if (data.delivererValetId) {
+        assignmentCreates.push(
+          tx.ticketAssignment.create({
+            data: {
+              ticketId: ticket.id,
+              valetId: data.delivererValetId,
+              role: "DELIVERER",
+            },
+          })
+        );
+      }
+      await Promise.all(assignmentCreates);
+
+      return tx.ticket.findUniqueOrThrow({
+        where: { id: ticket.id },
+        include,
+      });
     });
   }
 
@@ -198,24 +260,56 @@ export class TicketsService {
     ticketId: string,
     data: UpdateTicketDTO
   ) {
-    return prisma.ticket.update({
-      where: { id: ticketId },
-      data: {
-        status: data.status,
-        slotId: data.slotId,
-        parkingId: data.parkingId,
-        vehicleId: data.vehicleId,
-        entryTime: data.entryTime ? new Date(data.entryTime) : undefined,
-        exitTime: data.exitTime ? new Date(data.exitTime) : undefined,
-      },
-      include: {
-        vehicle: true,
-        assignments: {
-          include: {
-            valet: true,
-          },
+    const ticket = await prisma.ticket.findFirst({
+      where: { id: ticketId, companyId },
+    });
+    if (!ticket) {
+      throw new Error("Ticket not found");
+    }
+
+    const include = {
+      vehicle: true,
+      assignments: {
+        include: {
+          valet: true,
         },
       },
+    } as const;
+
+    return prisma.$transaction(async (tx) => {
+      await tx.ticket.update({
+        where: { id: ticketId },
+        data: {
+          status: data.status,
+          slotId: data.slotId,
+          parkingId: data.parkingId,
+          vehicleId: data.vehicleId,
+          clientId: data.clientId,
+          entryTime: data.entryTime ? new Date(data.entryTime) : undefined,
+          exitTime: data.exitTime ? new Date(data.exitTime) : undefined,
+        },
+      });
+
+      const roleUpdates: Array<{ role: AssignmentRole; valetId: string | null }> = [];
+      if (data.receptorValetId !== undefined) roleUpdates.push({ role: "RECEPTOR", valetId: data.receptorValetId ?? null });
+      if (data.driverValetId !== undefined) roleUpdates.push({ role: "DRIVER", valetId: data.driverValetId ?? null });
+      if (data.delivererValetId !== undefined) roleUpdates.push({ role: "DELIVERER", valetId: data.delivererValetId ?? null });
+
+      for (const { role, valetId } of roleUpdates) {
+        await tx.ticketAssignment.deleteMany({
+          where: { ticketId, role },
+        });
+        if (valetId) {
+          await tx.ticketAssignment.create({
+            data: { ticketId, valetId, role },
+          });
+        }
+      }
+
+      return tx.ticket.findUniqueOrThrow({
+        where: { id: ticketId },
+        include,
+      });
     });
   }
 

@@ -30,6 +30,7 @@ type TicketRow = {
   parkingId?: string;
   parking?: { name?: string };
   assignments?: Array<{
+    role?: string;
     valet?: { user?: { firstName?: string; lastName?: string } };
   }>;
   entryTime?: string;
@@ -219,21 +220,24 @@ export default function TicketsPage() {
           const ownerName = ticket.client?.user
             ? [ticket.client.user.firstName, ticket.client.user.lastName].filter(Boolean).join(" ").trim()
             : null;
-          const valetNames = (ticket.assignments ?? [])
-            .map((a) => {
-              const u = a.valet?.user;
-              if (!u) return null;
-              return [u.firstName, u.lastName].filter(Boolean).join(" ").trim() || null;
-            })
-            .filter((n): n is string => Boolean(n));
-          const valetLabel = [...new Set(valetNames)].join(", ") || "—";
+          const byRole = (ticket.assignments ?? []).reduce<Record<string, string>>((acc, a) => {
+            const u = a.valet?.user;
+            const name = u ? [u.firstName, u.lastName].filter(Boolean).join(" ").trim() || "—" : "—";
+            if (a.role) acc[a.role] = name;
+            return acc;
+          }, {});
+          const receptor = byRole.RECEPTOR ?? "—";
+          const driver = byRole.DRIVER ?? "—";
+          const deliverer = byRole.DELIVERER ?? "—";
           return (
             <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
               <DetailSectionLabel text={t("common.additionalInfo")} />
               {ownerName != null && ownerName !== "" && (
                 <DetailField label={t("tickets.client")} value={ownerName} />
               )}
-              <DetailField label={t("tables.tickets.valet")} value={valetLabel} />
+              <DetailField label={t("tickets.receptorValet")} value={receptor} />
+              <DetailField label={t("tickets.driverValet")} value={driver} />
+              <DetailField label={t("tickets.delivererValet")} value={deliverer} />
               {ticket.createdAt != null && (
                 <DetailField label={t("tables.notifications.createdAt")} value={formatDateTimeDisplay(new Date(ticket.createdAt), t)} />
               )}

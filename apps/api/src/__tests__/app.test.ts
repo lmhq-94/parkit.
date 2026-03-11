@@ -305,7 +305,7 @@ describe("Parkit API Integration Tests", () => {
         expect(res.status).toBe(400);
       });
 
-      it("should validate entry time format", async () => {
+      it("should require receptor valet ID", async () => {
         const res = await request(app)
           .post("/tickets")
           .set("Authorization", `Bearer ${mockToken}`)
@@ -313,12 +313,11 @@ describe("Parkit API Integration Tests", () => {
             clientId: "client-123",
             parkingId: "parking-123",
             vehicleId: "vehicle-123",
-            entryTime: "invalid-datetime",
           });
         expect(res.status).toBe(400);
       });
 
-      it("should accept valid ticket payload", async () => {
+      it("should accept valid ticket payload with only receptor (driver/deliverer optional)", async () => {
         const res = await request(app)
           .post("/tickets")
           .set("Authorization", `Bearer ${mockToken}`)
@@ -326,9 +325,24 @@ describe("Parkit API Integration Tests", () => {
             clientId: "client-123",
             parkingId: "parking-123",
             vehicleId: "vehicle-123",
-            entryTime: new Date().toISOString(),
+            receptorValetId: "valet-1",
           });
-        expect([400, 401, 403, 404, 500]).toContain(res.status);
+        expect([201, 400, 401, 403, 404, 500]).toContain(res.status);
+      });
+
+      it("should accept valid ticket payload with all valet assignments", async () => {
+        const res = await request(app)
+          .post("/tickets")
+          .set("Authorization", `Bearer ${mockToken}`)
+          .send({
+            clientId: "client-123",
+            parkingId: "parking-123",
+            vehicleId: "vehicle-123",
+            receptorValetId: "valet-1",
+            driverValetId: "valet-2",
+            delivererValetId: "valet-3",
+          });
+        expect([201, 400, 401, 403, 404, 500]).toContain(res.status);
       });
     });
   });

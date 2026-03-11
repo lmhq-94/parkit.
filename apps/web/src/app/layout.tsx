@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Parkit Admin Console",
   description: "Parking management system admin dashboard",
   icons: {
-    icon: "/icon",
+    icon: "/favicon.png",
   },
 };
 
