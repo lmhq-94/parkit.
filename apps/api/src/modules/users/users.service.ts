@@ -7,6 +7,22 @@ import { sendInvitationEmail } from "../../shared/email/invitationEmail";
 
 const INVITATION_EXPIRY_HOURS = 72;
 
+/** Si la empresa está PENDING y este es el primer usuario, la pasa a ACTIVE. */
+async function activateCompanyIfFirstUser(companyId: string): Promise<void> {
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { status: true },
+  });
+  if (!company || company.status !== "PENDING") return;
+  const count = await prisma.user.count({ where: { companyId } });
+  if (count === 1) {
+    await prisma.company.update({
+      where: { id: companyId },
+      data: { status: "ACTIVE" },
+    });
+  }
+}
+
 export class UsersService {
   static async create(companyId: string, data: CreateUserDTO) {
     const company = await prisma.company.findUnique({
@@ -55,12 +71,13 @@ export class UsersService {
         companyName: companyDisplayName,
       });
 
+      await activateCompanyIfFirstUser(companyId);
       return user;
     }
 
     const passwordHash = await hashPassword(data.password!);
 
-    return prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         companyId,
         firstName: data.firstName,
@@ -70,6 +87,8 @@ export class UsersService {
         systemRole: data.systemRole ?? SystemRole.STAFF,
       },
     });
+    await activateCompanyIfFirstUser(companyId);
+    return user;
   }
 
   /** Crea un SUPER_ADMIN (companyId: null). Solo otros SUPER_ADMIN pueden invocar. */
