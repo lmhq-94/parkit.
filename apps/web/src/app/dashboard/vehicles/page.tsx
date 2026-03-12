@@ -61,10 +61,9 @@ export default function VehiclesPage() {
       try {
         const params = new URLSearchParams();
         params.set("excludeValets", "true");
-        params.append("systemRole", "ADMIN");
+        // Solo clientes (CUSTOMER); los vehículos se asocian a estos beneficiarios.
         params.append("systemRole", "CUSTOMER");
         params.set("includeInactives", "true");
-        // Reutilizamos la API de usuarios; basta saber si hay al menos 1.
         const users = await apiClient.get<Array<{ id?: string }>>(`/users?${params.toString()}`);
         if (!cancelled) {
           setHasEligibleEmployees(Array.isArray(users) && users.length > 0);

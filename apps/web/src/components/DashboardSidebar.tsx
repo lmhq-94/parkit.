@@ -3,16 +3,15 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore, useDashboardStore, SIDEBAR_COLLAPSED_KEY } from "@/lib/store";
-import { getFullName, getAvatarColor, getInitials, isSuperAdmin } from "@/lib/auth";
+import { getFullName, getAvatarColor, getInitials, isSuperAdmin, isAdmin } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
 import { DefaultBanner } from "@/components/DefaultBanner";
 import { apiClient } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
-  LogOut,
   LayoutDashboard,
   Users,
   UserRound,
@@ -336,9 +335,10 @@ function CompanySelector({
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { resolvedTheme } = useTheme();
   const { t } = useTranslation();
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const {
     selectedCompanyId,
     selectedCompanyName,
@@ -359,6 +359,7 @@ export function DashboardSidebar() {
   const [hasBookableParkings, setHasBookableParkings] = useState(false);
 
   const superAdmin = isSuperAdmin(user);
+  const admin = isAdmin(user);
   // SUPER_ADMIN: hay empresas si la lista cargada tiene algo. ADMIN/STAFF: siempre tienen empresa; no mostrar "crear empresa" mientras carga /companies/me (evita pestañeo).
   const hasCompanies = superAdmin
     ? companies.length > 0
@@ -459,29 +460,43 @@ export function DashboardSidebar() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    window.location.href = "/login";
-  };
-
   const handleSelectCompany = (id: string, name: string) => {
     setSelectedCompany(id, name);
+    if (pathname !== "/dashboard") {
+      router.push("/dashboard");
+    }
   };
 
   const navGroups = useMemo(() => {
     const mainItems = [
       { label: t("sidebar.overview"), href: "/dashboard", icon: LayoutDashboard },
-      { label: t("sidebar.employees"), href: "/dashboard/users", icon: Users },
-      { label: t("sidebar.valets"), href: "/dashboard/valets", icon: UserRound },
-      { label: t("sidebar.vehicles"), href: "/dashboard/vehicles", icon: Car },
       { label: t("sidebar.parkings"), href: "/dashboard/parkings", icon: MapPin },
       ...(hasBookableParkings ? [{ label: t("sidebar.bookings"), href: "/dashboard/bookings", icon: CalendarCheck }] : []),
       { label: t("sidebar.tickets"), href: "/dashboard/tickets", icon: Ticket },
     ];
+
+    const teamItems = [
+      ...(admin ? [{ label: t("sidebar.employees"), href: "/dashboard/users", icon: Users }] : []),
+      { label: t("sidebar.valets"), href: "/dashboard/valets", icon: UserRound },
+    ];
+
+    const clientsItems = [
+      { label: t("sidebar.customers"), href: "/dashboard/customers", icon: Users },
+      { label: t("sidebar.vehicles"), href: "/dashboard/vehicles", icon: Car },
+    ];
+
     return [
       {
         label: t("sidebar.main"),
         items: mainItems,
+      },
+      {
+        label: t("sidebar.team"),
+        items: teamItems,
+      },
+      {
+        label: t("sidebar.clients"),
+        items: clientsItems,
       },
       {
         label: t("sidebar.account"),
@@ -684,7 +699,9 @@ export function DashboardSidebar() {
                       <SidebarTooltip show={collapsed} label={item.label}>
                         <Link
                           href={item.href}
-                          onClick={handleNavClick}
+                          onClick={(e) => {
+                            handleNavClick();
+                          }}
                           className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
                             collapsed ? "justify-center" : ""
                           } ${
@@ -707,63 +724,8 @@ export function DashboardSidebar() {
         <div className="flex-1" />
       )}
 
-      {/* User + logout */}
-      <div className="px-3 pb-3 pt-2 border-t border-card-border shrink-0">
-        {/* User info — link a perfil */}
-        <SidebarTooltip show={collapsed} label={t("sidebar.profile")}>
-          <Link
-            href="/dashboard/profile"
-            className={`flex items-center gap-3 px-3 py-2.5 mb-0.5 rounded-xl text-text-primary hover:bg-input-bg transition-colors min-w-0 w-full ${
-              collapsed ? "justify-center flex-col gap-1" : ""
-            }`}
-          >
-            <div className={`flex items-center gap-3 min-w-0 ${!collapsed ? "flex-1" : ""}`}>
-              <div className="w-9 h-9 rounded-full shrink-0 border border-card-border overflow-hidden bg-input-bg flex items-center justify-center">
-                {(user?.avatarUrl ?? user?.avatar)?.trim() ? (
-                  <img
-                    src={user.avatarUrl ?? user.avatar}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span
-                    className="w-full h-full flex items-center justify-center text-xs font-semibold text-white"
-                    style={{
-                      backgroundColor: getAvatarColor(user?.id) ?? "var(--input-bg)",
-                      color: getAvatarColor(user?.id) ? "white" : "var(--text-muted)",
-                    }}
-                  >
-                    {user?.id ? getInitials(user) : "?"}
-                  </span>
-                )}
-              </div>
-              {!collapsed && (
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-text-primary text-sm truncate leading-tight">{getFullName(user)}</p>
-                  <p className="text-text-muted text-xs truncate leading-tight mt-0.5">{user?.email}</p>
-                </div>
-              )}
-            </div>
-          </Link>
-        </SidebarTooltip>
-
-        {/* Logout */}
-        <SidebarTooltip show={collapsed} label={t("auth.signOut")}>
-          <button
-            onClick={handleLogout}
-            className={`group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-muted hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/8 transition-all duration-200 ${
-              collapsed ? "justify-center" : ""
-            }`}
-          >
-            <span className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0">
-              <LogOut className="w-[18px] h-[18px] transition-transform duration-200 group-hover:translate-x-0.5" />
-            </span>
-            {!collapsed && (
-              <span className="text-sm font-medium truncate">{t("auth.signOut")}</span>
-            )}
-          </button>
-        </SidebarTooltip>
-      </div>
+      {/* Espaciador inferior para no pegar el contenido al borde */}
+      <div className="px-3 pb-3 pt-2 shrink-0" />
     </aside>
     </>
   );

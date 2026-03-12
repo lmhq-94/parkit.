@@ -37,7 +37,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={handleToggle}
-      className="p-2 rounded-xl bg-card border border-card-border text-company-secondary hover:text-text-primary hover:bg-company-tertiary-subtle transition-colors"
+      className="h-10 w-10 rounded-xl bg-card border border-card-border text-company-secondary hover:text-text-primary hover:bg-company-tertiary-subtle transition-colors flex items-center justify-center"
       title={isDark ? "Cambiar a tema claro" : "Switch to dark theme"}
       aria-label={isDark ? "Tema claro" : "Dark theme"}
     >

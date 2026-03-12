@@ -222,6 +222,63 @@ export default function ProfilePage() {
             </div>
           </div>
 
+          {/* Preferencias de la app — tema e idioma (ancho completo debajo de profile photo) */}
+          <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0 xl:col-span-2">
+            <div className="px-5 py-3 bg-gradient-to-r from-violet-500/8 to-transparent">
+              <p className="text-sm font-semibold text-text-primary">{t("profile.sectionPreferences")}</p>
+              <p className="text-xs text-text-muted mt-0.5">{t("profile.sectionPreferencesDesc")}</p>
+            </div>
+            <div className="px-5 pb-4 pt-1.5">
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
+                <div className="flex-1 min-w-0">
+                  <label className={LABEL}>{t("profile.themeLabel")}</label>
+                  <div className="flex gap-2 mt-1">
+                    <button
+                      type="button"
+                      onClick={() => handleThemeChange("light")}
+                      className={`inline-flex items-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium transition-colors ${
+                        currentTheme === "light"
+                          ? "border-company-primary bg-company-primary-muted text-company-primary"
+                          : "border-input-border bg-input-bg text-text-secondary hover:border-company-primary hover:text-company-primary"
+                      }`}
+                    >
+                      <Sun className="w-4 h-4" />
+                      {t("profile.themeLight")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleThemeChange("dark")}
+                      className={`inline-flex items-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium transition-colors ${
+                        currentTheme === "dark"
+                          ? "border-company-primary bg-company-primary-muted text-company-primary"
+                          : "border-input-border bg-input-bg text-text-secondary hover:border-company-primary hover:text-company-primary"
+                      }`}
+                    >
+                      <Moon className="w-4 h-4" />
+                      {t("profile.themeDark")}
+                    </button>
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <label className={LABEL}>{t("profile.languageLabel")}</label>
+                  <div className="mt-1">
+                    <SelectField
+                      value={currentLocale}
+                      onChange={(e) => handleLocaleChange(e.target.value as LocaleValue)}
+                      icon={Globe}
+                    >
+                      {LOCALE_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {t(opt.labelKey)}
+                        </option>
+                      ))}
+                    </SelectField>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Columna 2 — Edit info */}
           <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0">
             <div className="px-5 py-3 bg-gradient-to-r from-violet-500/8 to-transparent">
@@ -290,63 +347,6 @@ export default function ProfilePage() {
                       </option>
                     ))}
                   </SelectField>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Preferencias de la app — tema e idioma (ancho completo debajo de las dos columnas) */}
-          <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0 xl:col-span-2">
-            <div className="px-5 py-3 bg-gradient-to-r from-violet-500/8 to-transparent">
-              <p className="text-sm font-semibold text-text-primary">{t("profile.sectionPreferences")}</p>
-              <p className="text-xs text-text-muted mt-0.5">{t("profile.sectionPreferencesDesc")}</p>
-            </div>
-            <div className="px-5 pb-4 pt-1.5">
-              <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
-                <div className="flex-1 min-w-0">
-                  <label className={LABEL}>{t("profile.themeLabel")}</label>
-                  <div className="flex gap-2 mt-1">
-                    <button
-                      type="button"
-                      onClick={() => handleThemeChange("light")}
-                      className={`inline-flex items-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium transition-colors ${
-                        currentTheme === "light"
-                          ? "border-company-primary bg-company-primary-muted text-company-primary"
-                          : "border-input-border bg-input-bg text-text-secondary hover:border-company-primary hover:text-company-primary"
-                      }`}
-                    >
-                      <Sun className="w-4 h-4" />
-                      {t("profile.themeLight")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleThemeChange("dark")}
-                      className={`inline-flex items-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium transition-colors ${
-                        currentTheme === "dark"
-                          ? "border-company-primary bg-company-primary-muted text-company-primary"
-                          : "border-input-border bg-input-bg text-text-secondary hover:border-company-primary hover:text-company-primary"
-                      }`}
-                    >
-                      <Moon className="w-4 h-4" />
-                      {t("profile.themeDark")}
-                    </button>
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <label className={LABEL}>{t("profile.languageLabel")}</label>
-                  <div className="mt-1">
-                    <SelectField
-                      value={currentLocale}
-                      onChange={(e) => handleLocaleChange(e.target.value as LocaleValue)}
-                      icon={Globe}
-                    >
-                      {LOCALE_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {t(opt.labelKey)}
-                        </option>
-                      ))}
-                    </SelectField>
-                  </div>
                 </div>
               </div>
             </div>

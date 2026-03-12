@@ -115,7 +115,7 @@ export function LocaleToggle() {
         <button
           type="button"
           onClick={handleToggle}
-          className="p-2 rounded-xl bg-card border border-card-border text-text-secondary hover:text-text-primary hover:bg-input-bg transition-colors flex items-center gap-1.5"
+          className="h-10 rounded-xl bg-card border border-card-border text-text-secondary hover:text-text-primary hover:bg-input-bg transition-colors flex items-center gap-1.5 px-2"
           title={locale === "es" ? "English" : "Español"}
           aria-label="Idioma / Language"
         >

@@ -8,6 +8,7 @@ import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { PageLoader } from "@/components/PageLoader";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 type NotificationItem = {
   id?: string;
@@ -42,7 +43,7 @@ export default function NotificationsPage() {
   const { t, tEnum } = useTranslation();
   const { showError: showToastError } = useToast();
   const user = useAuthStore((s) => s.user);
-  const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
+  const selectedCompanyId = useDashboardStore((s: { selectedCompanyId: string | null }) => s.selectedCompanyId);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

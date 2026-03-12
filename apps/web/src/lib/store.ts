@@ -25,7 +25,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     if (typeof window !== "undefined") {
       localStorage.setItem("authToken", token);
     }
-    set({ user, error: null });
+    set({ user, error: null, loggingOut: false });
   },
 
   logout: () => {
@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   hydrate: () => {
     const user = getStoredUser();
-    set({ user });
+    set({ user, loggingOut: false });
   },
 
   setUser: (user: User | null) => {

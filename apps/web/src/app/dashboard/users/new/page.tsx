@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { User, Mail, Phone, Clock, Shield } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
@@ -26,7 +26,16 @@ export default function NewUserPage() {
   const { t, tEnum } = useTranslation();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
-  const [form, setForm] = useState(defaultForm);
+  const searchParams = useSearchParams();
+  const roleParam = (searchParams.get("role") || "").toUpperCase();
+  const initialRole: (typeof ROLES)[number] =
+    roleParam === "ADMIN" ? "ADMIN" : "CUSTOMER";
+  const isFixedRole = roleParam === "ADMIN" || roleParam === "CUSTOMER";
+
+  const [form, setForm] = useState(() => ({
+    ...defaultForm,
+    systemRole: initialRole,
+  }));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof typeof defaultForm, string>>>({});
@@ -118,9 +127,15 @@ export default function NewUserPage() {
           </div>
           <div>
             <label className={LABEL}>{t("users.role")}</label>
-            <SelectField value={form.systemRole} onChange={set("systemRole")} icon={Shield}>
-              {ROLES.map(r => <option key={r} value={r}>{tEnum("systemRole", r)}</option>)}
-            </SelectField>
+            {isFixedRole ? (
+              <p className="mt-2 text-sm font-medium text-text-secondary">
+                {tEnum("systemRole", form.systemRole)}
+              </p>
+            ) : (
+              <SelectField value={form.systemRole} onChange={set("systemRole")} icon={Shield}>
+                {ROLES.map(r => <option key={r} value={r}>{tEnum("systemRole", r)}</option>)}
+              </SelectField>
+            )}
           </div>
         </div>
       ),

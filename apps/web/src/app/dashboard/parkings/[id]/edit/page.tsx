@@ -103,11 +103,23 @@ export default function EditParkingPage() {
     setSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, ...updates } : s)));
   };
 
-  const defaultSlot = (): SlotRow => ({
-    id: crypto.randomUUID?.() ?? `slot-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-    label: "",
-    slotType: "REGULAR",
-  });
+  const defaultSlot = (): SlotRow => {
+    let id: string;
+    try {
+      if (typeof crypto !== "undefined" && typeof (crypto as any).randomUUID === "function") {
+        id = (crypto as any).randomUUID();
+      } else {
+        id = `slot-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      }
+    } catch {
+      id = `slot-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    }
+    return {
+      id,
+      label: "",
+      slotType: "REGULAR",
+    };
+  };
 
   const addSlot = () => setSlots((prev) => [...prev, defaultSlot()]);
 
@@ -283,9 +295,15 @@ export default function EditParkingPage() {
             <div className="sm:col-span-2 lg:col-span-3 flex flex-col gap-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
                 <div className="flex-1">
-                  <label className={LABEL}>{t("parkings.type")} <span className="text-company-primary">*</span></label>
+                  <label className={LABEL}>
+                    {t("parkings.type")} <span className="text-company-primary">*</span>
+                  </label>
                   <SelectField value={form.type} onChange={set("type")} icon={Tag}>
-                    {PARKING_TYPES.map(pt => <option key={pt} value={pt}>{tEnum("parkingType", pt)}</option>)}
+                    {PARKING_TYPES.map((pt) => (
+                      <option key={pt} value={pt}>
+                        {tEnum("parkingType", pt)}
+                      </option>
+                    ))}
                   </SelectField>
                 </div>
                 <div className="flex items-center gap-3 mt-3 sm:mt-6 pr-1">
@@ -314,54 +332,66 @@ export default function EditParkingPage() {
                   </button>
                 </div>
               </div>
-            </div>
 
-            {chargesParking && (
-            <div>
-              <label className={LABEL}>{t("parkings.freeBenefitHours")}</label>
-              <div className="relative group">
-                <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                <input
-                  type="number"
-                  min={0}
-                  value={form.freeBenefitHours}
-                  onChange={set("freeBenefitHours")}
-                  placeholder="0"
-                  className={IL}
-                  aria-invalid={!!fieldErrors.freeBenefitHours}
-                />
-              </div>
-              <p className="mt-1 text-xs text-text-muted">{t("parkings.freeBenefitHoursHint")}</p>
-              <div className="min-h-[1.25rem] mt-1">
-                {fieldErrors.freeBenefitHours && <p className="text-sm text-red-500" role="alert">{fieldErrors.freeBenefitHours}</p>}
-              </div>
-            </div>
-            )}
-            {chargesParking && (
-            <div>
-              <label className={LABEL}>{t("parkings.pricePerExtraHour")}</label>
-              <div className="relative group flex items-center gap-2">
-                <div className="flex-1 relative">
-                  <Coins className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                  <input
-                    type="number"
-                    min={0}
-                    step="any"
-                    value={form.pricePerExtraHour}
-                    onChange={set("pricePerExtraHour")}
-                    placeholder="0"
-                    className={IL}
-                    aria-invalid={!!fieldErrors.pricePerExtraHour}
-                  />
+              {chargesParking && (
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <label className={LABEL}>{t("parkings.freeBenefitHours")}</label>
+                    <div className="relative group">
+                      <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.freeBenefitHours}
+                        onChange={set("freeBenefitHours")}
+                        placeholder="0"
+                        className={IL}
+                        aria-invalid={!!fieldErrors.freeBenefitHours}
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-text-muted">{t("parkings.freeBenefitHoursHint")}</p>
+                    <div className="min-h-[1.25rem] mt-1">
+                      {fieldErrors.freeBenefitHours && (
+                        <p className="text-sm text-red-500" role="alert">
+                          {fieldErrors.freeBenefitHours}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className={LABEL}>{t("parkings.pricePerExtraHour")}</label>
+                    <div className="relative group flex items-center gap-2">
+                      <div className="flex-1 relative">
+                        <Coins className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                        <input
+                          type="number"
+                          min={0}
+                          step="any"
+                          value={form.pricePerExtraHour}
+                          onChange={set("pricePerExtraHour")}
+                          placeholder="0"
+                          className={IL}
+                          aria-invalid={!!fieldErrors.pricePerExtraHour}
+                        />
+                      </div>
+                      {companyCurrency != null && companyCurrency !== "" && (
+                        <span className="shrink-0 text-sm font-medium text-text-secondary tabular-nums">
+                          {companyCurrency}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-text-muted">{t("parkings.pricePerExtraHourHint")}</p>
+                    <div className="min-h-[1.25rem] mt-1">
+                      {fieldErrors.pricePerExtraHour && (
+                        <p className="text-sm text-red-500" role="alert">
+                          {fieldErrors.pricePerExtraHour}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                {companyCurrency != null && companyCurrency !== "" && (
-                  <span className="shrink-0 text-sm font-medium text-text-secondary tabular-nums">{companyCurrency}</span>
-                )}
-              </div>
-              <p className="mt-1 text-xs text-text-muted">{t("parkings.pricePerExtraHourHint")}</p>
-              <div className="min-h-[1.25rem] mt-1">
-                {fieldErrors.pricePerExtraHour && <p className="text-sm text-red-500" role="alert">{fieldErrors.pricePerExtraHour}</p>}
-              </div>
+              )}
             </div>
           </div>
         </div>
