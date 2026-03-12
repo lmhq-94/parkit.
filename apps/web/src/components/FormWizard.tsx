@@ -193,7 +193,7 @@ export function FormWizard({
       )}
 
       {/* ── Action bar (below separator line) ─ */}
-      <div className="flex flex-col gap-3 pt-4 border-t border-slate-200/60 dark:border-slate-700/50">
+      <div className="mt-4 flex flex-col gap-3 pt-4 border-t border-slate-200/60 dark:border-slate-700/50">
         <div className="flex items-center justify-between gap-4">
           <div className="hidden sm:flex flex-col gap-1">
             {footerNote && (

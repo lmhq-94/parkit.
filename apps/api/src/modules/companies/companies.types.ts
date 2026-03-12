@@ -12,6 +12,7 @@ export interface CreateCompanyDTO {
   contactPhone?: string;
   legalAddress?: string;
   brandingConfig?: Prisma.InputJsonValue;
+  requiresCustomerApp?: boolean;
 }
 
 export interface UpdateCompanyDTO {
@@ -27,4 +28,5 @@ export interface UpdateCompanyDTO {
   legalAddress?: string;
   brandingConfig?: Prisma.InputJsonValue;
   status?: "PENDING" | "ACTIVE" | "SUSPENDED" | "INACTIVE";
+  requiresCustomerApp?: boolean;
 }

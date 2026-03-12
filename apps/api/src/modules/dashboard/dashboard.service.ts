@@ -61,11 +61,19 @@ export class DashboardService {
     };
   }
 
+  /** True si la empresa (o alguna para superAdmin) tiene canal con app (bookings habilitados). */
   private static async hasParkingWithBooking(companyId: string | null): Promise<boolean> {
-    const where = companyId
-      ? { companyId, requiresBooking: true }
-      : { requiresBooking: true };
-    const first = await prisma.parking.findFirst({ where, select: { id: true } });
+    if (companyId) {
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: { requiresCustomerApp: true },
+      });
+      return company?.requiresCustomerApp ?? false;
+    }
+    const first = await prisma.company.findFirst({
+      where: { requiresCustomerApp: true },
+      select: { id: true },
+    });
     return first != null;
   }
 

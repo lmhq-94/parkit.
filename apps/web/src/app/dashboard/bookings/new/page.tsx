@@ -131,7 +131,7 @@ export default function NewBookingPage() {
                 ))}
               </SelectField>
             )}
-            {errors.clientId && <p className="mt-1 text-sm text-red-500">{errors.clientId}</p>}
+            <div className="min-h-[1.25rem] mt-1">{errors.clientId && <p className="text-sm text-red-500" role="alert">{errors.clientId}</p>}</div>
           </div>
           <div>
             <label className={LABEL}>
@@ -151,7 +151,7 @@ export default function NewBookingPage() {
                 ))}
               </SelectField>
             )}
-            {errors.vehicleId && <p className="mt-1 text-sm text-red-500">{errors.vehicleId}</p>}
+            <div className="min-h-[1.25rem] mt-1">{errors.vehicleId && <p className="text-sm text-red-500" role="alert">{errors.vehicleId}</p>}</div>
           </div>
           <div>
             <label className={LABEL}>
@@ -169,7 +169,7 @@ export default function NewBookingPage() {
                 ))}
               </SelectField>
             )}
-            {errors.parkingId && <p className="mt-1 text-sm text-red-500">{errors.parkingId}</p>}
+            <div className="min-h-[1.25rem] mt-1">{errors.parkingId && <p className="text-sm text-red-500" role="alert">{errors.parkingId}</p>}</div>
           </div>
           <div>
             <label className={LABEL}>
@@ -180,7 +180,7 @@ export default function NewBookingPage() {
               onChange={(v) => setForm((p) => ({ ...p, scheduledEntryTime: v }))}
               min={new Date().toISOString()}
             />
-            {errors.scheduledEntryTime && <p className="mt-1 text-sm text-red-500">{errors.scheduledEntryTime}</p>}
+            <div className="min-h-[1.25rem] mt-1">{errors.scheduledEntryTime && <p className="text-sm text-red-500" role="alert">{errors.scheduledEntryTime}</p>}</div>
           </div>
         </div>
       ),

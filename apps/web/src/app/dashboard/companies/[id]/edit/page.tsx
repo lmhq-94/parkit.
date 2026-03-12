@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Building2, Receipt, Mail, Phone, Globe,
-  DollarSign, Clock, MapPin, ArrowRight,
+  DollarSign, Clock, MapPin, ArrowRight, Smartphone,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
@@ -22,9 +22,9 @@ import { required, email as validateEmail, phone as validatePhone } from "@/lib/
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
-function Field({ label, required, icon: Icon, children }: {
+function Field({ label, required, icon: Icon, error, children }: {
   label: string; required?: boolean;
-  icon: React.ElementType; children: React.ReactNode;
+  icon: React.ElementType; error?: React.ReactNode; children: React.ReactNode;
 }) {
   return (
     <div>
@@ -35,6 +35,7 @@ function Field({ label, required, icon: Icon, children }: {
         <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
         {children}
       </div>
+      <div className="min-h-[1.25rem] mt-1">{error != null && error !== "" && <p className="text-sm text-red-500" role="alert">{error}</p>}</div>
     </div>
   );
 }
@@ -43,6 +44,7 @@ const defaultForm = {
   legalName: "", taxId: "", industry: "", commercialName: "",
   countryCode: "", currency: "", timezone: "",
   email: "", contactPhone: "", legalAddress: "",
+  requiresCustomerApp: "" as "" | "true" | "false",
 };
 
 export default function EditCompanyPage() {
@@ -63,7 +65,7 @@ export default function EditCompanyPage() {
   useEffect(() => {
     (async () => {
       try {
-        const data = await apiClient.get<Record<string, unknown>>(`/companies/${id}`);
+        const data = await apiClient.get<Record<string, unknown> & { requiresCustomerApp?: boolean | null }>(`/companies/${id}`);
         if (data) {
           const loaded = {
             legalName: String(data.legalName ?? ""),
@@ -76,6 +78,10 @@ export default function EditCompanyPage() {
             email: String(data.email ?? ""),
             contactPhone: formatPhoneInternational(String(data.contactPhone ?? "")),
             legalAddress: String(data.legalAddress ?? ""),
+            requiresCustomerApp:
+              data.requiresCustomerApp === true ? "true" :
+              data.requiresCustomerApp === false ? "false" :
+              "",
           };
           setForm(loaded);
           setInitialForm(loaded);
@@ -97,7 +103,12 @@ export default function EditCompanyPage() {
     const next: Partial<Record<keyof typeof defaultForm, string>> = {};
     const e1 = required(t, form.legalName); if (e1) next.legalName = e1;
     const e2 = required(t, form.taxId); if (e2) next.taxId = e2;
-    if (form.email.trim()) { const ee = validateEmail(t, form.email); if (ee) next.email = ee; }
+    const ec = required(t, form.commercialName?.trim()); if (ec) next.commercialName = ec;
+    const em = required(t, form.email?.trim()); if (em) next.email = em;
+    else if (form.email.trim()) { const ee = validateEmail(t, form.email); if (ee) next.email = ee; }
+    if (!form.requiresCustomerApp) {
+      next.requiresCustomerApp = required(t, form.requiresCustomerApp);
+    }
     if (form.contactPhone.trim()) { const ep = validatePhone(t, form.contactPhone); if (ep) next.contactPhone = ep; }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -118,6 +129,10 @@ export default function EditCompanyPage() {
         email: form.email.trim() || undefined,
         contactPhone: form.contactPhone.replace(/\D/g, "").length > 0 ? form.contactPhone.replace(/\D/g, "") : undefined,
         legalAddress: form.legalAddress.trim() || undefined,
+        requiresCustomerApp:
+          form.requiresCustomerApp === "true" ? true :
+          form.requiresCustomerApp === "false" ? false :
+          undefined,
       });
       bumpCompanies();
       showSuccess(t("common.saveSuccessShort"));
@@ -138,6 +153,9 @@ export default function EditCompanyPage() {
   const isValid =
     form.legalName.trim() &&
     form.taxId.trim() &&
+    form.commercialName.trim() &&
+    form.email.trim() &&
+    !!form.requiresCustomerApp &&
     Object.keys(errors).length === 0;
 
   if (loading) {
@@ -167,13 +185,11 @@ export default function EditCompanyPage() {
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <Field label={t("companies.legalName")} required icon={Building2}>
+            <Field label={t("companies.legalName")} required icon={Building2} error={errors.legalName}>
               <input value={form.legalName} onChange={set("legalName")} placeholder={t("common.placeholderLegalName")} className={IL} aria-invalid={!!errors.legalName} />
-              {errors.legalName && <p className="mt-1 text-sm text-red-500">{errors.legalName}</p>}
             </Field>
-            <Field label={t("companies.taxId")} required icon={Receipt}>
+            <Field label={t("companies.taxId")} required icon={Receipt} error={errors.taxId}>
               <input value={form.taxId} onChange={(e) => setForm((p) => ({ ...p, taxId: formatTaxId(e.target.value) }))} placeholder={t("common.placeholderTaxId")} className={IL} aria-invalid={!!errors.taxId} />
-              {errors.taxId && <p className="mt-1 text-sm text-red-500">{errors.taxId}</p>}
             </Field>
             <Field label={t("companies.industry")} icon={Building2}>
               <SelectField value={form.industry} onChange={set("industry")} icon={Building2}>
@@ -194,22 +210,20 @@ export default function EditCompanyPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("companies.sectionContact")}</p>
-            <span className="text-[10px] font-semibold text-company-tertiary">{t("common.optionalBadge")}</span>
+            <span className="text-[10px] font-semibold text-red-500">{t("common.requiredBadge")}</span>
           </div>
           <p className="text-xs text-text-muted mt-1">{t("companies.sectionContactDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <Field label={t("companies.commercialName")} icon={Building2}>
-              <input value={form.commercialName} onChange={set("commercialName")} placeholder={t("common.placeholderCommercialName")} className={IL} />
+            <Field label={t("companies.commercialName")} required icon={Building2} error={errors.commercialName}>
+              <input value={form.commercialName} onChange={set("commercialName")} placeholder={t("common.placeholderCommercialName")} className={IL} aria-invalid={!!errors.commercialName} />
             </Field>
-            <Field label={t("companies.email")} icon={Mail}>
+            <Field label={t("companies.email")} required icon={Mail} error={errors.email}>
               <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} aria-invalid={!!errors.email} />
-              {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
             </Field>
-            <Field label={t("companies.contactPhone")} icon={Phone}>
+            <Field label={t("companies.contactPhone")} icon={Phone} error={errors.contactPhone}>
               <input type="tel" value={form.contactPhone} onChange={(e) => setForm((p) => ({ ...p, contactPhone: formatPhoneInternational(e.target.value) }))} placeholder="+1 234 567 8900" className={IL} aria-invalid={!!errors.contactPhone} />
-              {errors.contactPhone && <p className="mt-1 text-sm text-red-500">{errors.contactPhone}</p>}
             </Field>
             <div className="sm:col-span-2 lg:col-span-3">
               <label className={LABEL}>{t("companies.legalAddress")}</label>
@@ -270,6 +284,62 @@ export default function EditCompanyPage() {
                 {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
               </SelectField>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sección — canal de clientes */}
+      <div className="overflow-hidden">
+        <div className="px-6 py-4 flex items-center gap-3">
+          <div>
+            <p className="text-sm font-semibold text-text-primary">{t("companies.channelTitle")}</p>
+            <p className="text-xs text-text-muted">{t("companies.channelDescription")}</p>
+          </div>
+          <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">
+            {t("common.requiredBadge")}
+          </span>
+        </div>
+        <div className="p-6 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setForm((p) => ({ ...p, requiresCustomerApp: "true" }))}
+              className={`flex flex-col items-start gap-1.5 rounded-lg border px-4 py-3 text-left text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-company-primary ${
+                form.requiresCustomerApp === "true"
+                  ? "border-company-primary bg-company-primary-muted text-company-primary"
+                  : "border-input-border bg-input-bg text-text-primary hover:border-company-primary-muted"
+              }`}
+            >
+              <span className="font-medium">
+                {t("companies.channelOptionWithAppTitle")}
+              </span>
+              <span className={form.requiresCustomerApp === "true" ? "text-xs text-text-secondary" : "text-xs text-text-muted"}>
+                {t("companies.channelOptionWithAppDescription")}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setForm((p) => ({ ...p, requiresCustomerApp: "false" }))}
+              className={`flex flex-col items-start gap-1.5 rounded-lg border px-4 py-3 text-left text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-company-primary ${
+                form.requiresCustomerApp === "false"
+                  ? "border-company-primary bg-company-primary-muted text-company-primary"
+                  : "border-input-border bg-input-bg text-text-primary hover:border-company-primary-muted"
+              }`}
+            >
+              <span className="font-medium">
+                {t("companies.channelOptionNoAppTitle")}
+              </span>
+              <span className={form.requiresCustomerApp === "false" ? "text-xs text-text-secondary" : "text-xs text-text-muted"}>
+                {t("companies.channelOptionNoAppDescription")}
+              </span>
+            </button>
+          </div>
+          <div className="min-h-[1.25rem] mt-2">
+            {errors.requiresCustomerApp && (
+              <p className="text-sm text-red-500" role="alert">
+                {errors.requiresCustomerApp}
+              </p>
+            )}
           </div>
         </div>
       </div>

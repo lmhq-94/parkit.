@@ -3,9 +3,8 @@
 import { useCallback, useMemo } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { Check, X, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { ICellRendererParams } from "ag-grid-community";
 import { PageLoader } from "@/components/PageLoader";
 
 const DashboardDataTablePage = dynamic(
@@ -17,24 +16,19 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 
-type ParkingRow = { id?: string; name?: string; address?: string; type?: string; totalSlots?: number; requiresBooking?: boolean; latitude?: number | null; longitude?: number | null; geofenceRadius?: number };
-
-function RequiresBookingIconCellRenderer(
-  params: ICellRendererParams<{ requiresBooking?: boolean }> & { t: (key: string) => string }
-) {
-  const { data, t } = params;
-  const requires = data?.requiresBooking;
-  const Icon = requires ? Check : X;
-  const title = requires ? t("parkings.requiresBookingOn") : t("parkings.requiresBookingOff");
-  return (
-    <span className="inline-flex items-center justify-center" title={title}>
-      <Icon
-        className={`w-4 h-4 ${requires ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}
-        aria-hidden
-      />
-    </span>
-  );
-}
+type ParkingRow = {
+  id?: string;
+  name?: string;
+  address?: string;
+  type?: string;
+  totalSlots?: number;
+  freeBenefitHours?: number;
+  pricePerExtraHour?: number | string | null;
+  company?: { currency?: string | null };
+  latitude?: number | null;
+  longitude?: number | null;
+  geofenceRadius?: number;
+};
 
 export default function ParkingsPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
@@ -50,18 +44,35 @@ export default function ParkingsPage() {
       row.totalSlots == null || row.totalSlots === ("" as unknown as number)
         ? undefined
         : Number(row.totalSlots);
-    const requiresBooking =
-      row.requiresBooking === true || row.requiresBooking === "true";
+    const freeBenefitHours =
+      row.freeBenefitHours == null || row.freeBenefitHours === ("" as unknown as number)
+        ? undefined
+        : Number(row.freeBenefitHours);
+    const pricePerExtraHour =
+      row.pricePerExtraHour == null || row.pricePerExtraHour === ""
+        ? undefined
+        : Number(row.pricePerExtraHour);
 
     const payload: Record<string, unknown> = {};
     if (name) payload.name = name;
     if (type) payload.type = type;
     if (totalSlots !== undefined) payload.totalSlots = totalSlots;
-    payload.requiresBooking = requiresBooking;
+    if (freeBenefitHours !== undefined) payload.freeBenefitHours = freeBenefitHours;
+    if (pricePerExtraHour !== undefined) payload.pricePerExtraHour = pricePerExtraHour;
 
     await apiClient.patch(`/parkings/${row.id}`, payload);
     bumpParkings();
   }, [bumpParkings]);
+
+  const formatPrice = useCallback((p: ParkingRow) => {
+    const price = p.pricePerExtraHour;
+    const curr = p.company?.currency;
+    if (price == null || price === "") return "—";
+    const n = typeof price === "number" ? price : Number(price);
+    if (Number.isNaN(n)) return "—";
+    return curr ? `${Number(n).toFixed(2)} ${curr}` : String(n);
+  }, []);
+
   const columns = useMemo(
     () => [
       { header: t("tables.parkings.name"), render: (p: ParkingRow) => p.name ?? "—", field: "name" as const, editable: true },
@@ -74,28 +85,10 @@ export default function ParkingsPage() {
         cellEditorLabels: ["OPEN", "COVERED", "TOWER", "UNDERGROUND", "ELEVATOR"].map((v) => tEnum("parkingType", v)),
       },
       { header: t("tables.parkings.totalSlots"), render: (p: ParkingRow) => (p.totalSlots != null ? String(p.totalSlots) : "—"), field: "totalSlots" as const, editable: true },
-      {
-        header: t("tables.parkings.requiresBooking"),
-        render: (p: ParkingRow) => (p.requiresBooking ? t("common.yes") : t("common.no")),
-        field: "requiresBooking" as const,
-        editable: true,
-        cellEditorValues: ["true", "false"],
-        cellEditorLabels: [t("common.yes"), t("common.no")],
-        valueGetter: (p) => (p.requiresBooking === true ? "true" : "false"),
-        valueSetter: (p, v) => {
-          (p as Record<string, unknown>).requiresBooking = v === "true";
-        },
-        getStatusStyle: (value: string) =>
-          value === "true"
-            ? { text: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500" }
-            : { text: "text-red-600 dark:text-red-400", dot: "bg-red-500" },
-        cellRenderer: RequiresBookingIconCellRenderer,
-        cellRendererParams: { t },
-        minWidth: 130,
-        maxWidth: 180,
-      },
+      { header: t("tables.parkings.freeBenefitHours"), render: (p: ParkingRow) => (p.freeBenefitHours != null ? String(p.freeBenefitHours) : "—"), field: "freeBenefitHours" as const, editable: true },
+      { header: t("tables.parkings.pricePerExtraHour"), render: formatPrice, field: "pricePerExtraHour" as const, editable: true },
     ],
-    [t, tEnum]
+    [t, tEnum, formatPrice]
   );
   return (
     <>
@@ -109,7 +102,9 @@ export default function ParkingsPage() {
           (parking.address != null && parking.address !== "") ||
           parking.latitude != null ||
           parking.longitude != null ||
-          parking.geofenceRadius != null
+          parking.geofenceRadius != null ||
+          parking.freeBenefitHours != null ||
+          (parking.pricePerExtraHour != null && parking.pricePerExtraHour !== "")
         }
         renderRowDetail={(parking) => (
           <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
@@ -118,6 +113,8 @@ export default function ParkingsPage() {
             <DetailField label={t("parkings.latitude")} value={parking.latitude != null ? String(parking.latitude) : undefined} />
             <DetailField label={t("parkings.longitude")} value={parking.longitude != null ? String(parking.longitude) : undefined} />
             <DetailField label={t("parkings.geofenceRadius")} value={parking.geofenceRadius != null ? String(parking.geofenceRadius) : undefined} />
+            <DetailField label={t("parkings.freeBenefitHours")} value={parking.freeBenefitHours != null ? String(parking.freeBenefitHours) : undefined} />
+            <DetailField label={t("parkings.pricePerExtraHour")} value={formatPrice(parking)} />
           </dl>
         )}
         onEdit={(row) => router.push(`/dashboard/parkings/${row.id}/edit`)}

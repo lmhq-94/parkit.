@@ -24,6 +24,9 @@ export class CompaniesService {
       ...(data.email && { email: data.email }),
       ...(data.contactPhone && { contactPhone: data.contactPhone }),
       ...(data.legalAddress && { legalAddress: data.legalAddress }),
+      ...(typeof data.requiresCustomerApp === "boolean" && {
+        requiresCustomerApp: data.requiresCustomerApp,
+      }),
       brandingConfig: (data.brandingConfig ?? DEFAULT_BRANDING_CONFIG) as Prisma.InputJsonValue,
     };
     
@@ -69,6 +72,9 @@ export class CompaniesService {
     if (data.brandingConfig !== undefined) {
       updateInput.brandingConfig = data.brandingConfig as Prisma.InputJsonValue;
     }
+    if (data.requiresCustomerApp !== undefined) {
+      updateInput.requiresCustomerApp = data.requiresCustomerApp;
+    }
     if (data.status !== undefined) updateInput.status = data.status;
     const company = await prisma.company.update({
       where: { id },
@@ -92,6 +98,7 @@ export class CompaniesService {
         contactPhone: true,
         legalAddress: true,
         brandingConfig: true,
+        requiresCustomerApp: true,
         status: true,
         createdAt: true,
         updatedAt: true,

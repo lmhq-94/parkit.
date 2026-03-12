@@ -229,7 +229,7 @@ export default function NewVehiclePage() {
                 ))}
               </SelectField>
             )}
-            {errors.clientId && <p className="mt-1 text-sm text-red-500">{errors.clientId}</p>}
+            <div className="min-h-[1.25rem] mt-1">{errors.clientId && <p className="text-sm text-red-500" role="alert">{errors.clientId}</p>}</div>
           </div>
           <div>
             <label className={LABEL}>{t("vehicles.plate")} <span className="text-company-primary">*</span></label>
@@ -237,7 +237,7 @@ export default function NewVehiclePage() {
               <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input value={form.plate} onChange={(e) => setForm((p) => ({ ...p, plate: formatPlate(e.target.value) }))} placeholder={t("common.placeholderPlate")} className={IL} aria-invalid={!!errors.plate} />
             </div>
-            {errors.plate && <p className="mt-1 text-sm text-red-500">{errors.plate}</p>}
+            <div className="min-h-[1.25rem] mt-1">{errors.plate && <p className="text-sm text-red-500" role="alert">{errors.plate}</p>}</div>
           </div>
           <div>
             <label className={LABEL}>{t("vehicles.brand")} <span className="text-company-primary">*</span></label>
@@ -249,7 +249,7 @@ export default function NewVehiclePage() {
               placeholder={t("common.selectOrType")}
               icon={Car}
             />
-            {errors.brand && <p className="mt-1 text-sm text-red-500">{errors.brand}</p>}
+            <div className="min-h-[1.25rem] mt-1">{errors.brand && <p className="text-sm text-red-500" role="alert">{errors.brand}</p>}</div>
           </div>
           <div>
             <label className={LABEL}>{t("vehicles.model")} <span className="text-company-primary">*</span></label>
@@ -277,7 +277,7 @@ export default function NewVehiclePage() {
                 />
               </div>
             )}
-            {errors.model && <p className="mt-1 text-sm text-red-500">{errors.model}</p>}
+            <div className="min-h-[1.25rem] mt-1">{errors.model && <p className="text-sm text-red-500" role="alert">{errors.model}</p>}</div>
           </div>
           <div>
             <label className={LABEL}>{t("vehicles.year")}</label>

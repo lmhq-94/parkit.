@@ -330,7 +330,7 @@ export default function EditVehiclePage() {
                   ))}
                 </SelectField>
               )}
-              {errors.clientId && <p className="mt-1 text-sm text-red-500">{errors.clientId}</p>}
+              <div className="min-h-[1.25rem] mt-1">{errors.clientId && <p className="text-sm text-red-500" role="alert">{errors.clientId}</p>}</div>
             </div>
             <div>
               <label className={LABEL}>{t("vehicles.countryCode")}</label>

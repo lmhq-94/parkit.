@@ -83,7 +83,7 @@ export default function NewSuperAdminPage() {
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input value={form.firstName} onChange={set("firstName")} placeholder={t("common.placeholderName")} className={IL} aria-invalid={!!errors.firstName} />
             </div>
-            {errors.firstName && <p className="mt-1 text-sm text-red-500">{errors.firstName}</p>}
+            <div className="min-h-[1.25rem] mt-1">{errors.firstName && <p className="text-sm text-red-500" role="alert">{errors.firstName}</p>}</div>
           </div>
           <div>
             <label className={LABEL}>{t("users.lastName")} <span className="text-red-500">*</span></label>
@@ -91,7 +91,7 @@ export default function NewSuperAdminPage() {
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input value={form.lastName} onChange={set("lastName")} placeholder={t("common.placeholderLastName")} className={IL} aria-invalid={!!errors.lastName} />
             </div>
-            {errors.lastName && <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>}
+            <div className="min-h-[1.25rem] mt-1">{errors.lastName && <p className="text-sm text-red-500" role="alert">{errors.lastName}</p>}</div>
           </div>
           <div>
             <label className={LABEL}>{t("users.email")} <span className="text-red-500">*</span></label>
@@ -99,7 +99,7 @@ export default function NewSuperAdminPage() {
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} aria-invalid={!!errors.email} />
             </div>
-            {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+            <div className="min-h-[1.25rem] mt-1">{errors.email && <p className="text-sm text-red-500" role="alert">{errors.email}</p>}</div>
           </div>
           <div className="sm:col-span-2 lg:col-span-3">
             <label className={LABEL}>{t("users.password")}</label>

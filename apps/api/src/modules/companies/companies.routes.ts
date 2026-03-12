@@ -24,12 +24,12 @@ router.post(
   CompaniesController.create
 );
 
-// ADMIN: own company. SUPER_ADMIN: must send x-company-id to act on a company
+// ADMIN/STAFF: read own company (e.g. currency for parkings). SUPER_ADMIN uses GET /:id.
 router.get(
   "/me",
   requireAuth,
   requireCompany,
-  requireRole("ADMIN"),
+  requireRole("ADMIN", "STAFF"),
   CompaniesController.me
 );
 

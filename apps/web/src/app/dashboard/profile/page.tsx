@@ -254,7 +254,7 @@ export default function ProfilePage() {
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                     <input value={form.firstName} onChange={setAndClearError("firstName")} placeholder={t("common.placeholderName")} className={IL} aria-invalid={!!errors.firstName} />
                   </div>
-                  {errors.firstName && <p className="mt-1 text-sm text-red-500">{errors.firstName}</p>}
+                  <div className="min-h-[1.25rem] mt-1">{errors.firstName && <p className="text-sm text-red-500" role="alert">{errors.firstName}</p>}</div>
                 </div>
                 <div>
                   <label className={LABEL}>{t("users.lastName")} <span className="text-red-500">*</span></label>
@@ -262,7 +262,7 @@ export default function ProfilePage() {
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                     <input value={form.lastName} onChange={setAndClearError("lastName")} placeholder={t("common.placeholderLastName")} className={IL} aria-invalid={!!errors.lastName} />
                   </div>
-                  {errors.lastName && <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>}
+                  <div className="min-h-[1.25rem] mt-1">{errors.lastName && <p className="text-sm text-red-500" role="alert">{errors.lastName}</p>}</div>
                 </div>
                 <div>
                   <label className={LABEL}>{t("users.email")} <span className="text-red-500">*</span></label>
@@ -270,7 +270,7 @@ export default function ProfilePage() {
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                     <input type="email" value={form.email} onChange={setAndClearError("email")} placeholder={t("common.placeholderEmail")} className={IL} aria-invalid={!!errors.email} />
                   </div>
-                  {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+                  <div className="min-h-[1.25rem] mt-1">{errors.email && <p className="text-sm text-red-500" role="alert">{errors.email}</p>}</div>
                 </div>
                 <div>
                   <label className={LABEL}>{t("users.phone")}</label>
@@ -278,7 +278,7 @@ export default function ProfilePage() {
                     <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                     <input type="tel" value={form.phone} onChange={(e) => { setForm((p) => ({ ...p, phone: formatPhoneInternational(e.target.value) })); setErrors((prev) => ({ ...prev, phone: undefined })); }} placeholder="+1 234 567 8900" className={IL} aria-invalid={!!errors.phone} />
                   </div>
-                  {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone}</p>}
+                  <div className="min-h-[1.25rem] mt-1">{errors.phone && <p className="text-sm text-red-500" role="alert">{errors.phone}</p>}</div>
                 </div>
                 <div>
                   <label className={LABEL}>{t("users.timezone")}</label>

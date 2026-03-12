@@ -100,6 +100,7 @@ model Company {
   contactPhone   String?
   legalAddress   String?
   brandingConfig Json?
+  requiresCustomerApp Boolean   @default(false)
   status         CompanyStatus @default(PENDING)
 
   createdAt DateTime @default(now())
@@ -199,16 +200,17 @@ model Valet {
  */
 
 model Parking {
-  id              String      @id @default(uuid())
-  companyId       String
-  name            String
-  address         String
-  latitude        Float?
-  longitude       Float?
-  geofenceRadius  Float       @default(50)
-  type            ParkingType @default(OPEN)
-  totalSlots      Int
-  requiresBooking Boolean     @default(false)
+  id                 String      @id @default(uuid())
+  companyId          String
+  name               String
+  address            String
+  latitude           Float?
+  longitude          Float?
+  geofenceRadius     Float       @default(50)
+  type               ParkingType @default(OPEN)
+  totalSlots         Int
+  freeBenefitHours   Int         @default(0)
+  pricePerExtraHour  Decimal?    @db.Decimal(12, 2)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

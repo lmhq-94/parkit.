@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { MapPin, Hash, Tag, Navigation, Radius, ArrowRight, Plus, Trash2 } from "lucide-react";
+import { MapPin, Hash, Tag, Navigation, Radius, ArrowRight, Plus, Trash2, Clock, DollarSign } from "lucide-react";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -24,7 +24,9 @@ type SlotRow = { id: string; label: string; slotType: (typeof SLOT_TYPES)[number
 
 const defaultForm = {
   name: "", address: "", type: "OPEN",
-  requiresBooking: false, latitude: "", longitude: "", geofenceRadius: "",
+  latitude: "", longitude: "", geofenceRadius: "",
+  freeBenefitHours: "0",
+  pricePerExtraHour: "",
 };
 
 export default function EditParkingPage() {
@@ -42,20 +44,24 @@ export default function EditParkingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [addressPickerOpen, setAddressPickerOpen] = useState(false);
+  const [companyCurrency, setCompanyCurrency] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const data = await apiClient.get<Record<string, unknown>>(`/parkings/${id}`);
+        const data = await apiClient.get<Record<string, unknown> & { company?: { currency?: string | null } }>(`/parkings/${id}`);
         if (data) {
+          const company = data.company as { currency?: string | null } | undefined;
+          if (company?.currency != null) setCompanyCurrency(company.currency);
           const loadedForm = {
             name: String(data.name ?? ""),
             address: String(data.address ?? ""),
             type: String(data.type ?? "OPEN"),
-            requiresBooking: Boolean(data.requiresBooking),
             latitude: data.latitude != null ? String(data.latitude) : "",
             longitude: data.longitude != null ? String(data.longitude) : "",
             geofenceRadius: data.geofenceRadius != null ? String(data.geofenceRadius) : "",
+            freeBenefitHours: data.freeBenefitHours != null ? String(data.freeBenefitHours) : "0",
+            pricePerExtraHour: data.pricePerExtraHour != null && data.pricePerExtraHour !== "" ? String(data.pricePerExtraHour) : "",
           };
           setForm(loadedForm);
           setInitialForm(loadedForm);
@@ -139,10 +145,11 @@ export default function EditParkingPage() {
         name: form.name.trim(),
         address: form.address.trim(),
         type: form.type,
-        requiresBooking: form.requiresBooking,
         latitude: form.latitude !== "" ? Number(form.latitude) : undefined,
         longitude: form.longitude !== "" ? Number(form.longitude) : undefined,
         geofenceRadius: form.geofenceRadius !== "" ? Number(form.geofenceRadius) : undefined,
+        freeBenefitHours: form.freeBenefitHours !== "" ? Math.max(0, parseInt(form.freeBenefitHours, 10) || 0) : undefined,
+        pricePerExtraHour: form.pricePerExtraHour !== "" ? Number(form.pricePerExtraHour) : undefined,
       });
       if (slots.length > 0) {
         const slotList = slots.map((s) => ({
@@ -229,18 +236,41 @@ export default function EditParkingPage() {
                 {PARKING_TYPES.map(pt => <option key={pt} value={pt}>{tEnum("parkingType", pt)}</option>)}
               </SelectField>
             </div>
-            <div className="flex items-center gap-4 pt-1 sm:pt-7">
-              <button
-                type="button" role="switch" aria-checked={form.requiresBooking}
-                onClick={() => setForm(p => ({ ...p, requiresBooking: !p.requiresBooking }))}
-                className={`relative w-11 h-6 rounded-full shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page ${form.requiresBooking ? "bg-company-primary" : "bg-input-border"}`}
-              >
-                <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${form.requiresBooking ? "translate-x-5" : "translate-x-0"}`} />
-              </button>
-              <div>
-                <p className="text-sm font-medium text-text-secondary">{t("parkings.requiresBooking")}</p>
-                <p className="text-xs text-text-muted">{form.requiresBooking ? t("parkings.requiresBookingOn") : t("parkings.requiresBookingOff")}</p>
+            <div>
+              <label className={LABEL}>{t("parkings.freeBenefitHours")}</label>
+              <div className="relative group">
+                <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                <input
+                  type="number"
+                  min={0}
+                  value={form.freeBenefitHours}
+                  onChange={set("freeBenefitHours")}
+                  placeholder="0"
+                  className={IL}
+                />
               </div>
+              <p className="mt-1 text-xs text-text-muted">{t("parkings.freeBenefitHoursHint")}</p>
+            </div>
+            <div>
+              <label className={LABEL}>{t("parkings.pricePerExtraHour")}</label>
+              <div className="relative group flex items-center gap-2">
+                <div className="flex-1 relative">
+                  <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                  <input
+                    type="number"
+                    min={0}
+                    step="any"
+                    value={form.pricePerExtraHour}
+                    onChange={set("pricePerExtraHour")}
+                    placeholder="0"
+                    className={IL}
+                  />
+                </div>
+                {companyCurrency != null && companyCurrency !== "" && (
+                  <span className="shrink-0 text-sm font-medium text-text-secondary tabular-nums">{companyCurrency}</span>
+                )}
+              </div>
+              <p className="mt-1 text-xs text-text-muted">{t("parkings.pricePerExtraHourHint")}</p>
             </div>
           </div>
         </div>

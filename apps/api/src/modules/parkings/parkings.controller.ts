@@ -1,12 +1,15 @@
 import type { SlotType } from "@prisma/client";
 import { Request, Response } from "express";
 import { ParkingsService } from "./parkings.service";
+import { CompaniesService } from "../companies/companies.service";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
 
 export class ParkingsController {
+  /** Si la empresa tiene canal con app (requiresCustomerApp), tiene bookings habilitados. */
   static async hasAnyRequiringBooking(req: Request, res: Response) {
     try {
-      const hasBookable = await ParkingsService.hasAnyRequiringBooking(req.user.companyId!);
+      const company = await CompaniesService.getById(req.user.companyId!);
+      const hasBookable = company?.requiresCustomerApp ?? false;
       return ok(res, { hasBookable });
     } catch (error: unknown) {
       return fail(

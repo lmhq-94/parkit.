@@ -12,8 +12,9 @@ export interface CreateParkingDTO {
   longitude?: number;
   type?: ParkingType;
   slots: CreateParkingSlotDTO[];
-  requiresBooking?: boolean;
   geofenceRadius?: number;
+  freeBenefitHours?: number;
+  pricePerExtraHour?: number;
 }
 
 export interface UpdateParkingDTO {
@@ -22,7 +23,9 @@ export interface UpdateParkingDTO {
   latitude?: number;
   longitude?: number;
   type?: ParkingType;
-  requiresBooking?: boolean;
+  totalSlots?: number;
+  freeBenefitHours?: number;
+  pricePerExtraHour?: number;
 }
 
 export interface ParkingResponse {
@@ -34,7 +37,8 @@ export interface ParkingResponse {
   longitude?: number;
   type: string;
   totalSlots: number;
-  requiresBooking: boolean;
+  freeBenefitHours: number;
+  pricePerExtraHour?: number | null;
   createdAt: Date;
   updatedAt: Date;
 }

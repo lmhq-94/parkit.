@@ -31,6 +31,7 @@ interface Company {
   timezone?: string;
   email?: string;
   contactPhone?: string;
+  requiresCustomerApp?: boolean;
   status?: string;
   name?: string;
 }
@@ -106,6 +107,15 @@ export default function CompaniesPage() {
           tEnum("companyStatus", "SUSPENDED"),
           tEnum("companyStatus", "INACTIVE"),
         ],
+      },
+      {
+        header: t("companies.channelTitle"),
+        render: (c: Company) =>
+          c.requiresCustomerApp === true
+            ? t("companies.channelOptionWithAppTitle")
+            : c.requiresCustomerApp === false
+              ? t("companies.channelOptionNoAppTitle")
+              : "—",
       },
     ],
     [t, tEnum, superAdmin]
@@ -200,6 +210,16 @@ export default function CompaniesPage() {
         renderRowDetail={(company) => (
           <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
             <DetailSectionLabel text={t("common.additionalInfo")} />
+            <DetailField
+              label={t("companies.channelTitle")}
+              value={
+                company.requiresCustomerApp === true
+                  ? t("companies.channelOptionWithAppTitle")
+                  : company.requiresCustomerApp === false
+                    ? t("companies.channelOptionNoAppTitle")
+                    : undefined
+              }
+            />
             <DetailField label={t("companies.legalName")} value={company.legalName} />
             <DetailField label={t("companies.taxId")} value={company.taxId} />
             <DetailField

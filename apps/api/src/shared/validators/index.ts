@@ -12,6 +12,7 @@ export const CreateCompanySchema = z.object({
   email: z.string().email("Invalid email").optional().or(z.literal("")),
   contactPhone: z.string().optional(),
   legalAddress: z.string().optional(),
+  requiresCustomerApp: z.boolean().optional(),
 });
 
 // logoImageUrl y bannerImageUrl pueden ser data URLs en base64 (muy largas)
@@ -31,7 +32,7 @@ const BrandingConfigSchema = z
 export const UpdateCompanySchema = z.object({
   legalName: z.string().min(1).optional(),
   taxId: z.string().min(1).optional(),
-   industry: z.string().min(1).optional(),
+  industry: z.string().min(1).optional(),
   commercialName: z.string().optional(),
   countryCode: z.string().optional(),
   currency: z.string().optional(),
@@ -41,6 +42,7 @@ export const UpdateCompanySchema = z.object({
   legalAddress: z.string().optional(),
   status: z.enum(["PENDING", "ACTIVE", "SUSPENDED", "INACTIVE"]).optional(),
   brandingConfig: BrandingConfigSchema,
+  requiresCustomerApp: z.boolean().optional(),
 });
 
 export type CreateCompanyInput = z.infer<typeof CreateCompanySchema>;
@@ -194,10 +196,11 @@ export const CreateParkingSchema = z.object({
   address: z.string().min(1, "Address required"),
   type: z.string().min(1, "Type required"),
   slots: z.array(CreateParkingSlotSchema).min(1, "At least one slot required"),
-  requiresBooking: z.boolean().optional(),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
   geofenceRadius: z.number().optional(),
+  freeBenefitHours: z.number().int().min(0).optional(),
+  pricePerExtraHour: z.number().min(0).optional(),
 });
 
 export const UpdateParkingSchema = z.object({
@@ -205,9 +208,10 @@ export const UpdateParkingSchema = z.object({
   address: z.string().min(1).optional(),
   type: z.string().optional(),
   totalSlots: z.number().positive("Total slots must be positive").optional(),
-  requiresBooking: z.boolean().optional(),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
+  freeBenefitHours: z.number().int().min(0).optional(),
+  pricePerExtraHour: z.number().min(0).optional(),
 });
 
 export type CreateParkingInput = z.infer<typeof CreateParkingSchema>;

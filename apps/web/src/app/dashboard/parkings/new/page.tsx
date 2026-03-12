@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Plus, Tag, Navigation, Radius, Trash2 } from "lucide-react";
+import { MapPin, Plus, Tag, Navigation, Radius, Trash2, Clock, DollarSign } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
-import { useDashboardStore } from "@/lib/store";
+import { useAuthStore, useDashboardStore } from "@/lib/store";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 /** Input sin icono (mismo estilo que IL en otros formularios). */
@@ -25,10 +25,11 @@ const defaultForm = {
   name: "",
   address: "",
   type: "OPEN",
-  requiresBooking: false,
   latitude: "",
   longitude: "",
   geofenceRadius: "50",
+  freeBenefitHours: "0",
+  pricePerExtraHour: "",
 };
 
 const defaultSlot = (): SlotRow => ({
@@ -41,12 +42,32 @@ export default function NewParkingPage() {
   const { t, tEnum } = useTranslation();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
   const bumpParkings = useDashboardStore((s) => s.bumpParkings);
   const [form, setForm] = useState(defaultForm);
   const [slots, setSlots] = useState<SlotRow[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [addressPickerOpen, setAddressPickerOpen] = useState(false);
+  const [companyCurrency, setCompanyCurrency] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const url =
+          user?.systemRole === "SUPER_ADMIN" && selectedCompanyId
+            ? `/companies/${selectedCompanyId}`
+            : "/companies/me";
+        const data = await apiClient.get<{ currency?: string | null }>(url);
+        if (!cancelled && data?.currency != null) setCompanyCurrency(data.currency);
+      } catch {
+        if (!cancelled) setCompanyCurrency(null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.systemRole, selectedCompanyId]);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -106,10 +127,11 @@ export default function NewParkingPage() {
         name: form.name.trim(),
         address: form.address.trim(),
         type: form.type,
-        requiresBooking: form.requiresBooking,
         latitude: form.latitude !== "" ? Number(form.latitude) : undefined,
         longitude: form.longitude !== "" ? Number(form.longitude) : undefined,
         geofenceRadius: form.geofenceRadius !== "" ? Number(form.geofenceRadius) : undefined,
+        freeBenefitHours: form.freeBenefitHours !== "" ? Math.max(0, parseInt(form.freeBenefitHours, 10) || 0) : 0,
+        pricePerExtraHour: form.pricePerExtraHour !== "" ? Number(form.pricePerExtraHour) : undefined,
         slots: slotList,
       });
       showSuccess(t("common.createSuccessShort"));
@@ -173,18 +195,41 @@ export default function NewParkingPage() {
               ))}
             </SelectField>
           </div>
-          <div className="flex items-center gap-4 pt-1 sm:pt-7 sm:col-span-2">
-            <button
-              type="button" role="switch" aria-checked={form.requiresBooking}
-              onClick={() => setForm(p => ({ ...p, requiresBooking: !p.requiresBooking }))}
-              className={`relative w-11 h-6 rounded-full shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page ${form.requiresBooking ? "bg-company-primary" : "bg-input-border"}`}
-            >
-              <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${form.requiresBooking ? "translate-x-5" : "translate-x-0"}`} />
-            </button>
-            <div>
-              <p className="text-sm font-medium text-text-secondary">{t("parkings.requiresBooking")}</p>
-              <p className="text-xs text-text-muted">{form.requiresBooking ? t("parkings.requiresBookingOn") : t("parkings.requiresBookingOff")}</p>
+          <div>
+            <label className={LABEL}>{t("parkings.freeBenefitHours")}</label>
+            <div className="relative group">
+              <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+              <input
+                type="number"
+                min={0}
+                value={form.freeBenefitHours}
+                onChange={set("freeBenefitHours")}
+                placeholder="0"
+                className={IL}
+              />
             </div>
+            <p className="mt-1 text-xs text-text-muted">{t("parkings.freeBenefitHoursHint")}</p>
+          </div>
+          <div>
+            <label className={LABEL}>{t("parkings.pricePerExtraHour")}</label>
+            <div className="relative group flex items-center gap-2">
+              <div className="flex-1 relative">
+                <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                <input
+                  type="number"
+                  min={0}
+                  step="any"
+                  value={form.pricePerExtraHour}
+                  onChange={set("pricePerExtraHour")}
+                  placeholder="0"
+                  className={IL}
+                />
+              </div>
+              {companyCurrency != null && companyCurrency !== "" && (
+                <span className="shrink-0 text-sm font-medium text-text-secondary tabular-nums">{companyCurrency}</span>
+              )}
+            </div>
+            <p className="mt-1 text-xs text-text-muted">{t("parkings.pricePerExtraHourHint")}</p>
           </div>
         </div>
       ),

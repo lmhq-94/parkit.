@@ -13,8 +13,9 @@ interface CreateParkingDTO {
   longitude?: number;
   type?: ParkingType;
   slots: CreateParkingSlotDTO[];
-  requiresBooking?: boolean;
   geofenceRadius?: number;
+  freeBenefitHours?: number;
+  pricePerExtraHour?: number;
 }
 
 interface UpdateParkingDTO {
@@ -24,7 +25,8 @@ interface UpdateParkingDTO {
   longitude?: number;
   type?: ParkingType;
   totalSlots?: number;
-  requiresBooking?: boolean;
+  freeBenefitHours?: number;
+  pricePerExtraHour?: number;
 }
 
 export class ParkingsService {
@@ -42,7 +44,8 @@ export class ParkingsService {
           geofenceRadius: data.geofenceRadius,
           type: data.type || "OPEN",
           totalSlots,
-          requiresBooking: data.requiresBooking || false,
+          freeBenefitHours: data.freeBenefitHours ?? 0,
+          pricePerExtraHour: data.pricePerExtraHour != null ? data.pricePerExtraHour : undefined,
         },
       });
       if (slots.length > 0) {
@@ -61,18 +64,11 @@ export class ParkingsService {
     });
   }
 
-  /** True si la empresa tiene al menos un estacionamiento con requiresBooking. */
-  static async hasAnyRequiringBooking(companyId: string): Promise<boolean> {
-    const count = await prisma.parking.count({
-      where: { companyId, requiresBooking: true },
-    });
-    return count > 0;
-  }
-
   static async list(companyId: string) {
     return prisma.parking.findMany({
       where: { companyId },
       include: {
+        company: { select: { currency: true } },
         slots: {
           select: {
             id: true,
@@ -90,6 +86,7 @@ export class ParkingsService {
     return prisma.parking.findFirst({
       where: { id: parkingId, companyId },
       include: {
+        company: { select: { currency: true } },
         slots: true,
         tickets: {
           where: { exitTime: null },
@@ -127,7 +124,8 @@ export class ParkingsService {
         longitude: data.longitude,
         ...(data.type !== undefined ? { type: data.type } : {}),
         ...(data.totalSlots !== undefined ? { totalSlots: data.totalSlots } : {}),
-        requiresBooking: data.requiresBooking,
+        ...(data.freeBenefitHours !== undefined ? { freeBenefitHours: data.freeBenefitHours } : {}),
+        ...(data.pricePerExtraHour !== undefined ? { pricePerExtraHour: data.pricePerExtraHour } : {}),
       },
       include: {
         slots: true,
