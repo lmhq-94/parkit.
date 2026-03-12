@@ -13,7 +13,7 @@ import { SelectField } from "@/components/SelectField";
 import { BrandModelComboField } from "@/components/BrandModelComboField";
 import { COUNTRIES } from "@/lib/companyOptions";
 import { formatPlate, toTitleCase } from "@/lib/inputMasks";
-import { selectRequired } from "@/lib/validation";
+import { required, selectRequired } from "@/lib/validation";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -169,13 +169,20 @@ export default function EditVehiclePage() {
   }, [loading, form.brand, form.model, form.year]);
 
   const handleSubmit = async () => {
+    const nextErrors: Partial<Record<keyof typeof defaultForm, string>> = {};
     const clientError = selectRequired(t, form.clientId);
-    if (clientError) {
-      setErrors((e) => ({ ...e, clientId: clientError }));
+    if (clientError) nextErrors.clientId = clientError;
+    const yearError = required(t, form.year);
+    if (yearError) nextErrors.year = yearError;
+    if (!form.plate.trim()) nextErrors.plate = required(t, form.plate) ?? "";
+    if (!form.brand.trim()) nextErrors.brand = required(t, form.brand) ?? "";
+    if (!form.model.trim()) nextErrors.model = required(t, form.model) ?? "";
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
       return;
     }
     setErrors({});
-    if (!form.plate.trim() || !form.brand.trim() || !form.model.trim()) return;
     setSubmitting(true); setError(null);
     try {
       const dimensions =
@@ -190,7 +197,7 @@ export default function EditVehiclePage() {
         plate: form.plate.trim().toUpperCase(),
         brand: form.brand.trim(),
         model: form.model.trim(),
-        year: form.year !== "" ? Number(form.year) : undefined,
+        year: Number(form.year),
         countryCode: form.countryCode.trim() || undefined,
         ...(dimensions !== undefined && { dimensions }),
       });
@@ -294,10 +301,28 @@ export default function EditVehiclePage() {
               )}
             </div>
             <div>
-              <label className={LABEL}>{t("vehicles.year")}</label>
+              <label className={LABEL}>
+                {t("vehicles.year")} <span className="text-company-primary">*</span>
+              </label>
               <div className="relative group">
                 <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                <input type="number" min={1900} max={new Date().getFullYear() + 1} value={form.year} onChange={set("year")} placeholder={t("common.placeholderYear")} className={IL} />
+                <input
+                  type="number"
+                  min={1900}
+                  max={new Date().getFullYear() + 1}
+                  value={form.year}
+                  onChange={set("year")}
+                  placeholder={t("common.placeholderYear")}
+                  className={IL}
+                  aria-invalid={!!errors.year}
+                />
+              </div>
+              <div className="min-h-[1.25rem] mt-1">
+                {errors.year && (
+                  <p className="text-sm text-red-500" role="alert">
+                    {errors.year}
+                  </p>
+                )}
               </div>
             </div>
           </div>

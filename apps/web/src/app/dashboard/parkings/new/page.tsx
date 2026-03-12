@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Plus, Tag, Navigation, Radius, Trash2, Clock, DollarSign } from "lucide-react";
+import { MapPin, Plus, Tag, Navigation, Radius, Trash2, Clock, Coins } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
@@ -51,6 +51,13 @@ export default function NewParkingPage() {
   const [error, setError] = useState<string | null>(null);
   const [addressPickerOpen, setAddressPickerOpen] = useState(false);
   const [companyCurrency, setCompanyCurrency] = useState<string | null>(null);
+  const [chargesParking, setChargesParking] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: string;
+    address?: string;
+    freeBenefitHours?: string;
+    pricePerExtraHour?: string;
+  }>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -118,11 +125,37 @@ export default function NewParkingPage() {
   };
 
   const handleSubmit = async () => {
-    if (!form.name.trim() || !form.address.trim() || !form.type || !step2Valid) return;
+    const nextErrors: typeof fieldErrors = {};
+    if (!form.name.trim()) nextErrors.name = t("validation.required");
+    if (!form.address.trim()) nextErrors.address = t("validation.required");
+    if (chargesParking) {
+      if (!form.freeBenefitHours.trim()) nextErrors.freeBenefitHours = t("validation.required");
+      if (!form.pricePerExtraHour.trim()) nextErrors.pricePerExtraHour = t("validation.required");
+    }
+    if (!step2Valid) {
+      // dejamos el error de slots a nivel global (ya se muestra error del wizard), aquí no detallamos por campo.
+    }
+    setFieldErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0 || !step2Valid) return;
+
+    const requiresBilling = chargesParking;
+    const hasBillingData =
+      form.freeBenefitHours.trim() !== "" && form.pricePerExtraHour.trim() !== "";
+    if (!form.name.trim() || !form.address.trim() || !form.type) return;
+    if (requiresBilling && !hasBillingData) return;
     const slotList = slots.map((s) => ({ label: s.label.trim(), slotType: s.slotType }));
     setSubmitting(true);
     setError(null);
     try {
+      const freeBenefit =
+        requiresBilling && form.freeBenefitHours !== ""
+          ? Math.max(0, parseInt(form.freeBenefitHours, 10) || 0)
+          : 0;
+      const priceExtra =
+        requiresBilling && form.pricePerExtraHour !== ""
+          ? Number(form.pricePerExtraHour)
+          : undefined;
+
       await apiClient.post("/parkings", {
         name: form.name.trim(),
         address: form.address.trim(),
@@ -130,8 +163,8 @@ export default function NewParkingPage() {
         latitude: form.latitude !== "" ? Number(form.latitude) : undefined,
         longitude: form.longitude !== "" ? Number(form.longitude) : undefined,
         geofenceRadius: form.geofenceRadius !== "" ? Number(form.geofenceRadius) : undefined,
-        freeBenefitHours: form.freeBenefitHours !== "" ? Math.max(0, parseInt(form.freeBenefitHours, 10) || 0) : 0,
-        pricePerExtraHour: form.pricePerExtraHour !== "" ? Number(form.pricePerExtraHour) : undefined,
+        freeBenefitHours: freeBenefit,
+        pricePerExtraHour: priceExtra,
         slots: slotList,
       });
       showSuccess(t("common.createSuccessShort"));
@@ -145,11 +178,25 @@ export default function NewParkingPage() {
     }
   };
 
-  const step1Valid = !!(form.name.trim() && form.address.trim() && form.type);
+  const step1Valid = (() => {
+    if (!form.name.trim() || !form.address.trim() || !form.type) return false;
+    if (!chargesParking) return true;
+    return form.freeBenefitHours.trim() !== "" && form.pricePerExtraHour.trim() !== "";
+  })();
   const step2Valid = slots.length > 0 && slots.every((s) => s.label.trim().length > 0);
 
   const validateStep = (stepIndex: number): boolean => {
-    if (stepIndex === 0) return step1Valid;
+    if (stepIndex === 0) {
+      const nextErrors: typeof fieldErrors = {};
+      if (!form.name.trim()) nextErrors.name = t("validation.required");
+      if (!form.address.trim()) nextErrors.address = t("validation.required");
+      if (chargesParking) {
+        if (!form.freeBenefitHours.trim()) nextErrors.freeBenefitHours = t("validation.required");
+        if (!form.pricePerExtraHour.trim()) nextErrors.pricePerExtraHour = t("validation.required");
+      }
+      setFieldErrors(nextErrors);
+      return Object.keys(nextErrors).length === 0;
+    }
     if (stepIndex === 1) return step2Valid;
     return true;
   };
@@ -167,7 +214,10 @@ export default function NewParkingPage() {
             <label className={LABEL}>{t("parkings.name")} <span className="text-company-primary">*</span></label>
             <div className="relative group">
               <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input value={form.name} onChange={set("name")} placeholder={t("common.placeholderName")} className={IL} />
+              <input value={form.name} onChange={set("name")} placeholder={t("common.placeholderName")} className={IL} aria-invalid={!!fieldErrors.name} />
+            </div>
+            <div className="min-h-[1.25rem] mt-1">
+              {fieldErrors.name && <p className="text-sm text-red-500" role="alert">{fieldErrors.name}</p>}
             </div>
           </div>
           <div className="sm:col-span-2 lg:col-span-3">
@@ -175,7 +225,7 @@ export default function NewParkingPage() {
             <div className="flex gap-2">
               <div className="relative group flex-1">
                 <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                <input value={form.address} readOnly placeholder={t("common.placeholderAddress")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
+                <input value={form.address} readOnly placeholder={t("common.placeholderAddress")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} aria-invalid={!!fieldErrors.address} />
               </div>
               <button
                 type="button"
@@ -186,15 +236,49 @@ export default function NewParkingPage() {
                 {t("companies.pickAddressOnMap")}
               </button>
             </div>
+            <div className="min-h-[1.25rem] mt-1">
+              {fieldErrors.address && <p className="text-sm text-red-500" role="alert">{fieldErrors.address}</p>}
+            </div>
           </div>
-          <div>
-            <label className={LABEL}>{t("parkings.type")} <span className="text-company-primary">*</span></label>
-            <SelectField value={form.type} onChange={set("type")} icon={Tag}>
-              {PARKING_TYPES.map((pt) => (
-                <option key={pt} value={pt}>{tEnum("parkingType", pt)}</option>
-              ))}
-            </SelectField>
+          <div className="sm:col-span-2 lg:col-span-3 flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
+              <div className="flex-1">
+                <label className={LABEL}>{t("parkings.type")} <span className="text-company-primary">*</span></label>
+                <SelectField value={form.type} onChange={set("type")} icon={Tag}>
+                  {PARKING_TYPES.map((pt) => (
+                    <option key={pt} value={pt}>{tEnum("parkingType", pt)}</option>
+                  ))}
+                </SelectField>
+              </div>
+              <div className="flex items-center gap-3 mt-3 sm:mt-6 pr-1">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-text-secondary">
+                    {t("parkings.chargesSwitchLabel")}
+                  </p>
+                  <p className="text-xs text-text-muted mt-0.5">
+                    {t("parkings.chargesSwitchHint")}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={chargesParking}
+                  onClick={() => setChargesParking((v) => !v)}
+                  className={`relative w-10 h-6 rounded-full shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page ${
+                    chargesParking ? "bg-company-primary" : "bg-input-border"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                      chargesParking ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
           </div>
+
+          {chargesParking && (
           <div>
             <label className={LABEL}>{t("parkings.freeBenefitHours")}</label>
             <div className="relative group">
@@ -206,15 +290,21 @@ export default function NewParkingPage() {
                 onChange={set("freeBenefitHours")}
                 placeholder="0"
                 className={IL}
+                aria-invalid={!!fieldErrors.freeBenefitHours}
               />
             </div>
             <p className="mt-1 text-xs text-text-muted">{t("parkings.freeBenefitHoursHint")}</p>
+            <div className="min-h-[1.25rem] mt-1">
+              {fieldErrors.freeBenefitHours && <p className="text-sm text-red-500" role="alert">{fieldErrors.freeBenefitHours}</p>}
+            </div>
           </div>
+          )}
+          {chargesParking && (
           <div>
             <label className={LABEL}>{t("parkings.pricePerExtraHour")}</label>
             <div className="relative group flex items-center gap-2">
               <div className="flex-1 relative">
-                <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                <Coins className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                 <input
                   type="number"
                   min={0}
@@ -223,6 +313,7 @@ export default function NewParkingPage() {
                   onChange={set("pricePerExtraHour")}
                   placeholder="0"
                   className={IL}
+                  aria-invalid={!!fieldErrors.pricePerExtraHour}
                 />
               </div>
               {companyCurrency != null && companyCurrency !== "" && (
@@ -230,7 +321,11 @@ export default function NewParkingPage() {
               )}
             </div>
             <p className="mt-1 text-xs text-text-muted">{t("parkings.pricePerExtraHourHint")}</p>
+            <div className="min-h-[1.25rem] mt-1">
+              {fieldErrors.pricePerExtraHour && <p className="text-sm text-red-500" role="alert">{fieldErrors.pricePerExtraHour}</p>}
+            </div>
           </div>
+          )}
         </div>
       ),
     },

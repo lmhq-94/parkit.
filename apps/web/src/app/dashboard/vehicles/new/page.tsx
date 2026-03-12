@@ -151,6 +151,7 @@ export default function NewVehiclePage() {
     const e1 = required(t, form.plate) ?? validatePlate(t, form.plate); if (e1) next.plate = e1;
     const e2 = required(t, form.brand); if (e2) next.brand = e2;
     const e3 = required(t, form.model); if (e3) next.model = e3;
+    const e5 = required(t, form.year); if (e5) next.year = e5;
     const e4 = selectRequired(t, form.clientId); if (e4) next.clientId = e4;
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -162,6 +163,7 @@ export default function NewVehiclePage() {
       const e1 = required(t, form.plate) ?? validatePlate(t, form.plate); if (e1) next.plate = e1;
       const e2 = required(t, form.brand); if (e2) next.brand = e2;
       const e3 = required(t, form.model); if (e3) next.model = e3;
+      const e5 = required(t, form.year); if (e5) next.year = e5;
       const e4 = selectRequired(t, form.clientId); if (e4) next.clientId = e4;
       setErrors(next);
       return Object.keys(next).length === 0;
@@ -210,7 +212,7 @@ export default function NewVehiclePage() {
       description: t("vehicles.sectionMainDesc"),
       badge: "required" as const,
       accentColor: "blue",
-      isValid: () => !!(form.plate.trim() && form.brand.trim() && form.model.trim() && form.clientId.trim()),
+      isValid: () => !!(form.plate.trim() && form.brand.trim() && form.model.trim() && form.year.trim() && form.clientId.trim()),
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <div>
@@ -280,10 +282,28 @@ export default function NewVehiclePage() {
             <div className="min-h-[1.25rem] mt-1">{errors.model && <p className="text-sm text-red-500" role="alert">{errors.model}</p>}</div>
           </div>
           <div>
-            <label className={LABEL}>{t("vehicles.year")}</label>
+            <label className={LABEL}>
+              {t("vehicles.year")} <span className="text-company-primary">*</span>
+            </label>
             <div className="relative group">
               <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="number" min={1900} max={new Date().getFullYear() + 1} value={form.year} onChange={set("year")} placeholder={t("common.placeholderYear")} className={IL} />
+              <input
+                type="number"
+                min={1900}
+                max={new Date().getFullYear() + 1}
+                value={form.year}
+                onChange={set("year")}
+                placeholder={t("common.placeholderYear")}
+                className={IL}
+                aria-invalid={!!errors.year}
+              />
+            </div>
+            <div className="min-h-[1.25rem] mt-1">
+              {errors.year && (
+                <p className="text-sm text-red-500" role="alert">
+                  {errors.year}
+                </p>
+              )}
             </div>
           </div>
         </div>

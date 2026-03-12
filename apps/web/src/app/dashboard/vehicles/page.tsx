@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Plus } from "lucide-react";
@@ -47,6 +47,36 @@ export default function VehiclesPage() {
   const superAdmin = isSuperAdmin(user);
   const canManage = superAdmin || user?.systemRole === "ADMIN";
   const router = useRouter();
+
+  // Solo mostrar el botón de crear vehículo si la empresa tiene al menos un empleado ADMIN o CUSTOMER.
+  const [hasEligibleEmployees, setHasEligibleEmployees] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!canManage) {
+      setHasEligibleEmployees(false);
+      return;
+    }
+    (async () => {
+      try {
+        const params = new URLSearchParams();
+        params.set("excludeValets", "true");
+        params.append("systemRole", "ADMIN");
+        params.append("systemRole", "CUSTOMER");
+        params.set("includeInactives", "true");
+        // Reutilizamos la API de usuarios; basta saber si hay al menos 1.
+        const users = await apiClient.get<Array<{ id?: string }>>(`/users?${params.toString()}`);
+        if (!cancelled) {
+          setHasEligibleEmployees(Array.isArray(users) && users.length > 0);
+        }
+      } catch {
+        if (!cancelled) setHasEligibleEmployees(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [canManage]);
 
   const onUpdate = useCallback(async (row: VehicleRow) => {
     if (!row.id) return;
@@ -122,15 +152,17 @@ export default function VehiclesPage() {
         onEdit={canManage ? (row) => router.push(`/dashboard/vehicles/${row.id}/edit`) : undefined}
         onUpdate={canManage ? onUpdate : undefined}
         headerAction={
-          canManage ? (
-            <Link
-              href="/dashboard/vehicles/new"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors shadow-sm"
-            >
-              <Plus className="w-4 h-4" strokeWidth={2.25} />
-              {t("common.add")}
-            </Link>
-          ) : undefined
+          canManage && hasEligibleEmployees
+            ? (
+              <Link
+                href="/dashboard/vehicles/new"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors shadow-sm"
+              >
+                <Plus className="w-4 h-4" strokeWidth={2.25} />
+                {t("common.add")}
+              </Link>
+            )
+            : undefined
         }
       />
     </>
