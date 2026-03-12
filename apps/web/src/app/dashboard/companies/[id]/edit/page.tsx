@@ -292,12 +292,14 @@ export default function EditCompanyPage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4 flex items-center gap-3">
           <div>
-            <p className="text-sm font-semibold text-text-primary">{t("companies.channelTitle")}</p>
-            <p className="text-xs text-text-muted">{t("companies.channelDescription")}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm font-semibold text-text-primary">{t("companies.channelTitle")}</p>
+              <span className="text-[11px] font-medium text-red-500">
+                {t("common.requiredBadge")}
+              </span>
+            </div>
+            <p className="text-xs text-text-muted mt-1">{t("companies.channelDescription")}</p>
           </div>
-          <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">
-            {t("common.requiredBadge")}
-          </span>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

@@ -119,8 +119,8 @@ export function DetailField({
   linkType?: "email" | "phone";
   multiline?: boolean;
 }) {
-  if (value === undefined || value === null || value === "") return null;
-  const str = String(value);
+  const hasValue = !(value === undefined || value === null || value === "");
+  const str = hasValue ? String(value) : "—";
   const href = linkType === "email" ? `mailto:${str}` : linkType === "phone" ? `tel:${str}` : undefined;
   return (
     <div className={wide ? "col-span-2" : ""}>
@@ -130,7 +130,7 @@ export function DetailField({
       <dd
         className={
           multiline
-            ? "text-sm text-slate-900 dark:text-slate-100 font-normal leading-snug break-words whitespace-pre-wrap max-h-24 overflow-y-auto pr-1"
+            ? "text-sm text-slate-900 dark:text-slate-100 font-normal leading-snug break-words whitespace-pre-wrap"
             : "text-sm text-slate-900 dark:text-slate-100 font-normal leading-snug"
         }
         title={multiline ? str : undefined}

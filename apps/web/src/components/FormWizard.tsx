@@ -128,12 +128,12 @@ export function FormWizard({
             <div className="flex items-center gap-2 mb-1">
               <h2 className="text-base font-semibold text-text-primary">{step.title}</h2>
               {step.badge === "required" && (
-                <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/20">
+                <span className="text-[11px] font-medium text-red-500">
                   {t("common.requiredBadge")}
                 </span>
               )}
               {step.badge === "optional" && (
-                <span className="text-[10px] font-medium text-text-muted bg-input-bg px-2 py-0.5 rounded-full border border-input-border/50">
+                <span className="text-[11px] font-medium text-text-muted">
                   {t("common.optionalBadge")}
                 </span>
               )}

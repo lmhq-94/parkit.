@@ -178,7 +178,8 @@ function LinkCellRenderer(
 
 type DetailRow<T> = { __detail: true; __parent: T };
 
-const DETAIL_ROW_MIN_HEIGHT = 100;
+// Altura mínima de filas de detalle (suficiente para varias filas sin cortar texto, sin dejar tanto aire en pantallas muy grandes).
+const DETAIL_ROW_MIN_HEIGHT = 210;
 
 function DetailRowMeasureWrapper({
   children,
@@ -437,7 +438,6 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   const [rows, setRows] = useState<T[]>([]);
   const [draftRow, setDraftRow] = useState<(T & { __isNew?: true }) | null>(null);
   const [expandedRowId, setExpandedRowId] = useState<string | number | null>(null);
-  const [detailRowHeight, setDetailRowHeight] = useState(DETAIL_ROW_MIN_HEIGHT);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingDeleteRow, setPendingDeleteRow] = useState<T | null>(null);
@@ -445,10 +445,9 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   const [navigating, setNavigating] = useState(false);
   const gridRef = useRef<AgGridReact<T>>(null);
   const [quickFilter, setQuickFilter] = useState("");
+  // Alturas medidos de filas de detalle por id de fila (para que cada grid/fila se adapte a su contenido).
+  const [detailRowHeights, setDetailRowHeights] = useState<Record<string | number, number>>({});
 
-  useEffect(() => {
-    setDetailRowHeight(DETAIL_ROW_MIN_HEIGHT);
-  }, [expandedRowId]);
 
   const getLocaleText = useCallback(
     (params: { key: string; defaultValue?: string }) => {
@@ -840,29 +839,42 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
     (params: ICellRendererParams<T | DetailRow<T>>) => {
       const data = params.data as DetailRow<T>;
       if (!data?.__detail || !data.__parent || !renderRowDetail) return null;
+      const nodeId = params.node?.id as string | number | undefined;
       const content = (
-        <div className="w-full border-b border-company-secondary-muted bg-company-tertiary-subtle/50 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
-          <div className="flex items-stretch gap-6 px-5 py-3 w-full">
-            <div className="shrink-0 w-0.5 min-h-[2rem] rounded-full bg-company-primary-subtle self-stretch" aria-hidden />
-            <div className="min-w-0 flex-1 [&_dl]:grid [&_dl]:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] [&_dl]:gap-x-6 [&_dl]:gap-y-3 [&_dl]:text-sm [&_dl]:w-full [&_dl]:content-start">
+        <div className="w-full">
+          <div className="flex items-stretch w-full py-2">
+            {/* Línea vertical a la izquierda, sin fondo detrás */}
+            <div
+              className="shrink-0 w-[3px] min-h-[2rem] rounded-full bg-company-secondary self-stretch ml-6 mr-4"
+              aria-hidden
+            />
+            {/* Contenido de Additional info, con fondo suave solo a la derecha de la línea */}
+            <div className="min-w-0 flex-1 px-5 py-1 bg-slate-500/5 dark:bg-slate-900/70 rounded-l-none rounded-r-xl [&_dl]:grid [&_dl]:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] [&_dl]:gap-x-6 [&_dl]:gap-y-3 [&_dl]:text-sm [&_dl]:w-full [&_dl]:content-start">
               {renderRowDetail(data.__parent)}
             </div>
           </div>
         </div>
       );
+      // Medir la altura real de este detalle y actualizar solo esa fila.
       return (
         <DetailRowMeasureWrapper
           onMeasured={(height) => {
-            if (height === detailRowHeight) return;
-            setDetailRowHeight(height);
-            params.api?.resetRowHeights();
+            if (nodeId == null) return;
+            setDetailRowHeights((prev) => {
+              const prevHeight = prev[nodeId];
+              const nextHeight = Math.max(DETAIL_ROW_MIN_HEIGHT, Math.ceil(height));
+              if (prevHeight === nextHeight) return prev;
+              const next = { ...prev, [nodeId]: nextHeight };
+              params.api?.resetRowHeights();
+              return next;
+            });
           }}
         >
           {content}
         </DetailRowMeasureWrapper>
       );
     },
-    [renderRowDetail, detailRowHeight]
+    [renderRowDetail]
   );
 
   const isFullWidthRow = useCallback(
@@ -884,9 +896,14 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   );
 
   const getRowHeight = useCallback(
-    (params: { data?: T | DetailRow<T> }) =>
-      (params.data as DetailRow<T>)?.__detail === true ? detailRowHeight : 44,
-    [detailRowHeight]
+    (params: { data?: T | DetailRow<T>; node?: { id?: string | number } }) => {
+      const data = params.data as DetailRow<T> | undefined;
+      if (!data || data.__detail !== true) return 44;
+      const id = params.node?.id;
+      if (id == null) return DETAIL_ROW_MIN_HEIGHT;
+      return detailRowHeights[id] ?? DETAIL_ROW_MIN_HEIGHT;
+    },
+    [detailRowHeights]
   );
 
   const showAddInBar = onCreate != null && canCreate && headerAction == null;

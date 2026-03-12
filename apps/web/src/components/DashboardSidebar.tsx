@@ -155,6 +155,7 @@ function CompanySelector({
   onSelect,
   placeholder,
   allCompaniesLabel,
+  addCompanyLabel,
   emptyLabel,
   isDark = false,
   logoImageUrl,
@@ -166,6 +167,7 @@ function CompanySelector({
   onSelect: (id: string, name: string) => void;
   placeholder: string;
   allCompaniesLabel: string;
+  addCompanyLabel: string;
   emptyLabel: string;
   isDark?: boolean;
   logoImageUrl?: string | null;
@@ -263,13 +265,21 @@ function CompanySelector({
           <p className="px-3 py-3 text-sm text-slate-400 text-center">{emptyLabel}</p>
         )}
       </div>
-      <div className="border-t border-slate-200 dark:border-slate-700 mt-1 pt-1">
+      <div className="border-t border-slate-200 dark:border-slate-700 mt-1 pt-1 flex gap-1.5">
         <Link
           href="/dashboard/companies"
           onClick={() => setOpen(false)}
-          className="block w-full px-3 py-2 text-left text-sm text-company-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg"
+          className="flex-1 px-3 py-2 text-left text-sm text-company-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg"
         >
           {allCompaniesLabel}
+        </Link>
+        <Link
+          href="/dashboard/companies/new"
+          onClick={() => setOpen(false)}
+          className="flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium text-white bg-company-primary hover:bg-company-primary/90 transition-colors"
+          title={addCompanyLabel}
+        >
+          +
         </Link>
       </div>
     </div>,
@@ -567,6 +577,7 @@ export function DashboardSidebar() {
                         onSelect={handleSelectCompany}
                         placeholder={t("sidebar.selectCompany")}
                         allCompaniesLabel={t("sidebar.allCompanies")}
+                        addCompanyLabel={t("sidebar.addCompany")}
                         emptyLabel={t("companies.noCompanies")}
                         isDark={hasCustomBanner ? bannerVariant : isDark}
                         logoImageUrl={companyBranding?.logoImageUrl}

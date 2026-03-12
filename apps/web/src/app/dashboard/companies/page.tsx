@@ -197,41 +197,35 @@ export default function CompaniesPage() {
             />
           ) : undefined
         }
-        hasRowDetail={(company) =>
-          (company.legalName != null && company.legalName !== "") ||
-          (company.taxId != null && company.taxId !== "") ||
-          (company.industry != null && company.industry !== "") ||
-          (company.legalAddress != null && company.legalAddress !== "") ||
-          (company.contactPhone != null && company.contactPhone !== "") ||
-          (company.countryCode != null && company.countryCode !== "") ||
-          (company.currency != null && company.currency !== "") ||
-          (company.timezone != null && company.timezone !== "")
-        }
         renderRowDetail={(company) => (
-          <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
-            <DetailSectionLabel text={t("common.additionalInfo")} />
-            <DetailField
-              label={t("companies.channelTitle")}
-              value={
-                company.requiresCustomerApp === true
-                  ? t("companies.channelOptionWithAppTitle")
-                  : company.requiresCustomerApp === false
-                    ? t("companies.channelOptionNoAppTitle")
-                    : undefined
-              }
-            />
-            <DetailField label={t("companies.legalName")} value={company.legalName} />
-            <DetailField label={t("companies.taxId")} value={company.taxId} />
-            <DetailField
-              label={t("companies.industry")}
-              value={company.industry ? t(`companies.industryOptions.${company.industry}`) : undefined}
-            />
-            <DetailField label={t("companies.legalAddress")} value={company.legalAddress} wide multiline />
-            <DetailField label={t("companies.contactPhone")} value={company.contactPhone ? formatPhoneInternational(company.contactPhone) : undefined} linkType="phone" />
-            <DetailField label={t("companies.countryCode")} value={company.countryCode} />
-            <DetailField label={t("companies.currency")} value={company.currency} />
-            <DetailField label={t("companies.timezone")} value={company.timezone} />
-          </dl>
+          <div className="rounded-xl bg-input-bg/80 px-4 py-4">
+            <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
+              <DetailSectionLabel text={t("common.additionalInfo")} />
+              <DetailField
+                label={t("companies.legalName")}
+                value={company.legalName || company.commercialName || company.name}
+              />
+              <DetailField label={t("companies.taxId")} value={company.taxId} />
+              <DetailField
+                label={t("companies.industry")}
+                value={company.industry ? t(`companies.industryOptions.${company.industry}`) : undefined}
+              />
+              <DetailField
+                label={t("companies.legalAddress")}
+                value={company.legalAddress}
+                wide
+                multiline
+              />
+              <DetailField
+                label={t("companies.contactPhone")}
+                value={company.contactPhone ? formatPhoneInternational(company.contactPhone) : undefined}
+                linkType="phone"
+              />
+              <DetailField label={t("companies.countryCode")} value={company.countryCode} />
+              <DetailField label={t("companies.currency")} value={company.currency} />
+              <DetailField label={t("companies.timezone")} value={company.timezone} />
+            </dl>
+          </div>
         )}
         onEdit={superAdmin ? (row) => router.push(`/dashboard/companies/${row.id}/edit`) : undefined}
         onUpdate={onUpdate}
