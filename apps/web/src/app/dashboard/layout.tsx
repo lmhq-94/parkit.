@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Suspense, createContext, useContext, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -117,8 +118,36 @@ function DashboardLayoutInner({
   const [headerAction, setHeaderAction] = useState<React.ReactNode>(null);
   const [headerShadow, setHeaderShadow] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [userMenuPosition, setUserMenuPosition] = useState({ top: 0, right: 0 });
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const updateUserMenuPosition = () => {
+    if (userMenuRef.current) {
+      const rect = userMenuRef.current.getBoundingClientRect();
+      setUserMenuPosition({
+        top: rect.bottom + 4,
+        right: window.innerWidth - rect.right,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (userMenuOpen) updateUserMenuPosition();
+  }, [userMenuOpen]);
+
+  useEffect(() => {
+    if (userMenuOpen) {
+      const onScrollOrResize = () => updateUserMenuPosition();
+      window.addEventListener("scroll", onScrollOrResize, true);
+      window.addEventListener("resize", onScrollOrResize);
+      return () => {
+        window.removeEventListener("scroll", onScrollOrResize, true);
+        window.removeEventListener("resize", onScrollOrResize);
+      };
+    }
+  }, [userMenuOpen]);
+
   useEffect(() => {
     if (isNewPage) setHeaderAction(null);
   }, [isNewPage]);
@@ -136,7 +165,7 @@ function DashboardLayoutInner({
     if (!userMenuOpen) return;
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
-      if (userMenuRef.current && target && !userMenuRef.current.contains(target)) {
+      if (userMenuRef.current && target && !userMenuRef.current.contains(target) && !target.closest("[data-user-menu-dropdown]")) {
         setUserMenuOpen(false);
       }
     };
@@ -262,12 +291,13 @@ function DashboardLayoutInner({
                       onClick={() => {
                         setUserMenuOpen((open) => !open);
                       }}
-                      className="h-10 rounded-xl bg-card border border-card-border text-text-secondary hover:text-text-primary hover:bg-input-bg transition-colors flex items-center gap-2 px-2"
+                      className="h-10 bg-card border border-card-border text-text-secondary hover:text-text-primary hover:bg-input-bg transition-colors flex items-center gap-2 pr-2 pl-0"
+                      style={{ borderRadius: '9999px 0.75rem 0.75rem 9999px' }}
                       aria-haspopup="menu"
                       aria-expanded={userMenuOpen}
                       title={getFullName(user) || user.email}
                     >
-                      <div className="w-7 h-7 rounded-full overflow-hidden bg-input-bg flex items-center justify-center border border-card-border">
+                      <div className="w-10 h-10 rounded-full overflow-hidden bg-input-bg flex items-center justify-center border border-card-border shrink-0">
                         {(user.avatarUrl ?? user.avatar)?.trim() ? (
                           <img
                             src={user.avatarUrl ?? user.avatar}
@@ -286,7 +316,7 @@ function DashboardLayoutInner({
                           </span>
                         )}
                       </div>
-                      <div className="hidden sm:flex flex-col items-start max-w-[140px]">
+                      <div className="hidden sm:flex flex-col items-start max-w-[140px] min-w-0">
                         <span className="text-xs font-medium text-text-primary truncate">
                           {getFullName(user) || user.email}
                         </span>
@@ -295,42 +325,51 @@ function DashboardLayoutInner({
                         </span>
                       </div>
                       <ChevronDown
-                        className={`w-4 h-4 text-text-muted transition-transform duration-150 ${
+                        className={`w-4 h-4 text-text-muted transition-transform duration-150 shrink-0 ml-auto ${
                           userMenuOpen ? "rotate-180" : ""
                         }`}
                       />
                     </button>
-                    {userMenuOpen && (
+                    {userMenuOpen && typeof document !== "undefined" && createPortal(
                       <div
-                        className="absolute right-0 mt-2 overflow-y-auto overscroll-contain py-1.5 px-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl min-w-[160px] z-[60] bg-white dark:bg-slate-900"
-                        style={{ maxHeight: "min(70vh, 400px)" }}
+                        data-user-menu-dropdown
+                        className="fixed z-[99999] flex flex-col rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl bg-white dark:bg-slate-900 py-1.5 px-1.5 min-w-[160px] overflow-hidden"
+                        style={{
+                          top: userMenuPosition.top,
+                          right: userMenuPosition.right,
+                          left: "auto",
+                          maxHeight: "min(70vh, 400px)",
+                        }}
                       >
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setUserMenuOpen(false);
-                            router.push("/dashboard/profile");
-                          }}
-                          className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg hover:bg-company-tertiary-subtle text-company-secondary"
-                        >
-                          {t("sidebar.profile")}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setUserMenuOpen(false);
-                            logout();
-                            if (typeof window !== "undefined") {
-                              window.location.href = "/login";
-                            } else {
-                              router.replace("/login");
-                            }
-                          }}
-                          className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg hover:bg-red-500/10 text-red-600 dark:text-red-400"
-                        >
-                          {t("auth.signOut")}
-                        </button>
-                      </div>
+                        <div className="overflow-y-auto overscroll-contain min-h-0 flex-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUserMenuOpen(false);
+                              router.push("/dashboard/profile");
+                            }}
+                            className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          >
+                            {t("sidebar.profile")}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUserMenuOpen(false);
+                              logout();
+                              if (typeof window !== "undefined") {
+                                window.location.href = "/login";
+                              } else {
+                                router.replace("/login");
+                              }
+                            }}
+                            className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-red-600 dark:text-red-400 hover:bg-red-500/10"
+                          >
+                            {t("auth.signOut")}
+                          </button>
+                        </div>
+                      </div>,
+                      document.body
                     )}
                   </div>
                 </>

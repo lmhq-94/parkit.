@@ -268,7 +268,7 @@ export default function BookingsPage() {
           canManage ? (
             <Link
               href="/dashboard/bookings/new"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 px-4 min-h-[42px] rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors shadow-sm"
             >
               <Plus className="w-4 h-4" strokeWidth={2.25} />
               {t("common.add")}

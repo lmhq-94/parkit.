@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "next-themes";
-import { useHeaderAction } from "@/app/dashboard/layout";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ICellRendererParams, ValueGetterParams, ValueSetterParams } from "ag-grid-community";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
@@ -906,26 +905,20 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
     [detailRowHeights]
   );
 
-  const showAddInBar = onCreate != null && canCreate && headerAction == null;
-  const setHeaderAction = useHeaderAction();
-
-  useEffect(() => {
-    if (headerAction != null || showAddInBar) {
-      const node = headerAction ?? (
-        <button
-          type="button"
-          onClick={startCreate}
-          disabled={draftRow != null}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-        >
-          <Plus className="w-4 h-4" strokeWidth={2.25} />
-          {t(locale, "common.add")}
-        </button>
-      );
-      setHeaderAction?.(node);
-    }
-    return () => { setHeaderAction?.(null); };
-  }, [headerAction, showAddInBar, setHeaderAction, startCreate, draftRow, locale]);
+  const showAddInBar = onCreate != null && canCreate;
+  const addButtonNode =
+    headerAction ??
+    (showAddInBar ? (
+      <button
+        type="button"
+        onClick={startCreate}
+        disabled={draftRow != null}
+        className="inline-flex items-center gap-2 px-4 min-h-[42px] rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+      >
+        <Plus className="w-4 h-4" strokeWidth={2.25} />
+        {t(locale, "common.add")}
+      </button>
+    ) : null);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 pt-6 md:pt-8 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 w-full">
@@ -943,7 +936,12 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                   className="w-full min-h-[42px] pl-9 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-sm text-text-primary placeholder:text-text-muted transition-colors focus:outline-none focus:ring-1 focus:ring-company-primary focus:border-company-primary"
                 />
               </div>
-              {toolbarRight != null ? <div className="shrink-0 ml-auto">{toolbarRight}</div> : null}
+              {(toolbarRight != null || addButtonNode != null) && (
+                <div className="flex items-center gap-3 shrink-0 ml-auto">
+                  {toolbarRight}
+                  {addButtonNode}
+                </div>
+              )}
             </div>
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-200 rounded-xl">

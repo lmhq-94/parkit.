@@ -14,6 +14,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import {
   LayoutDashboard,
   Users,
+  Shield,
   UserRound,
   Car,
   MapPin,
@@ -476,7 +477,7 @@ export function DashboardSidebar() {
     ];
 
     const teamItems = [
-      ...(admin ? [{ label: t("sidebar.employees"), href: "/dashboard/users", icon: Users }] : []),
+      ...(admin ? [{ label: t("sidebar.employees"), href: "/dashboard/users", icon: Shield }] : []),
       { label: t("sidebar.valets"), href: "/dashboard/valets", icon: UserRound },
     ];
 

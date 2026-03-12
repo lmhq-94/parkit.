@@ -26,7 +26,11 @@ const DashboardDataTablePage = dynamic(
   }
 );
 
-const CUSTOMER_ROLE_OPTIONS = [{ value: "CUSTOMER", key: "CUSTOMER" }] as const;
+const CUSTOMER_STATUS_OPTIONS = [
+  { value: "ACTIVE", labelKey: "tables.employees.active" },
+  { value: "INACTIVE", labelKey: "tables.employees.inactive" },
+  { value: "PENDING", labelKey: "tables.employees.pendingInvitation" },
+] as const;
 
 function UserStatusCellRenderer(
   params: ICellRendererParams<{ isActive?: boolean; pendingInvitation?: boolean }> & { t: (key: string) => string }
@@ -139,19 +143,26 @@ export default function CustomersPage() {
   );
 
   const [refreshToken, setRefreshToken] = useState(0);
-  const [roleFilters, setRoleFilters] = useState<string[]>(["CUSTOMER"]);
-  const [includeInactives, setIncludeInactives] = useState(false);
+  const [statusFilters, setStatusFilters] = useState<string[]>([]);
+
+  const getStatusForRow = useCallback((row: UserRow) => {
+    if (row.pendingInvitation) return "PENDING";
+    return row.isActive ? "ACTIVE" : "INACTIVE";
+  }, []);
 
   const fetchData = useCallback(
     async (_userId: string) => {
       const params = new URLSearchParams();
       params.set("excludeValets", "true");
       params.append("systemRole", "CUSTOMER");
-      if (includeInactives) params.set("includeInactives", "true");
+      params.set("includeInactives", "true");
       const url = `/users?${params.toString()}`;
-      return apiClient.get<UserRow[]>(url);
+      const data = await apiClient.get<UserRow[]>(url);
+      const list = Array.isArray(data) ? data : [];
+      if (statusFilters.length === 0) return list;
+      return list.filter((row) => statusFilters.includes(getStatusForRow(row)));
     },
-    [includeInactives]
+    [statusFilters, getStatusForRow]
   );
 
   const handleResendInvitation = useCallback(
@@ -177,37 +188,15 @@ export default function CustomersPage() {
           <StatusFilterToolbar
             tableKey="customers"
             allLabel={t("tables.employees.filterAll")}
-            placeholder={t("tables.employees.filterStatusPlaceholder")}
+            placeholder={t("tables.employees.filterByStatusPlaceholder")}
             clearSelectionLabel={t("grid.clearSelection")}
-            options={CUSTOMER_ROLE_OPTIONS.map((o) => ({
+            options={CUSTOMER_STATUS_OPTIONS.map((o) => ({
               value: o.value,
-              label: tEnum("systemRole", o.key),
+              label: t(o.labelKey),
             }))}
-            selected={roleFilters}
-            onChange={setRoleFilters}
+            selected={statusFilters}
+            onChange={setStatusFilters}
           />
-        }
-        toolbarRight={
-          <label className="flex items-center gap-3 cursor-pointer select-none min-h-[42px] px-4 py-3">
-            <button
-              type="button"
-              role="switch"
-              aria-checked={includeInactives}
-              onClick={() => setIncludeInactives((v) => !v)}
-              className={`relative w-11 h-6 rounded-full shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page ${
-                includeInactives ? "bg-company-primary" : "bg-input-border"
-              }`}
-            >
-              <span
-                className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                  includeInactives ? "translate-x-5" : "translate-x-0"
-                }`}
-              />
-            </button>
-            <span className="text-sm font-medium text-text-secondary">
-              {t("tables.employees.includeInactives")}
-            </span>
-          </label>
         }
         hasRowDetail={() => true}
         renderRowDetail={(user) => (
@@ -246,7 +235,7 @@ export default function CustomersPage() {
         headerAction={
           <Link
             href="/dashboard/users/new?role=CUSTOMER"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 px-4 min-h-[42px] rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" strokeWidth={2.25} />
             {t("common.add")}

@@ -244,11 +244,11 @@ export default function SettingsPage() {
         {/* Sección 1 — Tema de la empresa (Logo y Banner) */}
         <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0">
           <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent">
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 mb-1">
               <p className="text-sm font-semibold text-text-primary">{t("settings.companyTheme")}</p>
-              <span className="text-[10px] font-semibold text-company-secondary bg-company-secondary-subtle px-2.5 py-1 rounded-full border border-company-secondary-muted">{t("common.optionalBadge")}</span>
+              <span className="text-[11px] font-medium text-text-muted">{t("common.optionalBadge")}</span>
             </div>
-            <p className="text-xs text-text-muted mt-1 break-words">{t("settings.companyThemeDescription")}</p>
+            <p className="text-xs text-text-muted break-words">{t("settings.companyThemeDescription")}</p>
           </div>
           <div className="px-6 pb-6 pt-2">
             <div className="flex flex-col gap-6">
