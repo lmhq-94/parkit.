@@ -15,7 +15,7 @@ export function Toaster() {
 
   return (
     <div
-      className="fixed top-4 right-4 z-[99999] flex flex-col gap-2 w-full max-w-[360px] pointer-events-none"
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-[99999] flex flex-col gap-2 w-full max-w-[360px] pointer-events-none"
       aria-live="polite"
       role="region"
       aria-label="Notificaciones"

@@ -5,7 +5,12 @@ import { ok, fail } from "../../shared/utils/response";
 export class DashboardController {
   static async getStats(req: Request, res: Response) {
     try {
-      const companyId = req.user?.companyId ?? null;
+      // SUPER_ADMIN: use selected company from header so stats (and hasParkingWithBooking) are for that company
+      const headerCompanyId =
+        req.user?.role === "SUPER_ADMIN"
+          ? (req.headers["x-company-id"] as string | undefined)
+          : undefined;
+      const companyId = headerCompanyId ?? req.user?.companyId ?? null;
       const rawDays = req.query.days;
       const rawFrom = req.query.from;
       const rawTo = req.query.to;

@@ -192,9 +192,10 @@ export default function ProfilePage() {
         </div>
       )}
 
+      {/* Misma estructura que Company Settings: scroll interno + grid + cards con header en gradiente */}
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-8 items-start">
-          {/* Sección 1 — Foto de perfil (opcional) */}
+          {/* Sección 1 — Foto de perfil (opcional), mismo estilo que settings */}
           <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0">
             <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent">
               <div className="flex items-center gap-2 mb-1">
@@ -211,7 +212,7 @@ export default function ProfilePage() {
                   onChange={(v) => setForm((p) => ({ ...p, avatarUrl: v }))}
                   onClear={() => setForm((p) => ({ ...p, avatarUrl: "" }))}
                   label={t("profile.avatarFieldLabel")}
-                  description=""
+                  description={t("profile.avatarImageDescription")}
                   recommendedSize="400 × 400 px"
                   layout="row"
                   t={t}
@@ -220,27 +221,25 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Sección 2 — Datos personales (requerido) */}
+          {/* Sección 2 — Datos personales (requerido), mismo estilo que settings */}
           <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0">
-            <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent">
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-semibold text-text-primary">{t("profile.sectionInfo")}</p>
-                    <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
-                  </div>
-                  <p className="text-xs text-text-muted">{t("profile.sectionInfoDesc")}</p>
+            <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-sm font-semibold text-text-primary">{t("profile.sectionInfo")}</p>
+                  <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
                 </div>
-                {isSuperAdmin(user) && (
-                  <Link
-                    href="/dashboard/super-admins/new"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-company-secondary-muted text-sm font-medium text-company-secondary hover:bg-company-secondary-subtle hover:text-company-secondary transition-colors shrink-0"
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    {t("profile.createSuperAdmin")}
-                  </Link>
-                )}
+                <p className="text-xs text-text-muted">{t("profile.sectionInfoDesc")}</p>
               </div>
+              {isSuperAdmin(user) && (
+                <Link
+                  href="/dashboard/super-admins/new"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-company-secondary-muted text-sm font-medium text-company-secondary hover:bg-company-secondary-subtle hover:text-company-secondary transition-colors shrink-0"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  {t("profile.createSuperAdmin")}
+                </Link>
+              )}
             </div>
             <div className="px-6 pb-6 pt-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
@@ -291,60 +290,76 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Sección 3 — Preferencias (ancho completo) */}
+          {/* Sección 3 — Preferencias: tema e idioma (ancho completo), mismo estilo que settings */}
           <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0 xl:col-span-2">
-            <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent flex items-center gap-3">
-              <div>
-                <p className="text-sm font-semibold text-text-primary">{t("profile.sectionPreferences")}</p>
-                <p className="text-xs text-text-muted">{t("profile.sectionPreferencesDesc")}</p>
-              </div>
+            <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent">
+              <p className="text-sm font-semibold text-text-primary">{t("profile.sectionPreferences")}</p>
+              <p className="text-xs text-text-muted mt-1 break-words">{t("profile.sectionPreferencesDesc")}</p>
             </div>
             <div className="px-6 pb-6 pt-2">
-              <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
-                <div className="flex-1 min-w-0">
-                  <label className={LABEL}>{t("profile.themeLabel")}</label>
-                  <div className="flex gap-2 mt-1">
+              <div className="flex flex-col gap-6 md:flex-row md:gap-8 max-w-3xl">
+                {/* Tema */}
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-text-primary mb-3">{t("profile.themeLabel")}</p>
+                  <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => handleThemeChange("light")}
-                      className={`inline-flex items-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium transition-colors ${
+                      className={`flex flex-col items-center gap-3 p-4 rounded-xl border transition-all ${
                         currentTheme === "light"
-                          ? "border-company-primary bg-company-primary-muted text-company-primary"
-                          : "border-input-border bg-input-bg text-text-secondary hover:border-company-primary hover:text-company-primary"
+                          ? "border-company-primary bg-company-primary-subtle ring-1 ring-company-primary/30 shadow-sm"
+                          : "border-input-border bg-input-bg/50 hover:border-company-primary-muted hover:bg-input-bg"
                       }`}
                     >
-                      <Sun className="w-4 h-4" />
-                      {t("profile.themeLight")}
+                      <span className={`flex items-center justify-center w-11 h-11 rounded-full shrink-0 ${currentTheme === "light" ? "bg-company-primary/15 text-company-primary" : "bg-input-bg text-text-muted"}`}>
+                        <Sun className="w-5 h-5" />
+                      </span>
+                      <div className="w-full text-center space-y-0.5">
+                        <p className={`text-sm font-medium ${currentTheme === "light" ? "text-company-primary" : "text-text-primary"}`}>
+                          {t("profile.themeLight")}
+                        </p>
+                        <p className="text-[11px] text-text-muted leading-tight">
+                          {t("profile.themeLightDesc")}
+                        </p>
+                      </div>
                     </button>
                     <button
                       type="button"
                       onClick={() => handleThemeChange("dark")}
-                      className={`inline-flex items-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium transition-colors ${
+                      className={`flex flex-col items-center gap-3 p-4 rounded-xl border transition-all ${
                         currentTheme === "dark"
-                          ? "border-company-primary bg-company-primary-muted text-company-primary"
-                          : "border-input-border bg-input-bg text-text-secondary hover:border-company-primary hover:text-company-primary"
+                          ? "border-company-primary bg-company-primary-subtle ring-1 ring-company-primary/30 shadow-sm"
+                          : "border-input-border bg-input-bg/50 hover:border-company-primary-muted hover:bg-input-bg"
                       }`}
                     >
-                      <Moon className="w-4 h-4" />
-                      {t("profile.themeDark")}
+                      <span className={`flex items-center justify-center w-11 h-11 rounded-full shrink-0 ${currentTheme === "dark" ? "bg-company-primary/15 text-company-primary" : "bg-input-bg text-text-muted"}`}>
+                        <Moon className="w-5 h-5" />
+                      </span>
+                      <div className="w-full text-center space-y-0.5">
+                        <p className={`text-sm font-medium ${currentTheme === "dark" ? "text-company-primary" : "text-text-primary"}`}>
+                          {t("profile.themeDark")}
+                        </p>
+                        <p className="text-[11px] text-text-muted leading-tight">
+                          {t("profile.themeDarkDesc")}
+                        </p>
+                      </div>
                     </button>
                   </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <label className={LABEL}>{t("profile.languageLabel")}</label>
-                  <div className="mt-1">
-                    <SelectField
-                      value={currentLocale}
-                      onChange={(e) => handleLocaleChange(e.target.value as LocaleValue)}
-                      icon={Globe}
-                    >
-                      {LOCALE_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {t(opt.labelKey)}
-                        </option>
-                      ))}
-                    </SelectField>
-                  </div>
+                {/* Idioma */}
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-text-primary mb-3">{t("profile.languageLabel")}</p>
+                  <SelectField
+                    value={currentLocale}
+                    onChange={(e) => handleLocaleChange(e.target.value as LocaleValue)}
+                    icon={Globe}
+                  >
+                    {LOCALE_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {t(opt.labelKey)}
+                      </option>
+                    ))}
+                  </SelectField>
                 </div>
               </div>
             </div>

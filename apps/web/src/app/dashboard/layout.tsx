@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -291,18 +292,21 @@ function DashboardLayoutInner({
                       onClick={() => {
                         setUserMenuOpen((open) => !open);
                       }}
-                      className="h-10 bg-card border border-card-border text-text-secondary hover:text-text-primary hover:bg-input-bg transition-colors flex items-center gap-2 pr-2 pl-0"
-                      style={{ borderRadius: '9999px 0.75rem 0.75rem 9999px' }}
+                      className="h-12 bg-card border border-card-border text-text-secondary hover:text-text-primary hover:bg-input-bg transition-colors flex items-center gap-2 pr-2 pl-0"
+                      style={{ borderRadius: '2rem 0.75rem 0.75rem 2rem' }}
                       aria-haspopup="menu"
                       aria-expanded={userMenuOpen}
                       title={getFullName(user) || user.email}
                     >
-                      <div className="w-10 h-10 rounded-full overflow-hidden bg-input-bg flex items-center justify-center border border-card-border shrink-0">
+                      <div className="relative w-12 h-12 rounded-full overflow-hidden bg-input-bg flex items-center justify-center border border-card-border shrink-0">
                         {(user.avatarUrl ?? user.avatar)?.trim() ? (
-                          <img
+                          <Image
                             src={user.avatarUrl ?? user.avatar}
                             alt=""
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
+                            sizes="48px"
+                            unoptimized
                           />
                         ) : (
                           <span

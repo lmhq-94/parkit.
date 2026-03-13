@@ -170,14 +170,20 @@ export default function DashboardPage() {
     }
   }, [customRangeJustOpened]);
 
-  // Redirigir a "no companies" solo si es SUPER_ADMIN y no hay ninguna empresa en el sistema.
-  // Los ADMIN/STAFF pertenecen a una empresa; nunca deben ver esta página.
+  // Redirigir a "no companies" solo si es SUPER_ADMIN sin empresa seleccionada y no hay ninguna en el sistema.
+  // Con empresa seleccionada, stats son de esa empresa y companiesCount viene 0; no redirigir.
   useEffect(() => {
-    if (superAdmin && stats && stats.companiesCount === 0 && !redirectingNoCompanies) {
+    if (
+      superAdmin &&
+      !selectedCompanyId &&
+      stats &&
+      stats.companiesCount === 0 &&
+      !redirectingNoCompanies
+    ) {
       setRedirectingNoCompanies(true);
       router.replace("/dashboard/no-companies");
     }
-  }, [superAdmin, stats, redirectingNoCompanies, router]);
+  }, [superAdmin, selectedCompanyId, stats, redirectingNoCompanies, router]);
 
   // Spinner completo solo en carga inicial (sin datos). Al cambiar días se mantiene la UI y solo se actualizan los datos.
   if (loading && !stats) {

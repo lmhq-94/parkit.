@@ -27,6 +27,7 @@ import {
   ChevronRight,
   ChevronDown,
   Building2,
+  HelpCircle,
 } from "lucide-react";
 
 function SidebarTooltip({
@@ -414,6 +415,17 @@ export function DashboardSidebar() {
       .catch(() => setCompanies([]));
   }, [superAdmin, companiesVersion]);
 
+  // SUPER_ADMIN: siempre tener una empresa seleccionada (la primera si no hay ninguna o la actual ya no existe)
+  useEffect(() => {
+    if (!superAdmin || companies.length === 0) return;
+    const currentId = useDashboardStore.getState().selectedCompanyId;
+    const currentExists = currentId && companies.some((c) => c.id === currentId);
+    if (currentExists) return;
+    const first = companies[0];
+    const name = first.commercialName || first.legalName || first.id;
+    setSelectedCompany(first.id, name);
+  }, [superAdmin, companies, setSelectedCompany]);
+
   // Para ADMIN: obtener empresa (nombre e id) y, si no hay company seleccionada, fijarla para que el layout cargue branding
   useEffect(() => {
     if (!mounted || !user || superAdmin) return;
@@ -522,7 +534,7 @@ export function DashboardSidebar() {
     <aside
       className={`
         fixed md:relative inset-y-0 left-0 z-[20001] md:z-30
-        min-h-screen flex flex-col bg-page backdrop-blur-xl border-r border-card-border
+        h-screen flex flex-col overflow-hidden bg-page backdrop-blur-xl border-r border-card-border
         transition-[width,transform] duration-300 ease-out shrink-0
         w-[260px] ${collapsed ? "md:w-[72px]" : "md:w-[260px]"}
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
@@ -570,7 +582,7 @@ export function DashboardSidebar() {
           {hasCompanies ? (
             <>
               {superAdmin ? (
-                <div className="border-b border-card-border">
+                <div className="border-b border-card-border shrink-0">
                   <DefaultBanner
                     companyName={selectedCompanyName || t("sidebar.company")}
                     logoImageUrl={companyBranding?.logoImageUrl}
@@ -603,7 +615,7 @@ export function DashboardSidebar() {
                   />
                 </div>
               ) : (
-                <div className="border-b border-card-border">
+                <div className="border-b border-card-border shrink-0">
                   <DefaultBanner
                     companyName={adminCompanyName || t("companies.single") || "Company"}
                     logoImageUrl={companyBranding?.logoImageUrl}
@@ -623,7 +635,7 @@ export function DashboardSidebar() {
               )}
             </>
           ) : (
-            <div className="border-b border-card-border px-3 py-3">
+            <div className="border-b border-card-border px-3 py-3 shrink-0">
               <Link
                 href="/dashboard/companies/new?first=1"
                 className="group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-text-muted hover:bg-input-bg hover:text-text-secondary"
@@ -640,9 +652,9 @@ export function DashboardSidebar() {
         </>
       )}
 
-      {/* Nav groups: solo cuando hay empresas, pero siempre dejamos un flex-1 para empujar el footer abajo */}
+      {/* Nav groups: flex-1 + min-h-0 para que solo esta zona haga scroll y el sidebar no */}
       {hasCompanies ? (
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-6">
+        <nav className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-6">
           {navGroups.map((group) => (
             <div key={group.label}>
               {!collapsed && (
@@ -725,8 +737,40 @@ export function DashboardSidebar() {
         <div className="flex-1" />
       )}
 
-      {/* Espaciador inferior para no pegar el contenido al borde */}
-      <div className="px-3 pb-3 pt-2 shrink-0" />
+      {/* Footer: ayuda + versión en una fila (altura mínima para evitar scroll en el sidebar) */}
+      <footer className="border-t border-card-border bg-card/40 dark:bg-card/20 px-2 py-1.5 shrink-0">
+        {!collapsed ? (
+          <div className="flex flex-row items-center gap-2 min-h-0">
+            <a
+              href="mailto:soporte@parkit.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 rounded-lg py-1 px-1.5 -mx-0.5 text-[11px] font-medium text-text-muted hover:text-text-secondary hover:bg-input-bg/80 transition-colors shrink-0"
+            >
+              <HelpCircle className="w-3 h-3 shrink-0 text-company-tertiary" aria-hidden />
+              <span className="truncate">{t("sidebar.help")}</span>
+            </a>
+            <span
+              className="text-[10px] text-text-muted/70 font-medium tabular-nums shrink-0"
+              title={t("sidebar.version")}
+            >
+              {process.env.NEXT_PUBLIC_APP_VERSION ? `v${process.env.NEXT_PUBLIC_APP_VERSION}` : "v1.0.0"}
+            </span>
+          </div>
+        ) : (
+          <SidebarTooltip show label={t("sidebar.help")}>
+            <a
+              href="mailto:soporte@parkit.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex justify-center p-1.5 rounded-lg text-text-muted hover:text-text-secondary hover:bg-input-bg transition-colors"
+              aria-label={t("sidebar.help")}
+            >
+              <HelpCircle className="w-4 h-4" aria-hidden />
+            </a>
+          </SidebarTooltip>
+        )}
+      </footer>
     </aside>
     </>
   );
