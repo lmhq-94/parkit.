@@ -12,6 +12,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: 'parkit-valet',
   backgroundColor: '#020617',
   splash: {
+    image: './assets/icon.png',
+    resizeMode: 'contain',
     backgroundColor: '#020617',
   },
   platforms: ['ios', 'android', 'web'],
