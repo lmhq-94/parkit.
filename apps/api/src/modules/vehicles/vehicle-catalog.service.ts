@@ -28,6 +28,10 @@ export interface VehicleDimensions {
   lengthCm?: number;
   widthCm?: number;
   heightCm?: number;
+  /**
+   * Peso aproximado en kilogramos, cuando CarQuery lo provee.
+   */
+  weightKg?: number;
 }
 
 async function carQueryFetch<T>(params: Record<string, string>): Promise<T> {
@@ -78,21 +82,52 @@ async function getDimensionsFromCarQuery(
     const params: Record<string, string> = { cmd: "getTrims", make: make.trim().toLowerCase(), model: model.trim().toLowerCase() };
     if (year != null && year > 0) params.year = String(year);
     const data = await carQueryFetch<{
-      Trims?: Array<{ model_length_mm?: string | null; model_width_mm?: string | null; model_height_mm?: string | null }>;
+      Trims?: Array<{
+        model_length_mm?: string | null;
+        model_width_mm?: string | null;
+        model_height_mm?: string | null;
+        // Los nombres exactos pueden variar según la versión de CarQuery,
+        // pero estos son los campos documentados/comunes.
+        model_weight_kg?: string | null;
+        model_weight_lbs?: string | null;
+      }>;
     }>(params);
     const trims = data?.Trims;
     if (!Array.isArray(trims) || trims.length === 0) return null;
     const toCm = (v: string | number | null | undefined) =>
       v != null && v !== "" && !Number.isNaN(Number(v)) ? Math.round(Number(v) / 10) : undefined;
+    const toKg = (kg: string | null | undefined, lbs: string | null | undefined) => {
+      if (kg != null && kg !== "" && !Number.isNaN(Number(kg))) {
+        return Number(kg);
+      }
+      if (lbs != null && lbs !== "" && !Number.isNaN(Number(lbs))) {
+        // Conversión aproximada de libras a kilogramos
+        return Math.round((Number(lbs) * 0.45359237 + Number.EPSILON) * 10) / 10;
+      }
+      return undefined;
+    };
+
+    // Elegimos el trim "más completo": el que tenga más campos de dimensiones presentes.
+    let best: VehicleDimensions | null = null;
+    let bestScore = -1;
     for (const t of trims) {
       const lengthCm = toCm(t.model_length_mm);
       const widthCm = toCm(t.model_width_mm);
       const heightCm = toCm(t.model_height_mm);
-      if (lengthCm != null || widthCm != null || heightCm != null) {
-        return { lengthCm, widthCm, heightCm };
+      const weightKg = toKg(t.model_weight_kg ?? null, t.model_weight_lbs ?? null);
+
+      const score =
+        (lengthCm != null ? 1 : 0) +
+        (widthCm != null ? 1 : 0) +
+        (heightCm != null ? 1 : 0) +
+        (weightKg != null ? 1 : 0);
+
+      if (score > bestScore && score > 0) {
+        bestScore = score;
+        best = { lengthCm, widthCm, heightCm, weightKg };
       }
     }
-    return null;
+    return best;
   } catch {
     return null;
   }

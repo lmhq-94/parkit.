@@ -156,15 +156,21 @@ export function formatTaxId(value: string): string {
 }
 
 /**
- * Placa tipo Costa Rica / internacional: 3 letras + guión + 3 números (LLL-NNN).
- * Formato antiguo CR: solo 6 dígitos (123456). Se extraen letras y dígitos en orden.
+ * Placa Costa Rica: solo números (ej. 345723) o alfanumérico LLL-NNN (ej. RWF-001).
+ * Acepta solo A-Z y 0-9; formatea automáticamente con guion en el formato mixto.
  */
 export function formatPlate(value: string): string {
   const raw = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
   const letters = raw.replace(/[^A-Z]/g, "").slice(0, 3);
-  const digits = raw.replace(/[^0-9]/g, "").slice(0, 3);
-  if (digits.length === 0 && letters.length === 0) return "";
-  if (letters.length === 0) return digits.length <= 6 ? digits : digits.slice(0, 6);
+  const allDigits = raw.replace(/[^0-9]/g, "");
+
+  // Solo numérico: hasta 6 dígitos (ej. 345723)
+  if (letters.length === 0) {
+    return allDigits.slice(0, 6);
+  }
+
+  // Alfanumérico: 3 letras + guion + 3 dígitos (ej. RWF-001)
+  const digits = allDigits.slice(0, 3);
   return letters + (digits.length > 0 ? "-" + digits : "");
 }
 

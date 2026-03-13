@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Car, Hash, Globe, Users } from "lucide-react";
+import { Car, Hash, Globe, Users, Ruler, Weight } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { BrandModelComboField } from "@/components/BrandModelComboField";
@@ -18,6 +18,7 @@ import { required, plate as validatePlate, selectRequired } from "@/lib/validati
 type CustomerOption = { id: string; firstName?: string; lastName?: string; email?: string };
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
+const IL_UNIT = "w-full pl-10 pr-10 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
 type CatalogMake = { id: number; name: string };
@@ -125,15 +126,22 @@ export default function NewVehiclePage() {
     // Solo al cambiar marca: no refetch al escribir año para no perder el modelo elegido
   }, [form.brand, setValue]);
 
-  const getDimensionsData = useCallback(async (): Promise<{ lengthCm?: number; widthCm?: number; heightCm?: number } | null> => {
+  const getDimensionsData = useCallback(async (): Promise<{ lengthCm?: number; widthCm?: number; heightCm?: number; weightKg?: number } | null> => {
     if (!form.brand.trim() || !form.model.trim()) return null;
     try {
       const q = new URLSearchParams({ make: form.brand, model: form.model });
       if (form.year.trim()) q.set("year", form.year);
-      const d = await apiClient.get<{ lengthCm?: number; widthCm?: number; heightCm?: number }>(
+      const d = await apiClient.get<{ lengthCm?: number; widthCm?: number; heightCm?: number; weightKg?: number }>(
         `/vehicles/catalog/dimensions?${q.toString()}`
       );
-      if (d && (d.lengthCm != null || d.widthCm != null || d.heightCm != null)) return d;
+      if (
+        d &&
+        (d.lengthCm != null ||
+          d.widthCm != null ||
+          d.heightCm != null ||
+          d.weightKg != null)
+      )
+        return d;
     } catch {
       // ignore
     }
@@ -148,6 +156,10 @@ export default function NewVehiclePage() {
         lengthM: d.lengthCm != null ? String(Number((d.lengthCm / 100).toFixed(2))) : p.lengthM,
         widthM: d.widthCm != null ? String(Number((d.widthCm / 100).toFixed(2))) : p.widthM,
         heightM: d.heightCm != null ? String(Number((d.heightCm / 100).toFixed(2))) : p.heightM,
+        weightKg:
+          d.weightKg != null
+            ? String(Number(d.weightKg.toFixed(1)))
+            : p.weightKg,
       }));
     }
   }, [getDimensionsData]);
@@ -352,34 +364,110 @@ export default function NewVehiclePage() {
           <div>
             <label className={LABEL}>{t("vehicles.lengthM")} <span className="text-company-primary">*</span></label>
             <div className="relative group">
-              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="number" inputMode="decimal" min={0} step={0.01} value={form.lengthM} onChange={(e) => setForm((p) => ({ ...p, lengthM: e.target.value }))} placeholder="m" className={IL} aria-invalid={!!errors.lengthM} />
+              <Ruler className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+              <input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                step={0.01}
+                value={form.lengthM}
+                onChange={(e) => setForm((p) => ({ ...p, lengthM: e.target.value }))}
+                placeholder={t("vehicles.lengthM")}
+                className={IL_UNIT}
+                aria-invalid={!!errors.lengthM}
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted pointer-events-none">
+                m
+              </span>
             </div>
-            <div className="min-h-[1.25rem] mt-1">{errors.lengthM && <p className="text-sm text-red-500" role="alert">{errors.lengthM}</p>}</div>
+            <div className="min-h-[1.25rem] mt-1">
+              {errors.lengthM && (
+                <p className="text-sm text-red-500" role="alert">
+                  {errors.lengthM}
+                </p>
+              )}
+            </div>
           </div>
           <div>
             <label className={LABEL}>{t("vehicles.widthM")} <span className="text-company-primary">*</span></label>
             <div className="relative group">
-              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="number" inputMode="decimal" min={0} step={0.01} value={form.widthM} onChange={(e) => setForm((p) => ({ ...p, widthM: e.target.value }))} placeholder="m" className={IL} aria-invalid={!!errors.widthM} />
+              <Ruler className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+              <input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                step={0.01}
+                value={form.widthM}
+                onChange={(e) => setForm((p) => ({ ...p, widthM: e.target.value }))}
+                placeholder={t("vehicles.widthM")}
+                className={IL_UNIT}
+                aria-invalid={!!errors.widthM}
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted pointer-events-none">
+                m
+              </span>
             </div>
-            <div className="min-h-[1.25rem] mt-1">{errors.widthM && <p className="text-sm text-red-500" role="alert">{errors.widthM}</p>}</div>
+            <div className="min-h-[1.25rem] mt-1">
+              {errors.widthM && (
+                <p className="text-sm text-red-500" role="alert">
+                  {errors.widthM}
+                </p>
+              )}
+            </div>
           </div>
           <div>
             <label className={LABEL}>{t("vehicles.heightM")} <span className="text-company-primary">*</span></label>
             <div className="relative group">
-              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="number" inputMode="decimal" min={0} step={0.01} value={form.heightM} onChange={(e) => setForm((p) => ({ ...p, heightM: e.target.value }))} placeholder="m" className={IL} aria-invalid={!!errors.heightM} />
+              <Ruler className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+              <input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                step={0.01}
+                value={form.heightM}
+                onChange={(e) => setForm((p) => ({ ...p, heightM: e.target.value }))}
+                placeholder={t("vehicles.heightM")}
+                className={IL_UNIT}
+                aria-invalid={!!errors.heightM}
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted pointer-events-none">
+                m
+              </span>
             </div>
-            <div className="min-h-[1.25rem] mt-1">{errors.heightM && <p className="text-sm text-red-500" role="alert">{errors.heightM}</p>}</div>
+            <div className="min-h-[1.25rem] mt-1">
+              {errors.heightM && (
+                <p className="text-sm text-red-500" role="alert">
+                  {errors.heightM}
+                </p>
+              )}
+            </div>
           </div>
           <div>
             <label className={LABEL}>{t("vehicles.weightKg")} <span className="text-company-primary">*</span></label>
             <div className="relative group">
-              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="number" inputMode="decimal" min={0} step={0.1} value={form.weightKg} onChange={(e) => setForm((p) => ({ ...p, weightKg: e.target.value }))} placeholder="kg" className={IL} aria-invalid={!!errors.weightKg} />
+              <Weight className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+              <input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                step={0.1}
+                value={form.weightKg}
+                onChange={(e) => setForm((p) => ({ ...p, weightKg: e.target.value }))}
+                placeholder={t("vehicles.weightKg")}
+                className={IL_UNIT}
+                aria-invalid={!!errors.weightKg}
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted pointer-events-none">
+                kg
+              </span>
             </div>
-            <div className="min-h-[1.25rem] mt-1">{errors.weightKg && <p className="text-sm text-red-500" role="alert">{errors.weightKg}</p>}</div>
+            <div className="min-h-[1.25rem] mt-1">
+              {errors.weightKg && (
+                <p className="text-sm text-red-500" role="alert">
+                  {errors.weightKg}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       ),
@@ -403,6 +491,10 @@ export default function NewVehiclePage() {
               lengthM: d.lengthCm != null ? String(Number((d.lengthCm / 100).toFixed(2))) : p.lengthM,
               widthM: d.widthCm != null ? String(Number((d.widthCm / 100).toFixed(2))) : p.widthM,
               heightM: d.heightCm != null ? String(Number((d.heightCm / 100).toFixed(2))) : p.heightM,
+              weightKg:
+                d.weightKg != null
+                  ? String(Number(d.weightKg.toFixed(1)))
+                  : p.weightKg,
             }));
           }
         }

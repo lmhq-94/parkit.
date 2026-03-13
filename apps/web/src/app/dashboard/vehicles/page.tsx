@@ -28,7 +28,7 @@ type VehicleRow = {
   model?: string;
   year?: number;
   countryCode?: string;
-  dimensions?: { lengthCm?: number; widthCm?: number; heightCm?: number };
+  dimensions?: { lengthCm?: number; widthCm?: number; heightCm?: number; weightKg?: number };
   owners?: OwnerRef[];
 };
 
@@ -134,17 +134,19 @@ export default function VehiclesPage() {
           (vehicle.dimensions != null && typeof vehicle.dimensions === "object" && Object.keys(vehicle.dimensions as object).length > 0)
         }
         renderRowDetail={(vehicle) => {
-          const dims = vehicle.dimensions as { lengthCm?: number; widthCm?: number; heightCm?: number } | null | undefined;
-          const hasDims = dims && (dims.lengthCm != null || dims.widthCm != null || dims.heightCm != null);
-          const ownerDisplay = getOwnerDisplay(vehicle.owners);
+          const dims = vehicle.dimensions as { lengthCm?: number; widthCm?: number; heightCm?: number; weightKg?: number } | null | undefined;
+          const hasDims = dims && (dims.lengthCm != null || dims.widthCm != null || dims.heightCm != null || dims.weightKg != null);
+          const lengthM = dims?.lengthCm != null ? Number((dims.lengthCm / 100).toFixed(2)) : null;
+          const widthM = dims?.widthCm != null ? Number((dims.widthCm / 100).toFixed(2)) : null;
+          const heightM = dims?.heightCm != null ? Number((dims.heightCm / 100).toFixed(2)) : null;
           return (
             <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
               <DetailSectionLabel text={t("common.additionalInfo")} />
-              <DetailField label={t("tables.vehicles.clientOwner")} value={ownerDisplay} />
               <DetailField label={t("tables.vehicles.country")} value={vehicle.countryCode} />
-              {hasDims && dims?.lengthCm != null && <DetailField label={t("vehicles.lengthCm")} value={String(dims.lengthCm)} />}
-              {hasDims && dims?.widthCm != null && <DetailField label={t("vehicles.widthCm")} value={String(dims.widthCm)} />}
-              {hasDims && dims?.heightCm != null && <DetailField label={t("vehicles.heightCm")} value={String(dims.heightCm)} />}
+              {lengthM != null && <DetailField label={t("vehicles.lengthM")} value={`${lengthM} m`} />}
+              {widthM != null && <DetailField label={t("vehicles.widthM")} value={`${widthM} m`} />}
+              {heightM != null && <DetailField label={t("vehicles.heightM")} value={`${heightM} m`} />}
+              {hasDims && dims?.weightKg != null && <DetailField label={t("vehicles.weightKg")} value={`${dims.weightKg} kg`} />}
             </dl>
           );
         }}
