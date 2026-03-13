@@ -160,3 +160,26 @@ export function getApiErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message) return error.message;
   return "Request failed";
 }
+
+/** Mensajes del API (en inglés) a claves de traducción para mostrar en el idioma seleccionado. */
+const API_MESSAGE_TO_I18N_KEY: Record<string, string> = {
+  "Email already in use": "apiErrors.emailAlreadyInUse",
+  "Vehicle with this plate already exists": "apiErrors.vehiclePlateAlreadyExists",
+  "Validation failed": "apiErrors.validationFailed",
+  "Request failed": "apiErrors.requestFailed",
+  "Invalid credentials": "auth.invalidCredentials",
+};
+
+/**
+ * Devuelve el mensaje de error del API traducido al idioma actual.
+ * @param error - Error devuelto por la API o por Axios.
+ * @param t - Función de traducción (ej. la que devuelve useTranslation().t).
+ */
+export function getTranslatedApiErrorMessage(
+  error: unknown,
+  t: (key: string) => string
+): string {
+  const raw = getApiErrorMessage(error);
+  const key = API_MESSAGE_TO_I18N_KEY[raw];
+  return key ? t(key) : raw;
+}

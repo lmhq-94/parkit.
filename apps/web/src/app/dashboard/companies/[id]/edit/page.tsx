@@ -8,7 +8,7 @@ import {
   DollarSign, Clock, MapPin, ArrowRight, Smartphone,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { apiClient } from "@/lib/api";
+import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { useDashboardStore } from "@/lib/store";
 import { PageLoader } from "@/components/PageLoader";
@@ -139,7 +139,7 @@ export default function EditCompanyPage() {
       router.push("/dashboard/companies");
       return;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error al actualizar la empresa";
+      const msg = getTranslatedApiErrorMessage(err, t) || t("apiErrors.requestFailed");
       setError(msg);
       showError(msg);
     }

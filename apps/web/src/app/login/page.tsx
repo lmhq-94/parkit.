@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { apiClient, getApiErrorMessage } from "@/lib/api";
+import { apiClient, getApiErrorMessage, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useAuthStore, useLocaleStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 import Link from "next/link";
@@ -161,10 +161,8 @@ export default function LoginPage() {
         setError(t("auth.errorUserInactive"));
       } else if (raw === "COMPANY_INACTIVE") {
         setError(t("auth.errorCompanyInactive"));
-      } else if (raw === "Invalid credentials") {
-        setError(t("auth.invalidCredentials"));
       } else {
-        setError(raw);
+        setError(getTranslatedApiErrorMessage(err, t));
       }
     }
     setIsSubmitting(false);

@@ -112,6 +112,12 @@ export const translations = {
       invalidPlate: "Formato de placa no válido.",
       invalidPhone: "Formato de teléfono no válido.",
     },
+    apiErrors: {
+      emailAlreadyInUse: "Este correo ya está en uso.",
+      vehiclePlateAlreadyExists: "Ya existe un vehículo con esta placa.",
+      validationFailed: "Error de validación.",
+      requestFailed: "Error en la solicitud.",
+    },
     datepicker: {
       placeholder: "Seleccionar fecha…",
       placeholderDateTime: "Seleccionar fecha y hora…",
@@ -842,6 +848,12 @@ export const translations = {
       selectRequired: "Please select an option.",
       invalidPlate: "Invalid plate format.",
       invalidPhone: "Invalid phone format.",
+    },
+    apiErrors: {
+      emailAlreadyInUse: "This email is already in use.",
+      vehiclePlateAlreadyExists: "A vehicle with this plate already exists.",
+      validationFailed: "Validation error.",
+      requestFailed: "Request failed.",
     },
     datepicker: {
       placeholder: "Select date…",

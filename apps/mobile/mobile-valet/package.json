@@ -11,7 +11,7 @@
     "eject": "expo eject",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "prebuild": "expo prebuild --clean"
+    "generate-native": "expo prebuild --clean"
   },
   "dependencies": {
     "@parkit/shared": "*",

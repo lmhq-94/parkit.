@@ -1,8 +1,17 @@
 import { Text, View, StyleSheet, useColorScheme } from "react-native";
 
-export function Logo({ size = 42, style }: { size?: number; style?: object }) {
+export function Logo({
+  size = 42,
+  style,
+  darkBackground,
+}: {
+  size?: number;
+  style?: object;
+  /** When true, use light colors (for dark backgrounds e.g. splash). */
+  darkBackground?: boolean;
+}) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const isDark = darkBackground ?? colorScheme === "dark";
 
   return (
     <View style={[styles.container, style]}>

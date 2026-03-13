@@ -3,7 +3,7 @@ import { ExpoConfig, ConfigContext } from "expo/config";
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   newArchEnabled: true,
-  name: "Parkit Customer",
+  name: "Parkit Client",
   slug: "parkit-customer",
   version: "1.0.0",
   orientation: "portrait",

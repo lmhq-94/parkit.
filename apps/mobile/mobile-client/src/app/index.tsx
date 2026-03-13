@@ -1,13 +1,13 @@
 import { useEffect, useRef } from "react";
-import { View, StyleSheet, Animated, StatusBar, Text } from "react-native";
+import { View, StyleSheet, Animated, StatusBar } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/lib/store";
+import { getHasSeenOnboarding } from "@/lib/onboarding";
 
 // Colores alineados con la web (themeDefaults)
 const SPLASH_BG = "#020617"; // slate-900
 const LOGO_PARK = "#FFFFFF";
 const LOGO_IT = "#3B82F6"; // blue-500 (primary dark)
-const SUBTLE_TEXT = "rgba(148, 163, 184, 0.58)"; // slate-400 sutil pero legible
 
 const SPLASH_DURATION_MS = 2600;
 const LOGO_SIZE = 72;
@@ -21,7 +21,6 @@ export default function SplashScreen() {
   const itOpacity = useRef(new Animated.Value(0)).current;
   const itScale = useRef(new Animated.Value(0.88)).current;
   const itTranslate = useRef(new Animated.Value(12)).current;
-  const subtleOpacity = useRef(new Animated.Value(0)).current;
   const breathScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -57,12 +56,6 @@ export default function SplashScreen() {
           useNativeDriver: true,
         }),
       ]),
-      // "valet" muy sutil aparece al final del reveal
-      Animated.timing(subtleOpacity, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }),
       // Un solo “respiro” suave del logo
       Animated.sequence([
         Animated.timing(breathScale, {
@@ -81,14 +74,20 @@ export default function SplashScreen() {
   }, []);
 
   useEffect(() => {
-    const t = setTimeout(() => {
-      if (user) {
-        router.replace("/tickets");
-      } else {
+    const go = async () => {
+      await new Promise((r) => setTimeout(r, SPLASH_DURATION_MS));
+      if (!user) {
         router.replace("/login");
+        return;
       }
-    }, SPLASH_DURATION_MS);
-    return () => clearTimeout(t);
+      const hasSeenOnboarding = await getHasSeenOnboarding();
+      if (hasSeenOnboarding) {
+        router.replace("/(tabs)");
+      } else {
+        router.replace("/onboarding");
+      }
+    };
+    go();
   }, [user, router]);
 
   return (
@@ -124,9 +123,6 @@ export default function SplashScreen() {
             it.
           </Animated.Text>
         </View>
-        <Animated.Text style={[styles.valetLabel, { opacity: subtleOpacity }]}>
-          valet
-        </Animated.Text>
       </Animated.View>
     </View>
   );
@@ -156,13 +152,5 @@ const styles = StyleSheet.create({
   },
   it: {
     color: LOGO_IT,
-  },
-  valetLabel: {
-    marginTop: 28,
-    fontSize: 15,
-    fontWeight: "600",
-    letterSpacing: 4,
-    color: SUBTLE_TEXT,
-    textTransform: "lowercase",
   },
 });

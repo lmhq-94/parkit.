@@ -11,6 +11,8 @@ import {
   StatusBar,
   useColorScheme,
   ActivityIndicator,
+  TouchableOpacity,
+  Linking,
 } from "react-native";
 import { useState } from "react";
 import { Logo } from "@parkit/shared";
@@ -19,99 +21,112 @@ import apiClient, { setAuthToken } from "@/lib/api";
 import { saveUser } from "@/lib/auth";
 import { useAuthStore } from "@/lib/store";
 import { getHasSeenOnboarding } from "@/lib/onboarding";
+import { Ionicons } from "@expo/vector-icons";
+
+const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
 
 export default function LoginScreen() {
   const router = useRouter();
   const { user, setUser, setError } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setErrorState] = useState<string | null>(null);
+
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
 
   if (user) {
     return <Redirect href="/(tabs)" />;
   }
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
+    setErrorState(null);
+    setError(null);
+    if (!email.trim() || !password) {
+      setErrorState("Please enter email and password");
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await apiClient.post<any>("/auth/login", { email, password });
+      const response = await apiClient.post<{ data: { user: unknown; token: string } }>("/auth/login", {
+        email: email.trim(),
+        password,
+      });
 
       if (response.data?.data) {
-        const { user, token } = response.data.data;
-        await saveUser(user, token);
+        const { user: userData, token } = response.data.data;
+        await saveUser(userData as Parameters<typeof saveUser>[0], token);
         setAuthToken(token);
-        setUser(user, token);
+        setUser(userData as Parameters<typeof setUser>[0], token);
         const hasSeenOnboarding = await getHasSeenOnboarding();
         router.replace(hasSeenOnboarding ? "/(tabs)" : "/onboarding");
       }
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Login failed";
-      setError(errorMsg);
-      Alert.alert("Login Error", errorMsg);
+    } catch (err) {
+      const errorMsg =
+        err && typeof err === "object" && "response" in err
+          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          : null;
+      const msg = errorMsg || "Login failed";
+      setErrorState(msg);
+      setError(msg);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
-
-  const dynamicStyles = {
-    container: { backgroundColor: isDark ? "#020617" : "#F8FAFC" },
-    card: {
-      backgroundColor: isDark ? "rgba(30, 41, 59, 0.6)" : "rgba(255, 255, 255, 0.9)",
-      borderColor: isDark ? "rgba(71, 85, 105, 0.5)" : "rgba(226, 232, 240, 0.8)",
-    },
-    label: { color: isDark ? "#94A3B8" : "#475569" },
-    input: {
-      backgroundColor: isDark ? "rgba(15, 23, 42, 0.8)" : "rgba(241, 245, 249, 0.9)",
-      borderColor: isDark ? "rgba(51, 65, 85, 0.8)" : "rgba(203, 213, 225, 0.8)",
-      color: isDark ? "#F8FAFC" : "#0F172A",
-    },
-    welcome: { color: isDark ? "#F8FAFC" : "#0F172A" },
-    subtitle: { color: isDark ? "#64748B" : "#64748B" },
-    button: { backgroundColor: isDark ? "#3B82F6" : "#2563EB" },
-    buttonText: { color: "#FFFFFF" },
-    footer: { color: isDark ? "#64748B" : "#94A3B8" },
-    error: { backgroundColor: isDark ? "rgba(239, 68, 68, 0.15)" : "rgba(239, 68, 68, 0.1)", borderColor: isDark ? "rgba(239, 68, 68, 0.3)" : "rgba(239, 68, 68, 0.25)" },
-  };
+  const bg = isDark ? "#0F172A" : "#F8FAFC";
+  const cardBg = isDark ? "rgba(30, 41, 59, 0.98)" : "#FFFFFF";
+  const cardBorder = isDark ? "rgba(71, 85, 105, 0.4)" : "rgba(226, 232, 240, 0.9)";
+  const label = isDark ? "#94A3B8" : "#475569";
+  const inputBg = isDark ? "rgba(15, 23, 42, 0.9)" : "#F1F5F9";
+  const inputBorder = isDark ? "rgba(51, 65, 85, 0.6)" : "rgba(203, 213, 225, 0.8)";
+  const inputText = isDark ? "#F8FAFC" : "#0F172A";
+  const placeholder = isDark ? "#64748B" : "#94A3B8";
+  const heading = isDark ? "#F8FAFC" : "#0F172A";
+  const muted = isDark ? "#64748B" : "#64748B";
+  const primary = isDark ? "#3B82F6" : "#2563EB";
+  const footer = isDark ? "#94A3B8" : "#64748B";
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={[styles.keyboardAvoid, dynamicStyles.container]}
+      style={[styles.container, { backgroundColor: bg }]}
     >
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={isDark ? "#020617" : "#F8FAFC"} />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={bg} />
       <ScrollView
-        style={[styles.container, dynamicStyles.container]}
-        contentContainerStyle={styles.content}
-        bounces={false}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Logo size={52} style={styles.logo} />
-          <Text style={[styles.badge, dynamicStyles.subtitle]}>PREMIUM PARKING</Text>
-          <Text style={[styles.welcomeTitle, dynamicStyles.welcome]}>Welcome back</Text>
-          <Text style={[styles.welcomeSub, dynamicStyles.subtitle]}>
+          <Logo size={48} style={styles.logo} darkBackground={isDark} />
+          <View style={[styles.pill, { backgroundColor: isDark ? "rgba(59, 130, 246, 0.2)" : "rgba(37, 99, 235, 0.12)" }]}>
+            <Text style={[styles.pillText, { color: primary }]}>PARKING</Text>
+          </View>
+          <Text style={[styles.title, { color: heading }]}>Welcome back</Text>
+          <Text style={[styles.subtitle, { color: muted }]}>
             Sign in to manage your vehicles and bookings
           </Text>
         </View>
 
-        <View style={[styles.card, dynamicStyles.card]}>
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, dynamicStyles.label]}>Email address</Text>
+        <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
+          <View style={styles.inputWrap}>
+            <Text style={[styles.label, { color: label }]}>Email</Text>
             <TextInput
-              style={[styles.input, dynamicStyles.input]}
+              style={[
+                styles.input,
+                { backgroundColor: inputBg, borderColor: inputBorder, color: inputText },
+              ]}
               placeholder="e.g. you@company.com"
-              placeholderTextColor={isDark ? "#64748B" : "#94A3B8"}
+              placeholderTextColor={placeholder}
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(t) => {
+                setEmail(t);
+                setErrorState(null);
+              }}
               keyboardType="email-address"
               editable={!isLoading}
               autoCapitalize="none"
@@ -120,45 +135,74 @@ export default function LoginScreen() {
             />
           </View>
 
-          <View style={styles.inputGroup}>
-            <View style={styles.passwordHeader}>
-              <Text style={[styles.label, dynamicStyles.label]}>Password</Text>
-              <Pressable onPress={() => {}} hitSlop={8}>
-                <Text style={styles.forgotLink}>Forgot password?</Text>
-              </Pressable>
+          <View style={styles.inputWrap}>
+            <View style={styles.passwordRow}>
+              <Text style={[styles.label, { color: label }]}>Password</Text>
+              <TouchableOpacity hitSlop={12} onPress={() => {}}>
+                <Text style={[styles.forgot, { color: primary }]}>Forgot?</Text>
+              </TouchableOpacity>
             </View>
-            <TextInput
-              style={[styles.input, dynamicStyles.input]}
-              placeholder="Your secure password"
-              placeholderTextColor={isDark ? "#64748B" : "#94A3B8"}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              editable={!isLoading}
-              autoComplete="password"
-            />
+            <View style={[styles.passwordInputWrap, { backgroundColor: inputBg, borderColor: inputBorder }]}>
+              <TextInput
+                style={[styles.passwordInput, { color: inputText }]}
+                placeholder="Your password"
+                placeholderTextColor={placeholder}
+                value={password}
+                onChangeText={(t) => {
+                  setPassword(t);
+                  setErrorState(null);
+                }}
+                secureTextEntry={!showPassword}
+                editable={!isLoading}
+                autoComplete="password"
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword((v) => !v)}
+                style={styles.eyeBtn}
+                hitSlop={8}
+              >
+                <Ionicons
+                  name={showPassword ? "eye-off-outline" : "eye-outline"}
+                  size={22}
+                  color={placeholder}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
 
+          {error ? (
+            <View style={styles.errorWrap}>
+              <Ionicons name="alert-circle" size={18} color="#EF4444" />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+
           <Pressable
-            style={({ pressed }) => [
-              styles.button,
-              dynamicStyles.button,
-              pressed && styles.buttonPressed,
-              isLoading && styles.buttonDisabled,
-            ]}
             onPress={handleLogin}
             disabled={isLoading}
+            style={({ pressed }) => [
+              styles.btn,
+              { backgroundColor: primary },
+              pressed && styles.btnPressed,
+              isLoading && styles.btnDisabled,
+            ]}
           >
             {isLoading ? (
               <ActivityIndicator color="#FFFFFF" size="small" />
             ) : (
-              <Text style={[styles.buttonText, dynamicStyles.buttonText]}>Sign in</Text>
+              <>
+                <Text style={styles.btnText}>Sign in</Text>
+                <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+              </>
             )}
           </Pressable>
         </View>
 
         <View style={styles.footer}>
-          <Text style={[styles.footerText, dynamicStyles.footer]}>Need help? Contact support</Text>
+          <Text style={[styles.footerText, { color: footer }]}>Need help? </Text>
+          <Pressable onPress={() => Linking.openURL(SUPPORT_EMAIL)}>
+            <Text style={[styles.footerLink, { color: primary }]}>Contact support</Text>
+          </Pressable>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -166,111 +210,149 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  keyboardAvoid: {
-    flex: 1,
-  },
   container: {
     flex: 1,
   },
-  content: {
+  scrollContent: {
     flexGrow: 1,
-    justifyContent: "space-between",
+    justifyContent: "center",
     paddingHorizontal: 24,
-    paddingTop: 72,
-    paddingBottom: 48,
+    paddingVertical: 40,
+    paddingBottom: 32,
   },
   header: {
     alignItems: "center",
     marginBottom: 32,
   },
   logo: {
-    marginBottom: 16,
-  },
-  badge: {
-    fontSize: 12,
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    fontWeight: "600",
     marginBottom: 12,
   },
-  welcomeTitle: {
-    fontSize: 26,
-    fontWeight: "600",
-    marginBottom: 6,
-    textAlign: "center",
+  pill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 16,
   },
-  welcomeSub: {
+  pillText: {
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1.5,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "700",
+    marginBottom: 6,
+    letterSpacing: -0.5,
+  },
+  subtitle: {
     fontSize: 15,
-    textAlign: "center",
-    paddingHorizontal: 24,
     lineHeight: 22,
+    textAlign: "center",
+    paddingHorizontal: 16,
   },
   card: {
-    borderRadius: 24,
-    padding: 28,
+    borderRadius: 20,
     borderWidth: 1,
+    padding: 24,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
-    shadowRadius: 24,
-    elevation: 6,
+    shadowRadius: 16,
+    elevation: 4,
   },
-  inputGroup: {
-    marginBottom: 22,
+  inputWrap: {
+    marginBottom: 20,
   },
-  passwordHeader: {
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  input: {
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+  },
+  passwordRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
   },
-  label: {
-    fontSize: 13,
+  forgot: {
+    fontSize: 14,
     fontWeight: "600",
-    marginBottom: 8,
-    marginLeft: 2,
   },
-  forgotLink: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#3B82F6",
-  },
-  input: {
+  passwordInputWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 12,
     borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 18,
-    paddingVertical: 16,
+    paddingRight: 12,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 16,
   },
-  button: {
-    paddingVertical: 18,
-    borderRadius: 14,
+  eyeBtn: {
+    padding: 4,
+  },
+  errorWrap: {
+    flexDirection: "row",
     alignItems: "center",
-    marginTop: 12,
+    gap: 8,
+    backgroundColor: "rgba(239, 68, 68, 0.1)",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginBottom: 16,
+  },
+  errorText: {
+    color: "#EF4444",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  btn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    paddingVertical: 16,
+    borderRadius: 12,
     shadowColor: "#2563EB",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  buttonPressed: {
+  btnPressed: {
     opacity: 0.92,
-    transform: [{ scale: 0.99 }],
   },
-  buttonDisabled: {
+  btnDisabled: {
     opacity: 0.7,
   },
-  buttonText: {
+  btnText: {
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
-    letterSpacing: 0.3,
   },
   footer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
     alignItems: "center",
-    marginTop: 32,
+    marginTop: 28,
+    gap: 4,
   },
   footerText: {
     fontSize: 13,
-    textAlign: "center",
+  },
+  footerLink: {
+    fontSize: 13,
+    fontWeight: "600",
   },
 });

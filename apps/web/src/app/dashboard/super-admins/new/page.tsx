@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { User, Mail, Shield } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";
 import { useTranslation } from "@/hooks/useTranslation";
-import { apiClient, getApiErrorMessage } from "@/lib/api";
+import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { required, email as validateEmail } from "@/lib/validation";
 
@@ -60,7 +60,7 @@ export default function NewSuperAdminPage() {
       showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/profile");
     } catch (err) {
-      const msg = getApiErrorMessage(err);
+      const msg = getTranslatedApiErrorMessage(err, t);
       setError(msg);
       showError(msg);
     } finally {

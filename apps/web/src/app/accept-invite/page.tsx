@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import { apiClient, getApiErrorMessage } from "@/lib/api";
+import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { checkPasswordRequirements, isPasswordSecure } from "@/lib/passwordValidation";
 import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -73,7 +73,7 @@ function AcceptInviteForm() {
       });
       setSuccess(true);
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err) || t("auth.inviteExpiredOrInvalid"));
+      setError(getTranslatedApiErrorMessage(err, t) || t("auth.inviteExpiredOrInvalid"));
     }
     setIsSubmitting(false);
   };

@@ -369,7 +369,16 @@ export class UsersService {
     const updateData: Record<string, unknown> = {};
     if (data.firstName !== undefined) updateData.firstName = data.firstName.trim();
     if (data.lastName !== undefined) updateData.lastName = data.lastName.trim();
-    if (data.email !== undefined) updateData.email = data.email.trim();
+    if (data.email !== undefined) {
+      const emailTrimmed = data.email.trim();
+      const existingWithEmail = await prisma.user.findFirst({
+        where: { email: emailTrimmed, id: { not: userId } },
+      });
+      if (existingWithEmail) {
+        throw new Error("Email already in use");
+      }
+      updateData.email = emailTrimmed;
+    }
     if (data.phone !== undefined) updateData.phone = data.phone?.trim() || null;
     if (data.timezone !== undefined) updateData.timezone = data.timezone?.trim() || "UTC";
     if (data.avatarUrl !== undefined) updateData.avatarUrl = data.avatarUrl || null;

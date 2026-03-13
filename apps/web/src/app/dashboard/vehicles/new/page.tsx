@@ -7,7 +7,7 @@ import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { BrandModelComboField } from "@/components/BrandModelComboField";
 import { useTranslation } from "@/hooks/useTranslation";
-import { apiClient } from "@/lib/api";
+import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { useDashboardStore } from "@/lib/store";
 import { COUNTRIES } from "@/lib/companyOptions";
@@ -236,7 +236,7 @@ export default function NewVehiclePage() {
       showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/vehicles");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error al crear el vehículo";
+      const msg = getTranslatedApiErrorMessage(err, t) || t("apiErrors.requestFailed");
       setError(msg);
       showError(msg);
       setSubmitting(false);

@@ -44,7 +44,11 @@ export default function RootLayout() {
         animation: 'default',
       }}
     >
-      <Stack.Screen name="index" />
+      <Stack.Screen
+        name="index"
+        options={{ animation: 'none', gestureEnabled: false }}
+      />
+      <Stack.Screen name="tickets" />
       <Stack.Screen
         name="login"
         options={{ animation: 'none', gestureEnabled: false }}

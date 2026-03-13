@@ -1,4 +1,4 @@
-# Parkit Customer Mobile App
+# Parkit Client Mobile App
 
 Expo-based React Native app for Parkit customers to manage bookings and tickets.
 

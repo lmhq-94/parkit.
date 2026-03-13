@@ -6,7 +6,7 @@ import Link from "next/link";
 import { User, Mail, Phone, Clock, Shield, ArrowRight } from "lucide-react";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
-import { apiClient } from "@/lib/api";
+import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -91,7 +91,7 @@ export default function EditUserPage() {
       showSuccess(t("common.saveSuccessShort"));
       router.push("/dashboard/users");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error al actualizar el empleado";
+      const msg = getTranslatedApiErrorMessage(err, t) || t("apiErrors.requestFailed");
       setError(msg);
       showError(msg);
     } finally { setSubmitting(false); }

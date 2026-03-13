@@ -112,11 +112,19 @@ export class VehiclesService {
     vehicleId: string,
     data: UpdateVehicleDTO
   ) {
+    const current = await prisma.vehicle.findFirst({
+      where: { id: vehicleId, companyId },
+      select: { countryCode: true },
+    });
+    if (!current) return null;
+
     if (data.plate != null && data.plate.trim() !== "") {
+      const countryCodeToCheck =
+        data.countryCode !== undefined ? data.countryCode.trim() || "CR" : current.countryCode;
       const existing = await prisma.vehicle.findFirst({
         where: {
           plate: data.plate.trim(),
-          countryCode: data.countryCode?.trim() || "CR",
+          countryCode: countryCodeToCheck,
           id: { not: vehicleId },
         },
       });

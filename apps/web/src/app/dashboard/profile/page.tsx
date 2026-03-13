@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useTheme } from "next-themes";
 import { ArrowRight, User, Mail, Phone, Clock, UserPlus, Sun, Moon, Globe } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { apiClient } from "@/lib/api";
+import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useAuthStore, useDashboardStore, useLocaleStore } from "@/lib/store";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageLoader } from "@/components/PageLoader";
@@ -130,8 +130,8 @@ export default function ProfilePage() {
         });
       }
       showSuccess(t("profile.saveSuccess"));
-    } catch {
-      showError(t("profile.saveError"));
+    } catch (err) {
+      showError(getTranslatedApiErrorMessage(err, t) || t("profile.saveError"));
     } finally {
       setSubmitting(false);
     }

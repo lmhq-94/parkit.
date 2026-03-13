@@ -10,7 +10,7 @@ import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
-import { apiClient } from "@/lib/api";
+import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { useDashboardStore } from "@/lib/store";
 import { COUNTRIES, CURRENCIES, TIMEZONES, INDUSTRIES } from "@/lib/companyOptions";
@@ -129,7 +129,7 @@ export default function NewCompanyPage() {
       showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/companies");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error al crear la empresa";
+      const msg = getTranslatedApiErrorMessage(err, t) || t("apiErrors.requestFailed");
       setError(msg);
       showError(msg);
       setSubmitting(false);

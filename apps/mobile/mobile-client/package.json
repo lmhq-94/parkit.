@@ -1,7 +1,7 @@
 {
   "name": "mobile-client",
   "version": "1.0.0",
-  "description": "Parkit Customer Mobile App",
+  "description": "Parkit Client Mobile App",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",

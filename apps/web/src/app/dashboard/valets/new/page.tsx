@@ -75,7 +75,7 @@ export default function NewValetPage() {
       showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/valets");
     } catch (err) {
-      const msg = getApiErrorMessage(err);
+      const msg = getTranslatedApiErrorMessage(err, t);
       setError(msg);
       showError(msg);
       setSubmitting(false);

@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Car, Hash, Globe, ArrowRight, Users } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { apiClient } from "@/lib/api";
+import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { useDashboardStore } from "@/lib/store";
 import { PageLoader } from "@/components/PageLoader";
@@ -224,7 +224,7 @@ export default function EditVehiclePage() {
       showSuccess(t("common.saveSuccessShort"));
       router.push("/dashboard/vehicles");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error al actualizar el vehículo";
+      const msg = getTranslatedApiErrorMessage(err, t) || t("apiErrors.requestFailed");
       setError(msg);
       showError(msg);
     } finally { setSubmitting(false); }

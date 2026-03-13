@@ -1,11 +1,13 @@
 import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useAuthStore } from "@/lib/store";
+import { clearUser } from "@/lib/auth";
 import { router } from "expo-router";
 
 export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
 
   const handleLogout = async () => {
+    await clearUser();
     logout();
     router.replace("/login");
   };

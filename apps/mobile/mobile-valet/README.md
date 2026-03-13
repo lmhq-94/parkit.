@@ -1,4 +1,4 @@
-# ParKit Valet – React Native Mobile App
+# Parkit Valet – React Native Mobile App
 
 Ultra-minimal valet operations interface for real-time parking management.
 

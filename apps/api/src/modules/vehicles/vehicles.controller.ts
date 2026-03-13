@@ -66,6 +66,7 @@ export class VehiclesController {
         id,
         req.body
       );
+      if (!vehicle) return notFound(res, "Vehicle not found");
 
       return ok(res, vehicle);
     } catch (error: unknown) {

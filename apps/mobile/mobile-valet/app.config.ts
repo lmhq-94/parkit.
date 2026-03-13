@@ -3,7 +3,7 @@ import { ExpoConfig, ConfigContext } from 'expo/config';
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   newArchEnabled: true,
-  name: 'ParKit Valet',
+  name: 'Parkit Valet',
   slug: 'parkit-valet',
   version: '1.0.0',
   orientation: 'portrait',

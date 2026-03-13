@@ -6,7 +6,7 @@ import { User, Mail, Phone, Clock, Shield } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
-import { apiClient, getApiErrorMessage } from "@/lib/api";
+import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { TIMEZONES } from "@/lib/companyOptions";
 import { formatPhoneInternational } from "@/lib/inputMasks";
@@ -86,7 +86,7 @@ export default function NewUserPage() {
       showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/users");
     } catch (err) {
-      const msg = getApiErrorMessage(err);
+      const msg = getTranslatedApiErrorMessage(err, t);
       setError(msg);
       showError(msg);
     } finally { setSubmitting(false); }
