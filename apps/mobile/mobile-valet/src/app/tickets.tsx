@@ -1,5 +1,6 @@
 import { StyleSheet, View, FlatList, Text, TouchableOpacity, Alert } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/store';
 import api, { clearAuthToken } from '@/lib/api';
@@ -181,9 +182,14 @@ export default function TicketsScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Assigned Tickets</Text>
-        <TouchableOpacity onPress={handleLogout}>
-          <Text style={styles.logoutBtn}>Logout</Text>
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity onPress={() => router.push('/settings')} style={styles.iconBtn} hitSlop={8}>
+            <Ionicons name="settings-outline" size={22} color="#374151" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleLogout}>
+            <Text style={styles.logoutBtn}>Logout</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <FlatList
@@ -221,6 +227,14 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
     color: '#111827',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  iconBtn: {
+    padding: 4,
   },
   logoutBtn: {
     color: '#EF4444',

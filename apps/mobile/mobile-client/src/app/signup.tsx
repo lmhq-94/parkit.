@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
-import { Redirect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Logo } from "@parkit/shared";
 import apiClient, { setAuthToken } from "@/lib/api";
 import { saveUser } from "@/lib/auth";
@@ -29,49 +29,59 @@ const BORDER_COLOR = "#E2E8F0";
 const TEXT_PRIMARY = "#0F172A";
 const TEXT_MUTED = "#64748B";
 
-export default function LoginScreen() {
+export default function SignupScreen() {
   const router = useRouter();
-  const { user, setUser, setError } = useAuthStore();
+  const { setUser, setError } = useAuthStore();
   const locale = useLocaleStore((s) => s.locale);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setErrorState] = useState<string | null>(null);
 
-  if (user) {
-    return <Redirect href="/(tabs)" />;
-  }
-
-  const handleLogin = async () => {
+  const handleSignup = async () => {
     setErrorState(null);
     setError(null);
-    if (!email.trim() || !password) {
+    if (!firstName.trim() || !lastName.trim() || !email.trim() || !password) {
       setErrorState(t(locale, "common.errorFillFields"));
+      return;
+    }
+    if (password.length < 6) {
+      setErrorState(t(locale, "common.errorPasswordLength"));
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await apiClient.post<{ data: { user: unknown; token: string } }>("/auth/login", {
-        email: email.trim(),
-        password,
-      });
-
-      if (response.data?.data) {
-        const { user: userData, token } = response.data.data;
+      const response = await apiClient.post<{ data?: { user: unknown; token: string }; user?: unknown; token?: string }>(
+        "/auth/register",
+        {
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: email.trim(),
+          password,
+        }
+      );
+      const data = response.data?.data ?? response.data;
+      const userData = data?.user ?? data;
+      const token = data?.token;
+      if (userData && token) {
         await saveUser(userData as Parameters<typeof saveUser>[0], token);
         setAuthToken(token);
         setUser(userData as Parameters<typeof setUser>[0], token);
         const hasSeenOnboarding = await getHasSeenOnboarding();
         router.replace(hasSeenOnboarding ? "/(tabs)" : "/onboarding");
+      } else {
+        setErrorState(t(locale, "common.registrationFailed"));
       }
     } catch (err) {
       const errorMsg =
         err && typeof err === "object" && "response" in err
           ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
           : null;
-      const msg = errorMsg || t(locale, "common.loginFailed");
+      const msg = errorMsg || t(locale, "common.signupFailed");
       setErrorState(msg);
       setError(msg);
     } finally {
@@ -83,11 +93,7 @@ export default function LoginScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={DARK_BG} />
       <SafeAreaView style={styles.topBar} edges={["top"]}>
-        <TouchableOpacity
-          onPress={() => router.replace("/welcome")}
-          style={styles.backBtn}
-          hitSlop={12}
-        >
+        <TouchableOpacity onPress={() => router.replace("/welcome")} style={styles.backBtn} hitSlop={12}>
           <Ionicons name="chevron-back" size={24} color="#F8FAFC" />
         </TouchableOpacity>
       </SafeAreaView>
@@ -107,21 +113,52 @@ export default function LoginScreen() {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            <Text style={styles.cardHeadline}>{t(locale, "login.headline")}</Text>
+            <Text style={styles.cardHeadline}>{t(locale, "signup.headline")}</Text>
 
             <View style={styles.inputBlock}>
-              <Text style={styles.label}>{t(locale, "login.email")}</Text>
+              <Text style={styles.label}>{t(locale, "signup.firstName")}</Text>
               <View style={styles.inputRow}>
                 <TextInput
                   style={styles.input}
-                  placeholder={t(locale, "login.placeholderEmail")}
+                  placeholder={t(locale, "signup.firstName")}
+                  placeholderTextColor="#94A3B8"
+                  value={firstName}
+                  onChangeText={(v) => { setFirstName(v); setErrorState(null); }}
+                  editable={!isLoading}
+                  autoCapitalize="words"
+                  autoComplete="given-name"
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputBlock}>
+              <Text style={styles.label}>{t(locale, "signup.lastName")}</Text>
+              <View style={styles.inputRow}>
+                <TextInput
+                  style={styles.input}
+                  placeholder={t(locale, "signup.lastName")}
+                  placeholderTextColor="#94A3B8"
+                  value={lastName}
+                  onChangeText={(v) => { setLastName(v); setErrorState(null); }}
+                  editable={!isLoading}
+                  autoCapitalize="words"
+                  autoComplete="family-name"
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputBlock}>
+              <Text style={styles.label}>{t(locale, "signup.email")}</Text>
+              <View style={styles.inputRow}>
+                <TextInput
+                  style={styles.input}
+                  placeholder={t(locale, "signup.placeholderEmail")}
                   placeholderTextColor="#94A3B8"
                   value={email}
                   onChangeText={(v) => { setEmail(v); setErrorState(null); }}
                   keyboardType="email-address"
                   editable={!isLoading}
                   autoCapitalize="none"
-                  autoCorrect={false}
                   autoComplete="email"
                 />
                 <Ionicons name="mail-outline" size={20} color="#94A3B8" style={styles.inputIconRight} />
@@ -129,25 +166,22 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.inputBlock}>
-              <Text style={styles.label}>{t(locale, "login.password")}</Text>
+              <Text style={styles.label}>{t(locale, "signup.password")}</Text>
               <View style={styles.inputRow}>
                 <TextInput
                   style={[styles.input, styles.passwordInput]}
-                  placeholder={t(locale, "login.placeholderPassword")}
+                  placeholder={t(locale, "signup.placeholderPassword")}
                   placeholderTextColor="#94A3B8"
                   value={password}
                   onChangeText={(v) => { setPassword(v); setErrorState(null); }}
                   secureTextEntry={!showPassword}
                   editable={!isLoading}
-                  autoComplete="password"
+                  autoComplete="password-new"
                 />
                 <TouchableOpacity onPress={() => setShowPassword((v) => !v)} hitSlop={8} style={styles.eyeWrap}>
                   <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={22} color="#94A3B8" />
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity style={styles.forgotWrap} onPress={() => router.push("/forgot-password")} hitSlop={8}>
-                <Text style={styles.forgot}>{t(locale, "login.forgetPassword")}</Text>
-              </TouchableOpacity>
             </View>
 
             {error ? (
@@ -158,10 +192,10 @@ export default function LoginScreen() {
             ) : null}
 
             <Pressable
-              onPress={handleLogin}
+              onPress={handleSignup}
               disabled={isLoading}
               style={({ pressed }) => [
-                styles.loginBtn,
+                styles.submitBtn,
                 pressed && styles.btnPressed,
                 isLoading && styles.btnDisabled,
               ]}
@@ -169,14 +203,14 @@ export default function LoginScreen() {
               {isLoading ? (
                 <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
-                <Text style={styles.loginBtnText}>{t(locale, "login.submit")}</Text>
+                <Text style={styles.submitBtnText}>{t(locale, "signup.submit")}</Text>
               )}
             </Pressable>
 
             <View style={styles.footer}>
-              <Text style={styles.footerText}>{t(locale, "login.newTo")}</Text>
-              <Pressable onPress={() => router.replace("/signup")} hitSlop={8}>
-                <Text style={styles.footerLink}>{t(locale, "login.signUp")}</Text>
+              <Text style={styles.footerText}>{t(locale, "signup.alreadyHave")}</Text>
+              <Pressable onPress={() => router.replace("/login")} hitSlop={8}>
+                <Text style={styles.footerLink}>{t(locale, "signup.login")}</Text>
               </Pressable>
             </View>
           </ScrollView>
@@ -187,10 +221,7 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: DARK_BG,
-  },
+  container: { flex: 1, backgroundColor: DARK_BG },
   topBar: {
     flexDirection: "row",
     alignItems: "center",
@@ -238,12 +269,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   inputBlock: { marginBottom: 20 },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#475569",
-    marginBottom: 8,
-  },
+  label: { fontSize: 14, fontWeight: "600", color: "#475569", marginBottom: 8 },
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -254,17 +280,10 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     paddingRight: 14,
   },
-  input: {
-    flex: 1,
-    paddingVertical: 16,
-    fontSize: 16,
-    color: TEXT_PRIMARY,
-  },
+  input: { flex: 1, paddingVertical: 16, fontSize: 16, color: TEXT_PRIMARY },
   passwordInput: { paddingRight: 10 },
   inputIconRight: { marginLeft: 10 },
   eyeWrap: { padding: 4, marginLeft: 6 },
-  forgotWrap: { alignSelf: "flex-end", marginTop: 10 },
-  forgot: { fontSize: 13, fontWeight: "600", color: PRIMARY },
   errorWrap: {
     flexDirection: "row",
     alignItems: "center",
@@ -276,7 +295,7 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   errorText: { color: "#EF4444", fontSize: 14, fontWeight: "500" },
-  loginBtn: {
+  submitBtn: {
     paddingVertical: 18,
     borderRadius: 16,
     alignItems: "center",
@@ -284,12 +303,7 @@ const styles = StyleSheet.create({
     marginBottom: 28,
     backgroundColor: DARK_BTN,
   },
-  loginBtnText: {
-    fontSize: 16,
-    fontWeight: "800",
-    color: "#FFFFFF",
-    letterSpacing: 0.5,
-  },
+  submitBtnText: { fontSize: 16, fontWeight: "800", color: "#FFFFFF", letterSpacing: 0.5 },
   btnPressed: { opacity: 0.92 },
   btnDisabled: { opacity: 0.7 },
   footer: {

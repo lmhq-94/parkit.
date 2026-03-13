@@ -1,6 +1,6 @@
 import { Stack, SplashScreen } from 'expo-router';
 import { useEffect } from 'react';
-import { useAuthStore } from '@/lib/store';
+import { useAuthStore, useLocaleStore } from '@/lib/store';
 import { getStoredUser } from '@/lib/auth';
 import { useFonts } from 'expo-font';
 
@@ -8,6 +8,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { setUser, setLoading, isLoading } = useAuthStore();
+  const { hydrateLocale } = useLocaleStore();
 
   const [fontsLoaded] = useFonts({
     'CalSans': require('../../assets/fonts/CalSans.ttf'),
@@ -17,6 +18,7 @@ export default function RootLayout() {
     const hydrate = async () => {
       setLoading(true);
       try {
+        await hydrateLocale();
         const user = await getStoredUser();
         setUser(user);
       } finally {
@@ -49,6 +51,8 @@ export default function RootLayout() {
         options={{ animation: 'none', gestureEnabled: false }}
       />
       <Stack.Screen name="tickets" />
+      <Stack.Screen name="settings" />
+      <Stack.Screen name="welcome" />
       <Stack.Screen
         name="login"
         options={{ animation: 'none', gestureEnabled: false }}

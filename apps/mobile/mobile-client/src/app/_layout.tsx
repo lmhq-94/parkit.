@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAuthStore } from "@/lib/store";
+import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { Stack, SplashScreen } from "expo-router";
 import { useFonts } from "expo-font";
 
@@ -7,6 +7,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { hydrate } = useAuthStore();
+  const { hydrateLocale } = useLocaleStore();
   const [isHydrating, setIsHydrating] = useState(true);
 
   const [fontsLoaded] = useFonts({
@@ -15,7 +16,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     const init = async () => {
-      await hydrate();
+      await Promise.all([hydrate(), hydrateLocale()]);
       setIsHydrating(false);
     };
     init();
@@ -38,7 +39,10 @@ export default function RootLayout() {
         options={{ animation: "none", gestureEnabled: false }}
       />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="welcome" />
       <Stack.Screen name="login" />
+      <Stack.Screen name="signup" />
+      <Stack.Screen name="forgot-password" />
       <Stack.Screen name="onboarding" />
     </Stack>
   );

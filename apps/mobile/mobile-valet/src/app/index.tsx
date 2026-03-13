@@ -85,7 +85,7 @@ export default function SplashScreen() {
       if (user) {
         router.replace("/tickets");
       } else {
-        router.replace("/login");
+        router.replace("/welcome");
       }
     }, SPLASH_DURATION_MS);
     return () => clearTimeout(t);

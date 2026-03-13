@@ -1,338 +1,263 @@
 import {
-  StyleSheet,
   View,
   Text,
+  StyleSheet,
   TextInput,
-  TouchableOpacity,
-  Alert,
+  Pressable,
+  ScrollView,
   KeyboardAvoidingView,
   Platform,
   StatusBar,
-  useColorScheme,
-  ScrollView,
   ActivityIndicator,
-  Pressable,
+  TouchableOpacity,
   Linking,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { Logo } from "@parkit/shared";
 import api, { setAuthToken } from "@/lib/api";
 import { saveUser } from "@/lib/auth";
-import { useAuthStore } from "@/lib/store";
-import { Logo } from "@parkit/shared";
+import { useAuthStore, useLocaleStore } from "@/lib/store";
+import { t } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
 
 const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
+const DARK_BG = "#0F172A";
+const PRIMARY = "#3B82F6";
+const DARK_BTN = "#1E293B";
+const BORDER_COLOR = "#E2E8F0";
+const TEXT_PRIMARY = "#0F172A";
+const TEXT_MUTED = "#64748B";
 
 export default function LoginScreen() {
   const router = useRouter();
   const { setUser } = useAuthStore();
+  const locale = useLocaleStore((s) => s.locale);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
-
   const handleLogin = async () => {
     setError(null);
     if (!email.trim() || !password) {
-      setError("Please enter email and password");
+      setError(t(locale, "common.errorFillFields"));
       return;
     }
 
     setLoading(true);
     try {
       const response = await api.post("/auth/login", { email: email.trim(), password });
-
       const { token, user } = response.data.data;
-
       await setAuthToken(token);
       await saveUser(user);
       setUser(user);
-
       router.replace("/tickets");
     } catch (err: unknown) {
       const msg =
         err && typeof err === "object" && "response" in err
           ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
           : null;
-      setError(msg || "Login failed");
+      setError(msg || t(locale, "common.loginFailed"));
     } finally {
       setLoading(false);
     }
   };
 
-  const bg = isDark ? "#0F172A" : "#F8FAFC";
-  const cardBg = isDark ? "rgba(30, 41, 59, 0.98)" : "#FFFFFF";
-  const cardBorder = isDark ? "rgba(71, 85, 105, 0.4)" : "rgba(226, 232, 240, 0.9)";
-  const label = isDark ? "#94A3B8" : "#475569";
-  const inputBg = isDark ? "rgba(15, 23, 42, 0.9)" : "#F1F5F9";
-  const inputBorder = isDark ? "rgba(51, 65, 85, 0.6)" : "rgba(203, 213, 225, 0.8)";
-  const inputText = isDark ? "#F8FAFC" : "#0F172A";
-  const placeholder = isDark ? "#64748B" : "#94A3B8";
-  const heading = isDark ? "#F8FAFC" : "#0F172A";
-  const muted = isDark ? "#64748B" : "#64748B";
-  const primary = isDark ? "#3B82F6" : "#2563EB";
-  const footer = isDark ? "#94A3B8" : "#64748B";
-
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={[styles.container, { backgroundColor: bg }]}
-    >
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={bg} />
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.header}>
-          <Logo size={48} style={styles.logo} darkBackground={isDark} />
-          <View style={[styles.pill, { backgroundColor: isDark ? "rgba(59, 130, 246, 0.2)" : "rgba(37, 99, 235, 0.12)" }]}>
-            <Text style={[styles.pillText, { color: primary }]}>VALET</Text>
-          </View>
-          <Text style={[styles.title, { color: heading }]}>Welcome back</Text>
-          <Text style={[styles.subtitle, { color: muted }]}>Sign in to access the valet system</Text>
-        </View>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={DARK_BG} />
+      <SafeAreaView style={styles.topBar} edges={["top"]}>
+        <TouchableOpacity onPress={() => router.replace("/welcome")} style={styles.backBtn} hitSlop={12}>
+          <Ionicons name="chevron-back" size={24} color="#F8FAFC" />
+        </TouchableOpacity>
+      </SafeAreaView>
 
-        <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
-          <View style={styles.inputWrap}>
-            <Text style={[styles.label, { color: label }]}>Email</Text>
-            <TextInput
-              style={[
-                styles.input,
-                { backgroundColor: inputBg, borderColor: inputBorder, color: inputText },
-              ]}
-              placeholder="e.g. valet@parkit.cr"
-              placeholderTextColor={placeholder}
-              value={email}
-              onChangeText={(t) => { setEmail(t); setError(null); }}
-              editable={!loading}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="email"
-            />
-          </View>
+      <View style={styles.hero}>
+        <Logo size={48} style={styles.heroLogo} darkBackground />
+        <Text style={styles.heroBrand}>valet</Text>
+      </View>
 
-          <View style={styles.inputWrap}>
-            <View style={styles.passwordRow}>
-              <Text style={[styles.label, { color: label }]}>Password</Text>
-              <TouchableOpacity hitSlop={12} onPress={() => {}}>
-                <Text style={[styles.forgot, { color: primary }]}>Forgot?</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={[styles.passwordInputWrap, { backgroundColor: inputBg, borderColor: inputBorder }]}>
-              <TextInput
-                style={[styles.passwordInput, { color: inputText }]}
-                placeholder="Your password"
-                placeholderTextColor={placeholder}
-                value={password}
-                onChangeText={(t) => { setPassword(t); setError(null); }}
-                secureTextEntry={!showPassword}
-                editable={!loading}
-                autoComplete="password"
-              />
-              <TouchableOpacity
-                onPress={() => setShowPassword((v) => !v)}
-                style={styles.eyeBtn}
-                hitSlop={8}
-              >
-                <Ionicons
-                  name={showPassword ? "eye-off-outline" : "eye-outline"}
-                  size={22}
-                  color={placeholder}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {error ? (
-            <View style={styles.errorWrap}>
-              <Ionicons name="alert-circle" size={18} color="#EF4444" />
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          ) : null}
-
-          <Pressable
-            onPress={handleLogin}
-            disabled={loading}
-            style={({ pressed }) => [
-              styles.btn,
-              { backgroundColor: primary },
-              pressed && styles.btnPressed,
-              loading && styles.btnDisabled,
-            ]}
+      <SafeAreaView style={styles.bottomSection} edges={["bottom"]}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={styles.keyboardWrap}
+        >
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
-            {loading ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
-            ) : (
-              <>
-                <Text style={styles.btnText}>Sign in</Text>
-                <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
-              </>
-            )}
-          </Pressable>
-        </View>
+            <Text style={styles.cardHeadline}>{t(locale, "login.headline")}</Text>
 
-        <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: footer }]}>Restricted access. Staff only. </Text>
-          <Pressable onPress={() => Linking.openURL(SUPPORT_EMAIL)}>
-            <Text style={[styles.footerLink, { color: primary }]}>Contact support</Text>
-          </Pressable>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+            <View style={styles.inputBlock}>
+              <Text style={styles.label}>{t(locale, "login.email")}</Text>
+              <View style={styles.inputRow}>
+                <TextInput
+                  style={styles.input}
+                  placeholder={t(locale, "login.placeholderEmail")}
+                  placeholderTextColor="#94A3B8"
+                  value={email}
+                  onChangeText={(v) => { setEmail(v); setError(null); }}
+                  editable={!loading}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  autoComplete="email"
+                />
+                <Ionicons name="mail-outline" size={20} color="#94A3B8" style={styles.inputIconRight} />
+              </View>
+            </View>
+
+            <View style={styles.inputBlock}>
+              <Text style={styles.label}>{t(locale, "login.password")}</Text>
+              <View style={styles.inputRow}>
+                <TextInput
+                  style={[styles.input, styles.passwordInput]}
+                  placeholder={t(locale, "login.placeholderPassword")}
+                  placeholderTextColor="#94A3B8"
+                  value={password}
+                  onChangeText={(v) => { setPassword(v); setError(null); }}
+                  secureTextEntry={!showPassword}
+                  editable={!loading}
+                  autoComplete="password"
+                />
+                <TouchableOpacity onPress={() => setShowPassword((v) => !v)} hitSlop={8} style={styles.eyeWrap}>
+                  <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={22} color="#94A3B8" />
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity style={styles.forgotWrap} onPress={() => {}} hitSlop={8}>
+                <Text style={styles.forgot}>{t(locale, "login.forgetPassword")}</Text>
+              </TouchableOpacity>
+            </View>
+
+            {error ? (
+              <View style={styles.errorWrap}>
+                <Ionicons name="alert-circle" size={18} color="#EF4444" />
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
+
+            <Pressable
+              onPress={handleLogin}
+              disabled={loading}
+              style={({ pressed }) => [
+                styles.loginBtn,
+                pressed && styles.btnPressed,
+                loading && styles.btnDisabled,
+              ]}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <Text style={styles.loginBtnText}>{t(locale, "login.submit")}</Text>
+              )}
+            </Pressable>
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>{t(locale, "login.footer")}</Text>
+              <Pressable onPress={() => Linking.openURL(SUPPORT_EMAIL)}>
+                <Text style={styles.footerLink}>{t(locale, "login.contactSupport")}</Text>
+              </Pressable>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container: { flex: 1, backgroundColor: DARK_BG },
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 16,
   },
-  scrollContent: {
-    flexGrow: 1,
+  backBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(248, 250, 252, 0.12)",
+    alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 40,
-    paddingBottom: 32,
   },
-  header: {
-    alignItems: "center",
-    marginBottom: 32,
-  },
-  logo: {
-    marginBottom: 12,
-  },
-  pill: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    marginBottom: 16,
-  },
-  pillText: {
-    fontSize: 11,
-    fontWeight: "800",
-    letterSpacing: 1.5,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
-    marginBottom: 6,
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: 15,
-    lineHeight: 22,
-    textAlign: "center",
-    paddingHorizontal: 16,
-  },
-  card: {
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 4,
-  },
-  inputWrap: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  input: {
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-  },
-  passwordRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  forgot: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  passwordInputWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingRight: 12,
-  },
-  passwordInput: {
+  hero: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 24,
   },
-  eyeBtn: {
-    padding: 4,
+  heroLogo: { marginBottom: 10 },
+  heroBrand: {
+    fontSize: 15,
+    fontWeight: "600",
+    letterSpacing: 4,
+    color: "rgba(148, 163, 184, 0.58)",
+    textTransform: "lowercase",
   },
+  bottomSection: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 28,
+    paddingTop: 36,
+    paddingBottom: 40,
+  },
+  keyboardWrap: {},
+  scrollContent: { paddingBottom: 24 },
+  cardHeadline: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: TEXT_PRIMARY,
+    marginBottom: 28,
+    letterSpacing: -0.2,
+  },
+  inputBlock: { marginBottom: 20 },
+  label: { fontSize: 14, fontWeight: "600", color: "#475569", marginBottom: 8 },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    backgroundColor: "#FFFFFF",
+    paddingLeft: 16,
+    paddingRight: 14,
+  },
+  input: { flex: 1, paddingVertical: 16, fontSize: 16, color: TEXT_PRIMARY },
+  passwordInput: { paddingRight: 10 },
+  inputIconRight: { marginLeft: 10 },
+  eyeWrap: { padding: 4, marginLeft: 6 },
+  forgotWrap: { alignSelf: "flex-end", marginTop: 10 },
+  forgot: { fontSize: 13, fontWeight: "600", color: PRIMARY },
   errorWrap: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
     backgroundColor: "rgba(239, 68, 68, 0.1)",
     paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 10,
-    marginBottom: 16,
-  },
-  errorText: {
-    color: "#EF4444",
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  btn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-    paddingVertical: 16,
+    paddingVertical: 12,
     borderRadius: 12,
-    shadowColor: "#2563EB",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 3,
+    marginBottom: 18,
   },
-  btnPressed: {
-    opacity: 0.92,
-  },
-  btnDisabled: {
-    opacity: 0.7,
-  },
-  btnText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  footer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
+  errorText: { color: "#EF4444", fontSize: 14, fontWeight: "500" },
+  loginBtn: {
+    paddingVertical: 18,
+    borderRadius: 16,
     alignItems: "center",
-    marginTop: 28,
-    gap: 4,
+    marginTop: 8,
+    marginBottom: 28,
+    backgroundColor: DARK_BTN,
   },
-  footerText: {
-    fontSize: 13,
-  },
-  footerLink: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
+  loginBtnText: { fontSize: 16, fontWeight: "800", color: "#FFFFFF", letterSpacing: 0.5 },
+  btnPressed: { opacity: 0.92 },
+  btnDisabled: { opacity: 0.7 },
+  footer: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: 4 },
+  footerText: { fontSize: 13, color: TEXT_MUTED },
+  footerLink: { fontSize: 13, fontWeight: "600", color: PRIMARY },
 });

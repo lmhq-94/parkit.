@@ -8,7 +8,7 @@ export interface RegisterDTO {
   lastName: string;
   email: string;
   password: string;
-  companyId: string;
+  companyId?: string | null;
 }
 
 export interface AcceptInvitationDTO {

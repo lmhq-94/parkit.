@@ -295,6 +295,17 @@ export const LoginSchema = z.object({
 
 export type LoginInput = z.infer<typeof LoginSchema>;
 
+// Customer registration (mobile / public signup)
+export const RegisterSchema = z.object({
+  firstName: z.string().min(1, "First name required"),
+  lastName: z.string().min(1, "Last name required"),
+  email: z.string().email("Invalid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  companyId: z.string().uuid().nullable().optional(),
+});
+
+export type RegisterInput = z.infer<typeof RegisterSchema>;
+
 // Passwordless login (OTP)
 export const RequestOtpSchema = z.object({
   email: z.string().email("Invalid email"),

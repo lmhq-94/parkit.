@@ -29,7 +29,7 @@ export class AuthService {
         lastName: data.lastName,
         email: data.email,
         passwordHash,
-        companyId: data.companyId
+        companyId: data.companyId ?? null,
       },
     });
 

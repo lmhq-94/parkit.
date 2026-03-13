@@ -77,7 +77,7 @@ export default function SplashScreen() {
     const go = async () => {
       await new Promise((r) => setTimeout(r, SPLASH_DURATION_MS));
       if (!user) {
-        router.replace("/login");
+        router.replace("/welcome");
         return;
       }
       const hasSeenOnboarding = await getHasSeenOnboarding();

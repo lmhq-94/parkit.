@@ -53,6 +53,8 @@ describe("Parkit API Integration Tests", () => {
     describe("POST /auth/register", () => {
       it("should validate email on register", async () => {
         const res = await request(app).post("/auth/register").send({
+          firstName: "New",
+          lastName: "User",
           email: "not-an-email",
           password: "password123",
         });
@@ -61,11 +63,13 @@ describe("Parkit API Integration Tests", () => {
 
       it("should accept valid register format", async () => {
         const res = await request(app).post("/auth/register").send({
+          firstName: "New",
+          lastName: "User",
           email: "newuser@parkit.com",
           password: "secure123",
         });
-        // Will fail at service level but validates schema passed
-        expect([400, 401, 404, 500]).toContain(res.status);
+        // May fail at service level (e.g. companyId) but validates schema passed
+        expect([201, 400, 404, 500]).toContain(res.status);
       });
     });
   });

@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import type { User } from './auth';
+import type { Locale } from './i18n';
+import { getStoredLocale, setStoredLocale } from './i18n';
 
 interface AuthStore {
   user: User | null;
@@ -15,6 +17,13 @@ interface TicketStore {
   setFilter: (filter: 'assigned' | 'in-transit' | 'completed') => void;
 }
 
+interface LocaleStore {
+  locale: Locale;
+  isHydrated: boolean;
+  setLocale: (locale: Locale) => Promise<void>;
+  hydrateLocale: () => Promise<void>;
+}
+
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   isLoading: false,
@@ -27,4 +36,17 @@ export const useTicketStore = create<TicketStore>((set) => ({
   filter: 'assigned',
   setSelectedTicketId: (id) => set({ selectedTicketId: id }),
   setFilter: (filter) => set({ filter }),
+}));
+
+export const useLocaleStore = create<LocaleStore>((set) => ({
+  locale: 'es',
+  isHydrated: false,
+  setLocale: async (locale: Locale) => {
+    await setStoredLocale(locale);
+    set({ locale });
+  },
+  hydrateLocale: async () => {
+    const locale = await getStoredLocale();
+    set({ locale, isHydrated: true });
+  },
 }));
