@@ -4,6 +4,8 @@ export interface DashboardStats {
   companiesCount: number;
   parkingsCount: number;
   vehiclesCount: number;
+  valetsCount: number;
+  customersCount: number;
   ticketsCount: number;
   usersCount: number;
   bookingsCount: number;
@@ -34,11 +36,13 @@ export class DashboardService {
       ? await this.getTicketsByDayRange(companyId, from, to)
       : await this.getTicketsByDay(companyId, days);
 
-    const [companiesCount, parkingsCount, vehiclesCount, ticketsCount, usersCount, bookingsCount, hasParkingWithBooking, recentTickets] =
+    const [companiesCount, parkingsCount, vehiclesCount, valetsCount, customersCount, ticketsCount, usersCount, bookingsCount, hasParkingWithBooking, recentTickets] =
       await Promise.all([
         isGlobal ? prisma.company.count() : Promise.resolve(0),
         prisma.parking.count({ where: companyWhere }),
         prisma.vehicle.count({ where: companyWhere }),
+        prisma.valet.count({ where: companyWhere }),
+        isGlobal ? prisma.user.count({ where: { systemRole: "CUSTOMER" } }) : prisma.user.count({ where: { companyId: companyId!, systemRole: "CUSTOMER" } }),
         prisma.ticket.count({ where: companyWhere }),
         prisma.user.count({
           where: isGlobal ? { valet: null } : { companyId: companyId!, valet: null },
@@ -52,6 +56,8 @@ export class DashboardService {
       companiesCount,
       parkingsCount,
       vehiclesCount,
+      valetsCount,
+      customersCount,
       ticketsCount,
       usersCount,
       bookingsCount,

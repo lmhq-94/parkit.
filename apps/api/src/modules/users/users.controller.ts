@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { UsersService } from "./users.service";
+import { ClientsService } from "../clients/clients.service";
 import { parseQueryParamArray } from "../../shared/utils/queryParser";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
 
@@ -160,6 +161,24 @@ export class UsersController {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       await UsersService.resendInvitation(req.user.companyId!, id);
       return ok(res, { ok: true }, "Invitation email sent");
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
+  static async addVehicle(req: Request, res: Response) {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const clientVehicle = await ClientsService.addVehicleByUserId(
+        req.user.companyId!,
+        id,
+        req.body
+      );
+      return created(res, clientVehicle);
     } catch (error: unknown) {
       return fail(
         res,

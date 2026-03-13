@@ -85,10 +85,8 @@ export default function ParkingsPage() {
         cellEditorLabels: ["OPEN", "COVERED", "TOWER", "UNDERGROUND", "ELEVATOR"].map((v) => tEnum("parkingType", v)),
       },
       { header: t("tables.parkings.totalSlots"), render: (p: ParkingRow) => (p.totalSlots != null ? String(p.totalSlots) : "—"), field: "totalSlots" as const, editable: true },
-      { header: t("tables.parkings.freeBenefitHours"), render: (p: ParkingRow) => (p.freeBenefitHours != null ? String(p.freeBenefitHours) : "—"), field: "freeBenefitHours" as const, editable: true },
-      { header: t("tables.parkings.pricePerExtraHour"), render: formatPrice, field: "pricePerExtraHour" as const, editable: true },
     ],
-    [t, tEnum, formatPrice]
+    [t, tEnum]
   );
   return (
     <>
@@ -113,8 +111,12 @@ export default function ParkingsPage() {
             <DetailField label={t("parkings.latitude")} value={parking.latitude != null ? String(parking.latitude) : undefined} />
             <DetailField label={t("parkings.longitude")} value={parking.longitude != null ? String(parking.longitude) : undefined} />
             <DetailField label={t("parkings.geofenceRadius")} value={parking.geofenceRadius != null ? String(parking.geofenceRadius) : undefined} />
-            <DetailField label={t("parkings.freeBenefitHours")} value={parking.freeBenefitHours != null ? String(parking.freeBenefitHours) : undefined} />
-            <DetailField label={t("parkings.pricePerExtraHour")} value={formatPrice(parking)} />
+            {parking.freeBenefitHours != null && Number(parking.freeBenefitHours) !== 0 && (
+              <DetailField label={t("parkings.freeBenefitHours")} value={String(parking.freeBenefitHours)} />
+            )}
+            {parking.pricePerExtraHour != null && parking.pricePerExtraHour !== "" && (
+              <DetailField label={t("parkings.pricePerExtraHour")} value={formatPrice(parking)} />
+            )}
           </dl>
         )}
         onEdit={(row) => router.push(`/dashboard/parkings/${row.id}/edit`)}

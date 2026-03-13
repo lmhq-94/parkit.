@@ -9,11 +9,13 @@ import { BrandModelComboField } from "@/components/BrandModelComboField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
+import { useDashboardStore } from "@/lib/store";
 import { COUNTRIES } from "@/lib/companyOptions";
 import { formatPlate, toTitleCase } from "@/lib/inputMasks";
 import { required, plate as validatePlate, selectRequired } from "@/lib/validation";
 
-type ClientOption = { id: string; user?: { firstName?: string; lastName?: string; email?: string } };
+/** Customers (users with CUSTOMER role) for the company - same list as dashboard Customers page */
+type CustomerOption = { id: string; firstName?: string; lastName?: string; email?: string };
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -27,9 +29,10 @@ const defaultForm = {
   model: "",
   year: "",
   countryCode: "CR",
-  lengthCm: "",
-  widthCm: "",
-  heightCm: "",
+  lengthM: "",
+  widthM: "",
+  heightM: "",
+  weightKg: "",
   clientId: "",
 };
 
@@ -37,13 +40,14 @@ export default function NewVehiclePage() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
+  const selectedCompanyId = useDashboardStore((s: { selectedCompanyId: string | null }) => s.selectedCompanyId);
   const [form, setForm] = useState(defaultForm);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof typeof defaultForm, string>>>({});
   const [makes, setMakes] = useState<CatalogMake[]>([]);
   const [models, setModels] = useState<CatalogModel[]>([]);
-  const [clients, setClients] = useState<ClientOption[]>([]);
+  const [customers, setCustomers] = useState<CustomerOption[]>([]);
   const [loadingMakes, setLoadingMakes] = useState(true);
   const [loadingModels, setLoadingModels] = useState(false);
   const [loadingClients, setLoadingClients] = useState(true);
@@ -77,17 +81,23 @@ export default function NewVehiclePage() {
   }, [form.year]);
 
   useEffect(() => {
+    if (!selectedCompanyId) {
+      setCustomers([]);
+      setLoadingClients(false);
+      return;
+    }
+    setLoadingClients(true);
     (async () => {
       try {
-        const data = await apiClient.get<ClientOption[]>("/clients");
-        setClients(Array.isArray(data) ? data : []);
+        const data = await apiClient.get<CustomerOption[]>("/users?systemRole=CUSTOMER");
+        setCustomers(Array.isArray(data) ? data : []);
       } catch {
-        setClients([]);
+        setCustomers([]);
       } finally {
         setLoadingClients(false);
       }
     })();
-  }, []);
+  }, [selectedCompanyId]);
 
   useEffect(() => {
     if (!form.brand.trim()) {
@@ -135,9 +145,9 @@ export default function NewVehiclePage() {
     if (d) {
       setForm((p) => ({
         ...p,
-        lengthCm: d.lengthCm != null ? String(d.lengthCm) : p.lengthCm,
-        widthCm: d.widthCm != null ? String(d.widthCm) : p.widthCm,
-        heightCm: d.heightCm != null ? String(d.heightCm) : p.heightCm,
+        lengthM: d.lengthCm != null ? String(Number((d.lengthCm / 100).toFixed(2))) : p.lengthM,
+        widthM: d.widthCm != null ? String(Number((d.widthCm / 100).toFixed(2))) : p.widthM,
+        heightM: d.heightCm != null ? String(Number((d.heightCm / 100).toFixed(2))) : p.heightM,
       }));
     }
   }, [getDimensionsData]);
@@ -153,6 +163,10 @@ export default function NewVehiclePage() {
     const e3 = required(t, form.model); if (e3) next.model = e3;
     const e5 = required(t, form.year); if (e5) next.year = e5;
     const e4 = selectRequired(t, form.clientId); if (e4) next.clientId = e4;
+    const e6 = required(t, form.lengthM); if (e6) next.lengthM = e6;
+    const e7 = required(t, form.widthM); if (e7) next.widthM = e7;
+    const e8 = required(t, form.heightM); if (e8) next.heightM = e8;
+    const e9 = required(t, form.weightKg); if (e9) next.weightKg = e9;
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -168,6 +182,15 @@ export default function NewVehiclePage() {
       setErrors(next);
       return Object.keys(next).length === 0;
     }
+    if (stepIndex === 1) {
+      const next: Partial<Record<keyof typeof defaultForm, string>> = {};
+      const e6 = required(t, form.lengthM); if (e6) next.lengthM = e6;
+      const e7 = required(t, form.widthM); if (e7) next.widthM = e7;
+      const e8 = required(t, form.heightM); if (e8) next.heightM = e8;
+      const e9 = required(t, form.weightKg); if (e9) next.weightKg = e9;
+      setErrors(next);
+      return Object.keys(next).length === 0;
+    }
     return true;
   };
 
@@ -176,23 +199,25 @@ export default function NewVehiclePage() {
     setSubmitting(true);
     setError(null);
     try {
-      const dimensions =
-        form.lengthCm !== "" || form.widthCm !== "" || form.heightCm !== ""
-          ? {
-              ...(form.lengthCm !== "" && { lengthCm: Number(form.lengthCm) }),
-              ...(form.widthCm !== "" && { widthCm: Number(form.widthCm) }),
-              ...(form.heightCm !== "" && { heightCm: Number(form.heightCm) }),
-            }
-          : undefined;
+      const lengthCm = form.lengthM.trim() !== "" ? Math.round(Number(form.lengthM) * 100) : undefined;
+      const widthCm = form.widthM.trim() !== "" ? Math.round(Number(form.widthM) * 100) : undefined;
+      const heightCm = form.heightM.trim() !== "" ? Math.round(Number(form.heightM) * 100) : undefined;
+      const weightKg = form.weightKg.trim() !== "" ? Number(form.weightKg) : undefined;
+      const dimensions = {
+        lengthCm: lengthCm!,
+        widthCm: widthCm!,
+        heightCm: heightCm!,
+        weightKg: weightKg!,
+      };
       const created = await apiClient.post<{ id: string }>("/vehicles", {
         plate: form.plate.trim().toUpperCase(),
         brand: form.brand.trim(),
         model: form.model.trim(),
         year: form.year !== "" ? Number(form.year) : undefined,
         countryCode: form.countryCode.trim() || undefined,
-        ...(Object.keys(dimensions ?? {}).length > 0 && { dimensions }),
+        dimensions,
       });
-      await apiClient.post(`/clients/${form.clientId.trim()}/vehicles`, {
+      await apiClient.post(`/users/${form.clientId.trim()}/vehicles`, {
         vehicleId: created.id,
         isPrimary: true,
       });
@@ -222,11 +247,9 @@ export default function NewVehiclePage() {
             ) : (
               <SelectField value={form.clientId} onChange={set("clientId")} icon={Users} aria-invalid={!!errors.clientId}>
                 <option value="">{t("common.selectPlaceholder")}</option>
-                {clients.map((c) => (
+                {customers.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {`${c.user?.firstName ?? ""} ${c.user?.lastName ?? ""}`.trim() ||
-                      c.user?.email ||
-                      c.id}
+                    {`${c.firstName ?? ""} ${c.lastName ?? ""}`.trim() || c.email || c.id}
                   </option>
                 ))}
               </SelectField>
@@ -312,9 +335,9 @@ export default function NewVehiclePage() {
     {
       title: t("vehicles.sectionExtra"),
       description: t("vehicles.sectionExtraDesc"),
-      badge: "optional" as const,
+      badge: "required" as const,
       accentColor: "sky",
-      isValid: () => true,
+      isValid: () => !!(form.lengthM.trim() && form.widthM.trim() && form.heightM.trim() && form.weightKg.trim()),
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <div>
@@ -327,25 +350,36 @@ export default function NewVehiclePage() {
             </SelectField>
           </div>
           <div>
-            <label className={LABEL}>{t("vehicles.lengthCm")}</label>
+            <label className={LABEL}>{t("vehicles.lengthM")} <span className="text-company-primary">*</span></label>
             <div className="relative group">
               <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="number" inputMode="numeric" min={1} max={9999} value={form.lengthCm} onChange={(e) => setForm((p) => ({ ...p, lengthCm: e.target.value.replace(/\D/g, "") }))} placeholder="cm" className={IL} />
+              <input type="number" inputMode="decimal" min={0} step={0.01} value={form.lengthM} onChange={(e) => setForm((p) => ({ ...p, lengthM: e.target.value }))} placeholder="m" className={IL} aria-invalid={!!errors.lengthM} />
             </div>
+            <div className="min-h-[1.25rem] mt-1">{errors.lengthM && <p className="text-sm text-red-500" role="alert">{errors.lengthM}</p>}</div>
           </div>
           <div>
-            <label className={LABEL}>{t("vehicles.widthCm")}</label>
+            <label className={LABEL}>{t("vehicles.widthM")} <span className="text-company-primary">*</span></label>
             <div className="relative group">
               <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="number" inputMode="numeric" min={1} max={9999} value={form.widthCm} onChange={(e) => setForm((p) => ({ ...p, widthCm: e.target.value.replace(/\D/g, "") }))} placeholder="cm" className={IL} />
+              <input type="number" inputMode="decimal" min={0} step={0.01} value={form.widthM} onChange={(e) => setForm((p) => ({ ...p, widthM: e.target.value }))} placeholder="m" className={IL} aria-invalid={!!errors.widthM} />
             </div>
+            <div className="min-h-[1.25rem] mt-1">{errors.widthM && <p className="text-sm text-red-500" role="alert">{errors.widthM}</p>}</div>
           </div>
           <div>
-            <label className={LABEL}>{t("vehicles.heightCm")}</label>
+            <label className={LABEL}>{t("vehicles.heightM")} <span className="text-company-primary">*</span></label>
             <div className="relative group">
               <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="number" inputMode="numeric" min={1} max={9999} value={form.heightCm} onChange={(e) => setForm((p) => ({ ...p, heightCm: e.target.value.replace(/\D/g, "") }))} placeholder="cm" className={IL} />
+              <input type="number" inputMode="decimal" min={0} step={0.01} value={form.heightM} onChange={(e) => setForm((p) => ({ ...p, heightM: e.target.value }))} placeholder="m" className={IL} aria-invalid={!!errors.heightM} />
             </div>
+            <div className="min-h-[1.25rem] mt-1">{errors.heightM && <p className="text-sm text-red-500" role="alert">{errors.heightM}</p>}</div>
+          </div>
+          <div>
+            <label className={LABEL}>{t("vehicles.weightKg")} <span className="text-company-primary">*</span></label>
+            <div className="relative group">
+              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+              <input type="number" inputMode="decimal" min={0} step={0.1} value={form.weightKg} onChange={(e) => setForm((p) => ({ ...p, weightKg: e.target.value }))} placeholder="kg" className={IL} aria-invalid={!!errors.weightKg} />
+            </div>
+            <div className="min-h-[1.25rem] mt-1">{errors.weightKg && <p className="text-sm text-red-500" role="alert">{errors.weightKg}</p>}</div>
           </div>
         </div>
       ),
@@ -363,13 +397,12 @@ export default function NewVehiclePage() {
       onBeforeNext={async (fromStep, toStep) => {
         if (fromStep === 0 && toStep === 1 && form.brand.trim() && form.model.trim()) {
           const d = await getDimensionsData();
-          console.log("[Vehicles] Respuesta dimensiones al pasar al paso 2:", d);
           if (d) {
             setForm((p) => ({
               ...p,
-              lengthCm: d.lengthCm != null ? String(d.lengthCm) : p.lengthCm,
-              widthCm: d.widthCm != null ? String(d.widthCm) : p.widthCm,
-              heightCm: d.heightCm != null ? String(d.heightCm) : p.heightCm,
+              lengthM: d.lengthCm != null ? String(Number((d.lengthCm / 100).toFixed(2))) : p.lengthM,
+              widthM: d.widthCm != null ? String(Number((d.widthCm / 100).toFixed(2))) : p.widthM,
+              heightM: d.heightCm != null ? String(Number((d.heightCm / 100).toFixed(2))) : p.heightM,
             }));
           }
         }

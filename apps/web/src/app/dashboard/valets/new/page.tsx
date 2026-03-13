@@ -65,14 +65,10 @@ export default function NewValetPage() {
     if (!validate()) return;
     setSubmitting(true); setError(null);
     try {
-      const userRes = await apiClient.post<{ id: string }>("/users", {
+      await apiClient.post("/valets", {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         email: form.email.trim(),
-        systemRole: "STAFF",
-      });
-      await apiClient.post("/valets", {
-        userId: userRes.id,
         licenseNumber: licenseTypes.join(", "),
         licenseExpiry: new Date(form.licenseExpiry).toISOString(),
       });

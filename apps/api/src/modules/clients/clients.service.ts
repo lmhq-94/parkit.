@@ -213,4 +213,43 @@ export class ClientsService {
       },
     });
   }
+
+  /**
+   * Find or create a Client for the given user in the company, then add the vehicle.
+   * Used when assigning a vehicle to a customer (User CUSTOMER) who may not have a Client record yet.
+   */
+  static async addVehicleByUserId(
+    companyId: string,
+    userId: string,
+    data: AddVehicleDTO
+  ) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { client: true },
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if (user.systemRole !== "CUSTOMER") {
+      throw new Error("User is not a customer");
+    }
+    if (user.companyId !== companyId) {
+      throw new Error("User does not belong to this company");
+    }
+
+    let client = await prisma.client.findFirst({
+      where: { userId, companyId },
+    });
+    if (!client) {
+      client = await prisma.client.create({
+        data: {
+          companyId,
+          userId,
+          governmentId: `PENDING-${userId}`,
+        },
+      });
+    }
+
+    return this.addVehicle(companyId, client.id, data);
+  }
 }

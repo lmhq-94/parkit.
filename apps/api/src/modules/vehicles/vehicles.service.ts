@@ -80,8 +80,10 @@ export class VehiclesService {
             client: {
               select: {
                 id: true,
+                userId: true,
                 user: {
                   select: {
+                    id: true,
                     firstName: true,
                     lastName: true,
                     email: true,

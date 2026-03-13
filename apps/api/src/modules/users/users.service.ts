@@ -23,6 +23,21 @@ async function activateCompanyIfFirstUser(companyId: string): Promise<void> {
   }
 }
 
+/** Si el usuario es CUSTOMER y tiene companyId, crea el registro en Client (governmentId pendiente). */
+async function ensureClientForCustomer(
+  companyId: string,
+  user: { id: string; systemRole: string; companyId: string | null }
+): Promise<void> {
+  if (user.systemRole !== "CUSTOMER" || !user.companyId) return;
+  await prisma.client.create({
+    data: {
+      companyId,
+      userId: user.id,
+      governmentId: `PENDING-${user.id}`,
+    },
+  });
+}
+
 export class UsersService {
   static async create(companyId: string, data: CreateUserDTO) {
     const company = await prisma.company.findUnique({
@@ -72,6 +87,7 @@ export class UsersService {
       });
 
       await activateCompanyIfFirstUser(companyId);
+      await ensureClientForCustomer(companyId, user);
       return user;
     }
 
@@ -88,6 +104,7 @@ export class UsersService {
       },
     });
     await activateCompanyIfFirstUser(companyId);
+    await ensureClientForCustomer(companyId, user);
     return user;
   }
 

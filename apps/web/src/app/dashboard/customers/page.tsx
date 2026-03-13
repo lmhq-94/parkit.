@@ -12,6 +12,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import { formatPhoneInternational } from "@/lib/inputMasks";
+import { formatDateTimeDisplay } from "@/lib/dateFormat";
 import { useRouter } from "next/navigation";
 
 const DashboardDataTablePage = dynamic(
@@ -226,7 +227,7 @@ export default function CustomersPage() {
             <DetailField label={t("tables.employees.timezone")} value={user.timezone} />
             <DetailField
               label={t("tables.employees.lastLogin")}
-              value={user.lastLogin ? new Date(user.lastLogin).toLocaleString() : undefined}
+              value={user.lastLogin ? formatDateTimeDisplay(new Date(user.lastLogin), t) : undefined}
             />
           </dl>
         )}

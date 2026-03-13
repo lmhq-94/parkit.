@@ -121,13 +121,24 @@ export const UpdateProfileSchema = z.object({
 export type CreateUserInput = z.infer<typeof CreateUserSchema>;
 export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
 
-// Valets
-export const CreateValetSchema = z.object({
-  userId: z.string().min(1, "User ID required"),
-  licenseNumber: z.string().min(1, "License number required"),
-  licenseExpiry: z.string().datetime("Invalid datetime"),
-  currentParkingId: z.string().optional(),
-});
+// Valets: crear por userId (usuario existente) o por datos de usuario (crear User + Valet)
+export const CreateValetSchema = z
+  .object({
+    userId: z.string().min(1).optional(),
+    firstName: z.string().min(1).optional(),
+    lastName: z.string().min(1).optional(),
+    email: z.string().email("Invalid email").optional(),
+    password: z.string().optional(),
+    licenseNumber: z.string().min(1, "License number required"),
+    licenseExpiry: z.string().min(1, "License expiry required"),
+    currentParkingId: z.string().optional(),
+  })
+  .refine(
+    (data) =>
+      (data.userId && !data.firstName && !data.lastName && !data.email) ||
+      (!data.userId && data.firstName && data.lastName && data.email),
+    { message: "Provide either userId (existing user) or firstName, lastName and email (new user)" }
+  );
 
 export const UpdateValetSchema = z.object({
   licenseNumber: z.string().min(1).optional(),
@@ -152,6 +163,11 @@ export const UpdateClientSchema = z.object({
   phone: z.string().optional(),
 });
 
+export const AddVehicleToUserSchema = z.object({
+  vehicleId: z.string().min(1, "Vehicle ID required"),
+  isPrimary: z.boolean().optional(),
+});
+
 export type CreateClientInput = z.infer<typeof CreateClientSchema>;
 export type UpdateClientInput = z.infer<typeof UpdateClientSchema>;
 
@@ -159,7 +175,15 @@ const VehicleDimensionsSchema = z.object({
   lengthCm: z.number().positive().optional(),
   widthCm: z.number().positive().optional(),
   heightCm: z.number().positive().optional(),
+  weightKg: z.number().positive().optional(),
 }).optional();
+
+const VehicleDimensionsRequiredSchema = z.object({
+  lengthCm: z.number().positive("Length is required"),
+  widthCm: z.number().positive("Width is required"),
+  heightCm: z.number().positive("Height is required"),
+  weightKg: z.number().positive("Weight is required"),
+});
 
 // Vehicles
 export const CreateVehicleSchema = z.object({
@@ -168,7 +192,7 @@ export const CreateVehicleSchema = z.object({
   brand: z.string().optional(),
   model: z.string().optional(),
   year: z.number().optional(),
-  dimensions: VehicleDimensionsSchema,
+  dimensions: VehicleDimensionsRequiredSchema,
 });
 
 export const UpdateVehicleSchema = z.object({

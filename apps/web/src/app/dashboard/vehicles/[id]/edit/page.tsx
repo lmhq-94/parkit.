@@ -7,6 +7,7 @@ import { Car, Hash, Globe, ArrowRight, Users } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
+import { useDashboardStore } from "@/lib/store";
 import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { SelectField } from "@/components/SelectField";
@@ -21,8 +22,9 @@ const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 type CatalogMake = { id: number; name: string };
 type CatalogModel = { id: number; name: string };
 
-type ClientOption = { id: string; user?: { firstName?: string; lastName?: string; email?: string } };
-type OwnerRef = { client?: { id: string } };
+/** Customers (users with CUSTOMER role) - same list as dashboard Customers page */
+type CustomerOption = { id: string; firstName?: string; lastName?: string; email?: string };
+type OwnerRef = { client?: { id: string; userId?: string; user?: { id?: string } } };
 
 const defaultForm = {
   plate: "",
@@ -42,6 +44,7 @@ export default function EditVehiclePage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const selectedCompanyId = useDashboardStore((s: { selectedCompanyId: string | null }) => s.selectedCompanyId);
   const [form, setForm] = useState(defaultForm);
   const [initialForm, setInitialForm] = useState(defaultForm);
   const [loading, setLoading] = useState(true);
@@ -49,7 +52,7 @@ export default function EditVehiclePage() {
   const [error, setError] = useState<string | null>(null);
   const [makes, setMakes] = useState<CatalogMake[]>([]);
   const [models, setModels] = useState<CatalogModel[]>([]);
-  const [clients, setClients] = useState<ClientOption[]>([]);
+  const [customers, setCustomers] = useState<CustomerOption[]>([]);
   const [loadingModels, setLoadingModels] = useState(false);
   const [loadingClients, setLoadingClients] = useState(true);
   const [errors, setErrors] = useState<Partial<Record<keyof typeof defaultForm, string>>>({});
@@ -61,7 +64,8 @@ export default function EditVehiclePage() {
         if (data) {
           const dims = data.dimensions as { lengthCm?: number; widthCm?: number; heightCm?: number } | null | undefined;
           const owners = data.owners as OwnerRef[] | undefined;
-          const firstOwnerId = Array.isArray(owners) && owners.length > 0 ? owners[0]?.client?.id ?? "" : "";
+          const firstOwner = Array.isArray(owners) && owners.length > 0 ? owners[0]?.client : undefined;
+          const firstOwnerId = firstOwner?.user?.id ?? firstOwner?.userId ?? firstOwner?.id ?? "";
           const loaded = {
             plate: formatPlate(String(data.plate ?? "")),
             brand: String(data.brand ?? ""),
@@ -86,17 +90,23 @@ export default function EditVehiclePage() {
   }, [id]);
 
   useEffect(() => {
+    if (!selectedCompanyId) {
+      setCustomers([]);
+      setLoadingClients(false);
+      return;
+    }
+    setLoadingClients(true);
     (async () => {
       try {
-        const data = await apiClient.get<ClientOption[]>("/clients");
-        setClients(Array.isArray(data) ? data : []);
+        const data = await apiClient.get<CustomerOption[]>("/users?systemRole=CUSTOMER");
+        setCustomers(Array.isArray(data) ? data : []);
       } catch {
-        setClients([]);
+        setCustomers([]);
       } finally {
         setLoadingClients(false);
       }
     })();
-  }, []);
+  }, [selectedCompanyId]);
 
   useEffect(() => {
     (async () => {
@@ -203,7 +213,7 @@ export default function EditVehiclePage() {
       });
       if (form.clientId.trim() && form.clientId !== initialForm.clientId) {
         try {
-          await apiClient.post(`/clients/${form.clientId.trim()}/vehicles`, {
+          await apiClient.post(`/users/${form.clientId.trim()}/vehicles`, {
             vehicleId: id,
             isPrimary: true,
           });
@@ -346,11 +356,9 @@ export default function EditVehiclePage() {
               ) : (
                 <SelectField value={form.clientId} onChange={set("clientId")} icon={Users} aria-invalid={!!errors.clientId}>
                   <option value="">{t("common.selectPlaceholder")}</option>
-                  {clients.map((c) => (
+                  {customers.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {`${c.user?.firstName ?? ""} ${c.user?.lastName ?? ""}`.trim() ||
-                        c.user?.email ||
-                        c.id}
+                      {`${c.firstName ?? ""} ${c.lastName ?? ""}`.trim() || c.email || c.id}
                     </option>
                   ))}
                 </SelectField>

@@ -4,7 +4,7 @@ import { requireAuth } from "../../shared/middleware/requireAuth";
 import { requireCompany } from "../../shared/middleware/requireCompany";
 import { requireRole } from "../../shared/middleware/requireRole";
 import { validateRequest } from "../../shared/middleware/validateRequest";
-import { CreateUserSchema, CreateSuperAdminSchema, UpdateUserSchema, UpdateProfileSchema } from "../../shared/validators";
+import { CreateUserSchema, CreateSuperAdminSchema, UpdateUserSchema, UpdateProfileSchema, AddVehicleToUserSchema } from "../../shared/validators";
 
 const router = Router();
 
@@ -18,5 +18,6 @@ router.get("/:id", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), U
 router.patch("/:id", validateRequest(UpdateUserSchema), requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), UsersController.update);
 router.delete("/:id", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), UsersController.deactivate);
 router.post("/:id/resend-invitation", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), UsersController.resendInvitation);
+router.post("/:id/vehicles", validateRequest(AddVehicleToUserSchema), requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), UsersController.addVehicle);
 
 export default router;

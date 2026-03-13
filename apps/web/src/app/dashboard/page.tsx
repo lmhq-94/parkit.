@@ -8,11 +8,11 @@ import { apiClient } from "@/lib/api";
 import { formatPlate } from "@/lib/inputMasks";
 import {
   ArrowLeft,
-  Building2,
   MapPin,
   Ticket,
   CalendarCheck,
   Users,
+  UserRound,
   TrendingUp,
   Car,
   ChevronRight,
@@ -40,6 +40,8 @@ interface DashboardStats {
   companiesCount: number;
   parkingsCount: number;
   vehiclesCount: number;
+  valetsCount: number;
+  customersCount: number;
   ticketsCount: number;
   usersCount: number;
   bookingsCount: number;
@@ -209,8 +211,7 @@ export default function DashboardPage() {
     return null;
   }
 
-  const isAdmin = user?.systemRole === "ADMIN";
-  // Orden igual al sidebar: Overview (esta página), Employees, Valets, Vehicles, Parkings, Bookings, Tickets
+  // Mismo orden que el sidebar: Principal (parkings, bookings, tickets) → Equipo (valets) → Clientes (customers, vehicles)
   const statCards: Array<{
     key: string;
     title: string;
@@ -218,38 +219,9 @@ export default function DashboardPage() {
     icon: React.ReactNode;
     color: string;
   }> = [
-    ...(superAdmin
-      ? [
-          {
-            key: "companies",
-            title: t("dashboard.totalCompanies"),
-            value: stats.companiesCount,
-            icon: <Building2 className="w-6 h-6" />,
-            color: "sky",
-          },
-        ]
-      : []),
-    {
-      key: "users",
-      title: t("dashboard.systemUsers"),
-      value: stats.usersCount,
-      icon: <Users className="w-6 h-6" />,
-      color: "rose",
-    },
-    ...(isAdmin
-      ? [
-          {
-            key: "vehicles",
-            title: t("dashboard.vehicles"),
-            value: stats.vehiclesCount,
-            icon: <Car className="w-6 h-6" />,
-            color: "cyan",
-          },
-        ]
-      : []),
     {
       key: "parkings",
-      title: t("dashboard.activeParkings"),
+      title: t("sidebar.parkings"),
       value: stats.parkingsCount,
       icon: <MapPin className="w-6 h-6" />,
       color: "emerald",
@@ -258,7 +230,7 @@ export default function DashboardPage() {
       ? [
           {
             key: "bookings",
-            title: t("dashboard.totalBookings"),
+            title: t("sidebar.bookings"),
             value: stats.bookingsCount,
             icon: <CalendarCheck className="w-6 h-6" />,
             color: "amber",
@@ -267,10 +239,31 @@ export default function DashboardPage() {
       : []),
     {
       key: "tickets",
-      title: t("dashboard.totalTickets"),
+      title: t("sidebar.tickets"),
       value: stats.ticketsCount,
       icon: <Ticket className="w-6 h-6" />,
       color: "violet",
+    },
+    {
+      key: "valets",
+      title: t("sidebar.valets"),
+      value: stats.valetsCount,
+      icon: <UserRound className="w-6 h-6" />,
+      color: "cyan",
+    },
+    {
+      key: "customers",
+      title: t("sidebar.customers"),
+      value: stats.customersCount,
+      icon: <Users className="w-6 h-6" />,
+      color: "rose",
+    },
+    {
+      key: "vehicles",
+      title: t("sidebar.vehicles"),
+      value: stats.vehiclesCount,
+      icon: <Car className="w-6 h-6" />,
+      color: "teal",
     },
   ];
 
@@ -304,6 +297,11 @@ export default function DashboardPage() {
       bg: "bg-cyan-500/10 dark:bg-cyan-400/10",
       text: "text-cyan-600 dark:text-cyan-400",
       gradient: "from-cyan-500/20 to-transparent",
+    },
+    teal: {
+      bg: "bg-teal-500/10 dark:bg-teal-400/10",
+      text: "text-teal-600 dark:text-teal-400",
+      gradient: "from-teal-500/20 to-transparent",
     },
   };
   const defaultCardStyle: { bg: string; text: string; gradient: string } = {

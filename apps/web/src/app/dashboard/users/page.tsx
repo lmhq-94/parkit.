@@ -18,6 +18,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import { formatPhoneInternational } from "@/lib/inputMasks";
+import { formatDateTimeDisplay } from "@/lib/dateFormat";
 
 const EMPLOYEE_STATUS_OPTIONS = [
   { value: "ACTIVE", labelKey: "tables.employees.active" },
@@ -134,6 +135,7 @@ export default function UsersPage() {
       const params = new URLSearchParams();
       params.set("excludeValets", "true");
       params.set("includeInactives", "true");
+      params.set("systemRole", "ADMIN"); // Solo administradores de la empresa
       const url = `/users?${params.toString()}`;
       const data = await apiClient.get<UserRow[]>(url);
       const list = Array.isArray(data) ? data : [];
@@ -195,7 +197,7 @@ export default function UsersPage() {
             <DetailField label={t("tables.employees.role")} value={tEnum("systemRole", user.systemRole)} />
             <DetailField label={t("tables.employees.phone")} value={user.phone ? formatPhoneInternational(user.phone) : undefined} linkType="phone" />
             <DetailField label={t("tables.employees.timezone")} value={user.timezone} />
-            <DetailField label={t("tables.employees.lastLogin")} value={user.lastLogin ? new Date(user.lastLogin).toLocaleString() : undefined} />
+            <DetailField label={t("tables.employees.lastLogin")} value={user.lastLogin ? formatDateTimeDisplay(new Date(user.lastLogin), t) : undefined} />
           </dl>
         )}
         onEdit={(row) => router.push(`/dashboard/users/${row.id}/edit`)}

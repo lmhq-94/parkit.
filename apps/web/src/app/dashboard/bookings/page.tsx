@@ -64,20 +64,24 @@ export default function BookingsPage() {
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
   const [parkings, setParkings] = useState<ParkingOption[]>([]);
+  const [hasCustomers, setHasCustomers] = useState(false);
   const [qrModalBooking, setQrModalBooking] = useState<BookingRow | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const [v, p] = await Promise.all([
+        const [v, p, customers] = await Promise.all([
           apiClient.get<VehicleOption[]>("/vehicles"),
           apiClient.get<ParkingOption[]>("/parkings"),
+          apiClient.get<unknown[]>("/users?systemRole=CUSTOMER").catch(() => []),
         ]);
         setVehicles(Array.isArray(v) ? v : []);
         setParkings(Array.isArray(p) ? p : []);
+        setHasCustomers(Array.isArray(customers) && customers.length > 0);
       } catch {
         setVehicles([]);
         setParkings([]);
+        setHasCustomers(false);
       }
     })();
   }, [selectedCompanyId]);
@@ -265,7 +269,7 @@ export default function BookingsPage() {
           },
         ]}
         headerAction={
-          canManage ? (
+          canManage && vehicles.length > 0 && parkings.length > 0 && hasCustomers ? (
             <Link
               href="/dashboard/bookings/new"
               className="inline-flex items-center gap-2 px-4 min-h-[42px] rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors shadow-sm"

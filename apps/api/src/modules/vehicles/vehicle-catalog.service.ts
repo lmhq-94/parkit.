@@ -1,8 +1,18 @@
 /**
- * Catálogo de vehículos: marcas, modelos y dimensiones. Solo CarQuery API (gratis, sin key).
+ * Catálogo de vehículos: marcas, modelos y dimensiones.
+ * Usa CarQuery API cuando está disponible; si falla (ej. 403), se usa lista estática de marcas.
  */
 
 const CARQUERY_BASE = "https://www.carqueryapi.com/api/0.3";
+
+/** Lista estática de marcas cuando la API externa no está disponible (ej. CarQuery 403). */
+const FALLBACK_MAKES: MakeItem[] = [
+  "Acura", "Alfa Romeo", "Audi", "BMW", "Buick", "Cadillac", "Chevrolet", "Chrysler", "Dodge",
+  "Fiat", "Ford", "GMC", "Honda", "Hyundai", "Infiniti", "Jaguar", "Jeep", "Kia", "Land Rover",
+  "Lexus", "Lincoln", "Mazda", "Mercedes-Benz", "Mercury", "Mini", "Mitsubishi", "Nissan",
+  "Peugeot", "Porsche", "Ram", "Renault", "Subaru", "Suzuki", "Tesla", "Toyota", "Volkswagen",
+  "Volvo",
+].sort().map((name, i) => ({ Make_ID: i + 1, Make_Name: name }));
 
 export interface MakeItem {
   Make_ID: number;
@@ -90,7 +100,9 @@ async function getDimensionsFromCarQuery(
 
 export class VehicleCatalogService {
   static async getMakes(year?: number): Promise<MakeItem[]> {
-    return getMakesFromCarQuery(year);
+    const fromApi = await getMakesFromCarQuery(year);
+    if (fromApi.length > 0) return fromApi;
+    return FALLBACK_MAKES;
   }
 
   static async getModels(make: string, year?: number): Promise<ModelItem[]> {

@@ -62,14 +62,26 @@ export function getFullName(user: User | null): string {
   return `${user.firstName} ${user.lastName}`.trim();
 }
 
-/** Iniciales para avatar (ej: "Marco Solis" → "MS"). Si no hay nombre, usa las dos primeras letras del email. */
+/** Primer nombre + primer apellido (ej: "Juan Carlos" + "García López" → "Juan García"). Para mostrar junto al avatar. */
+export function getShortName(user: User | null): string {
+  if (!user) return "";
+  const first = (user.firstName ?? "").trim();
+  const last = (user.lastName ?? "").trim();
+  const firstWord = first.split(/\s+/)[0] ?? "";
+  const lastWord = last.split(/\s+/)[0] ?? "";
+  return [firstWord, lastWord].filter(Boolean).join(" ").trim();
+}
+
+/** Iniciales para avatar: solo primer nombre y primer apellido (ej: "Juan Carlos García López" → "JG"). Si no hay nombre, usa las dos primeras letras del email. */
 export function getInitials(user: User | null): string {
   if (!user) return "?";
   const first = (user.firstName ?? "").trim();
   const last = (user.lastName ?? "").trim();
-  if (first && last) return `${first[0]}${last[0]}`.toUpperCase();
-  if (first) return first.slice(0, 2).toUpperCase();
-  if (last) return last.slice(0, 2).toUpperCase();
+  const firstWord = first.split(/\s+/)[0] ?? "";
+  const lastWord = last.split(/\s+/)[0] ?? "";
+  if (firstWord && lastWord) return `${firstWord[0]}${lastWord[0]}`.toUpperCase();
+  if (firstWord) return firstWord.slice(0, 2).toUpperCase();
+  if (lastWord) return lastWord.slice(0, 2).toUpperCase();
   const email = (user.email ?? "").trim();
   if (email) return email.slice(0, 2).toUpperCase();
   return "?";

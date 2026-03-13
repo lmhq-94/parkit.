@@ -1,8 +1,13 @@
 import { prisma } from "../../shared/prisma";
 import { ValetStatus } from "@prisma/client";
+import { UsersService } from "../users/users.service";
 
 interface CreateValetDTO {
-  userId: string;
+  userId?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
   licenseNumber: string;
   licenseExpiry: string;
   currentParkingId?: string;
@@ -16,19 +21,38 @@ interface UpdateValetDTO {
 }
 
 export class ValetsService {
+  /**
+   * Crea un valet: si viene userId usa ese usuario; si vienen firstName, lastName, email
+   * crea primero el User (STAFF) y luego el registro Valet (igual que Customer + Client).
+   */
   static async create(companyId: string, data: CreateValetDTO) {
-    const userExists = await prisma.user.findUnique({
-      where: { id: data.userId },
-    });
+    let userId: string;
 
-    if (!userExists) {
-      throw new Error("User not found");
+    if (data.userId) {
+      const userExists = await prisma.user.findUnique({
+        where: { id: data.userId },
+      });
+      if (!userExists) {
+        throw new Error("User not found");
+      }
+      userId = data.userId;
+    } else if (data.firstName && data.lastName && data.email) {
+      const user = await UsersService.create(companyId, {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        password: data.password,
+        systemRole: "STAFF",
+      });
+      userId = user.id;
+    } else {
+      throw new Error("Provide either userId or user data (firstName, lastName, email)");
     }
 
     return prisma.valet.create({
       data: {
         companyId,
-        userId: data.userId,
+        userId,
         licenseNumber: data.licenseNumber,
         licenseExpiry: new Date(data.licenseExpiry),
         currentParkingId: data.currentParkingId,

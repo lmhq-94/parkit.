@@ -11,7 +11,7 @@ import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import type { CompanyBranding } from "@/lib/store";
-import { getAvatarColor, getFullName, getInitials, isSuperAdmin } from "@/lib/auth";
+import { getAvatarColor, getFullName, getInitials, getShortName, isSuperAdmin } from "@/lib/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LocaleToggle } from "@/components/LocaleToggle";
 import { apiClient } from "@/lib/api";
@@ -322,7 +322,7 @@ function DashboardLayoutInner({
                       </div>
                       <div className="hidden sm:flex flex-col items-start max-w-[140px] min-w-0">
                         <span className="text-xs font-medium text-text-primary truncate">
-                          {getFullName(user) || user.email}
+                          {getShortName(user) || getFullName(user) || user.email}
                         </span>
                         <span className="text-[11px] text-text-muted truncate">
                           {user.email}

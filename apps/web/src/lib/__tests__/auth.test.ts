@@ -6,6 +6,7 @@ import {
   isAdmin,
   isStaff,
   getFullName,
+  getShortName,
   getInitials,
   getAvatarColor,
 } from "../auth";
@@ -84,9 +85,25 @@ describe("auth", () => {
     });
   });
 
+  describe("getShortName", () => {
+    it("devuelve primer nombre y primer apellido", () => {
+      expect(getShortName({ ...mockUser, firstName: "Juan Carlos", lastName: "García López" })).toBe("Juan García");
+    });
+    it("devuelve cadena vacía para null", () => {
+      expect(getShortName(null)).toBe("");
+    });
+    it("solo un nombre o solo un apellido", () => {
+      expect(getShortName({ ...mockUser, firstName: "Marco", lastName: "" })).toBe("Marco");
+      expect(getShortName({ ...mockUser, firstName: "", lastName: "Solis" })).toBe("Solis");
+    });
+  });
+
   describe("getInitials", () => {
     it("devuelve iniciales de nombre y apellido", () => {
       expect(getInitials(mockUser)).toBe("MS");
+    });
+    it("varios nombres y apellidos: solo iniciales del primer nombre y primer apellido", () => {
+      expect(getInitials({ ...mockUser, firstName: "Juan Carlos", lastName: "García López" })).toBe("JG");
     });
     it("devuelve ? para null", () => {
       expect(getInitials(null)).toBe("?");
