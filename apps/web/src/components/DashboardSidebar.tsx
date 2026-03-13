@@ -490,7 +490,7 @@ export function DashboardSidebar() {
 
     const teamItems = [
       ...(admin ? [{ label: t("sidebar.employees"), href: "/dashboard/users", icon: Shield }] : []),
-      { label: t("sidebar.valets"), href: "/dashboard/valets", icon: UserRound },
+      ...(superAdmin ? [{ label: t("sidebar.valets"), href: "/dashboard/valets", icon: UserRound }] : []),
     ];
 
     const clientsItems = [
@@ -519,7 +519,7 @@ export function DashboardSidebar() {
         ],
       },
     ];
-  }, [t, hasBookableParkings]);
+  }, [t, hasBookableParkings, admin, superAdmin]);
 
   return (
     <>

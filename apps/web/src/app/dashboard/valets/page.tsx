@@ -20,6 +20,14 @@ import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 import { StatusFilterToolbar } from "@/components/StatusFilterToolbar";
 
+type ValetLastActivity = {
+  companyId?: string | null;
+  companyName?: string | null;
+  parkingId?: string | null;
+  parkingName?: string | null;
+  assignedAt?: string | null;
+};
+
 type ValetRow = {
   id?: string;
   user?: { id?: string; firstName?: string; lastName?: string; email?: string; phone?: string | null; pendingInvitation?: boolean };
@@ -27,6 +35,7 @@ type ValetRow = {
   licenseNumber?: string;
   licenseExpiry?: string;
   ratingAvg?: number;
+  lastActivity?: ValetLastActivity | null;
 };
 
 const VALET_STATUS_OPTIONS = [
@@ -120,6 +129,20 @@ export default function ValetsPage() {
           if (valet.user) valet.user.email = String(v ?? "");
         },
       },
+      ...(superAdmin
+        ? [
+            {
+              header: t("tables.valets.lastActivity"),
+              render: (valet: ValetRow) => {
+                const la = valet.lastActivity;
+                if (!la?.companyName && !la?.parkingName) return "—";
+                const parts = [la.companyName, la.parkingName].filter(Boolean);
+                return parts.length ? parts.join(" · ") : "—";
+              },
+              field: "lastActivity" as const,
+            },
+          ]
+        : []),
       {
         header: t("tables.valets.status"),
         render: (valet: { user?: { pendingInvitation?: boolean }; currentStatus?: string }) =>
@@ -169,7 +192,7 @@ export default function ValetsPage() {
     <>
       <DashboardDataTablePage<ValetRow>
         title={t("tables.valets.title")}
-        description={tWithCompany("tables.valets.description", selectedCompanyName)}
+        description={superAdmin ? t("tables.valets.descriptionAll") : tWithCompany("tables.valets.description", selectedCompanyName)}
         endpoint=""
         fetchData={fetchData}
         emptyMessage={t("tables.valets.empty")}
@@ -196,7 +219,8 @@ export default function ValetsPage() {
                 (valet.user?.phone != null && valet.user.phone !== "") ||
                 (valet.licenseNumber != null && valet.licenseNumber !== "") ||
                 valet.licenseExpiry != null ||
-                valet.ratingAvg != null
+                valet.ratingAvg != null ||
+                (valet.lastActivity != null && (valet.lastActivity.companyName ?? valet.lastActivity.parkingName))
             : undefined
         }
         renderRowDetail={
@@ -219,6 +243,12 @@ export default function ValetsPage() {
                     </>
                   )}
                   <DetailSectionLabel text={t("common.additionalInfo")} />
+                  {(valet.lastActivity?.companyName ?? valet.lastActivity?.parkingName) && (
+                    <DetailField
+                      label={t("tables.valets.lastActivity")}
+                      value={[valet.lastActivity.companyName, valet.lastActivity.parkingName].filter(Boolean).join(" · ")}
+                    />
+                  )}
                   <DetailField label={t("tables.employees.phone")} value={valet.user?.phone ? formatPhoneInternational(valet.user.phone) : undefined} linkType="phone" />
                   <DetailField label={t("tables.valets.license")} value={valet.licenseNumber} />
                   <DetailField label={t("valets.licenseExpiry")} value={valet.licenseExpiry ? new Date(valet.licenseExpiry).toLocaleDateString() : undefined} />

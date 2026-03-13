@@ -27,3 +27,12 @@ export interface VerifyOtpDTO {
   code: string;
   purpose?: string;
 }
+
+export interface RegisterValetDTO {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  licenseNumber: string;
+  licenseExpiry: string;
+}

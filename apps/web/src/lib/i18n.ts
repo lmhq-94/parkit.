@@ -636,6 +636,7 @@ export const translations = {
       valets: {
         title: "Valets",
         description: "Personal de valet de {{companyName}}.",
+        descriptionAll: "Todos los valets (subcontratados, rotan entre empresas).",
         empty: "No hay valets",
         filterAll: "Todos",
         filterStatusPlaceholder: "Estados",
@@ -643,6 +644,7 @@ export const translations = {
         email: "Correo",
         status: "Estado",
         license: "Licencia",
+        lastActivity: "Última actividad en",
         confirmDelete: "¿Eliminar este valet?",
         confirmDeleteItem: "¿Eliminar a {{item}}? Se eliminará de forma permanente.",
       },
@@ -1365,6 +1367,7 @@ export const translations = {
       valets: {
         title: "Valets",
         description: "Valet staff in {{companyName}}.",
+        descriptionAll: "All valets (subcontracted, rotate between companies).",
         empty: "No valets found",
         filterAll: "All",
         filterStatusPlaceholder: "Statuses",
@@ -1372,6 +1375,7 @@ export const translations = {
         email: "Email",
         status: "Status",
         license: "License",
+        lastActivity: "Last activity at",
         confirmDelete: "Delete this valet?",
         confirmDeleteItem: "Delete {{item}}? They will be permanently removed.",
       },

@@ -17,6 +17,20 @@ export class AuthController {
     }
   }
 
+  static async registerValet(req: Request, res: Response) {
+    try {
+      const result = await AuthService.registerValet(req.body);
+
+      return created(res, result);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
   static async login(req: Request, res: Response) {
     try {
       const result = await AuthService.login(req.body);

@@ -120,7 +120,9 @@ export class UsersService {
     if (isInvitation) {
       const invitationToken = crypto.randomBytes(32).toString("hex");
       const invitationTokenExpiresAt = new Date();
-      invitationTokenExpiresAt.setHours(invitationTokenExpiresAt.getHours() + INVITATION_EXPIRY_HOURS);
+      invitationTokenExpiresAt.setHours(
+        invitationTokenExpiresAt.getHours() + INVITATION_EXPIRY_HOURS
+      );
       const user = await prisma.user.create({
         data: {
           companyId: null,
@@ -151,6 +153,60 @@ export class UsersService {
         email: data.email,
         passwordHash,
         systemRole: SystemRole.SUPER_ADMIN,
+      },
+    });
+  }
+
+  /** Crea un usuario valet (companyId: null, STAFF). Para invitación por super-admin o auto-registro. */
+  static async createValetUser(data: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    password?: string;
+  }) {
+    const exists = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
+    if (exists) {
+      throw new Error("Email already in use");
+    }
+    const isInvitation = data.password == null || data.password === "";
+    if (isInvitation) {
+      const invitationToken = crypto.randomBytes(32).toString("hex");
+      const invitationTokenExpiresAt = new Date();
+      invitationTokenExpiresAt.setHours(
+        invitationTokenExpiresAt.getHours() + INVITATION_EXPIRY_HOURS
+      );
+      const user = await prisma.user.create({
+        data: {
+          companyId: null,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          passwordHash: null,
+          systemRole: SystemRole.STAFF,
+          invitationToken,
+          invitationTokenExpiresAt,
+        },
+      });
+      await sendInvitationEmail({
+        to: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        token: invitationToken,
+        companyName: undefined,
+      });
+      return user;
+    }
+    const passwordHash = await hashPassword(data.password!);
+    return prisma.user.create({
+      data: {
+        companyId: null,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        passwordHash,
+        systemRole: SystemRole.STAFF,
       },
     });
   }

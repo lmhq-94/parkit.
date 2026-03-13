@@ -175,7 +175,7 @@ model Client {
 
 model Valet {
   id               String      @id @default(uuid())
-  companyId        String
+  companyId        String?     // null = valet subcontratado, rota entre empresas
   userId           String      @unique
   currentParkingId String?
   licenseNumber    String
@@ -187,7 +187,7 @@ model Valet {
   updatedAt DateTime @updatedAt
 
   // relations
-  company       Company            @relation(fields: [companyId], references: [id])
+  company       Company?           @relation(fields: [companyId], references: [id])
   user          User               @relation(fields: [userId], references: [id])
   assignments   TicketAssignment[]
   damageReports DamageReport[]

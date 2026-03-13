@@ -25,8 +25,10 @@ export async function requireCompany(
 
   const headerCompanyId = req.headers["x-company-id"] as string | undefined;
 
-  // SUPER_ADMIN: must send x-company-id when acting in a company context
-  if (req.user.role === "SUPER_ADMIN") {
+  // SUPER_ADMIN o valet sin empresa: pueden enviar x-company-id para actuar en una empresa
+  const canUseHeaderCompany =
+    req.user.role === "SUPER_ADMIN" || (req.user.role === "STAFF" && !req.user.companyId);
+  if (canUseHeaderCompany) {
     if (headerCompanyId) {
       const company = await prisma.company.findUnique({
         where: { id: headerCompanyId },
@@ -43,7 +45,7 @@ export async function requireCompany(
       return next();
     }
     return res.status(400).json({
-      message: "x-company-id header required for this operation when using super admin",
+      message: "x-company-id header required for this operation",
     });
   }
 

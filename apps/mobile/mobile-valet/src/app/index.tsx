@@ -1,17 +1,58 @@
 import { StyleSheet, View, FlatList, Text, TouchableOpacity, Alert } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/store';
-import { clearAuthToken } from '@/lib/api';
+import api, { clearAuthToken } from '@/lib/api';
+
+/** Assignment from API GET /valets/me/assignments */
+interface ApiAssignment {
+  id: string;
+  ticketId: string;
+  valetId: string;
+  role: string;
+  assignedAt: string;
+  ticket: {
+    id: string;
+    status: string;
+    companyId: string;
+    vehicle: { plate: string; countryCode?: string };
+    parking: { name: string; address?: string };
+    slot?: { label: string } | null;
+  };
+}
 
 interface TicketAssignment {
   id: string;
+  assignmentId: string;
   ticketId: string;
   valetId: string;
   status: 'assigned' | 'in-transit' | 'completed';
   vehiclePlate: string;
   location: string;
   timestamp: string;
+  companyId: string;
+}
+
+function mapApiAssignmentToDisplay(a: ApiAssignment): TicketAssignment {
+  const status =
+    a.ticket.status === 'DELIVERED'
+      ? 'completed'
+      : a.ticket.status === 'REQUESTED'
+        ? 'assigned'
+        : 'assigned';
+  const location = [a.ticket.parking?.name, a.ticket.slot?.label].filter(Boolean).join(' · ') || a.ticket.parking?.address || '—';
+  const plate = a.ticket.vehicle?.plate ? `${a.ticket.vehicle.plate}` : '—';
+  return {
+    id: a.ticket.id,
+    assignmentId: a.id,
+    ticketId: a.ticket.id,
+    valetId: a.valetId,
+    status,
+    vehiclePlate: plate,
+    location,
+    timestamp: a.assignedAt,
+    companyId: a.ticket.companyId,
+  };
 }
 
 export default function TicketsScreen() {
@@ -20,46 +61,29 @@ export default function TicketsScreen() {
   const [tickets, setTickets] = useState<TicketAssignment[]>([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      loadTickets();
+  const loadTickets = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const res = await api.get<{ data: ApiAssignment[] }>('/valets/me/assignments');
+      const list = Array.isArray(res.data?.data) ? res.data.data : [];
+      setTickets(list.map(mapApiAssignmentToDisplay));
+    } catch {
+      setTickets([]);
+    } finally {
+      setLoading(false);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user) loadTickets();
+  }, [user, loadTickets]);
 
   if (!user) {
     return <Redirect href="/login" />;
   }
 
-  const loadTickets = async () => {
-    setLoading(true);
-    try {
-      // TODO: Replace with API call
-      setTickets([
-        {
-          id: 'assign-1',
-          ticketId: 'tk-001',
-          valetId: user?.id || '',
-          status: 'assigned',
-          vehiclePlate: 'ABC-1234',
-          location: 'Level 2, Zone A',
-          timestamp: new Date().toISOString(),
-        },
-        {
-          id: 'assign-2',
-          ticketId: 'tk-002',
-          valetId: user?.id || '',
-          status: 'in-transit',
-          vehiclePlate: 'XYZ-5678',
-          location: 'Ground Floor',
-          timestamp: new Date(Date.now() - 300000).toISOString(),
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleStatusUpdate = (ticketId: string, newStatus: 'in-transit' | 'completed') => {
+  const handleStatusUpdate = (item: TicketAssignment, newStatus: 'in-transit' | 'completed') => {
     Alert.alert(
       'Update Status',
       `Mark as ${newStatus === 'in-transit' ? 'In Transit' : 'Completed'}?`,
@@ -67,13 +91,28 @@ export default function TicketsScreen() {
         { text: 'Cancel', onPress: () => {} },
         {
           text: 'Update',
-          onPress: () => {
-            setTickets((prev) =>
-              prev.map((t) =>
-                t.id === ticketId ? { ...t, status: newStatus } : t
-              )
-            );
-            Alert.alert('Success', `Status updated to ${newStatus}`);
+          onPress: async () => {
+            if (newStatus === 'completed') {
+              try {
+                await api.patch(
+                  `/tickets/${item.ticketId}`,
+                  { status: 'DELIVERED' },
+                  { headers: { 'x-company-id': item.companyId } }
+                );
+                setTickets((prev) =>
+                  prev.map((t) => (t.ticketId === item.ticketId ? { ...t, status: 'completed' as const } : t))
+                );
+                Alert.alert('Success', 'Status updated to Completed');
+              } catch (e: unknown) {
+                const msg = e && typeof e === 'object' && 'response' in e && (e as { response?: { data?: { message?: string } } }).response?.data?.message;
+                Alert.alert('Error', msg || 'Update failed');
+              }
+            } else {
+              setTickets((prev) =>
+                prev.map((t) => (t.ticketId === item.ticketId ? { ...t, status: 'in-transit' as const } : t))
+              );
+              Alert.alert('Success', 'Marked as In Transit');
+            }
           },
         },
       ]
@@ -106,7 +145,7 @@ export default function TicketsScreen() {
         <View style={styles.ticketHeader}>
           <Text style={styles.vehiclePlate}>{item.vehiclePlate}</Text>
           <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-            <Text style={styles.statusText}>{item.status.toUpperCase()}</Text>
+            <Text style={styles.statusText}>{item.status.toUpperCase().replace('-', ' ')}</Text>
           </View>
         </View>
 
@@ -116,7 +155,7 @@ export default function TicketsScreen() {
           {item.status === 'assigned' && (
             <TouchableOpacity
               style={[styles.btn, { backgroundColor: '#0066FF' }]}
-              onPress={() => handleStatusUpdate(item.id, 'in-transit')}
+              onPress={() => handleStatusUpdate(item, 'in-transit')}
             >
               <Text style={styles.btnText}>START MOVE</Text>
             </TouchableOpacity>
@@ -124,7 +163,7 @@ export default function TicketsScreen() {
           {item.status === 'in-transit' && (
             <TouchableOpacity
               style={[styles.btn, { backgroundColor: '#10B981' }]}
-              onPress={() => handleStatusUpdate(item.id, 'completed')}
+              onPress={() => handleStatusUpdate(item, 'completed')}
             >
               <Text style={styles.btnText}>COMPLETE</Text>
             </TouchableOpacity>
@@ -148,7 +187,7 @@ export default function TicketsScreen() {
 
       <FlatList
         data={tickets}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.assignmentId}
         renderItem={renderTicket}
         refreshing={loading}
         onRefresh={loadTickets}

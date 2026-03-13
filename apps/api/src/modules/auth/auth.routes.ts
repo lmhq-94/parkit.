@@ -4,6 +4,7 @@ import { validateRequest } from "../../shared/middleware/validateRequest";
 import {
   AcceptInvitationSchema,
   LoginSchema,
+  RegisterValetSchema,
   RequestOtpSchema,
   VerifyOtpSchema,
 } from "../../shared/validators";
@@ -11,6 +12,7 @@ import {
 const router = Router();
 
 router.post("/register", validateRequest(LoginSchema), AuthController.register);
+router.post("/register-valet", validateRequest(RegisterValetSchema), AuthController.registerValet);
 router.post("/login", validateRequest(LoginSchema), AuthController.login);
 router.post(
   "/request-otp",

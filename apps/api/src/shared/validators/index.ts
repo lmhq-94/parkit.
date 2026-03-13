@@ -318,3 +318,15 @@ export const AcceptInvitationSchema = z.object({
 });
 
 export type AcceptInvitationInput = z.infer<typeof AcceptInvitationSchema>;
+
+// Valet self-registration (public, no auth)
+export const RegisterValetSchema = z.object({
+  firstName: z.string().min(1, "First name required"),
+  lastName: z.string().min(1, "Last name required"),
+  email: z.string().email("Invalid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  licenseNumber: z.string().min(1, "License number required"),
+  licenseExpiry: z.string().min(1, "License expiry required"),
+});
+
+export type RegisterValetInput = z.infer<typeof RegisterValetSchema>;

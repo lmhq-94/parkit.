@@ -35,7 +35,7 @@ export async function requireAuth(
     if (!companyId) {
       const user = await prisma.user.findUnique({
         where: { id: payload.userId },
-        select: { companyId: true, systemRole: true },
+        select: { companyId: true, systemRole: true, valet: { select: { companyId: true } } },
       });
 
       if (!user) {
@@ -43,9 +43,11 @@ export async function requireAuth(
       }
       if (user.companyId) {
         companyId = user.companyId;
+      } else if (user.valet?.companyId) {
+        companyId = user.valet.companyId ?? undefined;
       }
-      // SUPER_ADMIN: do not set companyId from header here; let requireCompany validate x-company-id and set it
-      if (!companyId && user.systemRole !== "SUPER_ADMIN") {
+      // SUPER_ADMIN y valets sin empresa (companyId null) pueden usar x-company-id en requireCompany
+      if (!companyId && user.systemRole !== "SUPER_ADMIN" && !user.valet) {
         return res.status(401).json({ message: "Unable to resolve company context" });
       }
     }

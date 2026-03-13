@@ -3,11 +3,13 @@ import {
   AcceptInvitationDTO,
   LoginDTO,
   RegisterDTO,
+  RegisterValetDTO,
   RequestOtpDTO,
   VerifyOtpDTO,
 } from "./auth.types";
 import { comparePassword, hashPassword, signToken } from "./auth.utils";
 import crypto from "crypto";
+import { UsersService } from "../users/users.service";
 
 export class AuthService {
   static async register(data: RegisterDTO) {
@@ -38,6 +40,46 @@ export class AuthService {
     });
 
     return { user, token };
+  }
+
+  /** Auto-registro de valet: User (companyId null, STAFF) + Valet (companyId null). */
+  static async registerValet(data: RegisterValetDTO) {
+    const user = await UsersService.createValetUser({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      password: data.password,
+    });
+    const valet = await prisma.valet.create({
+      data: {
+        userId: user.id,
+        companyId: null,
+        licenseNumber: data.licenseNumber,
+        licenseExpiry: new Date(data.licenseExpiry),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+            systemRole: true,
+            companyId: true,
+          },
+        },
+      },
+    });
+    const token = signToken({
+      userId: user.id,
+      role: user.systemRole,
+      companyId: user.companyId ?? undefined,
+    });
+    return {
+      user: valet.user,
+      token,
+    };
   }
 
   static async login(data: LoginDTO) {
@@ -73,8 +115,8 @@ export class AuthService {
       throw new Error("Invalid credentials");
     }
 
-    // SUPER_ADMIN no depende del estado de una empresa.
-    if (user.systemRole !== "SUPER_ADMIN") {
+    // SUPER_ADMIN y valets (companyId null) no dependen del estado de una empresa.
+    if (user.systemRole !== "SUPER_ADMIN" && user.companyId != null) {
       if (!user.company || user.company.status !== "ACTIVE") {
         throw new Error("COMPANY_INACTIVE");
       }
