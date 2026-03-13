@@ -82,6 +82,10 @@ describe("Integración: Edit Company", () => {
     await user.clear(legalInput);
     await user.type(legalInput, "Empresa Modificada SA");
 
+    // En el formulario de edición ahora es obligatorio elegir el canal de clientes
+    const channelWithAppOption = screen.getByText(/clientes con app móvil/i);
+    await user.click(channelWithAppOption);
+
     const saveButton = screen.getByRole("button", { name: /guardar|save/i });
     await user.click(saveButton);
 

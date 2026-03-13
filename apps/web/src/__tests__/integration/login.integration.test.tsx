@@ -94,7 +94,8 @@ describe("Integración: Login", () => {
     await userEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
+      // El mensaje de error ahora se muestra localizado en español
+      expect(screen.getByText(/usuario o contraseña incorrectos/i)).toBeInTheDocument();
     });
     expect(useAuthStore.getState().user).toBeNull();
     expect(mockPush).not.toHaveBeenCalled();

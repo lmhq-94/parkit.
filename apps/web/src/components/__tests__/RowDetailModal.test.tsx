@@ -74,11 +74,13 @@ describe("DetailField", () => {
     expect(screen.getByText("Juan")).toBeInTheDocument();
   });
 
-  it("no renderiza cuando value es null o vacío", () => {
-    const { container } = render(<DetailField label="Opcional" value={null} />);
-    expect(container.querySelector("dd")).not.toBeInTheDocument();
-    const { container: c2 } = render(<DetailField label="Vacio" value="" />);
-    expect(c2.querySelector("dd")).not.toBeInTheDocument();
+  it("muestra un placeholder cuando value es null o vacío", () => {
+    const { getAllByText, rerender } = render(<DetailField label="Opcional" value={null} />);
+    // Cuando no hay valor, se muestra el placeholder "—"
+    expect(getAllByText("—")[0]).toBeInTheDocument();
+
+    rerender(<DetailField label="Vacio" value="" />);
+    expect(getAllByText("—")[0]).toBeInTheDocument();
   });
 
   it("renderiza enlace mailto cuando linkType es email", () => {

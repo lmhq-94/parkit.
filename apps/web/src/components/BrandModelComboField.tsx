@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { ChevronDown, Car } from "lucide-react";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { toTitleCase } from "@/lib/inputMasks";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface BrandModelComboOption {
   value: string;
@@ -47,6 +48,7 @@ export function BrandModelComboField({
   const justCommittedRef = useRef(false);
   const openedFromFocusRef = useRef(false);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 220 });
+  const { t } = useTranslation();
 
   const filtered =
     inputValue.trim() === ""
@@ -227,7 +229,7 @@ export function BrandModelComboField({
           {loading ? (
             <div className="flex items-center justify-center gap-2 px-3 py-3 text-sm text-slate-400">
               <LoadingSpinner size="sm" />
-              <span>Cargando…</span>
+              <span>{t("common.loading")}</span>
             </div>
           ) : filtered.length > 0 ? (
             filtered.map((opt, idx) => (
@@ -247,7 +249,7 @@ export function BrandModelComboField({
             ))
           ) : (
             <p className="px-3 py-3 text-sm text-slate-400 text-center">
-              {inputValue.trim() ? "Escribir manualmente (Enter)" : "Sin opciones"}
+              {inputValue.trim() ? t("common.typeManuallyEnter") : t("common.noOptions")}
             </p>
           )}
         </div>

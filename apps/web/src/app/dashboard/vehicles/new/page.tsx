@@ -329,6 +329,15 @@ export default function NewVehiclePage() {
               )}
             </div>
           </div>
+          <div>
+            <label className={LABEL}>{t("vehicles.countryCode")}</label>
+            <SelectField value={form.countryCode} onChange={set("countryCode")} icon={Globe}>
+              <option value="">{t("common.selectPlaceholder")}</option>
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>{c.label}</option>
+              ))}
+            </SelectField>
+          </div>
         </div>
       ),
     },
@@ -340,15 +349,6 @@ export default function NewVehiclePage() {
       isValid: () => !!(form.lengthM.trim() && form.widthM.trim() && form.heightM.trim() && form.weightKg.trim()),
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <div>
-            <label className={LABEL}>{t("vehicles.countryCode")}</label>
-            <SelectField value={form.countryCode} onChange={set("countryCode")} icon={Globe}>
-              <option value="">{t("common.selectPlaceholder")}</option>
-              {COUNTRIES.map((c) => (
-                <option key={c.code} value={c.code}>{c.label}</option>
-              ))}
-            </SelectField>
-          </div>
           <div>
             <label className={LABEL}>{t("vehicles.lengthM")} <span className="text-company-primary">*</span></label>
             <div className="relative group">
