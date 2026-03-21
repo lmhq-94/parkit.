@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
-import { View, StyleSheet, Animated, StatusBar, Text } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { View, StyleSheet, Animated, StatusBar } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/lib/store";
+import { WelcomeContent } from "./welcome";
 
 // Colores alineados con la web (themeDefaults)
 const SPLASH_BG = "#020617"; // slate-900
@@ -15,6 +16,7 @@ const LOGO_SIZE = 72;
 export default function SplashScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const parkOpacity = useRef(new Animated.Value(0)).current;
   const parkTranslate = useRef(new Animated.Value(16)).current;
@@ -23,6 +25,8 @@ export default function SplashScreen() {
   const itTranslate = useRef(new Animated.Value(12)).current;
   const subtleOpacity = useRef(new Animated.Value(0)).current;
   const breathScale = useRef(new Animated.Value(1)).current;
+  const splashOpacity = useRef(new Animated.Value(1)).current;
+  const welcomeOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const stagger = Animated.sequence([
@@ -85,16 +89,28 @@ export default function SplashScreen() {
       if (user) {
         router.replace("/tickets");
       } else {
-        router.replace("/welcome");
+        setShowWelcome(true);
+        Animated.parallel([
+          Animated.timing(splashOpacity, {
+            toValue: 0,
+            duration: 320,
+            useNativeDriver: true,
+          }),
+          Animated.timing(welcomeOpacity, {
+            toValue: 1,
+            duration: 360,
+            useNativeDriver: true,
+          }),
+        ]).start();
       }
     }, SPLASH_DURATION_MS);
     return () => clearTimeout(t);
-  }, [user, router]);
+  }, [user, router, splashOpacity, welcomeOpacity]);
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={SPLASH_BG} />
-      <Animated.View style={[styles.logoWrap, { transform: [{ scale: breathScale }] }]}>
+      <Animated.View style={[styles.logoWrap, { opacity: splashOpacity, transform: [{ scale: breathScale }] }]}>
         <View style={styles.logoRow}>
           <Animated.Text
             style={[
@@ -128,6 +144,15 @@ export default function SplashScreen() {
           valet
         </Animated.Text>
       </Animated.View>
+
+      {showWelcome && (
+        <Animated.View style={[styles.welcomeOverlay, { opacity: welcomeOpacity }]}>
+          <WelcomeContent
+            onLogin={() => router.replace("/login")}
+            onSignup={() => router.replace("/login?mode=signup")}
+          />
+        </Animated.View>
+      )}
     </View>
   );
 }
@@ -164,5 +189,8 @@ const styles = StyleSheet.create({
     letterSpacing: 4,
     color: SUBTLE_TEXT,
     textTransform: "lowercase",
+  },
+  welcomeOverlay: {
+    ...StyleSheet.absoluteFillObject,
   },
 });

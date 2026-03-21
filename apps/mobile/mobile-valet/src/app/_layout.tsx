@@ -52,10 +52,13 @@ export default function RootLayout() {
       />
       <Stack.Screen name="tickets" />
       <Stack.Screen name="settings" />
-      <Stack.Screen name="welcome" />
+      <Stack.Screen
+        name="welcome"
+        options={{ animation: 'fade', gestureEnabled: false }}
+      />
       <Stack.Screen
         name="login"
-        options={{ animation: 'none', gestureEnabled: false }}
+        options={{ animation: 'slide_from_right', gestureEnabled: true }}
       />
     </Stack>
   );

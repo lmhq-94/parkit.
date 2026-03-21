@@ -33,6 +33,6 @@ export interface RegisterValetDTO {
   lastName: string;
   email: string;
   password: string;
-  licenseNumber: string;
-  licenseExpiry: string;
+  licenseNumber?: string;
+  licenseExpiry?: string;
 }

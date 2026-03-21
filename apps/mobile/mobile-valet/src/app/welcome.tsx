@@ -1,27 +1,54 @@
-import { View, Text, StyleSheet, Pressable, StatusBar } from "react-native";
+import { View, Text, StyleSheet, Pressable, StatusBar, Dimensions, Animated, Easing } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Logo } from "@parkit/shared";
 import { useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
+import { useEffect, useRef } from "react";
 
 // Mismos valores que el splash para que logo y "valet" se vean igual y en el mismo lugar
 const SPLASH_BG = "#020617";
 const LOGO_SIZE = 72;
 const SUBTLE_TEXT = "rgba(148, 163, 184, 0.58)";
 const ACCENT = "#3B82F6";
+const CONTROL_HEIGHT = 56;
+const WINDOW_HEIGHT = Dimensions.get("window").height;
+const HERO_MIN_HEIGHT = Math.round(WINDOW_HEIGHT * 0.32);
 
 /**
  * Pantalla inicial valet: logo + valet (mismo lugar y estilo que el splash) y,
  * en la parte inferior, botones LOGIN y SIGN UP.
  */
-export default function WelcomeScreen() {
-  const router = useRouter();
+export function WelcomeContent({
+  onLogin,
+  onSignup,
+}: {
+  onLogin: () => void;
+  onSignup: () => void;
+}) {
   const locale = useLocaleStore((s) => s.locale);
+  const buttonsTranslateY = useRef(new Animated.Value(26)).current;
+  const buttonsOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(buttonsTranslateY, {
+        toValue: 0,
+        duration: 380,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonsOpacity, {
+        toValue: 1,
+        duration: 320,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [buttonsOpacity, buttonsTranslateY]);
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={SPLASH_BG} />
       <View style={styles.hero}>
         <View style={styles.logoWrap}>
           <Logo size={LOGO_SIZE} style={styles.logo} darkBackground />
@@ -29,21 +56,42 @@ export default function WelcomeScreen() {
         </View>
       </View>
 
+      <Animated.View
+        style={{
+          transform: [{ translateY: buttonsTranslateY }],
+          opacity: buttonsOpacity,
+        }}
+      >
       <SafeAreaView style={styles.bottomSection} edges={["bottom"]}>
         <Text style={styles.ctaText}>{t(locale, "welcome.cta")}</Text>
         <Pressable
-          onPress={() => router.replace("/login")}
+          onPress={onLogin}
           style={({ pressed }) => [styles.btnPrimary, pressed && styles.btnPressed]}
         >
           <Text style={styles.btnPrimaryText}>{t(locale, "welcome.login")}</Text>
         </Pressable>
         <Pressable
-          onPress={() => router.replace("/login")}
+          onPress={onSignup}
           style={({ pressed }) => [styles.btnSecondary, pressed && styles.btnPressed]}
         >
           <Text style={styles.btnSecondaryText}>{t(locale, "welcome.signup")}</Text>
         </Pressable>
       </SafeAreaView>
+      </Animated.View>
+    </View>
+  );
+}
+
+export default function WelcomeScreen() {
+  const router = useRouter();
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={SPLASH_BG} />
+      <WelcomeContent
+        onLogin={() => router.push("/login")}
+        onSignup={() => router.push("/login?mode=signup")}
+      />
     </View>
   );
 }
@@ -54,6 +102,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    minHeight: HERO_MIN_HEIGHT,
   },
   logoWrap: {
     alignItems: "center",
@@ -85,9 +134,10 @@ const styles = StyleSheet.create({
   },
   btnPrimary: {
     backgroundColor: ACCENT,
-    paddingVertical: 18,
+    minHeight: CONTROL_HEIGHT,
     borderRadius: 16,
     alignItems: "center",
+    justifyContent: "center",
     marginBottom: 14,
     shadowColor: ACCENT,
     shadowOffset: { width: 0, height: 4 },
@@ -103,9 +153,10 @@ const styles = StyleSheet.create({
   },
   btnSecondary: {
     backgroundColor: "#0F172A",
-    paddingVertical: 18,
+    minHeight: CONTROL_HEIGHT,
     borderRadius: 16,
     alignItems: "center",
+    justifyContent: "center",
   },
   btnSecondaryText: {
     fontSize: 16,

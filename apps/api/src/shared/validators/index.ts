@@ -336,8 +336,8 @@ export const RegisterValetSchema = z.object({
   lastName: z.string().min(1, "Last name required"),
   email: z.string().email("Invalid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  licenseNumber: z.string().min(1, "License number required"),
-  licenseExpiry: z.string().min(1, "License expiry required"),
+  licenseNumber: z.string().min(1, "License number required").optional(),
+  licenseExpiry: z.string().min(1, "License expiry required").optional(),
 });
 
 export type RegisterValetInput = z.infer<typeof RegisterValetSchema>;
