@@ -179,7 +179,7 @@ export default function EditCompanyPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("companies.sectionMain")}</p>
-            <span className="text-[10px] font-semibold text-red-500">{t("common.requiredBadge")}</span>
+            <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
           </div>
           <p className="text-xs text-text-muted mt-1">{t("companies.sectionMainDesc")}</p>
         </div>
@@ -210,7 +210,7 @@ export default function EditCompanyPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("companies.sectionContact")}</p>
-            <span className="text-[10px] font-semibold text-red-500">{t("common.requiredBadge")}</span>
+            <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
           </div>
           <p className="text-xs text-text-muted mt-1">{t("companies.sectionContactDesc")}</p>
         </div>

@@ -128,7 +128,7 @@ export default function EditValetPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("valets.sectionEmployee")}</p>
-            <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">{t("common.requiredBadge")}</span>
+            <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
           </div>
           <p className="text-xs text-text-muted mt-1">{t("valets.sectionEmployeeDesc")}</p>
         </div>
@@ -195,7 +195,7 @@ export default function EditValetPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("valets.sectionStatusEdit")}</p>
-            <span className="text-[10px] font-semibold text-company-tertiary bg-company-tertiary-subtle px-2.5 py-1 rounded-full border border-company-secondary-muted">{t("common.optionalBadge")}</span>
+            <span className="text-[11px] font-medium text-text-muted">{t("common.optionalBadge")}</span>
           </div>
           <p className="text-xs text-text-muted mt-1">{t("valets.sectionStatusEditDesc")}</p>
         </div>

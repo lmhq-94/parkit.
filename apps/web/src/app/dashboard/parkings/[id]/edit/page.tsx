@@ -401,7 +401,7 @@ export default function EditParkingPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("parkings.sectionSlots")}</p>
-            <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">{t("common.requiredBadge")}</span>
+            <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
           </div>
           <p className="text-xs text-text-muted mt-1">{t("parkings.sectionSlotsDesc")}</p>
         </div>
@@ -508,7 +508,7 @@ export default function EditParkingPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-text-primary">{t("parkings.sectionGeo")}</p>
-            <span className="text-[10px] font-semibold text-text-muted/60 bg-input-bg px-2.5 py-1 rounded-full border border-input-border/60">{t("common.optionalBadge")}</span>
+            <span className="text-[11px] font-medium text-text-muted">{t("common.optionalBadge")}</span>
           </div>
           <p className="text-xs text-text-muted mt-1">{t("parkings.sectionGeoDesc")}</p>
         </div>

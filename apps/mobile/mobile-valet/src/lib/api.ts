@@ -1,7 +1,12 @@
 import axios, { AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import Constants from 'expo-constants';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000';
+const hostUri = Constants.expoConfig?.hostUri;
+const lanHost = hostUri ? hostUri.split(':')[0] : null;
+const API_URL =
+  process.env.EXPO_PUBLIC_API_URL ||
+  (lanHost ? `http://${lanHost}:4000` : 'http://localhost:4000');
 
 const api = axios.create({
   baseURL: API_URL,

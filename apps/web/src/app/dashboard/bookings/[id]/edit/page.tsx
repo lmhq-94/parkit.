@@ -151,7 +151,7 @@ export default function EditBookingPage() {
             <p className="text-sm font-semibold text-text-primary">
               {t("bookings.sectionMain")}
             </p>
-            <span className="text-[10px] font-semibold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/30">
+            <span className="text-[11px] font-medium text-red-500">
               {t("common.requiredBadge")}
             </span>
           </div>
@@ -241,7 +241,7 @@ export default function EditBookingPage() {
             <p className="text-sm font-semibold text-text-primary">
               {t("bookings.sectionExit")}
             </p>
-            <span className="text-[10px] font-semibold text-text-muted/60 bg-input-bg px-2.5 py-1 rounded-full border border-input-border/60">
+            <span className="text-[11px] font-medium text-text-muted">
               {t("common.optionalBadge")}
             </span>
           </div>
