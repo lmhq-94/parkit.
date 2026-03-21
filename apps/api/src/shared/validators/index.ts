@@ -144,7 +144,7 @@ export const UpdateValetSchema = z.object({
   licenseNumber: z.string().min(1).optional(),
   licenseExpiry: z.string().datetime("Invalid datetime").optional(),
   currentParkingId: z.string().optional(),
-  ratingAvg: z.number().optional(),
+  ratingAvg: z.number().min(0).max(5).nullable().optional(),
 });
 
 export type CreateValetInput = z.infer<typeof CreateValetSchema>;
@@ -330,14 +330,14 @@ export const AcceptInvitationSchema = z.object({
 
 export type AcceptInvitationInput = z.infer<typeof AcceptInvitationSchema>;
 
-// Valet self-registration (public, no auth)
+// Valet self-registration (public, no auth). Licencia solo si el cliente la envía; mobile-valet no la envía.
 export const RegisterValetSchema = z.object({
   firstName: z.string().min(1, "First name required"),
   lastName: z.string().min(1, "Last name required"),
   email: z.string().email("Invalid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  licenseNumber: z.string().min(1, "License number required").optional(),
-  licenseExpiry: z.string().min(1, "License expiry required").optional(),
+  licenseNumber: z.string().trim().min(1).optional(),
+  licenseExpiry: z.string().datetime().optional(),
 });
 
 export type RegisterValetInput = z.infer<typeof RegisterValetSchema>;

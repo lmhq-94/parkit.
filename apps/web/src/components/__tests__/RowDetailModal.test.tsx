@@ -74,13 +74,22 @@ describe("DetailField", () => {
     expect(screen.getByText("Juan")).toBeInTheDocument();
   });
 
-  it("muestra un placeholder cuando value es null o vacío", () => {
-    const { getAllByText, rerender } = render(<DetailField label="Opcional" value={null} />);
-    // Cuando no hay valor, se muestra el placeholder "—"
-    expect(getAllByText("—")[0]).toBeInTheDocument();
+  it("no renderiza nada cuando value es null, vacío o solo espacios", () => {
+    const { container, rerender } = render(<DetailField label="Opcional" value={null} />);
+    expect(container.textContent).toBe("");
+    expect(screen.queryByText("Opcional")).not.toBeInTheDocument();
 
     rerender(<DetailField label="Vacio" value="" />);
-    expect(getAllByText("—")[0]).toBeInTheDocument();
+    expect(container.textContent).toBe("");
+    expect(screen.queryByText("Vacio")).not.toBeInTheDocument();
+
+    rerender(<DetailField label="Espacios" value="   " />);
+    expect(container.textContent).toBe("");
+    expect(screen.queryByText("Espacios")).not.toBeInTheDocument();
+
+    rerender(<DetailField label="Enum vacío" value="N/A" />);
+    expect(container.textContent).toBe("");
+    expect(screen.queryByText("Enum vacío")).not.toBeInTheDocument();
   });
 
   it("renderiza enlace mailto cuando linkType es email", () => {

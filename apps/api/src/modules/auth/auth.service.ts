@@ -50,18 +50,12 @@ export class AuthService {
       email: data.email,
       password: data.password,
     });
-    const fallbackExpiry = new Date();
-    fallbackExpiry.setFullYear(fallbackExpiry.getFullYear() + 1);
-
     const valet = await prisma.valet.create({
       data: {
         userId: user.id,
         companyId: null,
-        // En auto-registro mobile no pedimos licencia todavía.
-        licenseNumber: data.licenseNumber?.trim() || "PENDING",
-        licenseExpiry: data.licenseExpiry
-          ? new Date(data.licenseExpiry)
-          : fallbackExpiry,
+        licenseNumber: data.licenseNumber?.trim() || null,
+        licenseExpiry: data.licenseExpiry ? new Date(data.licenseExpiry) : null,
       },
       include: {
         user: {

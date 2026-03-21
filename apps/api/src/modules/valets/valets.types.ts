@@ -9,7 +9,8 @@ export interface UpdateValetDTO {
   licenseNumber?: string;
   licenseExpiry?: string;
   currentParkingId?: string;
-  ratingAvg?: number;
+  /** null para limpiar; omitir para no tocar */
+  ratingAvg?: number | null;
 }
 
 export interface ValetResponse {
@@ -19,7 +20,7 @@ export interface ValetResponse {
   licenseNumber: string;
   licenseExpiry: Date;
   currentStatus: string;
-  ratingAvg: number;
+  ratingAvg: number | null;
   createdAt: Date;
   updatedAt: Date;
 }

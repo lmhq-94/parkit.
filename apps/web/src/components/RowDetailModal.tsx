@@ -106,6 +106,17 @@ export function RowDetailModal({
   return createPortal(content, document.body);
 }
 
+function hasDetailFieldValue(value: string | number | null | undefined): boolean {
+  if (value === undefined || value === null) return false;
+  if (typeof value === "string") {
+    const s = value.trim();
+    if (s === "") return false;
+    // Coincide con translateEnum() cuando el enum viene vacío (evita mostrar "N/A" en detalle).
+    if (s === "N/A") return false;
+  }
+  return true;
+}
+
 export function DetailField({
   label,
   value,
@@ -119,8 +130,10 @@ export function DetailField({
   linkType?: "email" | "phone";
   multiline?: boolean;
 }) {
-  const hasValue = !(value === undefined || value === null || value === "");
-  const str = hasValue ? String(value) : "—";
+  if (!hasDetailFieldValue(value)) {
+    return null;
+  }
+  const str = String(value);
   const href = linkType === "email" ? `mailto:${str}` : linkType === "phone" ? `tel:${str}` : undefined;
   return (
     <div className={wide ? "col-span-2" : ""}>

@@ -105,6 +105,8 @@ export class ValetsService {
       lastName: true,
       email: true,
       phone: true,
+      isActive: true,
+      lastLogin: true,
       invitationTokenExpiresAt: true,
     } as const;
     const userSelectWithoutInvitation = {
@@ -113,6 +115,8 @@ export class ValetsService {
       lastName: true,
       email: true,
       phone: true,
+      isActive: true,
+      lastLogin: true,
     } as const;
 
     const assignmentsInclude =
@@ -277,7 +281,7 @@ export class ValetsService {
           ? new Date(data.licenseExpiry)
           : undefined,
         currentParkingId: data.currentParkingId,
-        ratingAvg: data.ratingAvg,
+        ...(data.ratingAvg !== undefined && { ratingAvg: data.ratingAvg }),
       },
       include: {
         user: true,

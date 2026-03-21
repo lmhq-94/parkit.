@@ -226,13 +226,13 @@ export default function TicketsPage() {
             : null;
           const byRole = (ticket.assignments ?? []).reduce<Record<string, string>>((acc, a) => {
             const u = a.valet?.user;
-            const name = u ? [u.firstName, u.lastName].filter(Boolean).join(" ").trim() || "—" : "—";
-            if (a.role) acc[a.role] = name;
+            const name = u ? [u.firstName, u.lastName].filter(Boolean).join(" ").trim() : "";
+            if (a.role && name) acc[a.role] = name;
             return acc;
           }, {});
-          const receptor = byRole.RECEPTOR ?? "—";
-          const driver = byRole.DRIVER ?? "—";
-          const deliverer = byRole.DELIVERER ?? "—";
+          const receptor = byRole.RECEPTOR;
+          const driver = byRole.DRIVER;
+          const deliverer = byRole.DELIVERER;
           return (
             <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
               <DetailSectionLabel text={t("common.additionalInfo")} />

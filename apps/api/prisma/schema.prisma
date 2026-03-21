@@ -178,10 +178,12 @@ model Valet {
   companyId        String?     // null = valet subcontratado, rota entre empresas
   userId           String      @unique
   currentParkingId String?
-  licenseNumber    String
-  licenseExpiry    DateTime
+  /** Null si el valet se registró solo desde la app (ej. mobile-valet) y aún no se cargó en el panel. */
+  licenseNumber    String?
+  licenseExpiry    DateTime?
   currentStatus    ValetStatus @default(AVAILABLE)
-  ratingAvg        Float       @default(5)
+  /** Media de valoraciones de clientes (app); null hasta que existan reseñas. */
+  ratingAvg        Float?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

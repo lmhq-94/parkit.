@@ -15,6 +15,7 @@ const DashboardDataTablePage = dynamic(
 import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
+import { formatDateTimeDisplay } from "@/lib/dateFormat";
 import { formatPhoneInternational } from "@/lib/inputMasks";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
@@ -30,11 +31,20 @@ type ValetLastActivity = {
 
 type ValetRow = {
   id?: string;
-  user?: { id?: string; firstName?: string; lastName?: string; email?: string; phone?: string | null; pendingInvitation?: boolean };
+  user?: {
+    id?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string | null;
+    pendingInvitation?: boolean;
+    isActive?: boolean;
+    lastLogin?: string | null;
+  };
   currentStatus?: string;
   licenseNumber?: string;
   licenseExpiry?: string;
-  ratingAvg?: number;
+  ratingAvg?: number | null;
   lastActivity?: ValetLastActivity | null;
 };
 
@@ -43,6 +53,32 @@ const VALET_STATUS_OPTIONS = [
   { value: "BUSY", key: "BUSY" },
   { value: "AWAY", key: "AWAY" },
 ] as const;
+
+/** Activo / inactivo (cuenta de usuario), mismo criterio que empleados. */
+function ValetAccountStatusCell(
+  params: ICellRendererParams<ValetRow> & { t: (key: string) => string }
+) {
+  const { data, t } = params;
+  if (!data?.user) return null;
+  const u = data.user;
+  if (u.pendingInvitation) {
+    return (
+      <span className="inline-flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
+        <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-amber-500" />
+        {t("tables.employees.pendingInvitation")}
+      </span>
+    );
+  }
+  const active = u.isActive !== false;
+  return (
+    <span
+      className={`inline-flex items-center gap-2 text-sm ${active ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${active ? "bg-emerald-500" : "bg-red-500"}`} />
+      {active ? t("tables.employees.active") : t("tables.employees.inactive")}
+    </span>
+  );
+}
 
 export default function ValetsPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
@@ -73,12 +109,12 @@ export default function ValetsPage() {
       if (row.user.firstName !== undefined) userPayload.firstName = String(row.user.firstName).trim();
       if (row.user.lastName !== undefined) userPayload.lastName = String(row.user.lastName).trim();
       if (row.user.email !== undefined) userPayload.email = String(row.user.email).trim();
+      if (row.user.isActive !== undefined) {
+        userPayload.isActive = row.user.isActive === true;
+      }
     }
     if (userId && Object.keys(userPayload).length > 0) {
       await apiClient.patch(`/users/${userId}`, userPayload);
-    }
-    if (row.currentStatus !== undefined) {
-      await apiClient.patch(`/valets/${row.id}/status`, { status: row.currentStatus });
     }
     const valetPayload: Record<string, unknown> = {};
     if (row.licenseNumber !== undefined) valetPayload.licenseNumber = String(row.licenseNumber).trim();
@@ -129,64 +165,35 @@ export default function ValetsPage() {
           if (valet.user) valet.user.email = String(v ?? "");
         },
       },
-      ...(superAdmin
-        ? [
-            {
-              header: t("tables.valets.lastActivity"),
-              render: (valet: ValetRow) => {
-                const la = valet.lastActivity;
-                if (!la?.companyName && !la?.parkingName) return "—";
-                const parts = [la.companyName, la.parkingName].filter(Boolean);
-                return parts.length ? parts.join(" · ") : "—";
-              },
-              field: "lastActivity" as const,
-            },
-          ]
-        : []),
       {
         header: t("tables.valets.status"),
-        render: (valet: { user?: { pendingInvitation?: boolean }; currentStatus?: string }) =>
-          valet.user?.pendingInvitation ? t("tables.employees.pendingInvitation") : tEnum("valetStatus", valet.currentStatus),
-        field: "currentStatus" as const,
-        editable: superAdmin,
-        cellEditorValues: ["AVAILABLE", "BUSY", "AWAY"],
-        cellEditorLabels: ["AVAILABLE", "BUSY", "AWAY"].map((v) => tEnum("valetStatus", v)),
-        getStatusStyle: (value: string) =>
-          value === "AVAILABLE"
-            ? { text: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500" }
-            : value === "BUSY"
-              ? { text: "text-amber-600 dark:text-amber-400", dot: "bg-amber-500" }
-              : { text: "text-slate-500 dark:text-slate-400", dot: "bg-slate-400" },
-        cellRenderer: function ValetStatusCell(
-          params: ICellRendererParams<ValetRow> & { t: (k: string) => string; tEnum: (ns: string, v?: string | null) => string }
-        ) {
-          const { data, t, tEnum } = params;
-          if (!data) return null;
-          if (data.user?.pendingInvitation) {
-            return (
-              <span className="inline-flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
-                <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-amber-500" />
-                {t("tables.employees.pendingInvitation")}
-              </span>
-            );
-          }
-          const status = data.currentStatus;
-          const label = tEnum("valetStatus", status);
-          const variant =
-            status === "AVAILABLE" ? "text-emerald-600 dark:text-emerald-400" : status === "BUSY" ? "text-amber-600 dark:text-amber-400" : "text-slate-500 dark:text-slate-400";
-          const dot =
-            status === "AVAILABLE" ? "bg-emerald-500" : status === "BUSY" ? "bg-amber-500" : "bg-slate-400";
-          return (
-            <span className={`inline-flex items-center gap-2 text-sm ${variant}`}>
-              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} />
-              {label || "—"}
-            </span>
-          );
+        render: (valet: ValetRow) => {
+          if (valet.user?.pendingInvitation) return t("tables.employees.pendingInvitation");
+          return valet.user?.isActive !== false ? t("tables.employees.active") : t("tables.employees.inactive");
         },
-        cellRendererParams: { t, tEnum },
+        field: "valetAccountActive",
+        editable: (valet: ValetRow) => Boolean(superAdmin && !valet.user?.pendingInvitation),
+        cellEditorValues: [t("tables.employees.active"), t("tables.employees.inactive")],
+        valueGetter: (valet: ValetRow) => {
+          if (valet.user?.pendingInvitation) return t("tables.employees.pendingInvitation");
+          return valet.user?.isActive !== false ? t("tables.employees.active") : t("tables.employees.inactive");
+        },
+        valueSetter: (valet: ValetRow, v: unknown) => {
+          if (valet.user) {
+            valet.user.isActive = v === t("tables.employees.active");
+          }
+        },
+        cellRenderer: ValetAccountStatusCell,
+        cellRendererParams: { t },
+        getStatusStyle: (value: string) =>
+          value === t("tables.employees.active")
+            ? { text: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500" }
+            : value === t("tables.employees.inactive")
+              ? { text: "text-red-600 dark:text-red-400", dot: "bg-red-500" }
+              : { text: "text-amber-600 dark:text-amber-400", dot: "bg-amber-500" },
       },
     ],
-    [t, tEnum, superAdmin]
+    [t, superAdmin]
   );
   return (
     <>
@@ -212,17 +219,7 @@ export default function ValetsPage() {
             onChange={setStatusFilters}
           />
         }
-        hasRowDetail={
-          superAdmin
-            ? (valet) =>
-                valet.user?.pendingInvitation === true ||
-                (valet.user?.phone != null && valet.user.phone !== "") ||
-                (valet.licenseNumber != null && valet.licenseNumber !== "") ||
-                valet.licenseExpiry != null ||
-                valet.ratingAvg != null ||
-                (valet.lastActivity != null && (valet.lastActivity.companyName ?? valet.lastActivity.parkingName))
-            : undefined
-        }
+        hasRowDetail={superAdmin ? () => true : undefined}
         renderRowDetail={
           superAdmin
             ? (valet) => (
@@ -243,18 +240,44 @@ export default function ValetsPage() {
                     </>
                   )}
                   <DetailSectionLabel text={t("common.additionalInfo")} />
-                  {(valet.lastActivity?.companyName ?? valet.lastActivity?.parkingName) && (
-                    <DetailField
-                      label={t("tables.valets.lastActivity")}
-                      value={[valet.lastActivity.companyName, valet.lastActivity.parkingName].filter(Boolean).join(" · ")}
-                    />
-                  )}
+                  <DetailField
+                    label={t("tables.valets.lastActivity")}
+                    value={
+                      valet.lastActivity?.companyName || valet.lastActivity?.parkingName
+                        ? [valet.lastActivity?.companyName, valet.lastActivity?.parkingName].filter(Boolean).join(" · ")
+                        : undefined
+                    }
+                  />
+                  <DetailField
+                    label={t("tables.valets.activityAt")}
+                    value={
+                      valet.lastActivity?.assignedAt
+                        ? formatDateTimeDisplay(new Date(valet.lastActivity.assignedAt), t)
+                        : undefined
+                    }
+                  />
+                  <DetailField
+                    label={t("tables.valets.availabilityStatus")}
+                    value={
+                      valet.user?.pendingInvitation
+                        ? t("tables.employees.pendingInvitation")
+                        : tEnum("valetStatus", valet.currentStatus)
+                    }
+                  />
                   <DetailField label={t("tables.employees.phone")} value={valet.user?.phone ? formatPhoneInternational(valet.user.phone) : undefined} linkType="phone" />
                   <DetailField label={t("tables.valets.license")} value={valet.licenseNumber} />
                   <DetailField label={t("valets.licenseExpiry")} value={valet.licenseExpiry ? new Date(valet.licenseExpiry).toLocaleDateString() : undefined} />
                   {valet.ratingAvg != null && (
                     <DetailField label={t("valets.ratingAvg")} value={String(valet.ratingAvg)} />
                   )}
+                  <DetailField
+                    label={t("tables.employees.lastLogin")}
+                    value={
+                      valet.user?.lastLogin
+                        ? formatDateTimeDisplay(new Date(valet.user.lastLogin), t)
+                        : undefined
+                    }
+                  />
                 </dl>
               )
             : undefined

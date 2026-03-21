@@ -33,6 +33,7 @@ export interface RegisterValetDTO {
   lastName: string;
   email: string;
   password: string;
+  /** Opcional; registro desde mobile-valet no envía estos campos. */
   licenseNumber?: string;
   licenseExpiry?: string;
 }

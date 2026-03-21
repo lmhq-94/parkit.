@@ -119,10 +119,12 @@ export class UsersController {
   static async update(req: Request, res: Response) {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const bypassCompanyScope = req.user.role === "SUPER_ADMIN";
       const user = await UsersService.update(
         req.user.companyId!,
         id,
-        req.body
+        req.body,
+        { bypassCompanyScope }
       );
 
       const { passwordHash, invitationToken, invitationTokenExpiresAt, ...rest } = user;

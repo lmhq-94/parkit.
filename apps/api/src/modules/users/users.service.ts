@@ -332,8 +332,15 @@ export class UsersService {
   static async update(
     companyId: string,
     userId: string,
-    data: UpdateUserDTO
+    data: UpdateUserDTO,
+    options?: { bypassCompanyScope?: boolean }
   ) {
+    if (options?.bypassCompanyScope) {
+      return prisma.user.update({
+        where: { id: userId },
+        data,
+      });
+    }
     return prisma.user.update({
       where: {
         id: userId,
