@@ -20,6 +20,7 @@ module.exports = {
   coverageReporters: ["text", "lcov", "json"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
+    "^@parkit/shared/(.*)$": "<rootDir>/../../packages/shared/src/$1",
   },
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],

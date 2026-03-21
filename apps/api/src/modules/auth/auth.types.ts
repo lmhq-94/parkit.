@@ -16,6 +16,15 @@ export interface AcceptInvitationDTO {
   password: string;
 }
 
+export interface ForgotPasswordDTO {
+  email: string;
+}
+
+export interface ResetPasswordDTO {
+  token: string;
+  password: string;
+}
+
 export interface RequestOtpDTO {
   email: string;
   purpose?: string;
@@ -33,6 +42,8 @@ export interface RegisterValetDTO {
   lastName: string;
   email: string;
   password: string;
+  /** Sub-rol STAFF: recepcionista o conductor. */
+  staffRole: "RECEPTIONIST" | "DRIVER";
   /** Opcional; registro desde mobile-valet no envía estos campos. */
   licenseNumber?: string;
   licenseExpiry?: string;

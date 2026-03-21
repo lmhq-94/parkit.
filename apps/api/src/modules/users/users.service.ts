@@ -278,7 +278,14 @@ export class UsersService {
         where: { id: userId, companyId },
       });
       if (!user) return null;
-      const { passwordHash, invitationToken, invitationTokenExpiresAt, ...rest } = user;
+      const {
+        passwordHash,
+        invitationToken,
+        invitationTokenExpiresAt,
+        passwordResetToken,
+        passwordResetExpiresAt,
+        ...rest
+      } = user;
       const pendingInvitation =
         invitationTokenExpiresAt != null && new Date(invitationTokenExpiresAt) > new Date();
       return { ...rest, pendingInvitation };

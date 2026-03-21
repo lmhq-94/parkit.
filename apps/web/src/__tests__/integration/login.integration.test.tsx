@@ -10,7 +10,7 @@ import { useAuthStore } from "@/lib/store";
 
 jest.mock("next/font/local", () => ({
   __esModule: true,
-  default: () => ({ variable: "--font-calsans", className: "font-calsans" }),
+  default: () => ({ style: { fontFamily: "__CalSans_test__" } }),
 }));
 
 const mockPush = jest.fn();

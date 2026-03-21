@@ -13,7 +13,7 @@ const mockBumpCompanies = jest.fn();
 
 jest.mock("next/font/local", () => ({
   __esModule: true,
-  default: () => ({ variable: "--font-calsans", className: "font-calsans" }),
+  default: () => ({ style: { fontFamily: "__CalSans_test__" } }),
 }));
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush, replace: jest.fn() }),

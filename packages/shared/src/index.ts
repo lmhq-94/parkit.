@@ -1,2 +1,3 @@
 export * from "./types/user";
-export { Logo } from "./components/Logo";
+export * from "./logoTokens";
+export { Logo, type LogoVariant } from "./components/Logo";

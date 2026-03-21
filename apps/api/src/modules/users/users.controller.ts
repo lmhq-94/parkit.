@@ -10,7 +10,14 @@ export class UsersController {
       const userId = req.user.userId;
       const user = await UsersService.getProfile(userId);
       if (!user) return notFound(res, "User not found");
-      const { passwordHash, invitationToken, invitationTokenExpiresAt, ...rest } = user;
+      const {
+        passwordHash,
+        invitationToken,
+        invitationTokenExpiresAt,
+        passwordResetToken,
+        passwordResetExpiresAt,
+        ...rest
+      } = user;
       const pendingInvitation =
         invitationTokenExpiresAt != null && new Date(invitationTokenExpiresAt) > new Date();
       return ok(res, { ...rest, pendingInvitation });
@@ -27,7 +34,14 @@ export class UsersController {
     try {
       const userId = req.user.userId;
       const user = await UsersService.updateProfile(userId, req.body);
-      const { passwordHash, invitationToken, invitationTokenExpiresAt, ...rest } = user;
+      const {
+        passwordHash,
+        invitationToken,
+        invitationTokenExpiresAt,
+        passwordResetToken,
+        passwordResetExpiresAt,
+        ...rest
+      } = user;
       const pendingInvitation =
         invitationTokenExpiresAt != null && new Date(invitationTokenExpiresAt) > new Date();
       return ok(res, { ...rest, pendingInvitation });
@@ -43,7 +57,14 @@ export class UsersController {
   static async createSuperAdmin(req: Request, res: Response) {
     try {
       const user = await UsersService.createSuperAdmin(req.body);
-      const { invitationToken, invitationTokenExpiresAt, passwordHash, ...rest } = user;
+      const {
+        invitationToken,
+        invitationTokenExpiresAt,
+        passwordHash,
+        passwordResetToken,
+        passwordResetExpiresAt,
+        ...rest
+      } = user;
       return created(res, rest);
     } catch (error: unknown) {
       return fail(
@@ -63,7 +84,14 @@ export class UsersController {
       );
 
       // Don't expose invitation token or password hash in API response
-      const { invitationToken, invitationTokenExpiresAt, passwordHash, ...rest } = user;
+      const {
+        invitationToken,
+        invitationTokenExpiresAt,
+        passwordHash,
+        passwordResetToken,
+        passwordResetExpiresAt,
+        ...rest
+      } = user;
       return created(res, rest);
     } catch (error: unknown) {
       return fail(
@@ -127,7 +155,14 @@ export class UsersController {
         { bypassCompanyScope }
       );
 
-      const { passwordHash, invitationToken, invitationTokenExpiresAt, ...rest } = user;
+      const {
+        passwordHash,
+        invitationToken,
+        invitationTokenExpiresAt,
+        passwordResetToken,
+        passwordResetExpiresAt,
+        ...rest
+      } = user;
       const pendingInvitation =
         invitationTokenExpiresAt != null && new Date(invitationTokenExpiresAt) > new Date();
       return ok(res, { ...rest, pendingInvitation });

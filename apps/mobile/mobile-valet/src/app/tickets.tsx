@@ -15,7 +15,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import api, { clearAuthToken } from "@/lib/api";
-import { valetHomeTheme as T } from "@/theme/valetHomeTheme";
+import { useValetTheme, statusVisuals as statusVisualsForTheme } from "@/theme/valetTheme";
 
 /** Assignment from API GET /valets/me/assignments */
 interface ApiAssignment {
@@ -71,23 +71,236 @@ function mapApiAssignmentToDisplay(a: ApiAssignment): TicketAssignment {
   };
 }
 
-function statusVisuals(status: TicketAssignment["status"]) {
-  switch (status) {
-    case "assigned":
-      return { bar: "#EA580C", softBg: "#FFEDD5", softText: "#9A3412" };
-    case "in-transit":
-      return { bar: T.colors.primary, softBg: "#DBEAFE", softText: "#1E40AF" };
-    case "completed":
-      return { bar: T.colors.success, softBg: "#D1FAE5", softText: "#065F46" };
-    default:
-      return { bar: T.colors.textSubtle, softBg: "#F1F5F9", softText: T.colors.text };
-  }
+type Theme = ReturnType<typeof useValetTheme>;
+
+function createTicketStyles(theme: Theme) {
+  const C = theme.colors;
+  const S = theme.space;
+  const F = theme.font;
+  const R = theme.radius;
+  const M = theme.minTouch;
+
+  return StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: C.bg,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: C.bg,
+    },
+    header: {
+      paddingHorizontal: S.lg,
+      paddingTop: S.sm,
+      paddingBottom: S.md,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: C.border,
+      backgroundColor: C.card,
+    },
+    headerTextBlock: {
+      gap: S.xs,
+    },
+    title: {
+      fontSize: F.title,
+      fontWeight: "800",
+      color: C.text,
+      letterSpacing: Platform.OS === "ios" ? -0.5 : 0,
+    },
+    subtitle: {
+      fontSize: F.subtitle,
+      color: C.textMuted,
+      lineHeight: 24,
+      fontWeight: "500",
+    },
+    toolbar: {
+      flexDirection: "row",
+      justifyContent: "space-around",
+      alignItems: "stretch",
+      paddingVertical: S.md,
+      paddingHorizontal: S.md,
+      gap: S.md,
+      backgroundColor: C.card,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: C.border,
+    },
+    toolbarBtn: {
+      flex: 1,
+      minHeight: M,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: S.sm,
+      paddingVertical: S.sm,
+      paddingHorizontal: S.md,
+      backgroundColor: C.bg,
+      borderRadius: R.button,
+      borderWidth: 2,
+      borderColor: C.border,
+    },
+    toolbarBtnLabel: {
+      fontSize: F.body,
+      fontWeight: "700",
+      color: C.text,
+    },
+    toolbarLogoutLabel: {
+      color: C.logout,
+    },
+    list: {
+      padding: S.md,
+      paddingBottom: S.xxl,
+    },
+    listEmptyGrow: {
+      flexGrow: 1,
+      padding: S.lg,
+      justifyContent: "center",
+    },
+    ticketCard: {
+      backgroundColor: C.card,
+      borderRadius: R.card,
+      borderLeftWidth: 8,
+      padding: S.xl,
+      marginBottom: S.lg,
+      ...Platform.select({
+        ios: {
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: theme.isDark ? 0.35 : 0.08,
+          shadowRadius: 8,
+        },
+        android: { elevation: theme.isDark ? 5 : 3 },
+      }),
+    },
+    plateLabel: {
+      fontSize: F.secondary,
+      fontWeight: "600",
+      color: C.textSubtle,
+      marginBottom: 4,
+    },
+    vehiclePlate: {
+      fontSize: F.hero,
+      fontWeight: "800",
+      color: C.text,
+      letterSpacing: 2,
+      marginBottom: S.md,
+      fontVariant: ["tabular-nums"],
+    },
+    statusPill: {
+      alignSelf: "flex-start",
+      paddingVertical: 10,
+      paddingHorizontal: S.md,
+      borderRadius: 12,
+      marginBottom: S.lg,
+    },
+    statusPillText: {
+      fontSize: F.status,
+      fontWeight: "800",
+    },
+    locationLabel: {
+      fontSize: F.secondary,
+      fontWeight: "700",
+      color: C.textMuted,
+      marginBottom: 6,
+    },
+    locationRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: S.sm,
+      marginBottom: S.lg,
+    },
+    locationIcon: {
+      marginTop: 2,
+    },
+    location: {
+      flex: 1,
+      fontSize: F.body,
+      lineHeight: 26,
+      color: C.text,
+      fontWeight: "600",
+    },
+    actions: {
+      marginTop: S.xs,
+    },
+    btn: {
+      minHeight: M + 8,
+      borderRadius: R.button,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: S.md,
+      paddingHorizontal: S.lg,
+      gap: S.sm,
+    },
+    btnPrimary: {
+      backgroundColor: C.primary,
+    },
+    btnSuccess: {
+      backgroundColor: C.success,
+    },
+    btnIcon: {
+      marginRight: 4,
+    },
+    btnText: {
+      color: C.white,
+      fontWeight: "800",
+      fontSize: F.button,
+      textAlign: "center",
+      flexShrink: 1,
+    },
+    completedBox: {
+      minHeight: M,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: S.sm,
+      paddingVertical: S.md,
+      backgroundColor: theme.isDark ? "rgba(16, 185, 129, 0.14)" : "#ECFDF5",
+      borderRadius: R.button,
+      borderWidth: 2,
+      borderColor: theme.isDark ? "rgba(52, 211, 153, 0.35)" : "#A7F3D0",
+    },
+    completedText: {
+      flex: 1,
+      fontSize: F.body,
+      fontWeight: "700",
+      color: C.success,
+      textAlign: "center",
+    },
+    centerBox: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: S.xxl,
+      paddingHorizontal: S.lg,
+      gap: S.md,
+    },
+    loadingText: {
+      fontSize: F.body,
+      color: C.textMuted,
+      fontWeight: "600",
+      textAlign: "center",
+    },
+    emptyTitle: {
+      fontSize: F.title - 2,
+      fontWeight: "800",
+      color: C.text,
+      textAlign: "center",
+    },
+    emptyHint: {
+      fontSize: F.secondary,
+      lineHeight: 24,
+      color: C.textMuted,
+      textAlign: "center",
+      fontWeight: "500",
+    },
+  });
 }
 
 export default function TicketsScreen() {
   const router = useRouter();
   const { user, setUser } = useAuthStore();
   const locale = useLocaleStore((s) => s.locale);
+  const theme = useValetTheme();
+  const styles = useMemo(() => createTicketStyles(theme), [theme]);
+
   const [tickets, setTickets] = useState<TicketAssignment[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -122,6 +335,8 @@ export default function TicketsScreen() {
   if (!user) {
     return <Redirect href="/login" />;
   }
+
+  const C = theme.colors;
 
   const statusLabel = (s: TicketAssignment["status"]) => {
     if (s === "assigned") return t(locale, "tickets.statusAssigned");
@@ -189,7 +404,7 @@ export default function TicketsScreen() {
   };
 
   const renderTicket = ({ item }: { item: TicketAssignment }) => {
-    const vis = statusVisuals(item.status);
+    const vis = statusVisualsForTheme(item.status, theme.isDark);
 
     return (
       <View
@@ -197,11 +412,7 @@ export default function TicketsScreen() {
         accessibilityLabel={`${t(locale, "tickets.plateLabel")}: ${item.vehiclePlate}. ${statusLabel(item.status)}. ${t(locale, "tickets.locationLabel")}: ${item.location}`}
       >
         <Text style={styles.plateLabel}>{t(locale, "tickets.plateLabel")}</Text>
-        <Text
-          style={styles.vehiclePlate}
-          accessibilityRole="header"
-          maxFontSizeMultiplier={2.2}
-        >
+        <Text style={styles.vehiclePlate} accessibilityRole="header" maxFontSizeMultiplier={2.2}>
           {item.vehiclePlate}
         </Text>
 
@@ -213,7 +424,7 @@ export default function TicketsScreen() {
 
         <Text style={styles.locationLabel}>{t(locale, "tickets.locationLabel")}</Text>
         <View style={styles.locationRow}>
-          <Ionicons name="location-sharp" size={26} color={T.colors.primary} style={styles.locationIcon} />
+          <Ionicons name="location-sharp" size={26} color={C.primary} style={styles.locationIcon} />
           <Text style={styles.location} maxFontSizeMultiplier={2}>
             {item.location}
           </Text>
@@ -227,7 +438,7 @@ export default function TicketsScreen() {
               accessibilityRole="button"
               accessibilityHint={t(locale, "tickets.confirmStartMessage")}
             >
-              <Ionicons name="car-outline" size={26} color={T.colors.white} style={styles.btnIcon} />
+              <Ionicons name="car-outline" size={26} color={C.white} style={styles.btnIcon} />
               <Text style={styles.btnText} maxFontSizeMultiplier={2}>
                 {t(locale, "tickets.actionStart")}
               </Text>
@@ -240,7 +451,7 @@ export default function TicketsScreen() {
               accessibilityRole="button"
               accessibilityHint={t(locale, "tickets.confirmCompleteMessage")}
             >
-              <Ionicons name="checkmark-circle-outline" size={28} color={T.colors.white} style={styles.btnIcon} />
+              <Ionicons name="checkmark-circle-outline" size={28} color={C.white} style={styles.btnIcon} />
               <Text style={styles.btnText} maxFontSizeMultiplier={2}>
                 {t(locale, "tickets.actionComplete")}
               </Text>
@@ -248,7 +459,7 @@ export default function TicketsScreen() {
           )}
           {item.status === "completed" && (
             <View style={styles.completedBox}>
-              <Ionicons name="checkmark-done-circle" size={32} color={T.colors.success} />
+              <Ionicons name="checkmark-done-circle" size={32} color={C.success} />
               <Text style={styles.completedText} maxFontSizeMultiplier={2}>
                 {t(locale, "tickets.completedLine")}
               </Text>
@@ -262,15 +473,19 @@ export default function TicketsScreen() {
   const listEmpty = () => {
     if (initialLoad || (loading && tickets.length === 0)) {
       return (
-        <View style={styles.centerBox} accessibilityRole="progressbar" accessibilityLabel={t(locale, "tickets.loading")}>
-          <ActivityIndicator size="large" color={T.colors.primary} />
+        <View
+          style={styles.centerBox}
+          accessibilityRole="progressbar"
+          accessibilityLabel={t(locale, "tickets.loading")}
+        >
+          <ActivityIndicator size="large" color={C.primary} />
           <Text style={styles.loadingText}>{t(locale, "tickets.loading")}</Text>
         </View>
       );
     }
     return (
       <View style={styles.centerBox}>
-        <Ionicons name="car-sport-outline" size={64} color={T.colors.textSubtle} />
+        <Ionicons name="car-sport-outline" size={64} color={C.textSubtle} />
         <Text style={styles.emptyTitle}>{t(locale, "tickets.emptyTitle")}</Text>
         <Text style={styles.emptyHint}>{t(locale, "tickets.emptyHint")}</Text>
       </View>
@@ -298,7 +513,7 @@ export default function TicketsScreen() {
             accessibilityRole="button"
             accessibilityLabel={t(locale, "tickets.settings")}
           >
-            <Ionicons name="settings-outline" size={28} color={T.colors.text} />
+            <Ionicons name="settings-outline" size={28} color={C.text} />
             <Text style={styles.toolbarBtnLabel}>{t(locale, "tickets.settings")}</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -307,7 +522,7 @@ export default function TicketsScreen() {
             accessibilityRole="button"
             accessibilityLabel={t(locale, "tickets.logout")}
           >
-            <Ionicons name="log-out-outline" size={28} color={T.colors.logout} />
+            <Ionicons name="log-out-outline" size={28} color={C.logout} />
             <Text style={[styles.toolbarBtnLabel, styles.toolbarLogoutLabel]}>{t(locale, "tickets.logout")}</Text>
           </TouchableOpacity>
         </View>
@@ -325,216 +540,3 @@ export default function TicketsScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: T.colors.bg,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: T.colors.bg,
-  },
-  header: {
-    paddingHorizontal: T.space.lg,
-    paddingTop: T.space.sm,
-    paddingBottom: T.space.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: T.colors.border,
-    backgroundColor: T.colors.card,
-  },
-  headerTextBlock: {
-    gap: T.space.xs,
-  },
-  title: {
-    fontSize: T.font.title,
-    fontWeight: "800",
-    color: T.colors.text,
-    letterSpacing: Platform.OS === "ios" ? -0.5 : 0,
-  },
-  subtitle: {
-    fontSize: T.font.subtitle,
-    color: T.colors.textMuted,
-    lineHeight: 24,
-    fontWeight: "500",
-  },
-  toolbar: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "stretch",
-    paddingVertical: T.space.md,
-    paddingHorizontal: T.space.md,
-    gap: T.space.md,
-    backgroundColor: T.colors.card,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: T.colors.border,
-  },
-  toolbarBtn: {
-    flex: 1,
-    minHeight: T.minTouch,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: T.space.sm,
-    paddingVertical: T.space.sm,
-    paddingHorizontal: T.space.md,
-    backgroundColor: T.colors.bg,
-    borderRadius: T.radius.button,
-    borderWidth: 2,
-    borderColor: T.colors.border,
-  },
-  toolbarBtnLabel: {
-    fontSize: T.font.body,
-    fontWeight: "700",
-    color: T.colors.text,
-  },
-  toolbarLogoutLabel: {
-    color: T.colors.logout,
-  },
-  list: {
-    padding: T.space.md,
-    paddingBottom: T.space.xxl,
-  },
-  listEmptyGrow: {
-    flexGrow: 1,
-    padding: T.space.lg,
-    justifyContent: "center",
-  },
-  ticketCard: {
-    backgroundColor: T.colors.card,
-    borderRadius: T.radius.card,
-    borderLeftWidth: 8,
-    padding: T.space.xl,
-    marginBottom: T.space.lg,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 8,
-      },
-      android: { elevation: 3 },
-    }),
-  },
-  plateLabel: {
-    fontSize: T.font.secondary,
-    fontWeight: "600",
-    color: T.colors.textSubtle,
-    marginBottom: 4,
-  },
-  vehiclePlate: {
-    fontSize: T.font.hero,
-    fontWeight: "800",
-    color: T.colors.text,
-    letterSpacing: 2,
-    marginBottom: T.space.md,
-    fontVariant: ["tabular-nums"],
-  },
-  statusPill: {
-    alignSelf: "flex-start",
-    paddingVertical: 10,
-    paddingHorizontal: T.space.md,
-    borderRadius: 12,
-    marginBottom: T.space.lg,
-  },
-  statusPillText: {
-    fontSize: T.font.status,
-    fontWeight: "800",
-  },
-  locationLabel: {
-    fontSize: T.font.secondary,
-    fontWeight: "700",
-    color: T.colors.textMuted,
-    marginBottom: 6,
-  },
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: T.space.sm,
-    marginBottom: T.space.lg,
-  },
-  locationIcon: {
-    marginTop: 2,
-  },
-  location: {
-    flex: 1,
-    fontSize: T.font.body,
-    lineHeight: 26,
-    color: T.colors.text,
-    fontWeight: "600",
-  },
-  actions: {
-    marginTop: T.space.xs,
-  },
-  btn: {
-    minHeight: T.minTouch + 8,
-    borderRadius: T.radius.button,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: T.space.md,
-    paddingHorizontal: T.space.lg,
-    gap: T.space.sm,
-  },
-  btnPrimary: {
-    backgroundColor: T.colors.primary,
-  },
-  btnSuccess: {
-    backgroundColor: T.colors.success,
-  },
-  btnIcon: {
-    marginRight: 4,
-  },
-  btnText: {
-    color: T.colors.white,
-    fontWeight: "800",
-    fontSize: T.font.button,
-    textAlign: "center",
-    flexShrink: 1,
-  },
-  completedBox: {
-    minHeight: T.minTouch,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: T.space.sm,
-    paddingVertical: T.space.md,
-    backgroundColor: "#ECFDF5",
-    borderRadius: T.radius.button,
-    borderWidth: 2,
-    borderColor: "#A7F3D0",
-  },
-  completedText: {
-    flex: 1,
-    fontSize: T.font.body,
-    fontWeight: "700",
-    color: T.colors.success,
-    textAlign: "center",
-  },
-  centerBox: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: T.space.xxl,
-    paddingHorizontal: T.space.lg,
-    gap: T.space.md,
-  },
-  loadingText: {
-    fontSize: T.font.body,
-    color: T.colors.textMuted,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  emptyTitle: {
-    fontSize: T.font.title - 2,
-    fontWeight: "800",
-    color: T.colors.text,
-    textAlign: "center",
-  },
-  emptyHint: {
-    fontSize: T.font.secondary,
-    lineHeight: 24,
-    color: T.colors.textMuted,
-    textAlign: "center",
-    fontWeight: "500",
-  },
-});

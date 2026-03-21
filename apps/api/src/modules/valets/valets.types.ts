@@ -20,6 +20,7 @@ export interface ValetResponse {
   licenseNumber: string;
   licenseExpiry: Date;
   currentStatus: string;
+  staffRole: "RECEPTIONIST" | "DRIVER" | null;
   ratingAvg: number | null;
   createdAt: Date;
   updatedAt: Date;

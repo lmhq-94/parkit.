@@ -25,6 +25,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@parkit/shared/*": [
+        "../../packages/shared/src/*"
       ]
     },
     "allowJs": true,

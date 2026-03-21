@@ -15,10 +15,18 @@ import { required, email as validateEmail } from "@/lib/validation";
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
-const defaultForm = { firstName: "", lastName: "", email: "", licenseExpiry: "" };
+const STAFF_ROLES = ["RECEPTIONIST", "DRIVER"] as const;
+
+const defaultForm = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  licenseExpiry: "",
+  staffRole: "RECEPTIONIST" as (typeof STAFF_ROLES)[number],
+};
 
 export default function NewValetPage() {
-  const { t } = useTranslation();
+  const { t, tEnum } = useTranslation();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
   const [form, setForm] = useState(defaultForm);
@@ -71,6 +79,7 @@ export default function NewValetPage() {
         email: form.email.trim(),
         licenseNumber: licenseTypes.join(", "),
         licenseExpiry: new Date(form.licenseExpiry).toISOString(),
+        staffRole: form.staffRole,
       });
       showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/valets");
@@ -114,6 +123,21 @@ export default function NewValetPage() {
               <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} aria-invalid={!!errors.email} />
             </div>
             <div className="min-h-[1.25rem] mt-1">{errors.email && <p className="text-sm text-red-500" role="alert">{errors.email}</p>}</div>
+          </div>
+          <div>
+            <label className={LABEL}>{t("valets.staffRole")} <span className="text-red-500">*</span></label>
+            <select
+              value={form.staffRole}
+              onChange={(e) => setForm((p) => ({ ...p, staffRole: e.target.value as (typeof STAFF_ROLES)[number] }))}
+              className={IL}
+              aria-label={t("valets.staffRole")}
+            >
+              {STAFF_ROLES.map((r) => (
+                <option key={r} value={r}>
+                  {tEnum("valetStaffRole", r)}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       ),

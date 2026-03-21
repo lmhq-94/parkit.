@@ -32,6 +32,12 @@ enum ValetStatus {
   AWAY
 }
 
+/** Sub-rol del valet (STAFF): recepción o conducción. */
+enum ValetStaffRole {
+  RECEPTIONIST
+  DRIVER
+}
+
 enum ParkingType {
   OPEN
   COVERED
@@ -137,6 +143,10 @@ model User {
   invitationToken         String?   @unique
   invitationTokenExpiresAt DateTime?
 
+  // Forgot-password flow: link in email points to web /reset-password
+  passwordResetToken         String?   @unique
+  passwordResetExpiresAt     DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -182,6 +192,8 @@ model Valet {
   licenseNumber    String?
   licenseExpiry    DateTime?
   currentStatus    ValetStatus @default(AVAILABLE)
+  /** Sub-rol operativo (recepcionista / conductor). */
+  staffRole        ValetStaffRole?
   /** Media de valoraciones de clientes (app); null hasta que existan reseñas. */
   ratingAvg        Float?
 

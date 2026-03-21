@@ -18,6 +18,7 @@ import { Logo } from "@parkit/shared";
 import { useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
+import api from "@/lib/api";
 
 const DARK_BG = "#0F172A";
 const PRIMARY = "#3B82F6";
@@ -31,12 +32,24 @@ export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
+    setError(null);
     if (!email.trim()) return;
     setIsLoading(true);
-    setSubmitted(true);
-    setIsLoading(false);
+    try {
+      await api.post("/auth/forgot-password", { email: email.trim() });
+      setSubmitted(true);
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === "object" && "response" in err
+          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          : null;
+      setError(msg || t(locale, "forgot.errorSend"));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -89,7 +102,10 @@ export default function ForgotPasswordScreen() {
                       placeholder={t(locale, "forgot.placeholderEmail")}
                       placeholderTextColor="#94A3B8"
                       value={email}
-                      onChangeText={setEmail}
+                      onChangeText={(v) => {
+                        setEmail(v);
+                        setError(null);
+                      }}
                       keyboardType="email-address"
                       autoCapitalize="none"
                       autoComplete="email"
@@ -97,6 +113,13 @@ export default function ForgotPasswordScreen() {
                     <Ionicons name="mail-outline" size={20} color="#94A3B8" style={styles.inputIconRight} />
                   </View>
                 </View>
+
+                {error ? (
+                  <View style={styles.errorWrap}>
+                    <Ionicons name="alert-circle" size={18} color="#EF4444" />
+                    <Text style={styles.errorText}>{error}</Text>
+                  </View>
+                ) : null}
 
                 <Pressable
                   onPress={handleSubmit}
@@ -206,4 +229,15 @@ const styles = StyleSheet.create({
   backToLoginText: { fontSize: 15, fontWeight: "600", color: PRIMARY },
   footer: { alignItems: "center" },
   footerLink: { fontSize: 14, fontWeight: "600", color: PRIMARY },
+  errorWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "rgba(239, 68, 68, 0.1)",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  errorText: { color: "#EF4444", fontSize: 14, fontWeight: "500", flex: 1 },
 });

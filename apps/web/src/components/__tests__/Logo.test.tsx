@@ -5,8 +5,7 @@ import { Logo } from "../Logo";
 jest.mock("next/font/local", () => ({
   __esModule: true,
   default: () => ({
-    variable: "--font-calsans",
-    className: "font-calsans",
+    style: { fontFamily: "__CalSans_test__" },
   }),
 }));
 

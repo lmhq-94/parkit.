@@ -9,7 +9,7 @@ import ForgotPasswordPage from "@/app/forgot-password/page";
 
 jest.mock("next/font/local", () => ({
   __esModule: true,
-  default: () => ({ variable: "--font-calsans", className: "font-calsans" }),
+  default: () => ({ style: { fontFamily: "__CalSans_test__" } }),
 }));
 
 jest.mock("next/link", () => {

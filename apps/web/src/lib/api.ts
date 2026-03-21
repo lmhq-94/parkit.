@@ -168,6 +168,7 @@ const API_MESSAGE_TO_I18N_KEY: Record<string, string> = {
   "Validation failed": "apiErrors.validationFailed",
   "Request failed": "apiErrors.requestFailed",
   "Invalid credentials": "auth.invalidCredentials",
+  "Invalid or expired reset link. Request a new one from the login page.": "auth.resetLinkInvalid",
 };
 
 /**

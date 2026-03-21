@@ -1,15 +1,20 @@
 import { prisma } from "../../shared/prisma";
 import {
   AcceptInvitationDTO,
+  ForgotPasswordDTO,
   LoginDTO,
   RegisterDTO,
   RegisterValetDTO,
   RequestOtpDTO,
+  ResetPasswordDTO,
   VerifyOtpDTO,
 } from "./auth.types";
 import { comparePassword, hashPassword, signToken } from "./auth.utils";
 import crypto from "crypto";
 import { UsersService } from "../users/users.service";
+import { sendPasswordResetEmail } from "../../shared/email/passwordResetEmail";
+
+const PASSWORD_RESET_EXPIRY_HOURS = 24;
 
 export class AuthService {
   static async register(data: RegisterDTO) {
@@ -54,6 +59,7 @@ export class AuthService {
       data: {
         userId: user.id,
         companyId: null,
+        staffRole: data.staffRole,
         licenseNumber: data.licenseNumber?.trim() || null,
         licenseExpiry: data.licenseExpiry ? new Date(data.licenseExpiry) : null,
       },
@@ -167,6 +173,70 @@ export class AuthService {
     });
 
     return { user: updated, token };
+  }
+
+  /**
+   * Solicitud de restablecimiento: si existe usuario activo con contraseña, envía correo con enlace.
+   * Respuesta genérica siempre (no filtra existencia del correo).
+   */
+  static async requestPasswordReset(data: ForgotPasswordDTO) {
+    const email = data.email.trim();
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (user && user.isActive !== false && user.passwordHash != null) {
+      const passwordResetToken = crypto.randomBytes(32).toString("hex");
+      const passwordResetExpiresAt = new Date();
+      passwordResetExpiresAt.setHours(
+        passwordResetExpiresAt.getHours() + PASSWORD_RESET_EXPIRY_HOURS
+      );
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { passwordResetToken, passwordResetExpiresAt },
+      });
+
+      await sendPasswordResetEmail({
+        to: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        token: passwordResetToken,
+      });
+    }
+
+    return { ok: true as const };
+  }
+
+  static async resetPassword(data: ResetPasswordDTO) {
+    const user = await prisma.user.findFirst({
+      where: {
+        passwordResetToken: data.token.trim(),
+        passwordResetExpiresAt: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new Error(
+        "Invalid or expired reset link. Request a new one from the login page."
+      );
+    }
+
+    const passwordHash = await hashPassword(data.password);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        passwordResetToken: null,
+        passwordResetExpiresAt: null,
+        invitationToken: null,
+        invitationTokenExpiresAt: null,
+        lastLogin: new Date(),
+      },
+    });
+
+    return { ok: true as const };
   }
 
   static async requestOtp(data: RequestOtpDTO) {

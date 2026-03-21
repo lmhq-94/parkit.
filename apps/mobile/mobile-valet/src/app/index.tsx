@@ -4,16 +4,19 @@ import { useRouter } from "expo-router";
 import { useAuthStore } from "@/lib/store";
 import { WelcomeContent } from "./welcome";
 
-// Colores alineados con la web (themeDefaults)
-const SPLASH_BG = "#020617"; // slate-900
-const LOGO_PARK = "#FFFFFF";
-const LOGO_IT = "#3B82F6"; // blue-500 (primary dark)
-const SUBTLE_TEXT = "rgba(148, 163, 184, 0.58)"; // slate-400 sutil pero legible
-
 const SPLASH_DURATION_MS = 2600;
 const LOGO_SIZE = 72;
 
+/** Mismo fondo que la franja del logo en welcome/login/registro/forgot. */
+const SPLASH_BG = "#020617";
+
 export default function SplashScreen() {
+  const splashBg = SPLASH_BG;
+  /** Logo sobre franja oscura (misma lógica que `Logo` variant onDark). */
+  const parkColor = "#FFFFFF";
+  const itColor = "#7DD3FC";
+  const subtleColor = "rgba(148, 163, 184, 0.58)";
+
   const router = useRouter();
   const { user } = useAuthStore();
   const [showWelcome, setShowWelcome] = useState(false);
@@ -30,7 +33,6 @@ export default function SplashScreen() {
 
   useEffect(() => {
     const stagger = Animated.sequence([
-      // "park" entra primero: fade + deslizamiento suave
       Animated.parallel([
         Animated.timing(parkOpacity, {
           toValue: 1,
@@ -43,7 +45,6 @@ export default function SplashScreen() {
           useNativeDriver: true,
         }),
       ]),
-      // "it." entra después: fade + scale + ligero deslizamiento
       Animated.parallel([
         Animated.timing(itOpacity, {
           toValue: 1,
@@ -61,13 +62,11 @@ export default function SplashScreen() {
           useNativeDriver: true,
         }),
       ]),
-      // "valet" muy sutil aparece al final del reveal
       Animated.timing(subtleOpacity, {
         toValue: 1,
         duration: 400,
         useNativeDriver: true,
       }),
-      // Un solo “respiro” suave del logo
       Animated.sequence([
         Animated.timing(breathScale, {
           toValue: 1.032,
@@ -85,7 +84,7 @@ export default function SplashScreen() {
   }, []);
 
   useEffect(() => {
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       if (user) {
         router.replace("/tickets");
       } else {
@@ -104,19 +103,19 @@ export default function SplashScreen() {
         ]).start();
       }
     }, SPLASH_DURATION_MS);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [user, router, splashOpacity, welcomeOpacity]);
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={SPLASH_BG} />
+    <View style={[styles.container, { backgroundColor: splashBg }]}>
+      <StatusBar barStyle="light-content" backgroundColor={splashBg} />
       <Animated.View style={[styles.logoWrap, { opacity: splashOpacity, transform: [{ scale: breathScale }] }]}>
         <View style={styles.logoRow}>
           <Animated.Text
             style={[
               styles.logoPart,
-              styles.park,
               {
+                color: parkColor,
                 opacity: parkOpacity,
                 transform: [{ translateX: parkTranslate }],
               },
@@ -127,20 +126,17 @@ export default function SplashScreen() {
           <Animated.Text
             style={[
               styles.logoPart,
-              styles.it,
               {
+                color: itColor,
                 opacity: itOpacity,
-                transform: [
-                  { translateX: itTranslate },
-                  { scale: itScale },
-                ],
+                transform: [{ translateX: itTranslate }, { scale: itScale }],
               },
             ]}
           >
             it.
           </Animated.Text>
         </View>
-        <Animated.Text style={[styles.valetLabel, { opacity: subtleOpacity }]}>
+        <Animated.Text style={[styles.valetLabel, { color: subtleColor, opacity: subtleOpacity }]}>
           valet
         </Animated.Text>
       </Animated.View>
@@ -160,7 +156,6 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: SPLASH_BG,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -174,20 +169,14 @@ const styles = StyleSheet.create({
   logoPart: {
     fontFamily: "CalSans",
     fontSize: LOGO_SIZE,
+    fontWeight: "700",
     letterSpacing: -1.5,
-  },
-  park: {
-    color: LOGO_PARK,
-  },
-  it: {
-    color: LOGO_IT,
   },
   valetLabel: {
     marginTop: 28,
     fontSize: 15,
     fontWeight: "600",
     letterSpacing: 4,
-    color: SUBTLE_TEXT,
     textTransform: "lowercase",
   },
   welcomeOverlay: {

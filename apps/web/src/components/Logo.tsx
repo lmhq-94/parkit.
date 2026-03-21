@@ -1,10 +1,10 @@
 "use client";
 
+import { LOGO_LETTER_SPACING_EM } from "@parkit/shared/logoTokens";
 import localFont from "next/font/local";
 
 const calSans = localFont({
   src: "../fonts/CalSans.ttf",
-  variable: "--font-calsans",
   display: "swap",
 });
 
@@ -23,7 +23,11 @@ export function Logo({
 
   return (
     <div
-      className={`${calSans.variable} font-calsans font-bold tracking-tighter flex items-center ${isMark ? "text-xl" : "text-4xl"} ${className}`}
+      style={{
+        ...calSans.style,
+        letterSpacing: `${LOGO_LETTER_SPACING_EM}em`,
+      }}
+      className={`font-bold flex items-center ${isMark ? "text-xl" : "text-4xl"} ${className}`}
     >
       <span
         className={

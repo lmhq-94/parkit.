@@ -28,6 +28,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: 'com.parkit.valet',
     permissions: ['ACCESS_FINE_LOCATION', 'INTERNET'],
+    /** Permite redimensionar la ventana con el teclado (junto con adjustResize en el manifest). */
+    softwareKeyboardLayoutMode: 'resize',
   },
   web: {
     bundler: 'metro',

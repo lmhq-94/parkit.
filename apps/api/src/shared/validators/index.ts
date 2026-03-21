@@ -122,6 +122,8 @@ export type CreateUserInput = z.infer<typeof CreateUserSchema>;
 export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
 
 // Valets: crear por userId (usuario existente) o por datos de usuario (crear User + Valet)
+export const valetStaffRoleEnum = z.enum(["RECEPTIONIST", "DRIVER"]);
+
 export const CreateValetSchema = z
   .object({
     userId: z.string().min(1).optional(),
@@ -132,6 +134,7 @@ export const CreateValetSchema = z
     licenseNumber: z.string().min(1, "License number required"),
     licenseExpiry: z.string().min(1, "License expiry required"),
     currentParkingId: z.string().optional(),
+    staffRole: valetStaffRoleEnum,
   })
   .refine(
     (data) =>
@@ -145,6 +148,7 @@ export const UpdateValetSchema = z.object({
   licenseExpiry: z.string().datetime("Invalid datetime").optional(),
   currentParkingId: z.string().optional(),
   ratingAvg: z.number().min(0).max(5).nullable().optional(),
+  staffRole: valetStaffRoleEnum.nullable().optional(),
 });
 
 export type CreateValetInput = z.infer<typeof CreateValetSchema>;
@@ -330,12 +334,26 @@ export const AcceptInvitationSchema = z.object({
 
 export type AcceptInvitationInput = z.infer<typeof AcceptInvitationSchema>;
 
+export const ForgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email"),
+});
+
+export type ForgotPasswordInput = z.infer<typeof ForgotPasswordSchema>;
+
+export const ResetPasswordSchema = z.object({
+  token: z.string().min(1, "Reset token required"),
+  password: securePasswordSchema,
+});
+
+export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
+
 // Valet self-registration (public, no auth). Licencia solo si el cliente la envía; mobile-valet no la envía.
 export const RegisterValetSchema = z.object({
   firstName: z.string().min(1, "First name required"),
   lastName: z.string().min(1, "Last name required"),
   email: z.string().email("Invalid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  staffRole: valetStaffRoleEnum,
   licenseNumber: z.string().trim().min(1).optional(),
   licenseExpiry: z.string().datetime().optional(),
 });

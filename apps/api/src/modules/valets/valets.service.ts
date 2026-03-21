@@ -1,5 +1,5 @@
 import { prisma } from "../../shared/prisma";
-import { ValetStatus } from "@prisma/client";
+import { ValetStaffRole, ValetStatus } from "@prisma/client";
 import { UsersService } from "../users/users.service";
 
 interface CreateValetDTO {
@@ -11,6 +11,7 @@ interface CreateValetDTO {
   licenseNumber: string;
   licenseExpiry: string;
   currentParkingId?: string;
+  staffRole: ValetStaffRole;
 }
 
 /** Última actividad del valet (empresa/parking del último ticket asignado). */
@@ -26,7 +27,8 @@ interface UpdateValetDTO {
   licenseNumber?: string;
   licenseExpiry?: string;
   currentParkingId?: string;
-  ratingAvg?: number;
+  ratingAvg?: number | null;
+  staffRole?: ValetStaffRole | null;
 }
 
 export class ValetsService {
@@ -76,6 +78,7 @@ export class ValetsService {
         licenseNumber: data.licenseNumber,
         licenseExpiry: new Date(data.licenseExpiry),
         currentParkingId: data.currentParkingId,
+        staffRole: data.staffRole,
       },
       include: {
         user: {
@@ -282,6 +285,7 @@ export class ValetsService {
           : undefined,
         currentParkingId: data.currentParkingId,
         ...(data.ratingAvg !== undefined && { ratingAvg: data.ratingAvg }),
+        ...(data.staffRole !== undefined && { staffRole: data.staffRole }),
       },
       include: {
         user: true,

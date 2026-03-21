@@ -6,6 +6,8 @@ import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTheme } from "next-themes";
 import { ArrowLeft } from "lucide-react";
+import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation();
@@ -13,12 +15,23 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   useEffect(() => setMounted(true), []);
   const logoVariant = mounted && resolvedTheme === "dark" ? "onDark" : "default";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setError(null);
+    if (!email.trim()) return;
+    setIsSubmitting(true);
+    try {
+      await apiClient.post("/auth/forgot-password", { email: email.trim() });
+      setSubmitted(true);
+    } catch (err: unknown) {
+      setError(getTranslatedApiErrorMessage(err, t) || t("apiErrors.requestFailed"));
+    }
+    setIsSubmitting(false);
   };
 
   return (
@@ -46,6 +59,14 @@ export default function ForgotPasswordPage() {
           </div>
         ) : (
           <>
+            {error && (
+              <div
+                className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400"
+                role="alert"
+              >
+                {error}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-text-secondary mb-1.5">
@@ -63,9 +84,10 @@ export default function ForgotPasswordPage() {
               </div>
               <button
                 type="submit"
-                className="w-full flex items-center justify-center gap-2 rounded-lg bg-company-primary py-3 text-sm font-medium text-white hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page"
+                disabled={isSubmitting}
+                className="w-full flex items-center justify-center gap-2 rounded-lg bg-company-primary py-3 text-sm font-medium text-white hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none"
               >
-                {t("auth.sendResetLink")}
+                {isSubmitting ? <LoadingSpinner size="sm" variant="white" /> : t("auth.sendResetLink")}
               </button>
             </form>
             <Link

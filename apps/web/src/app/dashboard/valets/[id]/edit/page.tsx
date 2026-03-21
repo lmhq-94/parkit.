@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Mail, CreditCard, Activity, ArrowRight } from "lucide-react";
+import { User, Mail, CreditCard, Activity, ArrowRight, Briefcase } from "lucide-react";
 import { MultiSelectField } from "@/components/MultiSelectField";
 import { DatePickerField } from "@/components/DatePickerField";
 import { SelectField } from "@/components/SelectField";
@@ -17,10 +17,12 @@ import { LICENSE_TYPES } from "@/lib/companyOptions";
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 const STATUSES = ["AVAILABLE", "BUSY", "AWAY"] as const;
+const STAFF_ROLES = ["RECEPTIONIST", "DRIVER"] as const;
 
 const defaultForm = {
   firstName: "", lastName: "", email: "",
   licenseExpiry: "", currentStatus: "AVAILABLE",
+  staffRole: "RECEPTIONIST" as (typeof STAFF_ROLES)[number],
 };
 
 export default function EditValetPage() {
@@ -54,12 +56,16 @@ export default function EditValetPage() {
           : [];
         setLicenseTypes(parsedTypes);
         setInitialLicenseTypes(parsedTypes);
+        const sr = data.staffRole as string | null | undefined;
+        const staffRole: (typeof STAFF_ROLES)[number] =
+          sr === "RECEPTIONIST" || sr === "DRIVER" ? sr : "RECEPTIONIST";
         const loaded = {
           firstName: String(user?.firstName ?? ""),
           lastName: String(user?.lastName ?? ""),
           email: String(user?.email ?? ""),
           licenseExpiry: expiryRaw,
           currentStatus: String(data.currentStatus ?? "AVAILABLE"),
+          staffRole,
         };
         setForm(loaded);
         setInitialForm(loaded);
@@ -86,6 +92,7 @@ export default function EditValetPage() {
           licenseNumber: licenseTypes.join(", "),
           ...(form.licenseExpiry ? { licenseExpiry: new Date(form.licenseExpiry).toISOString() } : {}),
           currentStatus: form.currentStatus,
+          staffRole: form.staffRole,
         }),
       ]);
       showSuccess(t("common.saveSuccessShort"));
@@ -201,6 +208,14 @@ export default function EditValetPage() {
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div>
+              <label className={LABEL}>{t("valets.staffRole")}</label>
+              <SelectField value={form.staffRole} onChange={set("staffRole")} icon={Briefcase}>
+                {STAFF_ROLES.map((r) => (
+                  <option key={r} value={r}>{tEnum("valetStaffRole", r)}</option>
+                ))}
+              </SelectField>
+            </div>
             <div>
               <SelectField value={form.currentStatus} onChange={set("currentStatus")} icon={Activity}>
                 {STATUSES.map(s => <option key={s} value={s}>{tEnum("valetStatus", s)}</option>)}

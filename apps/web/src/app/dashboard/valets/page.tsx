@@ -42,6 +42,7 @@ type ValetRow = {
     lastLogin?: string | null;
   };
   currentStatus?: string;
+  staffRole?: string | null;
   licenseNumber?: string;
   licenseExpiry?: string;
   ratingAvg?: number | null;
@@ -166,6 +167,13 @@ export default function ValetsPage() {
         },
       },
       {
+        header: t("tables.valets.staffRole"),
+        render: (valet: ValetRow) =>
+          valet.staffRole ? tEnum("valetStaffRole", valet.staffRole) : "—",
+        field: "staffRole",
+        editable: false,
+      },
+      {
         header: t("tables.valets.status"),
         render: (valet: ValetRow) => {
           if (valet.user?.pendingInvitation) return t("tables.employees.pendingInvitation");
@@ -193,7 +201,7 @@ export default function ValetsPage() {
               : { text: "text-amber-600 dark:text-amber-400", dot: "bg-amber-500" },
       },
     ],
-    [t, superAdmin]
+    [t, tEnum, superAdmin]
   );
   return (
     <>
@@ -263,6 +271,10 @@ export default function ValetsPage() {
                         ? t("tables.employees.pendingInvitation")
                         : tEnum("valetStatus", valet.currentStatus)
                     }
+                  />
+                  <DetailField
+                    label={t("tables.valets.staffRole")}
+                    value={valet.staffRole ? tEnum("valetStaffRole", valet.staffRole) : undefined}
                   />
                   <DetailField label={t("tables.employees.phone")} value={valet.user?.phone ? formatPhoneInternational(valet.user.phone) : undefined} linkType="phone" />
                   <DetailField label={t("tables.valets.license")} value={valet.licenseNumber} />

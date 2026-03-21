@@ -59,6 +59,32 @@ export class AuthController {
     }
   }
 
+  static async forgotPassword(req: Request, res: Response) {
+    try {
+      const result = await AuthService.requestPasswordReset(req.body);
+      return ok(res, result);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
+  static async resetPassword(req: Request, res: Response) {
+    try {
+      const result = await AuthService.resetPassword(req.body);
+      return ok(res, result);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
   static async requestOtp(req: Request, res: Response) {
     try {
       const result = await AuthService.requestOtp(req.body);

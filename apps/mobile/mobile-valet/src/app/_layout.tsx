@@ -1,5 +1,6 @@
 import { Stack, SplashScreen } from 'expo-router';
 import { useEffect } from 'react';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useAuthStore, useLocaleStore } from '@/lib/store';
 import { getStoredUser } from '@/lib/auth';
 import { useFonts } from 'expo-font';
@@ -40,26 +41,32 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        animation: 'default',
-      }}
-    >
-      <Stack.Screen
-        name="index"
-        options={{ animation: 'none', gestureEnabled: false }}
-      />
-      <Stack.Screen name="tickets" />
-      <Stack.Screen name="settings" />
-      <Stack.Screen
-        name="welcome"
-        options={{ animation: 'fade', gestureEnabled: false }}
-      />
-      <Stack.Screen
-        name="login"
-        options={{ animation: 'slide_from_right', gestureEnabled: true }}
-      />
-    </Stack>
+    <KeyboardProvider preload={false}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: 'default',
+        }}
+      >
+        <Stack.Screen
+          name="index"
+          options={{ animation: 'none', gestureEnabled: false }}
+        />
+        <Stack.Screen name="tickets" />
+        <Stack.Screen name="settings" />
+        <Stack.Screen
+          name="welcome"
+          options={{ animation: 'fade', gestureEnabled: false }}
+        />
+        <Stack.Screen
+          name="login"
+          options={{ animation: 'slide_from_right', gestureEnabled: true }}
+        />
+        <Stack.Screen
+          name="forgot-password"
+          options={{ animation: 'slide_from_right', gestureEnabled: true }}
+        />
+      </Stack>
+    </KeyboardProvider>
   );
 }

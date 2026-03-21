@@ -37,6 +37,8 @@ npm run ios
 npm run android
 ```
 
+Tras añadir módulos nativos (`react-native-keyboard-controller`, `react-native-reanimated`, etc.), hace falta **reconstruir** el cliente nativo: `npx expo prebuild --clean` o `npm run generate-native`, luego `npm run ios` / `npm run android`. Con Metro en desarrollo, reinicia con caché limpia si algo falla: `npx expo start -c`.
+
 ### Run on Web
 ```bash
 npm run web
