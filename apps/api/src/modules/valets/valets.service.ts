@@ -375,4 +375,16 @@ export class ValetsService {
     });
     return assignments;
   }
+
+  /** Perfil valet del usuario (mobile: rol recepción/conducción). */
+  static async getMe(userId: string) {
+    return prisma.valet.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        staffRole: true,
+        companyId: true,
+      },
+    });
+  }
 }

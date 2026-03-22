@@ -8,7 +8,8 @@ import { CreateValetSchema, UpdateValetSchema } from "../../shared/validators";
 
 const router = Router();
 
-// Valet actual: sus asignaciones (mobile-valet); solo requireAuth.
+// Valet actual: perfil y asignaciones (mobile-valet). Registrar /me antes de /:id.
+router.get("/me", requireAuth, ValetsController.getMe);
 router.get("/me/assignments", requireAuth, ValetsController.getMyAssignments);
 
 router.get("/for-company", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ValetsController.listForCompany);

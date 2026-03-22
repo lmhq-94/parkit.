@@ -86,7 +86,7 @@ export default function SplashScreen() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (user) {
-        router.replace("/tickets");
+        router.replace("/home");
       } else {
         setShowWelcome(true);
         Animated.parallel([

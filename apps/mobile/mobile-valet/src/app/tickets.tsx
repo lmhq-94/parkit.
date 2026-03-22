@@ -15,8 +15,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import api, { clearAuthToken } from "@/lib/api";
-import { useValetTheme, statusVisuals as statusVisualsForTheme } from "@/theme/valetTheme";
-
+import { useValetProfileSync } from "@/lib/useValetProfileSync";
+import {
+  useValetTheme,
+  statusVisuals as statusVisualsForTheme,
+  ticketsA11y,
+} from "@/theme/valetTheme";
 /** Assignment from API GET /valets/me/assignments */
 interface ApiAssignment {
   id: string;
@@ -39,12 +43,19 @@ interface TicketAssignment {
   assignmentId: string;
   ticketId: string;
   valetId: string;
+  /** Rol en esta asignación (RECEPTOR, DRIVER, DELIVERER). */
+  assignmentRole: string;
+  /** Estado real del ticket en backend. */
+  ticketStatus: string;
   status: "assigned" | "in-transit" | "completed";
   vehiclePlate: string;
   location: string;
   timestamp: string;
   companyId: string;
 }
+
+const DRIVER_UI_ROLES = new Set(["DRIVER", "DELIVERER"]);
+const RECEPTION_UI_ROLES = new Set(["RECEPTOR"]);
 
 function mapApiAssignmentToDisplay(a: ApiAssignment): TicketAssignment {
   const status =
@@ -63,6 +74,8 @@ function mapApiAssignmentToDisplay(a: ApiAssignment): TicketAssignment {
     assignmentId: a.id,
     ticketId: a.ticket.id,
     valetId: a.valetId,
+    assignmentRole: a.role,
+    ticketStatus: a.ticket.status,
     status,
     vehiclePlate: plate,
     location,
@@ -76,9 +89,9 @@ type Theme = ReturnType<typeof useValetTheme>;
 function createTicketStyles(theme: Theme) {
   const C = theme.colors;
   const S = theme.space;
-  const F = theme.font;
+  const F = ticketsA11y.font;
   const R = theme.radius;
-  const M = theme.minTouch;
+  const M = ticketsA11y.minTouch;
 
   return StyleSheet.create({
     safe: {
@@ -109,8 +122,15 @@ function createTicketStyles(theme: Theme) {
     subtitle: {
       fontSize: F.subtitle,
       color: C.textMuted,
-      lineHeight: 24,
+      lineHeight: 28,
       fontWeight: "500",
+    },
+    roleHint: {
+      marginTop: S.sm,
+      fontSize: F.secondary,
+      color: C.textSubtle,
+      lineHeight: 24,
+      fontWeight: "600",
     },
     toolbar: {
       flexDirection: "row",
@@ -236,6 +256,9 @@ function createTicketStyles(theme: Theme) {
     btnSuccess: {
       backgroundColor: C.success,
     },
+    btnWarning: {
+      backgroundColor: C.warning,
+    },
     btnIcon: {
       marginRight: 4,
     },
@@ -297,6 +320,7 @@ function createTicketStyles(theme: Theme) {
 export default function TicketsScreen() {
   const router = useRouter();
   const { user, setUser } = useAuthStore();
+  useValetProfileSync(user);
   const locale = useLocaleStore((s) => s.locale);
   const theme = useValetTheme();
   const styles = useMemo(() => createTicketStyles(theme), [theme]);
@@ -304,6 +328,16 @@ export default function TicketsScreen() {
   const [tickets, setTickets] = useState<TicketAssignment[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
+
+  /** Conductor: solo entregas; recepcionista (o rol no definido): cola de recepción. */
+  const isDriverUi = user?.valetStaffRole === "DRIVER";
+
+  const filteredTickets = useMemo(() => {
+    if (isDriverUi) {
+      return tickets.filter((x) => DRIVER_UI_ROLES.has(x.assignmentRole));
+    }
+    return tickets.filter((x) => RECEPTION_UI_ROLES.has(x.assignmentRole));
+  }, [tickets, isDriverUi]);
 
   const tx = useMemo(
     () => ({
@@ -342,6 +376,48 @@ export default function TicketsScreen() {
     if (s === "assigned") return t(locale, "tickets.statusAssigned");
     if (s === "in-transit") return t(locale, "tickets.statusInTransit");
     return t(locale, "tickets.statusCompleted");
+  };
+
+  const receptionTicketStatusLabel = (ticketStatus: string) => {
+    if (ticketStatus === "PARKED") return t(locale, "tickets.ticketStatusParked");
+    if (ticketStatus === "REQUESTED") return t(locale, "tickets.ticketStatusRequested");
+    return t(locale, "tickets.ticketStatusOther");
+  };
+
+  const mapReceptionVisualStatus = (ticketStatus: string): "assigned" | "in-transit" | "completed" => {
+    if (ticketStatus === "DELIVERED") return "completed";
+    if (ticketStatus === "REQUESTED") return "in-transit";
+    return "assigned";
+  };
+
+  const handleRequestReturn = (item: TicketAssignment) => {
+    Alert.alert(
+      t(locale, "tickets.confirmRequestReturnTitle"),
+      t(locale, "tickets.confirmRequestReturnMessage"),
+      [
+        { text: tx.cancel, style: "cancel" },
+        {
+          text: t(locale, "tickets.yesContinue"),
+          onPress: async () => {
+            try {
+              await api.patch(
+                `/tickets/${item.ticketId}`,
+                { status: "REQUESTED" },
+                { headers: { "x-company-id": item.companyId } }
+              );
+              Alert.alert(t(locale, "common.successTitle"), t(locale, "tickets.successRequested"));
+              await loadTickets();
+            } catch (e: unknown) {
+              const msg =
+                e && typeof e === "object" && "response" in e
+                  ? (e as { response?: { data?: { message?: string } } }).response?.data?.message
+                  : null;
+              Alert.alert(t(locale, "common.errorTitle"), msg || t(locale, "tickets.errorUpdate"));
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleStatusUpdate = (item: TicketAssignment, newStatus: "in-transit" | "completed") => {
@@ -404,6 +480,59 @@ export default function TicketsScreen() {
   };
 
   const renderTicket = ({ item }: { item: TicketAssignment }) => {
+    if (!isDriverUi) {
+      const rVis = statusVisualsForTheme(mapReceptionVisualStatus(item.ticketStatus), theme.isDark);
+      return (
+        <View
+          style={[styles.ticketCard, { borderLeftColor: rVis.bar }]}
+          accessibilityLabel={`${t(locale, "tickets.plateLabel")}: ${item.vehiclePlate}. ${receptionTicketStatusLabel(item.ticketStatus)}. ${t(locale, "tickets.locationLabel")}: ${item.location}`}
+        >
+          <Text style={styles.plateLabel}>{t(locale, "tickets.plateLabel")}</Text>
+          <Text style={styles.vehiclePlate} accessibilityRole="header" maxFontSizeMultiplier={2.2}>
+            {item.vehiclePlate}
+          </Text>
+
+          <View style={[styles.statusPill, { backgroundColor: rVis.softBg }]}>
+            <Text style={[styles.statusPillText, { color: rVis.softText }]} maxFontSizeMultiplier={2}>
+              {receptionTicketStatusLabel(item.ticketStatus)}
+            </Text>
+          </View>
+
+          <Text style={styles.locationLabel}>{t(locale, "tickets.locationLabel")}</Text>
+          <View style={styles.locationRow}>
+            <Ionicons name="location-sharp" size={28} color={C.primary} style={styles.locationIcon} />
+            <Text style={styles.location} maxFontSizeMultiplier={2}>
+              {item.location}
+            </Text>
+          </View>
+
+          <View style={styles.actions}>
+            {item.ticketStatus === "PARKED" && (
+              <TouchableOpacity
+                style={[styles.btn, styles.btnWarning]}
+                onPress={() => handleRequestReturn(item)}
+                accessibilityRole="button"
+                accessibilityHint={t(locale, "tickets.confirmRequestReturnMessage")}
+              >
+                <Ionicons name="arrow-undo-outline" size={28} color={C.white} style={styles.btnIcon} />
+                <Text style={styles.btnText} maxFontSizeMultiplier={2}>
+                  {t(locale, "tickets.actionRequestReturn")}
+                </Text>
+              </TouchableOpacity>
+            )}
+            {item.ticketStatus === "DELIVERED" && (
+              <View style={styles.completedBox}>
+                <Ionicons name="checkmark-done-circle" size={34} color={C.success} />
+                <Text style={styles.completedText} maxFontSizeMultiplier={2}>
+                  {t(locale, "tickets.completedLine")}
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+      );
+    }
+
     const vis = statusVisualsForTheme(item.status, theme.isDark);
 
     return (
@@ -424,7 +553,7 @@ export default function TicketsScreen() {
 
         <Text style={styles.locationLabel}>{t(locale, "tickets.locationLabel")}</Text>
         <View style={styles.locationRow}>
-          <Ionicons name="location-sharp" size={26} color={C.primary} style={styles.locationIcon} />
+          <Ionicons name="location-sharp" size={28} color={C.primary} style={styles.locationIcon} />
           <Text style={styles.location} maxFontSizeMultiplier={2}>
             {item.location}
           </Text>
@@ -438,7 +567,7 @@ export default function TicketsScreen() {
               accessibilityRole="button"
               accessibilityHint={t(locale, "tickets.confirmStartMessage")}
             >
-              <Ionicons name="car-outline" size={26} color={C.white} style={styles.btnIcon} />
+              <Ionicons name="car-outline" size={28} color={C.white} style={styles.btnIcon} />
               <Text style={styles.btnText} maxFontSizeMultiplier={2}>
                 {t(locale, "tickets.actionStart")}
               </Text>
@@ -451,7 +580,7 @@ export default function TicketsScreen() {
               accessibilityRole="button"
               accessibilityHint={t(locale, "tickets.confirmCompleteMessage")}
             >
-              <Ionicons name="checkmark-circle-outline" size={28} color={C.white} style={styles.btnIcon} />
+              <Ionicons name="checkmark-circle-outline" size={30} color={C.white} style={styles.btnIcon} />
               <Text style={styles.btnText} maxFontSizeMultiplier={2}>
                 {t(locale, "tickets.actionComplete")}
               </Text>
@@ -459,7 +588,7 @@ export default function TicketsScreen() {
           )}
           {item.status === "completed" && (
             <View style={styles.completedBox}>
-              <Ionicons name="checkmark-done-circle" size={32} color={C.success} />
+              <Ionicons name="checkmark-done-circle" size={34} color={C.success} />
               <Text style={styles.completedText} maxFontSizeMultiplier={2}>
                 {t(locale, "tickets.completedLine")}
               </Text>
@@ -485,9 +614,13 @@ export default function TicketsScreen() {
     }
     return (
       <View style={styles.centerBox}>
-        <Ionicons name="car-sport-outline" size={64} color={C.textSubtle} />
-        <Text style={styles.emptyTitle}>{t(locale, "tickets.emptyTitle")}</Text>
-        <Text style={styles.emptyHint}>{t(locale, "tickets.emptyHint")}</Text>
+        <Ionicons name="car-sport-outline" size={72} color={C.textSubtle} />
+        <Text style={styles.emptyTitle}>
+          {isDriverUi ? t(locale, "tickets.emptyDriver") : t(locale, "tickets.emptyReception")}
+        </Text>
+        <Text style={styles.emptyHint}>
+          {isDriverUi ? t(locale, "tickets.emptyHintDriver") : t(locale, "tickets.emptyHintReception")}
+        </Text>
       </View>
     );
   };
@@ -498,15 +631,27 @@ export default function TicketsScreen() {
         <View style={styles.header}>
           <View style={styles.headerTextBlock}>
             <Text style={styles.title} maxFontSizeMultiplier={1.8}>
-              {t(locale, "tickets.title")}
+              {isDriverUi ? t(locale, "tickets.titleDriver") : t(locale, "tickets.titleReception")}
             </Text>
             <Text style={styles.subtitle} maxFontSizeMultiplier={2}>
-              {t(locale, "tickets.subtitle")}
+              {isDriverUi ? t(locale, "tickets.subtitleDriver") : t(locale, "tickets.subtitleReception")}
+            </Text>
+            <Text style={styles.roleHint} maxFontSizeMultiplier={2}>
+              {isDriverUi ? t(locale, "tickets.roleHintDriver") : t(locale, "tickets.roleHintReception")}
             </Text>
           </View>
         </View>
 
         <View style={styles.toolbar}>
+          <TouchableOpacity
+            style={styles.toolbarBtn}
+            onPress={() => router.replace("/home")}
+            accessibilityRole="button"
+            accessibilityLabel={t(locale, "tickets.home")}
+          >
+            <Ionicons name="home-outline" size={28} color={C.text} />
+            <Text style={styles.toolbarBtnLabel}>{t(locale, "tickets.home")}</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.toolbarBtn}
             onPress={() => router.push("/settings")}
@@ -528,12 +673,12 @@ export default function TicketsScreen() {
         </View>
 
         <FlatList
-          data={tickets}
+          data={filteredTickets}
           keyExtractor={(item) => item.assignmentId}
           renderItem={renderTicket}
           refreshing={loading && !initialLoad}
           onRefresh={loadTickets}
-          contentContainerStyle={tickets.length === 0 ? styles.listEmptyGrow : styles.list}
+          contentContainerStyle={filteredTickets.length === 0 ? styles.listEmptyGrow : styles.list}
           ListEmptyComponent={listEmpty}
         />
       </View>

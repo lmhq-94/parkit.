@@ -100,7 +100,7 @@ export function FormWizard({
   };
 
   return (
-    <div className="flex-1 flex flex-col pt-14 pb-8 px-4 md:px-10 lg:px-12 max-w-[1600px] mx-auto w-full gap-8">
+    <div className="flex-1 flex flex-col pt-14 pb-8 px-4 md:px-10 lg:px-12 w-full min-w-0 gap-8">
 
       {/* ── Error ───────────────────────────────────── */}
       {error && (

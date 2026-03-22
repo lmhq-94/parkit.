@@ -1,5 +1,8 @@
 export type SystemRole = "SUPER_ADMIN" | "ADMIN" | "STAFF" | "CUSTOMER";
 
+/** Sub-rol del perfil valet (app móvil valet). */
+export type ValetStaffRole = "RECEPTIONIST" | "DRIVER";
+
 export interface User {
   id: string;
   email: string;
@@ -11,5 +14,7 @@ export interface User {
    * En algunos contextos (por ejemplo SUPER_ADMIN) puede ser opcional.
    */
   companyId?: string;
+  /** Si el usuario tiene perfil valet (STAFF en app valet). */
+  valetStaffRole?: ValetStaffRole | null;
 }
 

@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { User, Mail, CreditCard } from "lucide-react";
+import { User, Mail, CreditCard, Briefcase } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";
 import { MultiSelectField } from "@/components/MultiSelectField";
+import { SelectField } from "@/components/SelectField";
 import { DatePickerField } from "@/components/DatePickerField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getApiErrorMessage } from "@/lib/api";
@@ -126,18 +127,22 @@ export default function NewValetPage() {
           </div>
           <div>
             <label className={LABEL}>{t("valets.staffRole")} <span className="text-red-500">*</span></label>
-            <select
+            <SelectField
               value={form.staffRole}
-              onChange={(e) => setForm((p) => ({ ...p, staffRole: e.target.value as (typeof STAFF_ROLES)[number] }))}
-              className={IL}
-              aria-label={t("valets.staffRole")}
+              onChange={(e) =>
+                setForm((p) => ({
+                  ...p,
+                  staffRole: e.target.value as (typeof STAFF_ROLES)[number],
+                }))
+              }
+              icon={Briefcase}
             >
               {STAFF_ROLES.map((r) => (
                 <option key={r} value={r}>
                   {tEnum("valetStaffRole", r)}
                 </option>
               ))}
-            </select>
+            </SelectField>
           </div>
         </div>
       ),

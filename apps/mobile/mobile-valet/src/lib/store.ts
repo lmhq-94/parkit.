@@ -7,6 +7,7 @@ interface AuthStore {
   user: User | null;
   isLoading: boolean;
   setUser: (user: User | null) => void;
+  mergeUser: (patch: Partial<User>) => void;
   setLoading: (loading: boolean) => void;
 }
 
@@ -28,6 +29,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   isLoading: false,
   setUser: (user) => set({ user }),
+  mergeUser: (patch) =>
+    set((s) => (s.user ? { user: { ...s.user, ...patch } } : {})),
   setLoading: (loading) => set({ isLoading: loading }),
 }));
 

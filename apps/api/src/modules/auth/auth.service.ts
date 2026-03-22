@@ -13,8 +13,17 @@ import { comparePassword, hashPassword, signToken } from "./auth.utils";
 import crypto from "crypto";
 import { UsersService } from "../users/users.service";
 import { sendPasswordResetEmail } from "../../shared/email/passwordResetEmail";
+import { toAuthUserResponse } from "./authUserResponse";
 
 const PASSWORD_RESET_EXPIRY_HOURS = 24;
+
+async function valetStaffRoleForUser(userId: string) {
+  const v = await prisma.valet.findUnique({
+    where: { userId },
+    select: { staffRole: true },
+  });
+  return v?.staffRole ?? null;
+}
 
 export class AuthService {
   static async register(data: RegisterDTO) {
@@ -44,7 +53,7 @@ export class AuthService {
       companyId: user.companyId ?? undefined,
     });
 
-    return { user, token };
+    return { user: toAuthUserResponse(user, await valetStaffRoleForUser(user.id)), token };
   }
 
   /** Auto-registro de valet: User (companyId null, STAFF) + Valet (companyId null). */
@@ -83,7 +92,7 @@ export class AuthService {
       companyId: user.companyId ?? undefined,
     });
     return {
-      user: valet.user,
+      user: toAuthUserResponse(valet.user, valet.staffRole),
       token,
     };
   }
@@ -133,13 +142,14 @@ export class AuthService {
       data: { lastLogin: new Date() },
     });
 
+    const vr = await valetStaffRoleForUser(user.id);
     const token = signToken({
       userId: user.id,
       role: user.systemRole,
       companyId: user.companyId ?? undefined,
     });
 
-    return { user, token };
+    return { user: toAuthUserResponse(user, vr), token };
   }
 
   static async acceptInvitation(data: AcceptInvitationDTO) {
@@ -166,13 +176,14 @@ export class AuthService {
       },
     });
 
+    const vr = await valetStaffRoleForUser(updated.id);
     const token = signToken({
       userId: updated.id,
       role: updated.systemRole,
       companyId: updated.companyId ?? undefined,
     });
 
-    return { user: updated, token };
+    return { user: toAuthUserResponse(updated, vr), token };
   }
 
   /**
@@ -305,12 +316,13 @@ export class AuthService {
       data: { lastLogin: new Date() },
     });
 
+    const vr = await valetStaffRoleForUser(user.id);
     const token = signToken({
       userId: user.id,
       role: user.systemRole,
       companyId: user.companyId ?? undefined,
     });
 
-    return { user, token };
+    return { user: toAuthUserResponse(user, vr), token };
   }
 }

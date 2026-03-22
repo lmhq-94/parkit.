@@ -150,6 +150,23 @@ export const valetStaticTokens = {
   },
 } as const;
 
+/**
+ * Pantalla de trabajo (tickets): botones y texto más grandes para reducir errores
+ * (personas con menos práctica con el móvil o visión reducida).
+ */
+export const ticketsA11y = {
+  minTouch: 60,
+  font: {
+    title: 30,
+    subtitle: 20,
+    hero: 34,
+    body: 20,
+    secondary: 18,
+    button: 22,
+    status: 18,
+  },
+} as const;
+
 export function useValetTheme() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme !== "light";

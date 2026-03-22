@@ -7,6 +7,7 @@ import { t } from "@/lib/i18n";
 import { useEffect, useRef, useMemo } from "react";
 import { AuthHeroGradient } from "@/components/AuthHeroGradient";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
+import { getAppVersionString } from "@/lib/appVersion";
 
 const LOGO_SIZE = 72;
 const CONTROL_HEIGHT = 56;
@@ -105,9 +106,20 @@ export function WelcomeContent({
           letterSpacing: 0.5,
         },
         btnPressed: { opacity: 0.9 },
+        versionLabel: {
+          marginTop: 20,
+          fontSize: 12,
+          fontWeight: "500",
+          color: a.textMuted,
+          textAlign: "center",
+        },
       }),
     [a]
   );
+
+  const versionLabel = t(locale, "welcome.version", {
+    version: getAppVersionString() || "—",
+  });
 
   useEffect(() => {
     Animated.parallel([
@@ -159,6 +171,9 @@ export function WelcomeContent({
             >
               <Text style={styles.btnSecondaryText}>{t(locale, "welcome.signup")}</Text>
             </Pressable>
+            <Text style={styles.versionLabel} accessibilityRole="text">
+              {versionLabel}
+            </Text>
           </View>
         </Animated.View>
       </View>

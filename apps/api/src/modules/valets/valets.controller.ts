@@ -39,6 +39,23 @@ export class ValetsController {
     }
   }
 
+  /** Perfil valet actual (staffRole, etc.). */
+  static async getMe(req: Request, res: Response) {
+    try {
+      const valet = await ValetsService.getMe(req.user!.userId);
+      if (!valet) {
+        return fail(res, 403, "User is not a valet");
+      }
+      return ok(res, valet);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
   static async create(req: Request, res: Response) {
     try {
       const valet = await ValetsService.create(

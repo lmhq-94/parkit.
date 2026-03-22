@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { Logo } from "@parkit/shared";
 import { useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
+import { getAppVersionString } from "@/lib/appVersion";
 
 const DARK_BG = "#0F172A";
 const ACCENT = "#3B82F6";
@@ -36,6 +37,9 @@ export default function WelcomeScreen() {
         >
           <Text style={styles.btnSecondaryText}>{t(locale, "welcome.signup")}</Text>
         </Pressable>
+        <Text style={styles.versionLabel} accessibilityRole="text">
+          {t(locale, "welcome.version", { version: getAppVersionString() || "—" })}
+        </Text>
       </SafeAreaView>
     </View>
   );
@@ -113,5 +117,12 @@ const styles = StyleSheet.create({
   },
   btnPressed: {
     opacity: 0.9,
+  },
+  versionLabel: {
+    marginTop: 20,
+    fontSize: 12,
+    fontWeight: "500",
+    color: "#64748B",
+    textAlign: "center",
   },
 });

@@ -295,7 +295,7 @@ export default function LoginScreen() {
       await setAuthToken(token);
       await saveUser(user);
       setUser(user);
-      router.replace("/tickets");
+      router.replace("/home");
     } catch (err: unknown) {
       const msg =
         err && typeof err === "object" && "response" in err
@@ -326,7 +326,7 @@ export default function LoginScreen() {
       await setAuthToken(token);
       await saveUser(user);
       setUser(user);
-      router.replace("/tickets");
+      router.replace("/home");
     } catch (err: unknown) {
       const msg =
         err && typeof err === "object" && "response" in err
