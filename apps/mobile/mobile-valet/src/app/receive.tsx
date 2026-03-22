@@ -24,6 +24,7 @@ import { messageFromAxios } from "@/lib/apiErrors";
 import { useOnAppForeground } from "@/lib/useOnAppForeground";
 import { RECEIVE_META_POLL_MS } from "@/lib/syncConstants";
 import { ValetBackButton } from "@/components/ValetBackButton";
+import { StickyFormFooter } from "@/components/StickyFormFooter";
 
 interface VehicleOwnerRow {
   client: {
@@ -482,7 +483,9 @@ export default function ReceiveScreen() {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
+        <View style={{ flex: 1, minHeight: 0 }}>
         <ScrollView
+          style={{ flex: 1 }}
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -770,29 +773,35 @@ export default function ReceiveScreen() {
                   </Pressable>
                 ))}
               </View>
-
-              <Pressable
-                style={({ pressed }) => [
-                  styles.primaryBtn,
-                  { marginTop: 24, minHeight: M },
-                  submitting && styles.btnDisabled,
-                  pressed && styles.pressed,
-                ]}
-                onPress={handleSubmit}
-                disabled={submitting || !parkingId || !effectiveCompanyId}
-              >
-                {submitting ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <>
-                    <Ionicons name="ticket-outline" size={22} color="#fff" />
-                    <Text style={styles.primaryBtnText}>{t(locale, "receive.submit")}</Text>
-                  </>
-                )}
-              </Pressable>
             </>
           )}
         </ScrollView>
+
+        {vehicleResolved ? (
+          <StickyFormFooter>
+            <Pressable
+              style={({ pressed }) => [
+                styles.primaryBtn,
+                styles.primaryBtnSticky,
+                { minHeight: M },
+                submitting && styles.btnDisabled,
+                pressed && styles.pressed,
+              ]}
+              onPress={handleSubmit}
+              disabled={submitting || !parkingId || !effectiveCompanyId}
+            >
+              {submitting ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <>
+                  <Ionicons name="ticket-outline" size={22} color="#fff" />
+                  <Text style={styles.primaryBtnText}>{t(locale, "receive.submit")}</Text>
+                </>
+              )}
+            </Pressable>
+          </StickyFormFooter>
+        ) : null}
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -818,7 +827,8 @@ function createStyles(theme: Theme) {
       borderBottomColor: C.border,
       backgroundColor: C.card,
     },
-    scroll: { padding: S.lg, paddingBottom: S.xxl * 2 },
+    scroll: { padding: S.lg, paddingBottom: S.xl },
+    primaryBtnSticky: { marginTop: 0, marginBottom: 0 },
     screenTitle: {
       fontSize: F.title - 2,
       fontWeight: "800",

@@ -21,6 +21,7 @@ import { useCompanyContext } from "@/lib/useCompanyContext";
 import api from "@/lib/api";
 import { messageFromAxios } from "@/lib/apiErrors";
 import { ValetBackButton } from "@/components/ValetBackButton";
+import { StickyFormFooter } from "@/components/StickyFormFooter";
 
 interface TicketRow {
   id: string;
@@ -140,81 +141,88 @@ export default function ReturnPickupScreen() {
         <Text style={styles.screenTitle}>{t(locale, "returnPickup.title")}</Text>
         <View style={{ width: 44 }} />
       </View>
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={styles.sub}>{t(locale, "returnPickup.subtitle")}</Text>
+      <View style={{ flex: 1, minHeight: 0 }}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.sub}>{t(locale, "returnPickup.subtitle")}</Text>
 
-        <TextInput
-          style={styles.input}
-          value={plateFilter}
-          onChangeText={(x) => setPlateFilter(x.toUpperCase())}
-          placeholder={t(locale, "returnPickup.filterPlaceholder")}
-          placeholderTextColor={C.textSubtle}
-          autoCapitalize="characters"
-        />
+          <TextInput
+            style={styles.input}
+            value={plateFilter}
+            onChangeText={(x) => setPlateFilter(x.toUpperCase())}
+            placeholder={t(locale, "returnPickup.filterPlaceholder")}
+            placeholderTextColor={C.textSubtle}
+            autoCapitalize="characters"
+          />
 
-        {companyLoading || loading ? (
-          <ActivityIndicator style={{ marginVertical: 24 }} color={C.primary} size="large" />
-        ) : filtered.length === 0 ? (
-          <View style={styles.empty}>
-            <Ionicons name="car-outline" size={48} color={C.textSubtle} />
-            <Text style={styles.emptyText}>{t(locale, "returnPickup.empty")}</Text>
-          </View>
-        ) : (
-          filtered.map((tk) => {
-            const active = selectedTicketId === tk.id;
-            return (
-              <Pressable
-                key={tk.id}
-                onPress={() => {
-                  setSelectedTicketId(tk.id);
-                  setDelivererId(null);
-                }}
-                style={[styles.ticketCard, active && styles.ticketCardOn]}
-              >
-                <Text style={styles.plate}>{tk.vehicle?.plate || "—"}</Text>
-                <Text style={styles.meta}>
-                  {tk.vehicle?.brand} {tk.vehicle?.model}
-                </Text>
-                <Text style={styles.meta}>{tk.parking?.name}</Text>
-              </Pressable>
-            );
-          })
-        )}
-
-        {selectedTicketId && (
-          <>
-            <Text style={styles.sectionLabel}>{t(locale, "returnPickup.assignDriver")}</Text>
-            <Text style={styles.help}>{t(locale, "returnPickup.assignHelp")}</Text>
-            <View style={styles.chips}>
-              <Pressable
-                onPress={() => setDelivererId(null)}
-                style={[styles.chip, delivererId === null && styles.chipOn]}
-              >
-                <Text style={[styles.chipText, delivererId === null && styles.chipTextOn]}>
-                  {t(locale, "receive.noDriver")}
-                </Text>
-              </Pressable>
-              {valets.map((v) => (
+          {companyLoading || loading ? (
+            <ActivityIndicator style={{ marginVertical: 24 }} color={C.primary} size="large" />
+          ) : filtered.length === 0 ? (
+            <View style={styles.empty}>
+              <Ionicons name="car-outline" size={48} color={C.textSubtle} />
+              <Text style={styles.emptyText}>{t(locale, "returnPickup.empty")}</Text>
+            </View>
+          ) : (
+            filtered.map((tk) => {
+              const active = selectedTicketId === tk.id;
+              return (
                 <Pressable
-                  key={v.id}
-                  onPress={() => setDelivererId(v.id)}
-                  style={[styles.chip, delivererId === v.id && styles.chipOn]}
+                  key={tk.id}
+                  onPress={() => {
+                    setSelectedTicketId(tk.id);
+                    setDelivererId(null);
+                  }}
+                  style={[styles.ticketCard, active && styles.ticketCardOn]}
                 >
-                  <Text style={[styles.chipText, delivererId === v.id && styles.chipTextOn]}>
-                    {v.user.firstName} {v.user.lastName}
+                  <Text style={styles.plate}>{tk.vehicle?.plate || "—"}</Text>
+                  <Text style={styles.meta}>
+                    {tk.vehicle?.brand} {tk.vehicle?.model}
+                  </Text>
+                  <Text style={styles.meta}>{tk.parking?.name}</Text>
+                </Pressable>
+              );
+            })
+          )}
+
+          {selectedTicketId ? (
+            <>
+              <Text style={styles.sectionLabel}>{t(locale, "returnPickup.assignDriver")}</Text>
+              <Text style={styles.help}>{t(locale, "returnPickup.assignHelp")}</Text>
+              <View style={styles.chips}>
+                <Pressable
+                  onPress={() => setDelivererId(null)}
+                  style={[styles.chip, delivererId === null && styles.chipOn]}
+                >
+                  <Text style={[styles.chipText, delivererId === null && styles.chipTextOn]}>
+                    {t(locale, "receive.noDriver")}
                   </Text>
                 </Pressable>
-              ))}
-            </View>
+                {valets.map((v) => (
+                  <Pressable
+                    key={v.id}
+                    onPress={() => setDelivererId(v.id)}
+                    style={[styles.chip, delivererId === v.id && styles.chipOn]}
+                  >
+                    <Text style={[styles.chipText, delivererId === v.id && styles.chipTextOn]}>
+                      {v.user.firstName} {v.user.lastName}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </>
+          ) : null}
+        </ScrollView>
 
+        {selectedTicketId ? (
+          <StickyFormFooter>
             <Pressable
               style={({ pressed }) => [
                 styles.primaryBtn,
-                { minHeight: M },
+                { marginTop: 0, minHeight: M },
                 submitting && styles.btnDisabled,
                 pressed && styles.pressed,
               ]}
@@ -230,9 +238,9 @@ export default function ReturnPickupScreen() {
                 </>
               )}
             </Pressable>
-          </>
-        )}
-      </ScrollView>
+          </StickyFormFooter>
+        ) : null}
+      </View>
     </SafeAreaView>
   );
 }
@@ -257,7 +265,7 @@ function createStyles(theme: Theme) {
       borderBottomColor: C.border,
       backgroundColor: C.card,
     },
-    scroll: { padding: S.lg, paddingBottom: S.xxl * 2 },
+    scroll: { padding: S.lg, paddingBottom: S.xl },
     screenTitle: {
       fontSize: F.title - 2,
       fontWeight: "800",

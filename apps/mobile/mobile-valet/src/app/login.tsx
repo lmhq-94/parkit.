@@ -13,6 +13,7 @@ import {
   Animated,
   Easing,
   Modal,
+  KeyboardAvoidingView,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -25,6 +26,7 @@ import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
 import { AuthHeroGradient } from "@/components/AuthHeroGradient";
+import { StickyFormFooter } from "@/components/StickyFormFooter";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
 
 const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
@@ -44,6 +46,7 @@ export default function LoginScreen() {
   const locale = useLocaleStore((s) => s.locale);
   const theme = useValetTheme();
   const a = theme.auth;
+  const C = theme.colors;
 
   const styles = useMemo(
     () =>
@@ -357,6 +360,7 @@ export default function LoginScreen() {
       </View>
 
       <View style={styles.bottomWrap}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <KeyboardAwareScrollView
           style={{ flex: 1, backgroundColor: "transparent" }}
           contentContainerStyle={styles.scrollContent}
@@ -378,7 +382,7 @@ export default function LoginScreen() {
             <View
               style={[
                 styles.bottomSection,
-                { paddingBottom: Math.max(insets.bottom, 14) },
+                { paddingBottom: 14 },
               ]}
             >
               <View
@@ -568,25 +572,6 @@ export default function LoginScreen() {
                 </View>
               ) : null}
 
-              <Pressable
-                onPress={mode === "login" ? handleLogin : handleSignup}
-                disabled={loading}
-                style={({ pressed }) => [
-                  styles.loginBtn,
-                  mode === "login" ? styles.loginBtnLogin : styles.loginBtnSignup,
-                  pressed && styles.btnPressed,
-                  loading && styles.btnDisabled,
-                ]}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Text style={styles.loginBtnText}>
-                    {mode === "login" ? t(locale, "login.submit") : t(locale, "signup.submit")}
-                  </Text>
-                )}
-              </Pressable>
-
               <View style={styles.footer}>
                 <Text style={styles.footerText}>{t(locale, "login.footer")}</Text>
                 <Pressable onPress={() => Linking.openURL(SUPPORT_EMAIL)}>
@@ -597,6 +582,28 @@ export default function LoginScreen() {
             </View>
           </Animated.View>
         </KeyboardAwareScrollView>
+
+        <StickyFormFooter backgroundColor={a.bottomSheet} borderColor={C.border} paddingHorizontal={28}>
+          <Pressable
+            onPress={mode === "login" ? handleLogin : handleSignup}
+            disabled={loading}
+            style={({ pressed }) => [
+              styles.loginBtn,
+              mode === "login" ? styles.loginBtnLogin : styles.loginBtnSignup,
+              pressed && styles.btnPressed,
+              loading && styles.btnDisabled,
+            ]}
+          >
+            {loading ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
+              <Text style={styles.loginBtnText}>
+                {mode === "login" ? t(locale, "login.submit") : t(locale, "signup.submit")}
+              </Text>
+            )}
+          </Pressable>
+        </StickyFormFooter>
+        </KeyboardAvoidingView>
       </View>
     </AuthHeroGradient>
   );

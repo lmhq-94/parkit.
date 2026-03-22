@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   Linking,
   Dimensions,
+  KeyboardAvoidingView,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -21,6 +22,7 @@ import { useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
 import { AuthHeroGradient } from "@/components/AuthHeroGradient";
+import { StickyFormFooter } from "@/components/StickyFormFooter";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
 
 const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
@@ -34,6 +36,7 @@ export default function ForgotPasswordScreen() {
   const locale = useLocaleStore((s) => s.locale);
   const theme = useValetTheme();
   const a = theme.auth;
+  const C = theme.colors;
 
   const styles = useMemo(
     () =>
@@ -206,6 +209,7 @@ export default function ForgotPasswordScreen() {
       </View>
 
       <View style={styles.bottomWrap}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <KeyboardAwareScrollView
           style={{ flex: 1, backgroundColor: "transparent" }}
           contentContainerStyle={styles.scrollContent}
@@ -217,7 +221,15 @@ export default function ForgotPasswordScreen() {
           bounces
         >
           <View style={styles.scrollTopSpacer} />
-          <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom, 14), width: "100%" }]}>
+          <View
+            style={[
+              styles.bottomSection,
+              {
+                paddingBottom: submitted ? Math.max(insets.bottom, 14) : 14,
+                width: "100%",
+              },
+            ]}
+          >
             <View style={styles.formContent}>
             <Text style={styles.cardHeadline}>{t(locale, "forgot.headline")}</Text>
             <Text style={styles.subtitle}>
@@ -263,22 +275,6 @@ export default function ForgotPasswordScreen() {
                   </View>
                 ) : null}
 
-                <Pressable
-                  onPress={handleSubmit}
-                  disabled={loading || !email.trim()}
-                  style={({ pressed }) => [
-                    styles.submitBtn,
-                    pressed && styles.btnPressed,
-                    (loading || !email.trim()) && styles.btnDisabled,
-                  ]}
-                >
-                  {loading ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
-                  ) : (
-                    <Text style={styles.submitBtnText}>{t(locale, "forgot.sendLink")}</Text>
-                  )}
-                </Pressable>
-
                 <TouchableOpacity onPress={() => router.replace("/login")} hitSlop={8} style={styles.footerLinkWrap}>
                   <Text style={styles.footerLink}>{t(locale, "forgot.backToLogin")}</Text>
                 </TouchableOpacity>
@@ -294,6 +290,28 @@ export default function ForgotPasswordScreen() {
             </View>
           </View>
         </KeyboardAwareScrollView>
+
+        {!submitted ? (
+          <StickyFormFooter backgroundColor={a.bottomSheet} borderColor={C.border} paddingHorizontal={28}>
+            <Pressable
+              onPress={handleSubmit}
+              disabled={loading || !email.trim()}
+              style={({ pressed }) => [
+                styles.submitBtn,
+                { marginTop: 0, marginBottom: 0 },
+                pressed && styles.btnPressed,
+                (loading || !email.trim()) && styles.btnDisabled,
+              ]}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <Text style={styles.submitBtnText}>{t(locale, "forgot.sendLink")}</Text>
+              )}
+            </Pressable>
+          </StickyFormFooter>
+        ) : null}
+        </KeyboardAvoidingView>
       </View>
     </AuthHeroGradient>
   );

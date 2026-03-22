@@ -10,8 +10,9 @@ import {
   Image,
   Modal,
   FlatList,
+  StatusBar,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useEffect, useState, type ComponentType } from "react";
@@ -62,6 +63,7 @@ export default function HomeScreen() {
   const setCompanyId = useCompanyStore((s) => s.setCompanyId);
   const locale = useLocaleStore((s) => s.locale);
   const theme = useValetTheme();
+  const insets = useSafeAreaInsets();
   const windowDims = useWindowDimensions();
   const winW = windowDims.width;
   const winH =
@@ -162,16 +164,30 @@ export default function HomeScreen() {
       } as const);
 
   const headerTextPrimary = theme.isDark ? C.text : "#0F172A";
+  /** Mismo tono que el inicio del gradiente del header (barra de estado alineada visualmente). */
+  const statusBarBg = headerGradientSpec.colors[0];
+  const S = theme.space;
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right", "bottom"]}>
+    <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
+      <StatusBar
+        barStyle={theme.isDark ? "light-content" : "dark-content"}
+        backgroundColor={statusBarBg}
+        translucent={Platform.OS === "android"}
+      />
       <View style={styles.mainColumn}>
         <LinearGradient
           colors={[...headerGradientSpec.colors]}
           locations={[...headerGradientSpec.locations]}
           start={headerGradientSpec.start}
           end={headerGradientSpec.end}
-          style={[styles.heroPlain, { maxHeight: headerMaxH }]}
+          style={[
+            styles.heroPlain,
+            {
+              paddingTop: insets.top + S.md,
+              maxHeight: headerMaxH + insets.top,
+            },
+          ]}
         >
           <View style={styles.heroToolbarWrap}>
             <View style={styles.heroToolbar}>
