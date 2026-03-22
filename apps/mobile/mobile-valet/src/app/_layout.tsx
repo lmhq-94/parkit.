@@ -61,6 +61,7 @@ export default function RootLayout() {
         <Stack.Screen name="tickets" />
         <Stack.Screen name="settings" />
         <Stack.Screen name="profile" />
+        <Stack.Screen name="workflow" />
         <Stack.Screen
           name="welcome"
           options={{ animation: 'fade', gestureEnabled: false }}

@@ -7,7 +7,7 @@ import {
 } from "../logoTokens";
 
 /** Colores alineados con `apps/web/src/components/Logo.tsx`; tipografía con `logoTokens`. */
-export type LogoVariant = "default" | "onDark" | "mark" | "markOnDark";
+export type LogoVariant = "default" | "onDark" | "onLight" | "mark" | "markOnDark";
 
 export function Logo({
   size = 42,
@@ -32,6 +32,7 @@ export function Logo({
     variant ?? (darkBackground ? "onDark" : "default");
 
   const isOnDark = resolvedVariant === "onDark" || resolvedVariant === "markOnDark";
+  const isOnLight = resolvedVariant === "onLight";
   const isMark = resolvedVariant === "mark" || resolvedVariant === "markOnDark";
 
   // Colores equivalentes a Tailwind en la web (Logo.tsx)
@@ -40,6 +41,10 @@ export function Logo({
   if (isOnDark) {
     parkColor = "#FFFFFF";
     itColor = "#7DD3FC"; // sky-300 (variant onDark / markOnDark)
+  } else if (isOnLight) {
+    /** Fondo claro explícito (p. ej. header app en tema claro): siempre legible, sin depender del sistema. */
+    parkColor = "#0F172A";
+    itColor = "#2563EB";
   } else if (isMark) {
     parkColor = "#0F172A"; // slate-900
     itColor = "#2563EB"; // blue-600 — el punto sigue el mismo azul que "it."

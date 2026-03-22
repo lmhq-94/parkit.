@@ -1,5 +1,5 @@
 import { prisma } from "../../shared/prisma";
-import { TicketStatus, AssignmentRole } from "@prisma/client";
+import { TicketStatus, AssignmentRole, ValetStatus } from "@prisma/client";
 
 interface CreateTicketDTO {
   bookingId?: string;
@@ -306,6 +306,31 @@ export class TicketsService {
         }
       }
 
+      if (
+        data.status === TicketStatus.DELIVERED ||
+        data.status === TicketStatus.CANCELLED
+      ) {
+        const assigns = await tx.ticketAssignment.findMany({
+          where: { ticketId },
+          select: { valetId: true },
+        });
+        const valetIds = [...new Set(assigns.map((a) => a.valetId))];
+        for (const valetId of valetIds) {
+          const activeCount = await tx.ticketAssignment.count({
+            where: {
+              valetId,
+              ticket: { status: { notIn: [TicketStatus.DELIVERED, TicketStatus.CANCELLED] } },
+            },
+          });
+          if (activeCount === 0) {
+            await tx.valet.update({
+              where: { id: valetId },
+              data: { currentStatus: ValetStatus.AVAILABLE },
+            });
+          }
+        }
+      }
+
       return tx.ticket.findUniqueOrThrow({
         where: { id: ticketId },
         include,
@@ -326,30 +351,37 @@ export class TicketsService {
       throw new Error("Ticket not found");
     }
 
-    return prisma.ticketAssignment.create({
-      data: {
-        ticketId,
-        valetId: data.valetId,
-        role: data.role,
-      },
-      include: {
-        valet: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
+    return prisma.$transaction(async (tx) => {
+      const created = await tx.ticketAssignment.create({
+        data: {
+          ticketId,
+          valetId: data.valetId,
+          role: data.role,
+        },
+        include: {
+          valet: {
+            include: {
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
               },
             },
           },
-        },
-        ticket: {
-          select: {
-            id: true,
-            status: true,
+          ticket: {
+            select: {
+              id: true,
+              status: true,
+            },
           },
         },
-      },
+      });
+      await tx.valet.update({
+        where: { id: data.valetId },
+        data: { currentStatus: ValetStatus.BUSY },
+      });
+      return created;
     });
   }
 
