@@ -20,6 +20,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTabletMode: false,
     bundleIdentifier: 'com.parkit.valet',
+    infoPlist: {
+      NSLocationWhenInUseUsageDescription:
+        'Usamos tu ubicación para mostrar el parqueo de la empresa más cercano.',
+    },
   },
   android: {
     adaptiveIcon: {
@@ -35,7 +39,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundler: 'metro',
     favicon: './assets/favicon.png',
   },
-  plugins: ['expo-router'],
+  plugins: [
+    'expo-router',
+    [
+      'expo-location',
+      {
+        locationWhenInUsePermission:
+          'Permite mostrar el parqueo más cercano según tu posición.',
+      },
+    ],
+  ],
   experiments: {
     typedRoutes: true,
   },

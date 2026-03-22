@@ -146,6 +146,7 @@ export class BookingsService {
             address: true,
             latitude: true,
             longitude: true,
+            freeBenefitHours: true,
           },
         },
         ticket: {

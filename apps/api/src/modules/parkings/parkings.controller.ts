@@ -51,6 +51,20 @@ export class ParkingsController {
     }
   }
 
+  /** Lista global de parqueos con coordenadas (valets rotativos entre empresas). */
+  static async listAllLocationsForValet(_req: Request, res: Response) {
+    try {
+      const parkings = await ParkingsService.listAllWithCoordinates();
+      return ok(res, parkings);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
   static async getById(req: Request, res: Response) {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;

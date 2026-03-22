@@ -323,7 +323,7 @@ export class ValetsService {
     });
   }
 
-  /** Valets que tienen al menos una asignación en tickets de esta empresa (para selector al asignar). */
+  /** Valets para asignar en tickets: prioridad a quienes ya tienen actividad en la empresa; si no hay, todos los de la empresa. */
   static async listValetsForCompany(companyId: string) {
     const assignmentValetIds = await prisma.ticketAssignment.findMany({
       where: { ticket: { companyId } },
@@ -331,20 +331,29 @@ export class ValetsService {
       distinct: ["valetId"],
     });
     const valetIds = assignmentValetIds.map((a) => a.valetId);
-    if (valetIds.length === 0) return [];
 
-    return prisma.valet.findMany({
-      where: { id: { in: valetIds } },
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
+    const includeUser = {
+      user: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
         },
       },
+    } as const;
+
+    if (valetIds.length > 0) {
+      return prisma.valet.findMany({
+        where: { id: { in: valetIds } },
+        include: includeUser,
+        orderBy: { createdAt: "desc" },
+      });
+    }
+
+    return prisma.valet.findMany({
+      where: { companyId },
+      include: includeUser,
       orderBy: { createdAt: "desc" },
     });
   }

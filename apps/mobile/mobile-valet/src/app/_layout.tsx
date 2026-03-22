@@ -53,6 +53,8 @@ export default function RootLayout() {
           options={{ animation: 'none', gestureEnabled: false }}
         />
         <Stack.Screen name="home" />
+        <Stack.Screen name="receive" />
+        <Stack.Screen name="return-pickup" />
         <Stack.Screen name="tickets" />
         <Stack.Screen name="settings" />
         <Stack.Screen

@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import Constants from 'expo-constants';
+import { useCompanyStore } from '@/lib/companyStore';
 
 const hostUri = Constants.expoConfig?.hostUri;
 const lanHost = hostUri ? hostUri.split(':')[0] : null;
@@ -17,6 +18,10 @@ api.interceptors.request.use(async (config) => {
   const token = await SecureStore.getItemAsync('auth_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  const companyId = useCompanyStore.getState().companyId;
+  if (companyId) {
+    config.headers['X-Company-Id'] = companyId;
   }
   return config;
 });

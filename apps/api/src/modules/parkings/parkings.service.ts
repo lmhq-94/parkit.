@@ -82,6 +82,34 @@ export class ParkingsService {
     });
   }
 
+  /**
+   * Todos los parqueos con coordenadas (p. ej. app valet rotativa entre empresas).
+   * Sin filtro por empresa.
+   */
+  static async listAllWithCoordinates() {
+    return prisma.parking.findMany({
+      where: {
+        latitude: { not: null },
+        longitude: { not: null },
+      },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        latitude: true,
+        longitude: true,
+        companyId: true,
+        company: {
+          select: {
+            commercialName: true,
+            legalName: true,
+          },
+        },
+      },
+      orderBy: { name: "asc" },
+    });
+  }
+
   static async getById(companyId: string, parkingId: string) {
     return prisma.parking.findFirst({
       where: { id: parkingId, companyId },
