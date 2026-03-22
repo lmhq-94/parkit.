@@ -23,6 +23,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     infoPlist: {
       NSLocationWhenInUseUsageDescription:
         'Usamos tu ubicación para mostrar el parqueo de la empresa más cercano.',
+      NSPhotoLibraryUsageDescription:
+        'Para elegir una foto de perfil desde tu galería.',
+      NSCameraUsageDescription: 'Para tomar una foto de perfil si lo prefieres.',
     },
   },
   android: {
@@ -46,6 +49,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         locationWhenInUsePermission:
           'Permite mostrar el parqueo más cercano según tu posición.',
+      },
+    ],
+    [
+      'expo-image-picker',
+      {
+        photosPermission:
+          'Necesitamos acceso a tus fotos para que puedas elegir una imagen de perfil.',
+        cameraPermission:
+          'Si lo deseas, puedes tomarte una foto para tu perfil.',
       },
     ],
   ],

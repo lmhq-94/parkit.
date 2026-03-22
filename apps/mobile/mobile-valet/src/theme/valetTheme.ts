@@ -5,6 +5,7 @@
 import type { ViewStyle } from "react-native";
 import { useColorScheme } from "react-native";
 import { useMemo } from "react";
+import { useThemeStore } from "@/lib/themeStore";
 
 /** Mismo azul que welcome.btnPrimary */
 export const ACCENT = "#3B82F6";
@@ -168,8 +169,14 @@ export const ticketsA11y = {
 } as const;
 
 export function useValetTheme() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme !== "light";
+  const systemScheme = useColorScheme();
+  const preference = useThemeStore((s) => s.preference);
+  const isDark =
+    preference === "dark"
+      ? true
+      : preference === "light"
+        ? false
+        : systemScheme !== "light";
 
   return useMemo(
     () => ({

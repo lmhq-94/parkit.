@@ -2,6 +2,7 @@ import { Stack, SplashScreen } from 'expo-router';
 import { useEffect } from 'react';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useAuthStore, useLocaleStore } from '@/lib/store';
+import { useThemeStore } from '@/lib/themeStore';
 import { getStoredUser } from '@/lib/auth';
 import { useFonts } from 'expo-font';
 
@@ -10,6 +11,7 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const { setUser, setLoading, isLoading } = useAuthStore();
   const { hydrateLocale } = useLocaleStore();
+  const { hydrateTheme } = useThemeStore();
 
   const [fontsLoaded] = useFonts({
     'CalSans': require('../../assets/fonts/CalSans.ttf'),
@@ -20,6 +22,7 @@ export default function RootLayout() {
       setLoading(true);
       try {
         await hydrateLocale();
+        await hydrateTheme();
         const user = await getStoredUser();
         setUser(user);
       } finally {
@@ -57,6 +60,7 @@ export default function RootLayout() {
         <Stack.Screen name="return-pickup" />
         <Stack.Screen name="tickets" />
         <Stack.Screen name="settings" />
+        <Stack.Screen name="profile" />
         <Stack.Screen
           name="welcome"
           options={{ animation: 'fade', gestureEnabled: false }}

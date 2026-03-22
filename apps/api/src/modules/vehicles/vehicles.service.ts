@@ -196,4 +196,33 @@ export class VehiclesService {
       },
     });
   }
+
+  /** Búsqueda global por placa+país (único en BD). Valets rotativos entre empresas. */
+  static async getByPlateGlobal(plate: string, countryCode: string = "CR") {
+    return prisma.vehicle.findUnique({
+      where: {
+        plate_countryCode: {
+          plate,
+          countryCode: countryCode || "CR",
+        },
+      },
+      include: {
+        owners: {
+          include: {
+            client: {
+              select: {
+                id: true,
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
 }

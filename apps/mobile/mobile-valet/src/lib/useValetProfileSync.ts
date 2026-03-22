@@ -16,12 +16,22 @@ export function useValetProfileSync(user: User | null) {
     let cancelled = false;
     (async () => {
       try {
-        const res = await api.get<{ data: { staffRole: string | null } }>("/valets/me");
-        const sr = (res.data?.data?.staffRole ?? null) as User["valetStaffRole"];
+        const res = await api.get<{
+          data: {
+            staffRole: string | null;
+            currentStatus?: string | null;
+          };
+        }>("/valets/me");
+        const row = res.data?.data;
+        const sr = (row?.staffRole ?? null) as User["valetStaffRole"];
+        const rawSt = row?.currentStatus;
+        const st: User["valetCurrentStatus"] | null =
+          rawSt === "AVAILABLE" || rawSt === "BUSY" || rawSt === "AWAY" ? rawSt : null;
         if (cancelled) return;
-        const current = user.valetStaffRole ?? null;
-        if (sr !== current) {
-          mergeUser({ valetStaffRole: sr });
+        const currentRole = user.valetStaffRole ?? null;
+        const currentStatus = user.valetCurrentStatus ?? null;
+        if (sr !== currentRole || st !== currentStatus) {
+          mergeUser({ valetStaffRole: sr, valetCurrentStatus: st });
           const next = useAuthStore.getState().user;
           if (next) await saveUser(next);
         }

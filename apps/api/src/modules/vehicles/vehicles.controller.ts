@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { VehiclesService } from "./vehicles.service";
 import { VehicleCatalogService } from "./vehicle-catalog.service";
 import { parseQueryParam } from "../../shared/utils/queryParser";
+import { formatPlate } from "../../shared/utils/plate";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
 
 export class VehiclesController {
@@ -146,6 +147,30 @@ export class VehiclesController {
         return notFound(res, "Vehicle not found");
       }
 
+      return ok(res, vehicle);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
+  /** Placa formateada como en web; búsqueda en todo el sistema (STAFF valet). */
+  static async getByPlateValet(req: Request, res: Response) {
+    try {
+      const raw = parseQueryParam(req.query.plate as string | string[] | undefined) || "";
+      const countryStr =
+        parseQueryParam(req.query.countryCode as string | string[] | undefined) || "CR";
+      const plate = formatPlate(raw);
+      if (!plate.trim()) {
+        return fail(res, 400, "plate is required");
+      }
+      const vehicle = await VehiclesService.getByPlateGlobal(plate, countryStr);
+      if (!vehicle) {
+        return notFound(res, "Vehicle not found");
+      }
       return ok(res, vehicle);
     } catch (error: unknown) {
       return fail(

@@ -11,16 +11,17 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Redirect, useRouter } from "expo-router";
+import { Redirect, useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useMemo, useState } from "react";
-import { useAuthStore, useLocaleStore } from "@/lib/store";
+import { useEffect, useMemo, useState } from "react";
+import { formatPlate } from "@parkit/shared";
+import { useAuthStore, useLocaleStore, useCompanyStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { useValetTheme, ticketsA11y } from "@/theme/valetTheme";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
-import { useCompanyContext } from "@/lib/useCompanyContext";
 import api from "@/lib/api";
 import { messageFromAxios } from "@/lib/apiErrors";
+import { ValetBackButton } from "@/components/ValetBackButton";
 
 interface VehicleOwnerRow {
   client: {
@@ -36,6 +37,7 @@ interface VehicleLookup {
   model: string;
   year?: number | null;
   countryCode: string;
+  companyId: string;
   owners: VehicleOwnerRow[];
 }
 
@@ -43,7 +45,10 @@ interface ParkingOpt {
   id: string;
   name: string;
   address: string;
+  companyId: string;
 }
+
+const COUNTRY_CR = "CR";
 
 interface ValetOpt {
   id: string;
@@ -68,15 +73,18 @@ function randomWalkInPassword(): string {
 
 export default function ReceiveScreen() {
   const router = useRouter();
+  const flowRaw = useLocalSearchParams<{ flow?: string | string[] }>().flow;
+  const flowParam = Array.isArray(flowRaw) ? flowRaw[0] : flowRaw;
+  const reservationFlow = flowParam === "reservation";
+
   const { user } = useAuthStore();
   const locale = useLocaleStore((s) => s.locale);
   useValetProfileSync(user);
-  const { companyId, loading: companyLoading, error: companyErr } = useCompanyContext(user);
+  const setCompanyId = useCompanyStore((s) => s.setCompanyId);
   const theme = useValetTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const [plate, setPlate] = useState("");
-  const [countryCode, setCountryCode] = useState("CR");
   const [lookupLoading, setLookupLoading] = useState(false);
   const [vehicle, setVehicle] = useState<VehicleLookup | null>(null);
   const [vehicleResolved, setVehicleResolved] = useState(false);
@@ -100,46 +108,103 @@ export default function ReceiveScreen() {
   const [receptorValetId, setReceptorValetId] = useState<string | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
-  const [metaLoading, setMetaLoading] = useState(false);
+  const [metaLoading, setMetaLoading] = useState(true);
 
   const isReception = user?.valetStaffRole !== "DRIVER";
   const C = theme.colors;
   const M = ticketsA11y.minTouch;
 
-  const loadMeta = useCallback(async () => {
-    if (!companyId) return;
-    setMetaLoading(true);
-    try {
-      const [pRes, vRes, meRes] = await Promise.all([
-        api.get<{ data: ParkingOpt[] }>("/parkings"),
-        api.get<{ data: ValetOpt[] }>("/valets/for-company"),
-        api.get<{ data: { id: string } }>("/valets/me"),
-      ]);
-      setParkings(Array.isArray(pRes.data?.data) ? pRes.data.data : []);
-      setValets(Array.isArray(vRes.data?.data) ? vRes.data.data : []);
-      const rid = meRes.data?.data?.id;
-      if (rid) setReceptorValetId(rid);
-    } catch {
-      setParkings([]);
-      setValets([]);
-    } finally {
-      setMetaLoading(false);
+  const receiveTitle = reservationFlow
+    ? t(locale, "receive.titleReservation")
+    : t(locale, "receive.title");
+
+  const effectiveCompanyId = useMemo(() => {
+    if (vehicle?.companyId) return vehicle.companyId;
+    if (parkingId) {
+      return parkings.find((x) => x.id === parkingId)?.companyId ?? null;
     }
-  }, [companyId]);
+    return null;
+  }, [vehicle, parkingId, parkings]);
+
+  useEffect(() => {
+    if (!effectiveCompanyId) {
+      setCompanyId(null);
+      setValets([]);
+      return;
+    }
+    setCompanyId(effectiveCompanyId);
+    let cancelled = false;
+    (async () => {
+      try {
+        const vRes = await api.get<{ data: ValetOpt[] }>("/valets/for-company");
+        if (!cancelled) {
+          setValets(Array.isArray(vRes.data?.data) ? vRes.data.data : []);
+        }
+      } catch {
+        if (!cancelled) setValets([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [effectiveCompanyId, setCompanyId]);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      setMetaLoading(true);
+      try {
+        const [pRes, meRes] = await Promise.all([
+          api.get<
+            {
+              data: Array<{
+                id: string;
+                name: string;
+                address: string;
+                companyId: string;
+              }>;
+            }
+          >("/parkings/valet/all-locations"),
+          api.get<{ data: { id: string } }>("/valets/me"),
+        ]);
+        if (cancelled) return;
+        const plist = Array.isArray(pRes.data?.data) ? pRes.data.data : [];
+        setParkings(
+          plist.map((p) => ({
+            id: p.id,
+            name: p.name,
+            address: p.address,
+            companyId: p.companyId,
+          }))
+        );
+        const rid = meRes.data?.data?.id;
+        if (rid) setReceptorValetId(rid);
+      } catch {
+        if (!cancelled) setParkings([]);
+      } finally {
+        if (!cancelled) setMetaLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const handleLookup = async () => {
-    const p = plate.trim().toUpperCase();
-    if (!p || !companyId) {
+    const formatted = formatPlate(plate);
+    if (!formatted.trim()) {
       Alert.alert(t(locale, "common.errorTitle"), t(locale, "receive.errorPlate"));
       return;
     }
+    setPlate(formatted);
     setLookupLoading(true);
     setVehicleResolved(false);
     setVehicle(null);
-    setBookingCheck(null);
+    if (!reservationFlow) setBookingCheck(null);
     try {
-      const res = await api.get<{ data: VehicleLookup }>("/vehicles/by-plate", {
-        params: { plate: p, countryCode: countryCode.trim() || "CR" },
+      const res = await api.get<{ data: VehicleLookup }>("/vehicles/valet/by-plate", {
+        params: { plate: formatted, countryCode: COUNTRY_CR },
       });
       const v = res.data?.data;
       if (v) {
@@ -168,16 +233,25 @@ export default function ReceiveScreen() {
     } finally {
       setLookupLoading(false);
       setVehicleResolved(true);
-      await loadMeta();
     }
   };
 
   const validateBooking = async () => {
     const id = bookingCode.trim();
-    if (!id || !companyId) {
+    if (!id) {
       setBookingCheck(null);
       return;
     }
+    if (reservationFlow && !parkingId) {
+      Alert.alert(t(locale, "common.errorTitle"), t(locale, "receive.errorParkingFirst"));
+      return;
+    }
+    const cid = effectiveCompanyId;
+    if (!cid) {
+      Alert.alert(t(locale, "common.errorTitle"), t(locale, "receive.errorBookingCompany"));
+      return;
+    }
+    setCompanyId(cid);
     setBookingLoading(true);
     try {
       const res = await api.get<{ data: BookingLookup }>(`/bookings/${id}`);
@@ -203,7 +277,8 @@ export default function ReceiveScreen() {
     clientId: string;
     vehicleId: string;
   } | null> => {
-    if (!companyId || !receptorValetId) return null;
+    const cid = useCompanyStore.getState().companyId;
+    if (!cid || !receptorValetId) return null;
 
     if (vehicle && vehicle.owners?.length) {
       return {
@@ -270,8 +345,8 @@ export default function ReceiveScreen() {
     if (!userId) throw new Error("User create failed");
 
     const vehRes = await api.post<{ data: { id: string } }>("/vehicles", {
-      plate: plate.trim().toUpperCase(),
-      countryCode: countryCode.trim() || "CR",
+      plate: formatPlate(plate),
+      countryCode: COUNTRY_CR,
       brand: br,
       model: md,
       year: vehYear.trim() ? parseInt(vehYear, 10) : undefined,
@@ -307,15 +382,17 @@ export default function ReceiveScreen() {
   }
 
   const handleSubmit = async () => {
-    if (!companyId || !receptorValetId || !parkingId) {
+    const cid = effectiveCompanyId;
+    if (!cid || !receptorValetId || !parkingId) {
       Alert.alert(t(locale, "common.errorTitle"), t(locale, "receive.errorContext"));
       return;
     }
+    setCompanyId(cid);
     if (bookingCheck && bookingCheck !== "invalid") {
-      const pl = plate.trim().toUpperCase();
+      const pl = formatPlate(plate);
       if (
         bookingCheck.vehicle?.plate &&
-        bookingCheck.vehicle.plate.toUpperCase() !== pl
+        formatPlate(bookingCheck.vehicle.plate) !== pl
       ) {
         Alert.alert(t(locale, "common.errorTitle"), t(locale, "receive.errorBookingPlate"));
         return;
@@ -355,14 +432,19 @@ export default function ReceiveScreen() {
   if (!user) return <Redirect href="/login" />;
   if (!isReception) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+        <View style={styles.screenHeader}>
+          <ValetBackButton
+            onPress={() => router.back()}
+            accessibilityLabel={t(locale, "common.back")}
+          />
+          <Text style={styles.screenTitle}>{receiveTitle}</Text>
+          <View style={{ width: 44 }} />
+        </View>
         <View style={styles.blocked}>
           <Ionicons name="hand-left-outline" size={56} color={C.textMuted} />
           <Text style={styles.blockedTitle}>{t(locale, "receive.driverBlockedTitle")}</Text>
           <Text style={styles.blockedBody}>{t(locale, "receive.driverBlockedBody")}</Text>
-          <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Text style={styles.backBtnText}>{t(locale, "common.back")}</Text>
-          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -373,6 +455,14 @@ export default function ReceiveScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+      <View style={styles.screenHeader}>
+        <ValetBackButton
+          onPress={() => router.back()}
+          accessibilityLabel={t(locale, "common.back")}
+        />
+        <Text style={styles.screenTitle}>{receiveTitle}</Text>
+        <View style={{ width: 44 }} />
+      </View>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -382,54 +472,88 @@ export default function ReceiveScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.topBar}>
-            <Pressable
-              onPress={() => router.back()}
-              style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
-              accessibilityRole="button"
-            >
-              <Ionicons name="chevron-back" size={28} color={C.text} />
-            </Pressable>
-            <Text style={styles.screenTitle}>{t(locale, "receive.title")}</Text>
-            <View style={{ width: 40 }} />
-          </View>
-
-          {companyErr === "no_company" && (
-            <View style={styles.warnBanner}>
-              <Ionicons name="business-outline" size={22} color="#B45309" />
-              <Text style={styles.warnText}>{t(locale, "receive.warnNoCompany")}</Text>
-            </View>
+          {reservationFlow && (
+            <>
+              <Text style={styles.help}>{t(locale, "receive.reservationIntro")}</Text>
+              <Text style={styles.sectionLabel}>{t(locale, "receive.parkingSection")}</Text>
+              {metaLoading ? (
+                <ActivityIndicator color={C.primary} />
+              ) : (
+                <View style={styles.chips}>
+                  {parkings.map((p) => (
+                    <Pressable
+                      key={p.id}
+                      onPress={() => setParkingId(p.id)}
+                      style={[styles.chip, parkingId === p.id && styles.chipOn]}
+                    >
+                      <Text
+                        style={[styles.chipText, parkingId === p.id && styles.chipTextOn]}
+                        maxFontSizeMultiplier={2}
+                      >
+                        {p.name}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+              <Text style={styles.sectionLabel}>{t(locale, "receive.benefitSection")}</Text>
+              <Text style={styles.help}>{t(locale, "receive.benefitHelp")}</Text>
+              <View style={styles.row}>
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  value={bookingCode}
+                  onChangeText={setBookingCode}
+                  placeholder={t(locale, "receive.placeholderBooking")}
+                  placeholderTextColor={C.textSubtle}
+                  maxFontSizeMultiplier={2}
+                />
+                <Pressable
+                  style={({ pressed }) => [styles.secondaryBtn, pressed && styles.pressed]}
+                  onPress={validateBooking}
+                  disabled={bookingLoading}
+                >
+                  {bookingLoading ? (
+                    <ActivityIndicator color={C.primary} />
+                  ) : (
+                    <Text style={styles.secondaryBtnText}>{t(locale, "receive.validate")}</Text>
+                  )}
+                </Pressable>
+              </View>
+              {bookingCheck && bookingCheck !== "invalid" && (
+                <View style={styles.okBanner}>
+                  <Ionicons name="checkmark-circle" size={22} color={C.success} />
+                  <Text style={styles.okText}>
+                    {t(locale, "receive.benefitOk", {
+                      hours: String(bookingCheck.parking?.freeBenefitHours ?? 0),
+                    })}
+                  </Text>
+                </View>
+              )}
+              {bookingCheck === "invalid" && (
+                <Text style={styles.errInline}>{t(locale, "receive.benefitInvalid")}</Text>
+              )}
+            </>
           )}
 
           <Text style={styles.sectionLabel}>{t(locale, "receive.stepPlate")}</Text>
-          <View style={styles.row}>
-            <TextInput
-              style={[styles.input, { flex: 1 }]}
-              value={plate}
-              onChangeText={(x) => setPlate(x.toUpperCase())}
-              placeholder={t(locale, "receive.placeholderPlate")}
-              placeholderTextColor={C.textSubtle}
-              autoCapitalize="characters"
-              maxFontSizeMultiplier={2}
-            />
-            <TextInput
-              style={[styles.input, { width: 72 }]}
-              value={countryCode}
-              onChangeText={setCountryCode}
-              placeholder="CR"
-              placeholderTextColor={C.textSubtle}
-              maxFontSizeMultiplier={2}
-            />
-          </View>
+          <TextInput
+            style={styles.input}
+            value={plate}
+            onChangeText={(x) => setPlate(formatPlate(x))}
+            placeholder={t(locale, "receive.placeholderPlate")}
+            placeholderTextColor={C.textSubtle}
+            autoCapitalize="characters"
+            maxFontSizeMultiplier={2}
+          />
           <Pressable
             style={({ pressed }) => [
               styles.primaryBtn,
               { minHeight: M },
-              (lookupLoading || companyLoading || !companyId) && styles.btnDisabled,
+              lookupLoading && styles.btnDisabled,
               pressed && styles.pressed,
             ]}
             onPress={handleLookup}
-            disabled={lookupLoading || companyLoading || !companyId}
+            disabled={lookupLoading}
           >
             {lookupLoading ? (
               <ActivityIndicator color="#fff" />
@@ -445,7 +569,7 @@ export default function ReceiveScreen() {
             <View style={styles.card}>
               <Text style={styles.cardTitle}>{t(locale, "receive.foundVehicle")}</Text>
               <Text style={styles.cardLine}>
-                {vehicle.plate} · {vehicle.brand} {vehicle.model}
+                {formatPlate(vehicle.plate)} · {vehicle.brand} {vehicle.model}
               </Text>
               {vehicle.owners?.length ? (
                 <Text style={styles.cardHint}>
@@ -539,69 +663,67 @@ export default function ReceiveScreen() {
 
           {vehicleResolved && (
             <>
-              <Text style={styles.sectionLabel}>{t(locale, "receive.benefitSection")}</Text>
-              <Text style={styles.help}>{t(locale, "receive.benefitHelp")}</Text>
-              <View style={styles.row}>
-                <TextInput
-                  style={[styles.input, { flex: 1 }]}
-                  value={bookingCode}
-                  onChangeText={setBookingCode}
-                  placeholder={t(locale, "receive.placeholderBooking")}
-                  placeholderTextColor={C.textSubtle}
-                  maxFontSizeMultiplier={2}
-                />
-                <Pressable
-                  style={({ pressed }) => [styles.secondaryBtn, pressed && styles.pressed]}
-                  onPress={validateBooking}
-                  disabled={bookingLoading}
-                >
-                  {bookingLoading ? (
+              {!reservationFlow && (
+                <>
+                  <Text style={styles.sectionLabel}>{t(locale, "receive.benefitSection")}</Text>
+                  <Text style={styles.help}>{t(locale, "receive.benefitHelp")}</Text>
+                  <View style={styles.row}>
+                    <TextInput
+                      style={[styles.input, { flex: 1 }]}
+                      value={bookingCode}
+                      onChangeText={setBookingCode}
+                      placeholder={t(locale, "receive.placeholderBooking")}
+                      placeholderTextColor={C.textSubtle}
+                      maxFontSizeMultiplier={2}
+                    />
+                    <Pressable
+                      style={({ pressed }) => [styles.secondaryBtn, pressed && styles.pressed]}
+                      onPress={validateBooking}
+                      disabled={bookingLoading}
+                    >
+                      {bookingLoading ? (
+                        <ActivityIndicator color={C.primary} />
+                      ) : (
+                        <Text style={styles.secondaryBtnText}>{t(locale, "receive.validate")}</Text>
+                      )}
+                    </Pressable>
+                  </View>
+                  {bookingCheck && bookingCheck !== "invalid" && (
+                    <View style={styles.okBanner}>
+                      <Ionicons name="checkmark-circle" size={22} color={C.success} />
+                      <Text style={styles.okText}>
+                        {t(locale, "receive.benefitOk", {
+                          hours: String(bookingCheck.parking?.freeBenefitHours ?? 0),
+                        })}
+                      </Text>
+                    </View>
+                  )}
+                  {bookingCheck === "invalid" && (
+                    <Text style={styles.errInline}>{t(locale, "receive.benefitInvalid")}</Text>
+                  )}
+
+                  <Text style={styles.sectionLabel}>{t(locale, "receive.parkingSection")}</Text>
+                  {metaLoading ? (
                     <ActivityIndicator color={C.primary} />
                   ) : (
-                    <Text style={styles.secondaryBtnText}>{t(locale, "receive.validate")}</Text>
+                    <View style={styles.chips}>
+                      {parkings.map((p) => (
+                        <Pressable
+                          key={p.id}
+                          onPress={() => setParkingId(p.id)}
+                          style={[styles.chip, parkingId === p.id && styles.chipOn]}
+                        >
+                          <Text
+                            style={[styles.chipText, parkingId === p.id && styles.chipTextOn]}
+                            maxFontSizeMultiplier={2}
+                          >
+                            {p.name}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
                   )}
-                </Pressable>
-              </View>
-              {bookingCheck && bookingCheck !== "invalid" && (
-                <View style={styles.okBanner}>
-                  <Ionicons name="checkmark-circle" size={22} color={C.success} />
-                  <Text style={styles.okText}>
-                    {t(locale, "receive.benefitOk", {
-                      hours: String(bookingCheck.parking?.freeBenefitHours ?? 0),
-                    })}
-                  </Text>
-                </View>
-              )}
-              {bookingCheck === "invalid" && (
-                <Text style={styles.errInline}>{t(locale, "receive.benefitInvalid")}</Text>
-              )}
-
-              <Text style={styles.sectionLabel}>{t(locale, "receive.parkingSection")}</Text>
-              {metaLoading ? (
-                <ActivityIndicator color={C.primary} />
-              ) : (
-                <View style={styles.chips}>
-                  {parkings.map((p) => (
-                    <Pressable
-                      key={p.id}
-                      onPress={() => setParkingId(p.id)}
-                      style={[
-                        styles.chip,
-                        parkingId === p.id && styles.chipOn,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.chipText,
-                          parkingId === p.id && styles.chipTextOn,
-                        ]}
-                        maxFontSizeMultiplier={2}
-                      >
-                        {p.name}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
+                </>
               )}
 
               <Text style={styles.sectionLabel}>{t(locale, "receive.driverValetSection")}</Text>
@@ -642,7 +764,7 @@ export default function ReceiveScreen() {
                   pressed && styles.pressed,
                 ]}
                 onPress={handleSubmit}
-                disabled={submitting || !parkingId}
+                disabled={submitting || !parkingId || !effectiveCompanyId}
               >
                 {submitting ? (
                   <ActivityIndicator color="#fff" />
@@ -671,23 +793,17 @@ function createStyles(theme: Theme) {
 
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: C.bg },
-    scroll: { padding: S.lg, paddingBottom: S.xxl * 2 },
-    topBar: {
+    screenHeader: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginBottom: S.lg,
-    },
-    iconBtn: {
-      width: 44,
-      height: 44,
-      alignItems: "center",
-      justifyContent: "center",
-      borderRadius: R.button,
+      paddingHorizontal: S.md,
+      paddingVertical: S.md,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: C.border,
       backgroundColor: C.card,
-      borderWidth: 1,
-      borderColor: C.border,
     },
+    scroll: { padding: S.lg, paddingBottom: S.xxl * 2 },
     screenTitle: {
       fontSize: F.title - 2,
       fontWeight: "800",

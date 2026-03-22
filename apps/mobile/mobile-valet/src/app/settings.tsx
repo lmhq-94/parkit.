@@ -4,17 +4,19 @@ import {
   ScrollView,
   Pressable,
   StyleSheet,
-  TouchableOpacity,
   Platform,
+  useColorScheme,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { useLocaleStore } from "@/lib/store";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocaleStore, useThemeStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
-import { Ionicons } from "@expo/vector-icons";
 import { useMemo } from "react";
-import { useValetTheme } from "@/theme/valetTheme";
+import { useValetTheme, ticketsA11y } from "@/theme/valetTheme";
+import type { ThemePreference } from "@/lib/themeStore";
+import { ValetBackButton } from "@/components/ValetBackButton";
 
 const MIN_ROW = 58;
 
@@ -24,6 +26,7 @@ function createSettingsStyles(theme: Theme) {
   const C = theme.colors;
   const S = theme.space;
   const F = theme.font;
+  const Fa = ticketsA11y.font;
   const R = theme.radius;
   const M = theme.minTouch;
 
@@ -46,16 +49,15 @@ function createSettingsStyles(theme: Theme) {
       borderBottomColor: C.border,
       backgroundColor: C.card,
     },
-    backBtn: {
-      width: M,
-      height: M,
-      alignItems: "center",
-      justifyContent: "center",
+    headerSpacer: {
+      width: 44,
     },
     title: {
-      fontSize: 22,
+      fontSize: Fa.title - 4,
       fontWeight: "800",
       color: C.text,
+      flex: 1,
+      textAlign: "center",
     },
     scroll: {
       flex: 1,
@@ -64,12 +66,22 @@ function createSettingsStyles(theme: Theme) {
       padding: S.lg,
       paddingBottom: 40,
     },
+    /** Misma jerarquía visual que `receive` / tickets (legible en ES/EN). */
+    sectionTitle: {
+      fontSize: Fa.secondary - 3,
+      fontWeight: "800",
+      color: C.textMuted,
+      textTransform: "uppercase",
+      letterSpacing: 0.65,
+      marginBottom: S.sm,
+      marginTop: S.md,
+    },
     helpText: {
       fontSize: F.secondary,
       lineHeight: 24,
       color: C.textMuted,
       fontWeight: "600",
-      marginBottom: S.lg,
+      marginBottom: S.md,
     },
     section: {
       backgroundColor: C.card,
@@ -88,6 +100,9 @@ function createSettingsStyles(theme: Theme) {
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: C.border,
     },
+    localeRowLast: {
+      borderBottomWidth: 0,
+    },
     localeRowActive: {
       backgroundColor: theme.isDark ? "rgba(59, 130, 246, 0.15)" : "#EFF6FF",
     },
@@ -100,42 +115,94 @@ function createSettingsStyles(theme: Theme) {
       fontWeight: "700",
       color: C.text,
     },
+    localeHint: {
+      fontSize: 12,
+      color: C.textSubtle,
+      marginTop: 2,
+    },
   });
 }
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { locale, setLocale } = useLocaleStore();
+  const { preference, setPreference } = useThemeStore();
   const theme = useValetTheme();
+  const systemScheme = useColorScheme();
   const styles = useMemo(() => createSettingsStyles(theme), [theme]);
 
   const handleSetLocale = (newLocale: Locale) => {
     setLocale(newLocale);
   };
 
+  const handleSetTheme = (pref: ThemePreference) => {
+    setPreference(pref);
+  };
+
+  const themeLabel = (pref: ThemePreference) => {
+    if (pref === "system") return t(locale, "settings.themeSystem");
+    if (pref === "light") return t(locale, "settings.themeLight");
+    return t(locale, "settings.themeDark");
+  };
+
+  const isThemeActive = (pref: ThemePreference) => preference === pref;
+
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
-      <View style={styles.inner}>
+      <View style={styles.inner} key={locale}>
         <View style={styles.header}>
-          <TouchableOpacity
+          <ValetBackButton
             onPress={() => router.back()}
-            style={styles.backBtn}
-            hitSlop={16}
-            accessibilityRole="button"
             accessibilityLabel={t(locale, "common.back")}
-          >
-            <Ionicons name="chevron-back" size={32} color={theme.colors.text} />
-          </TouchableOpacity>
+          />
           <Text style={styles.title} maxFontSizeMultiplier={1.8}>
-            {t(locale, "settings.language")}
+            {t(locale, "settings.title")}
           </Text>
-          <View style={styles.backBtn} />
+          <View style={styles.headerSpacer} />
         </View>
 
-        <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
           <Text style={styles.helpText} maxFontSizeMultiplier={2}>
-            {t(locale, "settings.helpHint")}
+            {t(locale, "settings.intro")}
           </Text>
+
+          <Text style={styles.sectionTitle}>{t(locale, "settings.themeSection")}</Text>
+          <View style={styles.section}>
+            {(["system", "light", "dark"] as const).map((pref, i, arr) => (
+              <Pressable
+                key={pref}
+                style={({ pressed }) => [
+                  styles.localeRow,
+                  i === arr.length - 1 && styles.localeRowLast,
+                  isThemeActive(pref) && styles.localeRowActive,
+                  pressed && styles.localeRowPressed,
+                ]}
+                onPress={() => handleSetTheme(pref)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isThemeActive(pref) }}
+              >
+                <View>
+                  <Text style={styles.localeLabel}>{themeLabel(pref)}</Text>
+                  {pref === "system" && (
+                    <Text style={styles.localeHint}>
+                      {systemScheme === "light"
+                        ? t(locale, "settings.themeSystemHintLight")
+                        : t(locale, "settings.themeSystemHintDark")}
+                    </Text>
+                  )}
+                </View>
+                {isThemeActive(pref) && (
+                  <Ionicons name="checkmark-circle" size={28} color={theme.colors.primary} />
+                )}
+              </Pressable>
+            ))}
+          </View>
+
+          <Text style={styles.sectionTitle}>{t(locale, "settings.languageSection")}</Text>
           <View style={styles.section}>
             <Pressable
               style={({ pressed }) => [
@@ -155,6 +222,7 @@ export default function SettingsScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.localeRow,
+                styles.localeRowLast,
                 locale === "en" && styles.localeRowActive,
                 pressed && styles.localeRowPressed,
               ]}

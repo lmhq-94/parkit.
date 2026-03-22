@@ -20,6 +20,7 @@ import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useCompanyContext } from "@/lib/useCompanyContext";
 import api from "@/lib/api";
 import { messageFromAxios } from "@/lib/apiErrors";
+import { ValetBackButton } from "@/components/ValetBackButton";
 
 interface TicketRow {
   id: string;
@@ -111,14 +112,19 @@ export default function ReturnPickupScreen() {
 
   if (!isReception) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+        <View style={styles.screenHeader}>
+          <ValetBackButton
+            onPress={() => router.back()}
+            accessibilityLabel={t(locale, "common.back")}
+          />
+          <Text style={styles.screenTitle}>{t(locale, "returnPickup.title")}</Text>
+          <View style={{ width: 44 }} />
+        </View>
         <View style={styles.blocked}>
           <Ionicons name="hand-left-outline" size={56} color={C.textMuted} />
           <Text style={styles.blockedTitle}>{t(locale, "receive.driverBlockedTitle")}</Text>
           <Text style={styles.blockedBody}>{t(locale, "receive.driverBlockedBody")}</Text>
-          <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Text style={styles.backBtnText}>{t(locale, "common.back")}</Text>
-          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -126,22 +132,19 @@ export default function ReturnPickupScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+      <View style={styles.screenHeader}>
+        <ValetBackButton
+          onPress={() => router.back()}
+          accessibilityLabel={t(locale, "common.back")}
+        />
+        <Text style={styles.screenTitle}>{t(locale, "returnPickup.title")}</Text>
+        <View style={{ width: 44 }} />
+      </View>
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.topBar}>
-          <Pressable
-            onPress={() => router.back()}
-            style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
-          >
-            <Ionicons name="chevron-back" size={28} color={C.text} />
-          </Pressable>
-          <Text style={styles.screenTitle}>{t(locale, "returnPickup.title")}</Text>
-          <View style={{ width: 40 }} />
-        </View>
-
         <Text style={styles.sub}>{t(locale, "returnPickup.subtitle")}</Text>
 
         <TextInput
@@ -244,23 +247,17 @@ function createStyles(theme: Theme) {
 
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: C.bg },
-    scroll: { padding: S.lg, paddingBottom: S.xxl * 2 },
-    topBar: {
+    screenHeader: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginBottom: S.md,
-    },
-    iconBtn: {
-      width: 44,
-      height: 44,
-      alignItems: "center",
-      justifyContent: "center",
-      borderRadius: R.button,
+      paddingHorizontal: S.md,
+      paddingVertical: S.md,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: C.border,
       backgroundColor: C.card,
-      borderWidth: 1,
-      borderColor: C.border,
     },
+    scroll: { padding: S.lg, paddingBottom: S.xxl * 2 },
     screenTitle: {
       fontSize: F.title - 2,
       fontWeight: "800",

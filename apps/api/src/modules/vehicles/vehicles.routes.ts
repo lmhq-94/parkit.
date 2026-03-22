@@ -10,6 +10,12 @@ const router = Router();
 
 router.post("/", validateRequest(CreateVehicleSchema), requireAuth, requireCompany, requireRole("ADMIN", "STAFF", "CUSTOMER"), VehiclesController.create);
 router.get("/", requireAuth, requireCompany, requireRole("ADMIN", "STAFF", "CUSTOMER"), VehiclesController.list);
+router.get(
+  "/valet/by-plate",
+  requireAuth,
+  requireRole("STAFF"),
+  VehiclesController.getByPlateValet
+);
 router.get("/by-plate", requireAuth, requireCompany, requireRole("ADMIN", "STAFF", "CUSTOMER"), VehiclesController.getByPlate);
 router.get("/catalog/makes", requireAuth, VehiclesController.catalogMakes);
 router.get("/catalog/models", requireAuth, VehiclesController.catalogModels);

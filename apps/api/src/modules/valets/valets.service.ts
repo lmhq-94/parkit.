@@ -393,6 +393,7 @@ export class ValetsService {
         id: true,
         staffRole: true,
         companyId: true,
+        currentStatus: true,
       },
     });
   }

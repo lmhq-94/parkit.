@@ -3,6 +3,9 @@ export type SystemRole = "SUPER_ADMIN" | "ADMIN" | "STAFF" | "CUSTOMER";
 /** Sub-rol del perfil valet (app móvil valet). */
 export type ValetStaffRole = "RECEPTIONIST" | "DRIVER";
 
+/** Estado operativo del valet (API / valets/me). */
+export type ValetOperationalStatus = "AVAILABLE" | "BUSY" | "AWAY";
+
 export interface User {
   id: string;
   email: string;
@@ -16,5 +19,9 @@ export interface User {
   companyId?: string;
   /** Si el usuario tiene perfil valet (STAFF en app valet). */
   valetStaffRole?: ValetStaffRole | null;
+  /** Sincronizado desde GET /valets/me cuando aplica. */
+  valetCurrentStatus?: ValetOperationalStatus | null;
+  phone?: string | null;
+  avatarUrl?: string | null;
 }
 

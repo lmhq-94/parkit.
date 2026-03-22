@@ -41,6 +41,9 @@ export const useTicketStore = create<TicketStore>((set) => ({
   setFilter: (filter) => set({ filter }),
 }));
 
+export { useThemeStore } from './themeStore';
+export { useCompanyStore } from './companyStore';
+
 export const useLocaleStore = create<LocaleStore>((set) => ({
   locale: 'es',
   isHydrated: false,
