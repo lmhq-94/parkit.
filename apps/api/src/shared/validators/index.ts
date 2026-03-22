@@ -100,7 +100,8 @@ export const UpdateUserSchema = z.object({
   phone: z.string().optional(),
   isActive: z.boolean().optional(),
   systemRole: z.enum(["SUPER_ADMIN", "ADMIN", "STAFF", "CUSTOMER"]).optional(),
-  avatarUrl: z.string().optional(),
+  /** `null` borra la foto de perfil (misma semántica que en update de perfil). */
+  avatarUrl: z.union([z.string(), z.null()]).optional(),
 });
 
 export const UpdateProfileSchema = z.object({
@@ -109,7 +110,8 @@ export const UpdateProfileSchema = z.object({
   email: z.string().email().optional(),
   phone: z.string().optional(),
   timezone: z.string().optional(),
-  avatarUrl: z.string().optional(),
+  /** `null` quita el avatar (app móvil / web). */
+  avatarUrl: z.union([z.string(), z.null()]).optional(),
   appPreferences: z
     .object({
       theme: z.enum(["light", "dark"]).optional(),
@@ -151,8 +153,17 @@ export const UpdateValetSchema = z.object({
   staffRole: valetStaffRoleEnum.nullable().optional(),
 });
 
+/** Valet autenticado: función y opcionalmente licencia (conductores). */
+export const UpdateValetMeSchema = z.object({
+  staffRole: valetStaffRoleEnum,
+  /** Tipos separados por coma, igual que en panel web (p. ej. "A1, B1"). */
+  licenseNumber: z.union([z.string(), z.null()]).optional(),
+  licenseExpiry: z.union([z.string().datetime(), z.null()]).optional(),
+});
+
 export type CreateValetInput = z.infer<typeof CreateValetSchema>;
 export type UpdateValetInput = z.infer<typeof UpdateValetSchema>;
+export type UpdateValetMeInput = z.infer<typeof UpdateValetMeSchema>;
 
 // Clients
 export const CreateClientSchema = z.object({

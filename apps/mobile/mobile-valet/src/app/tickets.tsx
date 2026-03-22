@@ -16,6 +16,8 @@ import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import api, { clearAuthToken } from "@/lib/api";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
+import { useOnAppForeground } from "@/lib/useOnAppForeground";
+import { TICKETS_POLL_MS } from "@/lib/syncConstants";
 import {
   useValetTheme,
   statusVisuals as statusVisualsForTheme,
@@ -347,24 +349,37 @@ export default function TicketsScreen() {
     [locale]
   );
 
-  const loadTickets = useCallback(async () => {
+  const loadTickets = useCallback(async (opts?: { silent?: boolean }) => {
     if (!user) return;
-    setLoading(true);
+    const silent = opts?.silent === true;
+    if (!silent) setLoading(true);
     try {
       const res = await api.get<{ data: ApiAssignment[] }>("/valets/me/assignments");
       const list = Array.isArray(res.data?.data) ? res.data.data : [];
       setTickets(list.map(mapApiAssignmentToDisplay));
     } catch {
-      setTickets([]);
+      if (!silent) setTickets([]);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
       setInitialLoad(false);
     }
   }, [user]);
 
   useEffect(() => {
-    if (user) loadTickets();
+    if (user) void loadTickets();
   }, [user, loadTickets]);
+
+  useEffect(() => {
+    if (!user) return;
+    const id = setInterval(() => {
+      void loadTickets({ silent: true });
+    }, TICKETS_POLL_MS);
+    return () => clearInterval(id);
+  }, [user, loadTickets]);
+
+  useOnAppForeground(() => {
+    if (user) void loadTickets({ silent: true });
+  });
 
   if (!user) {
     return <Redirect href="/login" />;
@@ -677,7 +692,7 @@ export default function TicketsScreen() {
           keyExtractor={(item) => item.assignmentId}
           renderItem={renderTicket}
           refreshing={loading && !initialLoad}
-          onRefresh={loadTickets}
+          onRefresh={() => void loadTickets()}
           contentContainerStyle={filteredTickets.length === 0 ? styles.listEmptyGrow : styles.list}
           ListEmptyComponent={listEmpty}
         />

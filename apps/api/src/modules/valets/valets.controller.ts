@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import type { ValetStaffRole } from "@prisma/client";
 import { ValetsService } from "./valets.service";
 import { parseQueryParamArray } from "../../shared/utils/queryParser";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
@@ -53,6 +54,29 @@ export class ValetsController {
         400,
         error instanceof Error ? error.message : "Unknown error"
       );
+    }
+  }
+
+  /** Actualizar función y/o licencia del valet autenticado. */
+  static async patchMe(req: Request, res: Response) {
+    try {
+      const body = req.body as {
+        staffRole: ValetStaffRole;
+        licenseNumber?: string | null;
+        licenseExpiry?: string | null;
+      };
+      const updated = await ValetsService.patchMe(req.user!.userId, {
+        staffRole: body.staffRole,
+        licenseNumber: body.licenseNumber,
+        licenseExpiry: body.licenseExpiry,
+      });
+      return ok(res, updated);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      if (msg === "User is not a valet") {
+        return fail(res, 403, msg);
+      }
+      return fail(res, 400, msg);
     }
   }
 

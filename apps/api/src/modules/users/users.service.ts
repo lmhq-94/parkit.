@@ -373,7 +373,7 @@ export class UsersService {
       email?: string;
       phone?: string;
       timezone?: string;
-      avatarUrl?: string;
+      avatarUrl?: string | null;
       appPreferences?: {
         theme?: "light" | "dark";
         locale?: "es" | "en";

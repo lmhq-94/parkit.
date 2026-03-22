@@ -60,6 +60,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           'Si lo deseas, puedes tomarte una foto para tu perfil.',
       },
     ],
+    '@react-native-community/datetimepicker',
   ],
   experiments: {
     typedRoutes: true,

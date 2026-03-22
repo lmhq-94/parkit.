@@ -4,12 +4,13 @@ import { requireAuth } from "../../shared/middleware/requireAuth";
 import { requireCompany } from "../../shared/middleware/requireCompany";
 import { requireRole } from "../../shared/middleware/requireRole";
 import { validateRequest } from "../../shared/middleware/validateRequest";
-import { CreateValetSchema, UpdateValetSchema } from "../../shared/validators";
+import { CreateValetSchema, UpdateValetSchema, UpdateValetMeSchema } from "../../shared/validators";
 
 const router = Router();
 
 // Valet actual: perfil y asignaciones (mobile-valet). Registrar /me antes de /:id.
 router.get("/me", requireAuth, ValetsController.getMe);
+router.patch("/me", validateRequest(UpdateValetMeSchema), requireAuth, ValetsController.patchMe);
 router.get("/me/assignments", requireAuth, ValetsController.getMyAssignments);
 
 router.get("/for-company", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ValetsController.listForCompany);

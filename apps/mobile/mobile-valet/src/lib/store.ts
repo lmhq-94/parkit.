@@ -43,6 +43,7 @@ export const useTicketStore = create<TicketStore>((set) => ({
 
 export { useThemeStore } from './themeStore';
 export { useCompanyStore } from './companyStore';
+export { useParkingPreferenceStore } from './parkingPreferenceStore';
 
 export const useLocaleStore = create<LocaleStore>((set) => ({
   locale: 'es',

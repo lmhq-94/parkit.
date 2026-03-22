@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Redirect, useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatPlate } from "@parkit/shared";
 import { useAuthStore, useLocaleStore, useCompanyStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
@@ -21,6 +21,8 @@ import { useValetTheme, ticketsA11y } from "@/theme/valetTheme";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import api from "@/lib/api";
 import { messageFromAxios } from "@/lib/apiErrors";
+import { useOnAppForeground } from "@/lib/useOnAppForeground";
+import { RECEIVE_META_POLL_MS } from "@/lib/syncConstants";
 import { ValetBackButton } from "@/components/ValetBackButton";
 
 interface VehicleOwnerRow {
@@ -149,11 +151,11 @@ export default function ReceiveScreen() {
     };
   }, [effectiveCompanyId, setCompanyId]);
 
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    (async () => {
-      setMetaLoading(true);
+  const loadReceiveMeta = useCallback(
+    async (opts?: { silent?: boolean }) => {
+      if (!user) return;
+      const silent = opts?.silent === true;
+      if (!silent) setMetaLoading(true);
       try {
         const [pRes, meRes] = await Promise.all([
           api.get<
@@ -168,7 +170,6 @@ export default function ReceiveScreen() {
           >("/parkings/valet/all-locations"),
           api.get<{ data: { id: string } }>("/valets/me"),
         ]);
-        if (cancelled) return;
         const plist = Array.isArray(pRes.data?.data) ? pRes.data.data : [];
         setParkings(
           plist.map((p) => ({
@@ -181,15 +182,29 @@ export default function ReceiveScreen() {
         const rid = meRes.data?.data?.id;
         if (rid) setReceptorValetId(rid);
       } catch {
-        if (!cancelled) setParkings([]);
+        if (!silent) setParkings([]);
       } finally {
-        if (!cancelled) setMetaLoading(false);
+        if (!silent) setMetaLoading(false);
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
+    },
+    [user]
+  );
+
+  useEffect(() => {
+    void loadReceiveMeta();
+  }, [loadReceiveMeta]);
+
+  useEffect(() => {
+    if (!user) return;
+    const id = setInterval(() => {
+      void loadReceiveMeta({ silent: true });
+    }, RECEIVE_META_POLL_MS);
+    return () => clearInterval(id);
+  }, [user, loadReceiveMeta]);
+
+  useOnAppForeground(() => {
+    if (user) void loadReceiveMeta({ silent: true });
+  });
 
   const handleLookup = async () => {
     const formatted = formatPlate(plate);

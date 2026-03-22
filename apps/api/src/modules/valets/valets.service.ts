@@ -31,6 +31,13 @@ interface UpdateValetDTO {
   staffRole?: ValetStaffRole | null;
 }
 
+/** DTO para PATCH /valets/me (app móvil). */
+export interface PatchValetMeDTO {
+  staffRole: ValetStaffRole;
+  licenseNumber?: string | null;
+  licenseExpiry?: string | null;
+}
+
 export class ValetsService {
   /**
    * Crea un valet. Para super-admin: companyId puede ser null (valet subcontratado).
@@ -394,6 +401,50 @@ export class ValetsService {
         staffRole: true,
         companyId: true,
         currentStatus: true,
+        licenseNumber: true,
+        licenseExpiry: true,
+      },
+    });
+  }
+
+  /** Actualiza función y/o licencia del valet actual (app móvil). */
+  static async patchMe(userId: string, dto: PatchValetMeDTO) {
+    const row = await prisma.valet.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    if (!row) {
+      throw new Error("User is not a valet");
+    }
+
+    const data: {
+      staffRole: ValetStaffRole;
+      licenseNumber?: string | null;
+      licenseExpiry?: Date | null;
+    } = { staffRole: dto.staffRole };
+
+    if (dto.licenseNumber !== undefined) {
+      const n = dto.licenseNumber;
+      data.licenseNumber =
+        n === null || (typeof n === "string" && n.trim() === "") ? null : n.trim();
+    }
+    if (dto.licenseExpiry !== undefined) {
+      data.licenseExpiry =
+        dto.licenseExpiry === null || dto.licenseExpiry === ""
+          ? null
+          : new Date(dto.licenseExpiry);
+    }
+
+    return prisma.valet.update({
+      where: { id: row.id },
+      data,
+      select: {
+        id: true,
+        staffRole: true,
+        companyId: true,
+        currentStatus: true,
+        licenseNumber: true,
+        licenseExpiry: true,
       },
     });
   }
