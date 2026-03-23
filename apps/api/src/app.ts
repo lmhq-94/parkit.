@@ -43,7 +43,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Límite alto para PATCH /companies/me con brandingConfig (imágenes en base64); 50mb para no truncar
+// High limit for PATCH /companies/me with brandingConfig (base64 images); 50mb to avoid truncation
 app.use(express.json({ limit: "50mb" }));
 
 app.get("/health", (_, res) => {

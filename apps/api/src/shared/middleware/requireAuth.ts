@@ -46,7 +46,7 @@ export async function requireAuth(
       } else if (user.valet?.companyId) {
         companyId = user.valet.companyId ?? undefined;
       }
-      // SUPER_ADMIN y valets sin empresa (companyId null) pueden usar x-company-id en requireCompany
+      // SUPER_ADMIN and valets without a company (companyId null) can use x-company-id in requireCompany
       if (!companyId && user.systemRole !== "SUPER_ADMIN" && !user.valet) {
         return res.status(401).json({ message: "Unable to resolve company context" });
       }

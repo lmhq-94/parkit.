@@ -69,7 +69,7 @@ async function reverseGeocode(lat: number, lon: number): Promise<string> {
 const FALLBACK_LAT = 9.9281;
 const FALLBACK_LON = -84.0907;
 
-// Mapa Leaflet cargado solo en cliente para evitar SSR
+// Leaflet map loaded only on client to avoid SSR
 const PickerMap = dynamic(
   () =>
     import("@/components/AddressPickerMap").then((m) => m.AddressPickerMap),

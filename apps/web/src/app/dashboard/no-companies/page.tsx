@@ -13,7 +13,7 @@ export default function NoCompaniesPage() {
   const user = getStoredUser();
   const superAdmin = isSuperAdmin(user);
 
-  // Solo SUPER_ADMIN puede ver esta página. ADMIN/STAFF pertenecen a una empresa → overview.
+  // Only SUPER_ADMIN can view this page. ADMIN/STAFF belong to a company -> overview.
   useEffect(() => {
     if (user && !superAdmin) {
       router.replace("/dashboard");

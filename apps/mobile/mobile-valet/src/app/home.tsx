@@ -69,6 +69,8 @@ export default function HomeScreen() {
   const winH =
     typeof windowDims.height === "number" && windowDims.height > 0 ? windowDims.height : winW;
   const shortestSide = Math.min(winW, winH);
+  const isTablet = shortestSide >= 600;
+  const isLandscape = winW > winH;
   useValetProfileSync(user);
   const { nearest, status: locStatus, allParkings, userCoords } = useNearestParking(!!user);
   const manualParkingId = useParkingPreferenceStore((s) => s.manualParkingId);
@@ -100,7 +102,10 @@ export default function HomeScreen() {
 
   const isDriverUi = user?.valetStaffRole === "DRIVER";
 
-  const styles = useMemo(() => createStyles(theme, shortestSide), [theme, shortestSide]);
+  const styles = useMemo(
+    () => createStyles(theme, shortestSide, isTablet, isLandscape),
+    [theme, shortestSide, isTablet, isLandscape]
+  );
 
   if (!user) {
     return <Redirect href="/login" />;
@@ -176,6 +181,7 @@ export default function HomeScreen() {
         translucent={Platform.OS === "android"}
       />
       <View style={styles.mainColumn}>
+        <View style={styles.screenContent}>
         <LinearGradient
           colors={[...headerGradientSpec.colors]}
           locations={[...headerGradientSpec.locations]}
@@ -260,6 +266,17 @@ export default function HomeScreen() {
                   C={C}
                 />
                 <GridTile
+                  variant="workflow"
+                  icon="git-branch-outline"
+                  title={t(locale, "home.actionWorkflow")}
+                  sub={t(locale, "home.actionWorkflowSub")}
+                  onPress={() => router.push("/workflow")}
+                  styles={styles}
+                  C={C}
+                />
+              </View>
+              <View style={styles.gridRowFill}>
+                <GridTile
                   variant="profile"
                   icon="person-circle-outline"
                   title={t(locale, "home.profile")}
@@ -268,23 +285,12 @@ export default function HomeScreen() {
                   styles={styles}
                   C={C}
                 />
-              </View>
-              <View style={styles.gridRowFill}>
                 <GridTile
                   variant="settings"
                   icon="settings-outline"
                   title={t(locale, "home.settings")}
                   sub={t(locale, "home.actionSettingsSub")}
                   onPress={() => router.push("/settings")}
-                  styles={styles}
-                  C={C}
-                />
-                <GridTile
-                  variant="workflow"
-                  icon="git-branch-outline"
-                  title={t(locale, "home.actionWorkflow")}
-                  sub={t(locale, "home.actionWorkflowSub")}
-                  onPress={() => router.push("/workflow")}
                   styles={styles}
                   C={C}
                 />
@@ -501,6 +507,7 @@ export default function HomeScreen() {
             </View>
           </View>
         </Modal>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -598,7 +605,7 @@ function GridTile(props: {
 
 type Theme = ReturnType<typeof useValetTheme>;
 
-function createStyles(theme: Theme, shortestSide: number) {
+function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isLandscape: boolean) {
   const C = theme.colors;
   const S = theme.space;
   const F = ticketsA11y.font;
@@ -614,6 +621,14 @@ function createStyles(theme: Theme, shortestSide: number) {
     mainColumn: {
       flex: 1,
       minHeight: 0,
+      alignItems: "center",
+    },
+    screenContent: {
+      flex: 1,
+      minHeight: 0,
+      width: "100%",
+      maxWidth: isTablet ? 1100 : 860,
+      alignSelf: "center",
     },
     heroPlain: {
       paddingHorizontal: S.lg,
@@ -720,10 +735,10 @@ function createStyles(theme: Theme, shortestSide: number) {
     gridFlex: {
       flex: 1,
       minHeight: 0,
-      paddingHorizontal: S.lg,
-      paddingTop: S.sm,
+      paddingHorizontal: isTablet ? S.xl : S.lg,
+      paddingTop: isLandscape ? S.xs : S.sm,
       paddingBottom: S.sm,
-      gap: S.sm,
+      gap: isTablet ? S.md : S.sm,
     },
     gridRowFill: {
       flex: 1,
@@ -751,8 +766,8 @@ function createStyles(theme: Theme, shortestSide: number) {
       minHeight: 0,
       borderRadius: R.card + 4,
       borderWidth: 2,
-      paddingVertical: S.md + 2,
-      paddingHorizontal: S.sm + 2,
+      paddingVertical: isTablet ? S.lg : S.md + 2,
+      paddingHorizontal: isTablet ? S.md : S.sm + 2,
       justifyContent: "center",
       alignItems: "center",
       ...Platform.select({
@@ -819,7 +834,7 @@ function createStyles(theme: Theme, shortestSide: number) {
       backgroundColor: "rgba(255,255,255,0.22)",
     },
     tileTitle: {
-      fontSize: compact ? F.secondary + 2 : F.body,
+      fontSize: compact ? F.secondary + 2 : isTablet ? F.body + 1 : F.body,
       fontWeight: "800",
       color: C.text,
       marginBottom: 4,
@@ -830,10 +845,10 @@ function createStyles(theme: Theme, shortestSide: number) {
       color: "#fff",
     },
     tileSub: {
-      fontSize: compact ? 12 : 13,
+      fontSize: compact ? 12 : isTablet ? 14 : 13,
       fontWeight: "600",
       color: C.textMuted,
-      lineHeight: compact ? 16 : 18,
+      lineHeight: compact ? 16 : isTablet ? 20 : 18,
       textAlign: "center",
       width: "100%",
     },

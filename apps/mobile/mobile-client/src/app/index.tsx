@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import { useAuthStore } from "@/lib/store";
 import { getHasSeenOnboarding } from "@/lib/onboarding";
 
-// Colores alineados con la web (themeDefaults)
+// Colors aligned with the web app (themeDefaults)
 const SPLASH_BG = "#020617"; // slate-900
 const LOGO_PARK = "#FFFFFF";
 const LOGO_IT = "#3B82F6"; // blue-500 (primary dark)
@@ -56,7 +56,7 @@ export default function SplashScreen() {
           useNativeDriver: true,
         }),
       ]),
-      // Un solo “respiro” suave del logo
+      // Single subtle "breath" for the logo
       Animated.sequence([
         Animated.timing(breathScale, {
           toValue: 1.032,

@@ -1,5 +1,5 @@
 /**
- * Test de integración: flujo edit company (GET, formulario, PATCH, redirect).
+ * Integration test: edit company flow (GET, form, PATCH, redirect).
  */
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
@@ -59,7 +59,7 @@ const companyData = {
   status: "ACTIVE",
 };
 
-describe("Integración: Edit Company", () => {
+describe("Integration: Edit Company", () => {
   beforeEach(() => {
     useLocaleStore.setState({ locale: "es" });
     mockGet.mockReset();
@@ -82,7 +82,7 @@ describe("Integración: Edit Company", () => {
     await user.clear(legalInput);
     await user.type(legalInput, "Empresa Modificada SA");
 
-    // En el formulario de edición ahora es obligatorio elegir el canal de clientes
+    // In the edit form it is now mandatory to choose a customer channel
     const channelWithAppOption = screen.getByText(/clientes con app móvil/i);
     await user.click(channelWithAppOption);
 

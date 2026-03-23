@@ -111,7 +111,7 @@ function hasDetailFieldValue(value: string | number | null | undefined): boolean
   if (typeof value === "string") {
     const s = value.trim();
     if (s === "") return false;
-    // Coincide con translateEnum() cuando el enum viene vacío (evita mostrar "N/A" en detalle).
+    // Matches translateEnum() when enum is empty (avoids showing "N/A" in detail view).
     if (s === "N/A") return false;
   }
   return true;

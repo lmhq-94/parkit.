@@ -142,7 +142,7 @@ export default function EditVehiclePage() {
         setLoadingModels(false);
       }
     })();
-    // Solo al cambiar marca: no refetch al escribir año para no perder el modelo elegido
+    // Only when brand changes: do not refetch while typing year to avoid losing selected model
   }, [form.brand]);
 
   const set = (k: keyof typeof defaultForm) =>
@@ -218,7 +218,7 @@ export default function EditVehiclePage() {
             isPrimary: true,
           });
         } catch {
-          // Si ya está asignado o falla la asignación, no bloqueamos el guardado del vehículo
+          // If already assigned or assignment fails, do not block vehicle save
         }
       }
       showSuccess(t("common.saveSuccessShort"));

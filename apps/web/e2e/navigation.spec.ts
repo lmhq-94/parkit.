@@ -16,7 +16,7 @@ test.describe("Navegación pública", () => {
     await page.goto("/forgot-password");
     await page.getByLabel(/correo|email/i).fill("test@example.com");
     await page.getByRole("button", { name: /enviar enlace|send/i }).click();
-    // El texto actual es: "Si existe una cuenta para {{email}}, recibirás un enlace para restablecer tu contraseña."
+    // Current text means: "If an account exists for {{email}}, you will receive a password reset link."
     await expect(
       page.getByText(/recibirás un enlace para restablecer tu contraseña/i)
     ).toBeVisible({ timeout: 5000 });

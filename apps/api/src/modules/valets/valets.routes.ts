@@ -8,14 +8,14 @@ import { CreateValetSchema, UpdateValetSchema, UpdateValetMeSchema } from "../..
 
 const router = Router();
 
-// Valet actual: perfil y asignaciones (mobile-valet). Registrar /me antes de /:id.
+// Current valet: profile and assignments (mobile-valet). Register /me before /:id.
 router.get("/me", requireAuth, ValetsController.getMe);
 router.patch("/me", validateRequest(UpdateValetMeSchema), requireAuth, ValetsController.patchMe);
 router.get("/me/assignments", requireAuth, ValetsController.getMyAssignments);
 
 router.get("/for-company", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ValetsController.listForCompany);
 
-// Solo SUPER_ADMIN: valets son subcontratados y rotan entre empresas; lista global sin company.
+// SUPER_ADMIN only: valets are subcontracted and rotate across companies; global list without company scope.
 router.post("/", validateRequest(CreateValetSchema), requireAuth, requireRole("SUPER_ADMIN"), ValetsController.create);
 router.get("/", requireAuth, requireRole("SUPER_ADMIN"), ValetsController.list);
 router.get("/:id", requireAuth, requireRole("SUPER_ADMIN"), ValetsController.getById);

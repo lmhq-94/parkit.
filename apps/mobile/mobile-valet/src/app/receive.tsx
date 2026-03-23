@@ -19,7 +19,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react
 import { formatPlate } from "@parkit/shared";
 import { useAuthStore, useLocaleStore, useCompanyStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
-import { useValetTheme, ticketsA11y } from "@/theme/valetTheme";
+import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import api from "@/lib/api";
 import { messageFromAxios } from "@/lib/apiErrors";
@@ -142,7 +142,11 @@ export default function ReceiveScreen() {
   const setCompanyId = useCompanyStore((s) => s.setCompanyId);
   const storedCompanyId = useCompanyStore((s) => s.companyId);
   const theme = useValetTheme();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const responsive = useResponsiveLayout();
+  const styles = useMemo(
+    () => createStyles(theme, responsive.contentMaxWidth, responsive.sectionPadding),
+    [theme, responsive.contentMaxWidth, responsive.sectionPadding]
+  );
   const qrStyles = useMemo(() => createQrStyles(theme), [theme]);
 
   const [plate, setPlate] = useState("");
@@ -713,6 +717,7 @@ export default function ReceiveScreen() {
   if (!isReception) {
     return (
       <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+        <View style={styles.frame}>
         <View style={styles.screenHeader}>
           <ValetBackButton
             onPress={() => router.back()}
@@ -725,6 +730,7 @@ export default function ReceiveScreen() {
           <Ionicons name="hand-left-outline" size={56} color={C.textMuted} />
           <Text style={styles.blockedTitle}>{t(locale, "receive.driverBlockedTitle")}</Text>
           <Text style={styles.blockedBody}>{t(locale, "receive.driverBlockedBody")}</Text>
+        </View>
         </View>
       </SafeAreaView>
     );
@@ -1056,6 +1062,7 @@ export default function ReceiveScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+      <View style={styles.frame}>
       <View style={styles.screenHeader}>
         <ValetBackButton
           onPress={() => router.back()}
@@ -1719,31 +1726,37 @@ export default function ReceiveScreen() {
         </Modal>
         </View>
       </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 }
 
 type Theme = ReturnType<typeof useValetTheme>;
 
-function createStyles(theme: Theme) {
+function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: number) {
   const C = theme.colors;
   const S = theme.space;
   const F = ticketsA11y.font;
   const R = theme.radius;
 
   return StyleSheet.create({
-    safe: { flex: 1, backgroundColor: C.bg },
+    safe: { flex: 1, backgroundColor: C.bg, alignItems: "center" },
+    frame: {
+      flex: 1,
+      width: "100%",
+      maxWidth: contentMaxWidth,
+    },
     screenHeader: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      paddingHorizontal: S.md,
+      paddingHorizontal: sectionPadding,
       paddingVertical: S.md,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: C.border,
       backgroundColor: C.card,
     },
-    scroll: { padding: S.lg, paddingBottom: S.xl },
+    scroll: { padding: sectionPadding, paddingBottom: S.xl },
     primaryBtnSticky: { marginTop: 0, marginBottom: 0 },
     screenTitle: {
       fontSize: F.title - 2,

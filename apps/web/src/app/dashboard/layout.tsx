@@ -101,7 +101,7 @@ function DashboardLayoutInner({
   let backHref = header.backHref;
   let backLabelKey = header.backLabel;
 
-  // Personalizar título y descripción de creación de usuarios según rol (ADMIN vs CUSTOMER).
+  // Customize user-creation title and description by role (ADMIN vs CUSTOMER).
   if ((pathname ?? "") === "/dashboard/users/new") {
     const roleParam = (searchParams?.get("role") || "").toUpperCase();
     if (roleParam === "ADMIN") {
@@ -182,7 +182,7 @@ function DashboardLayoutInner({
   const setBrandingInCache = useDashboardStore((s: any) => s.setBrandingInCache);
   const superAdmin = isSuperAdmin(user);
 
-  // Cargar branding (logo, banner, colores) para el dashboard y el sidebar. Puede estar ya precargado en login.
+  // Load branding (logo, banner, colors) for dashboard and sidebar. It may already be preloaded on login.
   useEffect(() => {
     if (superAdmin && !selectedCompanyId) {
       setCompanyBranding(null);
@@ -217,7 +217,7 @@ function DashboardLayoutInner({
         if (superAdmin && selectedCompanyId) setBrandingInCache(selectedCompanyId, branding);
       })
       .catch(() => {
-        // No pisar branding si ya está (p. ej. precargado en login); así el sidebar no pierde logo/banner.
+        // Do not overwrite branding if already present (e.g. preloaded on login); prevents sidebar logo/banner loss.
         const current = useDashboardStore.getState().companyBranding;
         if (!current) setCompanyBranding(null);
       });
@@ -236,7 +236,7 @@ function DashboardLayoutInner({
             >
               <div className="flex flex-wrap items-center justify-between gap-4 pt-5 md:pt-8 pb-0 px-4 md:px-10 lg:px-12">
               <div className="flex items-center gap-3 min-w-0">
-                {/* Hamburger: solo móvil */}
+                {/* Hamburger: mobile only */}
                 <button
                   type="button"
                   onClick={toggleSidebar}

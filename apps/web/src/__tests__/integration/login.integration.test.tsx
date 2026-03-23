@@ -1,6 +1,6 @@
 /**
- * Test de integración: flujo de login.
- * Verifica que el formulario, la llamada a la API (mock), el store de auth y la navegación trabajen juntos.
+ * Integration test: login flow.
+ * Verifies form, API call (mock), auth store, and navigation working together.
  */
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
@@ -36,7 +36,7 @@ jest.mock("@/lib/api", () => ({
   getApiErrorMessage: (err: unknown) => (err instanceof Error ? err.message : "Request failed"),
 }));
 
-describe("Integración: Login", () => {
+describe("Integration: Login", () => {
   const mockUser = {
     id: "user-1",
     email: "admin@test.com",
@@ -94,7 +94,7 @@ describe("Integración: Login", () => {
     await userEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
 
     await waitFor(() => {
-      // El mensaje de error ahora se muestra localizado en español
+      // Error message is now shown localized in Spanish
       expect(screen.getByText(/usuario o contraseña incorrectos/i)).toBeInTheDocument();
     });
     expect(useAuthStore.getState().user).toBeNull();

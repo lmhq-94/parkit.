@@ -1,5 +1,5 @@
 /**
- * Test de integración: flujo create company (wizard, validación, POST, redirect).
+ * Integration test: create company flow (wizard, validation, POST, redirect).
  */
 import React from "react";
 import { render, screen, waitFor, act, within } from "@testing-library/react";
@@ -42,8 +42,8 @@ jest.mock("@/components/AddressPickerModal", () => ({
   AddressPickerModal: () => null,
 }));
 
-// En este flujo de integración nos interesa principalmente la forma del payload
-// más que la UX detallada de validación paso a paso, por lo que relajamos `required`.
+// In this integration flow we mainly care about payload shape
+// more than detailed step-by-step validation UX, so we relax `required`.
 jest.mock("@/lib/validation", () => {
   const actual = jest.requireActual("@/lib/validation");
   return {
@@ -72,19 +72,19 @@ describe("Integración: Create Company", () => {
 
     const delay = () => act(() => new Promise((r) => setTimeout(r, 250)));
 
-    // Paso 0 -> Paso 1
+    // Step 0 -> Step 1
     await user.click(screen.getByRole("button", { name: /siguiente/i }));
     await delay();
 
-    // Paso 1: contacto (nuevo paso requerido: nombre comercial + email)
+    // Step 1: contact (new required step: commercial name + email)
     const commercialInput = screen.getByPlaceholderText(/nombre comercial/i);
     const emailInput = screen.getByPlaceholderText(/correo@ejemplo\.com/i);
     await user.type(commercialInput, "Acme");
     await user.type(emailInput, "acme@test.com");
 
-    // Avanzar por los pasos restantes hasta que ya no exista el botón "Siguiente"
-    // (el último paso muestra "Crear empresa" como acción principal).
-    // Usamos queryByRole para no lanzar si ya no existe.
+    // Advance through remaining steps until the "Next" button no longer exists
+    // (the last step shows "Create company" as the primary action).
+    // We use queryByRole to avoid throwing if it no longer exists.
     // eslint-disable-next-line no-constant-condition
     while (true) {
       const nextButton = screen.queryByRole("button", { name: /siguiente/i });
@@ -93,7 +93,7 @@ describe("Integración: Create Company", () => {
       await delay();
     }
 
-    // En el último paso ahora es obligatorio seleccionar una opción de canal
+    // In the last step it is now mandatory to select a channel option
     const withAppOption = screen.getByText(/clientes con app móvil/i);
     await user.click(withAppOption);
 

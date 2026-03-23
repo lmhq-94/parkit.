@@ -133,7 +133,7 @@ export default function NewParkingPage() {
       if (!form.pricePerExtraHour.trim()) nextErrors.pricePerExtraHour = t("validation.required");
     }
     if (!step2Valid) {
-      // dejamos el error de slots a nivel global (ya se muestra error del wizard), aquí no detallamos por campo.
+      // Keep slot errors at global level (wizard already shows error), no per-field detail here.
     }
     setFieldErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0 || !step2Valid) return;

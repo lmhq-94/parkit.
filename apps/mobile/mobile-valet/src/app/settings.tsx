@@ -14,7 +14,7 @@ import { useLocaleStore, useThemeStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 import { useMemo } from "react";
-import { useValetTheme, ticketsA11y } from "@/theme/valetTheme";
+import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
 import type { ThemePreference } from "@/lib/themeStore";
 import { ValetBackButton } from "@/components/ValetBackButton";
 
@@ -22,7 +22,7 @@ const MIN_ROW = 58;
 
 type Theme = ReturnType<typeof useValetTheme>;
 
-function createSettingsStyles(theme: Theme) {
+function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadding: number) {
   const C = theme.colors;
   const S = theme.space;
   const F = theme.font;
@@ -38,12 +38,18 @@ function createSettingsStyles(theme: Theme) {
     inner: {
       flex: 1,
       backgroundColor: C.bg,
+      alignItems: "center",
+    },
+    contentFrame: {
+      flex: 1,
+      width: "100%",
+      maxWidth: contentMaxWidth,
     },
     header: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      paddingHorizontal: S.md,
+      paddingHorizontal: sectionPadding,
       paddingVertical: S.md,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: C.border,
@@ -63,7 +69,7 @@ function createSettingsStyles(theme: Theme) {
       flex: 1,
     },
     scrollContent: {
-      padding: S.lg,
+      padding: sectionPadding,
       paddingBottom: 40,
     },
     /** Misma jerarquía visual que `receive` / tickets (legible en ES/EN). */
@@ -128,8 +134,12 @@ export default function SettingsScreen() {
   const { locale, setLocale } = useLocaleStore();
   const { preference, setPreference } = useThemeStore();
   const theme = useValetTheme();
+  const responsive = useResponsiveLayout();
   const systemScheme = useColorScheme();
-  const styles = useMemo(() => createSettingsStyles(theme), [theme]);
+  const styles = useMemo(
+    () => createSettingsStyles(theme, responsive.contentMaxWidth, responsive.sectionPadding),
+    [theme, responsive.contentMaxWidth, responsive.sectionPadding]
+  );
 
   const handleSetLocale = (newLocale: Locale) => {
     setLocale(newLocale);
@@ -150,6 +160,7 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       <View style={styles.inner} key={locale}>
+        <View style={styles.contentFrame}>
         <View style={styles.header}>
           <ValetBackButton
             onPress={() => router.back()}
@@ -237,6 +248,7 @@ export default function SettingsScreen() {
             </Pressable>
           </View>
         </ScrollView>
+        </View>
       </View>
     </SafeAreaView>
   );

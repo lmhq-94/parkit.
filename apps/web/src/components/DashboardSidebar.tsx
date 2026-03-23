@@ -362,7 +362,7 @@ export function DashboardSidebar() {
 
   const superAdmin = isSuperAdmin(user);
   const admin = isAdmin(user);
-  // SUPER_ADMIN: hay empresas si la lista cargada tiene algo. ADMIN/STAFF: siempre tienen empresa; no mostrar "crear empresa" mientras carga /companies/me (evita pestañeo).
+  // SUPER_ADMIN: has companies if loaded list has entries. ADMIN/STAFF: always have a company; do not show "create company" while /companies/me loads (avoids flicker).
   const hasCompanies = superAdmin
     ? companies.length > 0
     : Boolean(adminCompanyName) || Boolean(user?.id);
@@ -393,7 +393,7 @@ export function DashboardSidebar() {
     };
   }, [hasCustomBanner, effectiveBannerSrc]);
 
-  // Hidratar estado colapsado desde localStorage (solo importa en la primera carga; al navegar el store ya tiene el valor)
+  // Hydrate collapsed state from localStorage (only matters on first load; store already has it while navigating)
   useEffect(() => {
     if (!mounted) return;
     const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
@@ -415,7 +415,7 @@ export function DashboardSidebar() {
       .catch(() => setCompanies([]));
   }, [superAdmin, companiesVersion]);
 
-  // SUPER_ADMIN: siempre tener una empresa seleccionada (la primera si no hay ninguna o la actual ya no existe)
+  // SUPER_ADMIN: always keep a selected company (first one if none selected or current one no longer exists)
   useEffect(() => {
     if (!superAdmin || companies.length === 0) return;
     const currentId = useDashboardStore.getState().selectedCompanyId;
@@ -426,7 +426,7 @@ export function DashboardSidebar() {
     setSelectedCompany(first.id, name);
   }, [superAdmin, companies, setSelectedCompany]);
 
-  // Para ADMIN: obtener empresa (nombre e id) y, si no hay company seleccionada, fijarla para que el layout cargue branding
+  // For ADMIN: fetch company (name and id) and, if none is selected, set it so layout can load branding
   useEffect(() => {
     if (!mounted || !user || superAdmin) return;
     apiClient
@@ -443,7 +443,7 @@ export function DashboardSidebar() {
       });
   }, [mounted, user?.id, superAdmin, setSelectedCompany]);
 
-  // Contador de notificaciones sin leer para el badge del sidebar (se refresca al navegar)
+  // Unread notifications count for sidebar badge (refreshes on navigation)
   useEffect(() => {
     if (!user?.id) return;
     apiClient
@@ -452,7 +452,7 @@ export function DashboardSidebar() {
       .catch(() => setUnreadNotificationsCount(0));
   }, [user?.id, pathname]);
 
-  // Mostrar "Reservas" solo si la empresa tiene al menos un estacionamiento que requiere reserva
+  // Show "Bookings" only if company has at least one parking that requires booking
   useEffect(() => {
     const hasCompanyContext = superAdmin ? Boolean(selectedCompanyId) : Boolean(user?.id);
     if (!hasCompanyContext) {
@@ -523,7 +523,7 @@ export function DashboardSidebar() {
 
   return (
     <>
-      {/* Overlay móvil */}
+      {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-[20000] bg-black/50 md:hidden"
@@ -563,7 +563,7 @@ export function DashboardSidebar() {
               <Link href="/dashboard" className="flex items-center min-w-0 overflow-hidden">
                 <Logo variant={isDark ? "onDark" : "default"} className="text-3xl truncate" />
               </Link>
-              {/* Botón colapsar: solo visible en md+ */}
+              {/* Collapse button: only visible on md+ */}
               <button
                 onClick={toggleCollapsed}
                 className="hidden md:flex p-2 rounded-xl text-text-muted hover:text-text-secondary hover:bg-input-bg transition-colors shrink-0"
@@ -652,7 +652,7 @@ export function DashboardSidebar() {
         </>
       )}
 
-      {/* Nav groups: flex-1 + min-h-0 para que solo esta zona haga scroll y el sidebar no */}
+      {/* Nav groups: flex-1 + min-h-0 so only this area scrolls, not the whole sidebar */}
       {hasCompanies ? (
         <nav className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-6">
           {navGroups.map((group) => (
@@ -737,7 +737,7 @@ export function DashboardSidebar() {
         <div className="flex-1" />
       )}
 
-      {/* Footer: ayuda + versión en una fila (altura mínima para evitar scroll en el sidebar) */}
+      {/* Footer: help + version on one row (minimum height to prevent sidebar scroll) */}
       <footer className="border-t border-card-border bg-card/40 dark:bg-card/20 px-2 py-1.5 shrink-0">
         {!collapsed ? (
           <div className="flex flex-row items-center gap-2 min-h-0">

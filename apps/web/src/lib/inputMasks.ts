@@ -1,9 +1,9 @@
 /**
- * Máscaras de entrada para formularios.
- * Cada función recibe el valor actual y el evento de cambio, y devuelve el valor formateado.
+ * Input masks for forms.
+ * Each function receives current value and change event, and returns formatted value.
  */
 
-/** Códigos de marcación E.164 por código de país ISO (sin el +). */
+/** E.164 dialing codes by ISO country code (without +). */
 export const COUNTRY_DIAL_CODES: Record<string, string> = {
   AF: "93", AL: "355", DE: "49", AD: "376", AO: "244", AI: "1264", AG: "1268", SA: "966",
   DZ: "213", AR: "54", AM: "374", AW: "297", AU: "61", AT: "43", AZ: "994", BS: "1242",
@@ -33,7 +33,7 @@ export const COUNTRY_DIAL_CODES: Record<string, string> = {
   VU: "678", VE: "58", VN: "84", YE: "967", DJ: "253", ZM: "260", ZW: "263",
 };
 
-/** Teléfono: dígitos, + al inicio opcional. Máx 15 dígitos (E.164). */
+/** Phone: digits, optional leading +. Max 15 digits (E.164). */
 export function formatPhone(value: string): string {
   const trimmed = value.trimStart();
   const hasPlus = trimmed.startsWith("+");
@@ -42,20 +42,20 @@ export function formatPhone(value: string): string {
   return (hasPlus ? "+" : "") + digits;
 }
 
-/** Códigos de marcación únicos ordenados por longitud descendente (para emparejar el más largo primero, ej. 1264 antes de 1). */
+/** Unique dialing codes sorted by descending length (to match longest first, e.g. 1264 before 1). */
 const DIAL_CODES_SORTED = [...new Set(Object.values(COUNTRY_DIAL_CODES))].sort(
   (a, b) => b.length - a.length
 );
 
-/** Devuelve un código de país ISO para un código de marcación (si varios comparten, devuelve el primero). */
+/** Returns ISO country code for a dialing code (if shared by several, returns first). */
 function countryCodeFromDialCode(dialCode: string): string | undefined {
   return Object.entries(COUNTRY_DIAL_CODES).find(([, d]) => d === dialCode)?.[0];
 }
 
 /**
- * Teléfono internacional: detecta el código de país por el prefijo y formatea.
- * Acepta cualquier código (ej. +1, +34, +506). Para input y para mostrar.
- * @param value - Valor actual (puede ser "+506 6216-4040", "50662164040", "+1 555 1234567", etc.).
+ * International phone: detects country dialing code by prefix and formats.
+ * Accepts any code (e.g. +1, +34, +506). For input and display.
+ * @param value - Current value (can be "+506 6216-4040", "50662164040", "+1 555 1234567", etc.).
  */
 export function formatPhoneInternational(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 15);
@@ -80,7 +80,7 @@ export function formatPhoneInternational(value: string): string {
 
   const countryCode = countryCodeFromDialCode(dial);
 
-  // Costa Rica: +506 XXXX-XXXX (8 dígitos locales)
+  // Costa Rica: +506 XXXX-XXXX (8 local digits)
   if (countryCode === "CR" && dial === "506") {
     const a = localDigits.slice(0, 4);
     const b = localDigits.slice(4, 8);
@@ -88,7 +88,7 @@ export function formatPhoneInternational(value: string): string {
     return `${prefix} ${a}-${b}`;
   }
 
-  // US/CA (código 1): +1 (XXX) XXX-XXXX
+  // US/CA (code 1): +1 (XXX) XXX-XXXX
   if (dial === "1" && localDigits.length <= 10) {
     const a = localDigits.slice(0, 3);
     const b = localDigits.slice(3, 6);
@@ -98,17 +98,17 @@ export function formatPhoneInternational(value: string): string {
     return `${prefix} (${a}) ${b}-${c}`;
   }
 
-  // Genérico: +dial XXXX-XXXX-...
+  // Generic: +dial XXXX-XXXX-...
   const parts: string[] = [];
   for (let i = 0; i < localDigits.length; i += 4) parts.push(localDigits.slice(i, i + 4));
   return `${prefix} ${parts.join("-")}`;
 }
 
 /**
- * Teléfono con máscara de código de país (cuando ya conoces el país, ej. empresa).
- * Ej: Costa Rica → "+506 6216-4040". Para compatibilidad y cuando el contexto tiene countryCode.
- * @param value - Valor actual del input (puede incluir o no el + y el código de país).
- * @param countryCode - Código ISO del país (ej. "CR"). Por defecto "CR".
+ * Phone with country-code mask (when country is known, e.g. company).
+ * Example: Costa Rica -> "+506 6216-4040". For compatibility and when context has countryCode.
+ * @param value - Current input value (may include + and country code or not).
+ * @param countryCode - Country ISO code (e.g. "CR"). Defaults to "CR".
  */
 export function formatPhoneWithCountryCode(value: string, countryCode: string = "CR"): string {
   const dial = COUNTRY_DIAL_CODES[countryCode] ?? "506";
@@ -147,7 +147,7 @@ export function formatPhoneWithCountryCode(value: string, countryCode: string = 
   return `${prefix} ${parts.join("-")}`;
 }
 
-/** NIF / Tax ID: dígitos y guiones, formato 3-101-123456 (cédula jurídica CR) o similar */
+/** NIF / Tax ID: digits and hyphens, format 3-101-123456 (CR legal ID) or similar */
 export function formatTaxId(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 12);
   if (digits.length <= 1) return digits;
@@ -156,25 +156,25 @@ export function formatTaxId(value: string): string {
 }
 
 /**
- * Placa Costa Rica: solo números (ej. 345723) o alfanumérico LLL-NNN (ej. RWF-001).
- * Acepta solo A-Z y 0-9; formatea automáticamente con guion en el formato mixto.
+ * Costa Rica plate: numeric only (e.g. 345723) or alphanumeric LLL-NNN (e.g. RWF-001).
+ * Accepts only A-Z and 0-9; automatically adds hyphen in mixed format.
  */
 export function formatPlate(value: string): string {
   const raw = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
   const letters = raw.replace(/[^A-Z]/g, "").slice(0, 3);
   const allDigits = raw.replace(/[^0-9]/g, "");
 
-  // Solo numérico: hasta 6 dígitos (ej. 345723)
+  // Numeric only: up to 6 digits (e.g. 345723)
   if (letters.length === 0) {
     return allDigits.slice(0, 6);
   }
 
-  // Alfanumérico: 3 letras + guion + 3 dígitos (ej. RWF-001)
+  // Alphanumeric: 3 letters + hyphen + 3 digits (e.g. RWF-001)
   const digits = allDigits.slice(0, 3);
   return letters + (digits.length > 0 ? "-" + digits : "");
 }
 
-/** Para mostrar en UI: primera letra de cada palabra en mayúscula, resto en minúscula. Ej: TOYOTA → Toyota */
+/** For UI display: first letter of each word uppercase, rest lowercase. Example: TOYOTA -> Toyota */
 export function toTitleCase(s: string): string {
   return s
     .toLowerCase()

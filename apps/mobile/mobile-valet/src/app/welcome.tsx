@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, StatusBar, Dimensions, Animated, Easing } from "react-native";
+import { View, Text, StyleSheet, Pressable, StatusBar, Animated, Easing } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Logo } from "@parkit/shared";
@@ -6,13 +6,11 @@ import { useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { useEffect, useRef, useMemo } from "react";
 import { AuthHeroGradient } from "@/components/AuthHeroGradient";
-import { useValetTheme, ACCENT } from "@/theme/valetTheme";
+import { useValetTheme, ACCENT, useResponsiveLayout } from "@/theme/valetTheme";
 import { getAppVersionString } from "@/lib/appVersion";
 
 const LOGO_SIZE = 72;
 const CONTROL_HEIGHT = 56;
-const WINDOW_HEIGHT = Dimensions.get("window").height;
-const HERO_MIN_HEIGHT = Math.round(WINDOW_HEIGHT * 0.32);
 
 /**
  * Pantalla inicial valet: logo + valet y botones LOGIN (azul) / SIGN UP (oscuro), como tokens de tema.
@@ -27,7 +25,11 @@ export function WelcomeContent({
   const locale = useLocaleStore((s) => s.locale);
   const insets = useSafeAreaInsets();
   const theme = useValetTheme();
+  const responsive = useResponsiveLayout();
   const { auth: a } = theme;
+  const heroMinHeight = Math.round(
+    (responsive.isLandscape ? responsive.height * 0.24 : responsive.height * 0.32)
+  );
   const buttonsTranslateY = useRef(new Animated.Value(26)).current;
   const buttonsOpacity = useRef(new Animated.Value(0)).current;
 
@@ -43,7 +45,7 @@ export function WelcomeContent({
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          minHeight: HERO_MIN_HEIGHT,
+          minHeight: heroMinHeight,
         },
         logoWrap: { alignItems: "center" },
         logo: { marginBottom: 0 },
@@ -60,10 +62,13 @@ export function WelcomeContent({
           borderTopLeftRadius: 28,
           borderTopRightRadius: 28,
           ...a.authFormSheetSeparator,
-          paddingHorizontal: 28,
+          paddingHorizontal: responsive.horizontalPadding,
           paddingTop: 28,
           paddingBottom: 0,
           alignItems: "stretch",
+          width: "100%",
+          maxWidth: responsive.formMaxWidth,
+          alignSelf: "center",
         },
         ctaText: {
           fontSize: 20,
@@ -114,7 +119,7 @@ export function WelcomeContent({
           textAlign: "center",
         },
       }),
-    [a]
+    [a, heroMinHeight, responsive.formMaxWidth, responsive.horizontalPadding]
   );
 
   const versionLabel = t(locale, "welcome.version", {

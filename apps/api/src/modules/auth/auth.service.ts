@@ -56,7 +56,7 @@ export class AuthService {
     return { user: toAuthUserResponse(user, await valetStaffRoleForUser(user.id)), token };
   }
 
-  /** Auto-registro de valet: User (companyId null, STAFF) + Valet (companyId null). */
+  /** Valet self-registration: User (companyId null, STAFF) + Valet (companyId null). */
   static async registerValet(data: RegisterValetDTO) {
     const user = await UsersService.createValetUser({
       firstName: data.firstName,
@@ -130,7 +130,7 @@ export class AuthService {
       throw new Error("Invalid credentials");
     }
 
-    // SUPER_ADMIN y valets (companyId null) no dependen del estado de una empresa.
+    // SUPER_ADMIN and valets (companyId null) do not depend on a company status.
     if (user.systemRole !== "SUPER_ADMIN" && user.companyId != null) {
       if (!user.company || user.company.status !== "ACTIVE") {
         throw new Error("COMPANY_INACTIVE");
@@ -187,8 +187,8 @@ export class AuthService {
   }
 
   /**
-   * Solicitud de restablecimiento: si existe usuario activo con contraseña, envía correo con enlace.
-   * Respuesta genérica siempre (no filtra existencia del correo).
+   * Password reset request: if an active user with password exists, send reset email.
+   * Always returns a generic response (does not reveal whether email exists).
    */
   static async requestPasswordReset(data: ForgotPasswordDTO) {
     const email = data.email.trim();
@@ -255,7 +255,7 @@ export class AuthService {
       where: { email: data.email },
     });
 
-    // Para no filtrar existencia de usuarios, respondemos igual aunque no exista.
+    // To avoid leaking user existence, respond the same even when user does not exist.
     if (!user || user.isActive === false) {
       return { ok: true };
     }
@@ -275,8 +275,8 @@ export class AuthService {
       },
     });
 
-    // TODO: enviar correo con rawCode usando el proveedor (Resend).
-    // Por ahora solo devolvemos ok:true para que el flujo del cliente continúe.
+    // TODO: send rawCode by email using the provider (Resend).
+    // For now, only return ok:true so the client flow can continue.
 
     return { ok: true };
   }

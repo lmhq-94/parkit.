@@ -22,7 +22,7 @@ import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import type { ValetStaffRole } from "@parkit/shared";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
-import { useValetTheme, ticketsA11y } from "@/theme/valetTheme";
+import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
 import { ValetBackButton } from "@/components/ValetBackButton";
 import api from "@/lib/api";
 import { messageFromAxios } from "@/lib/apiErrors";
@@ -66,8 +66,12 @@ export default function ProfileScreen() {
   const locale = useLocaleStore((s) => s.locale);
   const { user, mergeUser } = useAuthStore();
   const theme = useValetTheme();
+  const responsive = useResponsiveLayout();
   const insets = useSafeAreaInsets();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = useMemo(
+    () => createStyles(theme, responsive.contentMaxWidth, responsive.sectionPadding),
+    [theme, responsive.contentMaxWidth, responsive.sectionPadding]
+  );
   const C = theme.colors;
 
   const [loading, setLoading] = useState(true);
@@ -399,6 +403,7 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+      <View style={styles.frame}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -852,27 +857,33 @@ export default function ProfileScreen() {
           </View>
         )}
       </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 }
 
 type Theme = ReturnType<typeof useValetTheme>;
 
-function createStyles(theme: Theme) {
+function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: number) {
   const C = theme.colors;
   const S = theme.space;
   const F = ticketsA11y.font;
   const R = theme.radius;
 
   return StyleSheet.create({
-    safe: { flex: 1, backgroundColor: C.bg },
+    safe: { flex: 1, backgroundColor: C.bg, alignItems: "center" },
+    frame: {
+      flex: 1,
+      width: "100%",
+      maxWidth: contentMaxWidth,
+    },
     flex: { flex: 1 },
     bodyColumn: { flex: 1, minHeight: 0 },
     header: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      paddingHorizontal: S.md,
+      paddingHorizontal: sectionPadding,
       paddingVertical: S.md,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: C.border,
@@ -894,7 +905,7 @@ function createStyles(theme: Theme) {
     },
     loadingText: { fontSize: F.secondary, color: C.textMuted },
     scroll: { flex: 1 },
-    scrollContent: { padding: S.lg, paddingBottom: S.xl },
+    scrollContent: { padding: sectionPadding, paddingBottom: S.xl },
     intro: {
       fontSize: F.secondary,
       color: C.textMuted,
@@ -1051,7 +1062,7 @@ function createStyles(theme: Theme) {
       marginBottom: S.sm,
     },
     saveFooter: {
-      paddingHorizontal: S.lg,
+      paddingHorizontal: sectionPadding,
       paddingTop: S.md,
       borderTopWidth: StyleSheet.hairlineWidth,
     },

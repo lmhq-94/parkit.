@@ -56,9 +56,9 @@ export async function sendInvitationEmail(
   const textMuted = "#64748b";
   const companyPrimary = "#2563eb"; // blue-600, logo "it." (same as sidebar)
   const supportMailto = `mailto:${SUPPORT_EMAIL}`;
-  // Inter: fuente profesional, muy legible en correos (Google Fonts)
+  // Inter: professional font, highly legible in emails (Google Fonts)
   const fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
-  // Logo en título: más grande. Si es imagen, altura ~56px; si es texto "park"+"it.", 2.25rem
+  // Header logo: larger size. If image, ~56px height; if "park"+"it." text, 2.25rem
   const headerLogoHtml = PARKIT_LOGO_URL
     ? `<img src="${PARKIT_LOGO_URL}" alt="Parkit" width="168" height="56" style="display: block; max-height: 56px; width: auto;" />`
     : `<span class="logo-text" style="font-size: 2.25rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.2;"><span style="color: ${textPrimary};">park</span><span style="color: ${companyPrimary};">it.</span></span>`;

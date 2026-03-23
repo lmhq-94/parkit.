@@ -4,18 +4,19 @@ import {
   StyleSheet,
   TextInput,
   Pressable,
+  ScrollView,
+  Keyboard,
   Platform,
   StatusBar,
   ActivityIndicator,
   TouchableOpacity,
   Linking,
-  Dimensions,
   Animated,
   Easing,
   Modal,
   KeyboardAvoidingView,
+  useWindowDimensions,
 } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -31,8 +32,6 @@ import { useValetTheme, ACCENT } from "@/theme/valetTheme";
 
 const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
 const LOGO_SIZE = 72;
-const WINDOW_HEIGHT = Dimensions.get("window").height;
-const HERO_MIN_HEIGHT = Math.round(WINDOW_HEIGHT * 0.32);
 const CONTROL_HEIGHT = 56;
 
 const STAFF_ROLES = ["RECEPTIONIST", "DRIVER"] as const;
@@ -45,21 +44,31 @@ export default function LoginScreen() {
   const params = useLocalSearchParams();
   const locale = useLocaleStore((s) => s.locale);
   const theme = useValetTheme();
+  const { width, height } = useWindowDimensions();
   const a = theme.auth;
-  const C = theme.colors;
+  const shortestSide = Math.min(width, height);
+  const isTablet = shortestSide >= 600;
+  const isLandscape = width > height;
+  const horizontalPadding = isTablet ? 36 : 28;
+  const sheetMaxWidth = isTablet ? 640 : 560;
+  const heroMinHeight = Math.round((isLandscape ? height * 0.24 : height * 0.32));
 
   const styles = useMemo(
     () =>
       StyleSheet.create({
         heroStrip: {
           backgroundColor: a.authHeroStripBg,
+          zIndex: 0,
         },
         topBar: {
           flexDirection: "row",
           alignItems: "center",
-          paddingHorizontal: 20,
+          paddingHorizontal: horizontalPadding,
           paddingTop: 8,
           paddingBottom: 16,
+          width: "100%",
+          maxWidth: sheetMaxWidth,
+          alignSelf: "center",
         },
         backBtn: {
           width: 44,
@@ -73,13 +82,13 @@ export default function LoginScreen() {
           alignItems: "center",
           justifyContent: "center",
           paddingVertical: 12,
-          minHeight: HERO_MIN_HEIGHT,
+          minHeight: heroMinHeight,
         },
         heroLogin: {
-          minHeight: Math.round(HERO_MIN_HEIGHT * 0.74),
+          minHeight: Math.round(heroMinHeight * 0.74),
         },
         heroCompact: {
-          minHeight: Math.round(HERO_MIN_HEIGHT * 0.55),
+          minHeight: Math.round(heroMinHeight * 0.55),
           paddingVertical: 8,
         },
         heroLogo: { marginBottom: 0 },
@@ -96,11 +105,19 @@ export default function LoginScreen() {
           borderTopLeftRadius: 28,
           borderTopRightRadius: 28,
           ...a.authFormSheetSeparator,
-          paddingHorizontal: 28,
+          paddingHorizontal: horizontalPadding,
           paddingTop: 24,
           paddingBottom: 0,
+          width: "100%",
+          maxWidth: sheetMaxWidth,
+          alignSelf: "center",
         },
-        bottomWrap: { flex: 1, backgroundColor: "transparent" },
+        bottomWrap: {
+          flex: 1,
+          backgroundColor: "transparent",
+          marginTop: -28,
+          zIndex: 1,
+        },
         scrollContent: {
           flexGrow: 1,
           width: "100%",
@@ -243,7 +260,7 @@ export default function LoginScreen() {
         },
         modalCloseBtnText: { fontSize: 15, fontWeight: "600", color: a.textMuted },
       }),
-    [a]
+    [a, heroMinHeight, horizontalPadding, sheetMaxWidth]
   );
 
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -256,6 +273,8 @@ export default function LoginScreen() {
   const [staffRolePickerOpen, setStaffRolePickerOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const heroTranslateY = useRef(new Animated.Value(0)).current;
   const formTranslateY = useRef(new Animated.Value(22)).current;
   const formOpacity = useRef(new Animated.Value(0)).current;
 
@@ -283,6 +302,32 @@ export default function LoginScreen() {
       }),
     ]).start();
   }, [formOpacity, formTranslateY, mode]);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", () => {
+      setKeyboardVisible(true);
+      Animated.timing(heroTranslateY, {
+        toValue: -56,
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
+    });
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardVisible(false);
+      Animated.timing(heroTranslateY, {
+        toValue: 0,
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [heroTranslateY]);
+
 
   const handleLogin = async () => {
     setError(null);
@@ -346,31 +391,44 @@ export default function LoginScreen() {
   return (
     <AuthHeroGradient chromeBg={a.authScreenChromeBg}>
       <StatusBar barStyle={a.statusBarStyle} backgroundColor={a.statusBarBg} />
-      <View style={styles.heroStrip}>
-        <SafeAreaView style={styles.topBar} edges={["top"]}>
-          <TouchableOpacity onPress={() => router.replace("/welcome")} style={styles.backBtn} hitSlop={12}>
-            <Ionicons name="chevron-back" size={24} color={a.authHeroBackBtnIcon} />
-          </TouchableOpacity>
-        </SafeAreaView>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <View style={styles.heroStrip}>
+          <SafeAreaView style={styles.topBar} edges={["top"]}>
+            <TouchableOpacity
+              onPress={() => {
+                Keyboard.dismiss();
+                requestAnimationFrame(() => {
+                  router.replace("/welcome");
+                });
+              }}
+              style={styles.backBtn}
+              hitSlop={12}
+            >
+              <Ionicons name="chevron-back" size={24} color={a.authHeroBackBtnIcon} />
+            </TouchableOpacity>
+          </SafeAreaView>
 
-        <View style={[styles.hero, mode === "signup" ? styles.heroCompact : styles.heroLogin]}>
-          <Logo size={LOGO_SIZE} style={styles.heroLogo} variant="onDark" />
-          <Text style={styles.heroBrand}>valet</Text>
+          <Animated.View
+            style={[
+              styles.hero,
+              mode === "signup" ? styles.heroCompact : styles.heroLogin,
+              { transform: [{ translateY: heroTranslateY }] },
+            ]}
+          >
+            <Logo size={LOGO_SIZE} style={styles.heroLogo} variant="onDark" />
+            <Text style={styles.heroBrand}>valet</Text>
+          </Animated.View>
         </View>
-      </View>
 
-      <View style={styles.bottomWrap}>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <KeyboardAwareScrollView
-          style={{ flex: 1, backgroundColor: "transparent" }}
-          contentContainerStyle={styles.scrollContent}
-          bottomOffset={16}
-          extraKeyboardSpace={Math.max(insets.bottom, 12)}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-          showsVerticalScrollIndicator={false}
-          bounces
-        >
+        <View style={styles.bottomWrap}>
+          <ScrollView
+            style={{ flex: 1, backgroundColor: "transparent" }}
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+          >
           <View style={styles.scrollTopSpacer} />
           <Animated.View
             style={{
@@ -572,39 +630,74 @@ export default function LoginScreen() {
                 </View>
               ) : null}
 
-              <View style={styles.footer}>
-                <Text style={styles.footerText}>{t(locale, "login.footer")}</Text>
-                <Pressable onPress={() => Linking.openURL(SUPPORT_EMAIL)}>
-                  <Text style={styles.footerLink}>{t(locale, "login.contactSupport")}</Text>
+              {!keyboardVisible ? (
+                <Pressable
+                  onPress={mode === "login" ? handleLogin : handleSignup}
+                  disabled={loading}
+                  style={({ pressed }) => [
+                    styles.loginBtn,
+                    mode === "login" ? styles.loginBtnLogin : styles.loginBtnSignup,
+                    pressed && styles.btnPressed,
+                    loading && styles.btnDisabled,
+                  ]}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#FFFFFF" size="small" />
+                  ) : (
+                    <Text style={styles.loginBtnText}>
+                      {mode === "login" ? t(locale, "login.submit") : t(locale, "signup.submit")}
+                    </Text>
+                  )}
                 </Pressable>
-              </View>
+              ) : null}
+
+              {!keyboardVisible ? (
+                <View style={styles.footer}>
+                  <Text style={styles.footerText}>{t(locale, "login.footer")}</Text>
+                  <Pressable onPress={() => Linking.openURL(SUPPORT_EMAIL)}>
+                    <Text style={styles.footerLink}>{t(locale, "login.contactSupport")}</Text>
+                  </Pressable>
+                </View>
+              ) : null}
               </View>
             </View>
           </Animated.View>
-        </KeyboardAwareScrollView>
-
-        <StickyFormFooter backgroundColor={a.bottomSheet} borderColor={C.border} paddingHorizontal={28}>
-          <Pressable
-            onPress={mode === "login" ? handleLogin : handleSignup}
-            disabled={loading}
-            style={({ pressed }) => [
-              styles.loginBtn,
-              mode === "login" ? styles.loginBtnLogin : styles.loginBtnSignup,
-              pressed && styles.btnPressed,
-              loading && styles.btnDisabled,
-            ]}
+          </ScrollView>
+        </View>
+        {keyboardVisible ? (
+          <StickyFormFooter
+            backgroundColor={a.bottomSheet}
+            borderColor="transparent"
+            paddingHorizontal={horizontalPadding}
           >
-            {loading ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
-            ) : (
-              <Text style={styles.loginBtnText}>
-                {mode === "login" ? t(locale, "login.submit") : t(locale, "signup.submit")}
-              </Text>
-            )}
-          </Pressable>
-        </StickyFormFooter>
-        </KeyboardAvoidingView>
-      </View>
+            <Pressable
+              onPress={mode === "login" ? handleLogin : handleSignup}
+              disabled={loading}
+              style={({ pressed }) => [
+                styles.loginBtn,
+                { marginTop: 0, marginBottom: 0 },
+                mode === "login" ? styles.loginBtnLogin : styles.loginBtnSignup,
+                pressed && styles.btnPressed,
+                loading && styles.btnDisabled,
+              ]}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <Text style={styles.loginBtnText}>
+                  {mode === "login" ? t(locale, "login.submit") : t(locale, "signup.submit")}
+                </Text>
+              )}
+            </Pressable>
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>{t(locale, "login.footer")}</Text>
+              <Pressable onPress={() => Linking.openURL(SUPPORT_EMAIL)}>
+                <Text style={styles.footerLink}>{t(locale, "login.contactSupport")}</Text>
+              </Pressable>
+            </View>
+          </StickyFormFooter>
+        ) : null}
+      </KeyboardAvoidingView>
     </AuthHeroGradient>
   );
 }

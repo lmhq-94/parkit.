@@ -83,7 +83,7 @@ export default function LoginPage() {
         setTheme(finalTheme);
         setLocale(finalLocale);
 
-        // Sincronizar preferencias en la base de datos (no bloquea la navegación).
+        // Sync preferences to database (does not block navigation).
         apiClient
           .patch("/users/me", {
             appPreferences: {
@@ -92,10 +92,10 @@ export default function LoginPage() {
             },
           })
           .catch(() => {
-            // Silenciar errores de preferencia; no deben impedir el login.
+            // Silence preference errors; they should not block login.
           });
 
-        // Cargar branding durante el loading para que el dashboard no muestre primero defaults y luego salte al tema de la empresa.
+        // Load branding during loading so dashboard does not flash defaults before company theme.
         const loadBranding = async () => {
           try {
             const superAdminUser = isSuperAdmin(response.user);
@@ -149,9 +149,9 @@ export default function LoginPage() {
         };
         await loadBranding();
 
-        // Mantener el spinner activo mientras la navegación ocurre —
-        // setIsSubmitting(false) NO se llama en el path exitoso para evitar
-        // el flash del formulario antes de que el dashboard cargue.
+        // Keep spinner active while navigation happens -
+        // setIsSubmitting(false) is NOT called on successful path to avoid
+        // form flash before dashboard loads.
         router.push("/dashboard");
         return;
       }

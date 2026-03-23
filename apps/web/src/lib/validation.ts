@@ -1,6 +1,6 @@
 /**
- * Helpers de validación para formularios (create, edit, inline).
- * Reciben la función t de i18n y devuelven el mensaje traducido o null si es válido.
+ * Validation helpers for forms (create, edit, inline).
+ * They receive the i18n t function and return translated message or null if valid.
  */
 
 export type TranslateFn = (key: string, vars?: Record<string, string | number>) => string;
@@ -15,7 +15,7 @@ export function required(t: TranslateFn, value: unknown): string | null {
 
 export function email(t: TranslateFn, value: unknown): string | null {
   const s = value == null ? "" : String(value).trim();
-  if (s === "") return null; // vacío = no error (usar required por separado si es obligatorio)
+  if (s === "") return null; // empty = no error (use required separately when mandatory)
   return EMAIL_REGEX.test(s) ? null : t("validation.invalidEmail");
 }
 
@@ -35,7 +35,7 @@ export function selectRequired(t: TranslateFn, value: unknown): string | null {
   return s === "" ? t("validation.selectRequired") : null;
 }
 
-/** Formato placa: alfanumérico, guiones/espacios opcionales, longitud razonable (3–15) */
+/** Plate format: alphanumeric, optional hyphens/spaces, reasonable length (3-15) */
 const PLATE_REGEX = /^[A-Za-z0-9\u00C0-\u024F\s-]{3,15}$/;
 
 export function plate(t: TranslateFn, value: unknown): string | null {
@@ -44,7 +44,7 @@ export function plate(t: TranslateFn, value: unknown): string | null {
   return PLATE_REGEX.test(s) ? null : t("validation.invalidPlate");
 }
 
-/** Teléfono opcional: si tiene valor, debe ser formato numérico E.164 (solo dígitos, 10–15 caracteres). */
+/** Optional phone: if present, must match numeric E.164 format (digits only, 10-15 chars). */
 export function phone(t: TranslateFn, value: unknown): string | null {
   const s = value == null ? "" : String(value).trim();
   if (s === "") return null;

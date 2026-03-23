@@ -57,7 +57,7 @@ interface DashboardStats {
 }
 
 function formatShortDate(dateStr: string, locale: string) {
-  // Interpretar YYYY-MM-DD como fecha de calendario (sin convertir a hora local) para que la etiqueta coincida con el día del dato
+  // Interpret YYYY-MM-DD as calendar date (without converting to local time) so label matches data day
   const [yStr, mStr, dStr] = dateStr.split("-");
   const y = Number(yStr ?? 0);
   const m = Number(mStr ?? 1);
@@ -164,7 +164,7 @@ export default function DashboardPage() {
     };
   }, [query, selectedCompanyId]);
 
-  // Después de abrir el rango personalizado por primera vez, reseteamos el flag
+  // After opening custom range for the first time, reset the flag
   useEffect(() => {
     if (customRangeJustOpened) {
       const id = window.setTimeout(() => setCustomRangeJustOpened(false), 0);
@@ -172,8 +172,8 @@ export default function DashboardPage() {
     }
   }, [customRangeJustOpened]);
 
-  // Redirigir a "no companies" solo si es SUPER_ADMIN sin empresa seleccionada y no hay ninguna en el sistema.
-  // Con empresa seleccionada, stats son de esa empresa y companiesCount viene 0; no redirigir.
+  // Redirect to "no companies" only for SUPER_ADMIN without selected company and with none in system.
+  // With selected company, stats are scoped to that company and companiesCount is 0; do not redirect.
   useEffect(() => {
     if (
       superAdmin &&
@@ -187,7 +187,7 @@ export default function DashboardPage() {
     }
   }, [superAdmin, selectedCompanyId, stats, redirectingNoCompanies, router]);
 
-  // Spinner completo solo en carga inicial (sin datos). Al cambiar días se mantiene la UI y solo se actualizan los datos.
+  // Full spinner only on initial load (no data). When changing days, keep UI and only refresh data.
   if (loading && !stats) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
@@ -211,7 +211,7 @@ export default function DashboardPage() {
     return null;
   }
 
-  // Mismo orden que el sidebar: Principal (parkings, bookings, tickets) → Equipo (valets) → Clientes (customers, vehicles)
+  // Same order as sidebar: Main (parkings, bookings, tickets) -> Team (valets) -> Clients (customers, vehicles)
   const statCards: Array<{
     key: string;
     title: string;
@@ -330,7 +330,7 @@ export default function DashboardPage() {
 
   return (
     <div className="pt-4 md:pt-6 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 w-full flex-1 flex flex-col gap-6 md:gap-8">
-            {/* Banner: degradado según color del tema, fondo oscuro para buena legibilidad del texto */}
+            {/* Banner: gradient based on theme color, dark background for strong text legibility */}
             <header
               className="relative overflow-hidden rounded-2xl border border-white/15 p-6 md:p-8"
               style={{

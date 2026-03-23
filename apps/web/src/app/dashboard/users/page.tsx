@@ -135,7 +135,7 @@ export default function UsersPage() {
       const params = new URLSearchParams();
       params.set("excludeValets", "true");
       params.set("includeInactives", "true");
-      params.set("systemRole", "ADMIN"); // Solo administradores de la empresa
+      params.set("systemRole", "ADMIN"); // Only company administrators
       const url = `/users?${params.toString()}`;
       const data = await apiClient.get<UserRow[]>(url);
       const list = Array.isArray(data) ? data : [];

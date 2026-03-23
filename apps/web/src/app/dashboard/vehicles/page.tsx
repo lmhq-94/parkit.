@@ -48,7 +48,7 @@ export default function VehiclesPage() {
   const canManage = superAdmin || user?.systemRole === "ADMIN";
   const router = useRouter();
 
-  // Solo mostrar el botón de crear vehículo si la empresa tiene al menos un empleado ADMIN o CUSTOMER.
+  // Show create vehicle button only if company has at least one ADMIN or CUSTOMER employee.
   const [hasEligibleEmployees, setHasEligibleEmployees] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export default function VehiclesPage() {
       try {
         const params = new URLSearchParams();
         params.set("excludeValets", "true");
-        // Solo clientes (CUSTOMER); los vehículos se asocian a estos beneficiarios.
+        // Customers only (CUSTOMER); vehicles are associated with these beneficiaries.
         params.append("systemRole", "CUSTOMER");
         params.set("includeInactives", "true");
         const users = await apiClient.get<Array<{ id?: string }>>(`/users?${params.toString()}`);

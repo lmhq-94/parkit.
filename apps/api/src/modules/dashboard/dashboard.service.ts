@@ -9,7 +9,7 @@ export interface DashboardStats {
   ticketsCount: number;
   usersCount: number;
   bookingsCount: number;
-  /** Si la empresa (o el sistema para superAdmin) tiene al menos un estacionamiento que requiere reserva */
+  /** Whether the company (or system for superAdmin) has at least one parking requiring booking */
   hasParkingWithBooking: boolean;
   ticketsLast7Days: { date: string; count: number }[];
   recentTickets: Array<{
@@ -67,7 +67,7 @@ export class DashboardService {
     };
   }
 
-  /** True si la empresa (o alguna para superAdmin) tiene canal con app (bookings habilitados). */
+  /** True if the company (or any, for superAdmin) has app channel enabled (bookings enabled). */
   private static async hasParkingWithBooking(companyId: string | null): Promise<boolean> {
     if (companyId) {
       const company = await prisma.company.findUnique({
@@ -97,7 +97,7 @@ export class DashboardService {
     );
   }
 
-  /** Rango de fechas YYYY-MM-DD; máximo 90 días. Fechas inclusivas: from y to son el primer y último día del chart. */
+  /** YYYY-MM-DD date range; max 90 days. Inclusive dates: from and to are first and last chart day. */
   private static async getTicketsByDayRange(
     companyId: string | null,
     from: string,
@@ -105,7 +105,7 @@ export class DashboardService {
   ): Promise<{ date: string; count: number }[]> {
     const [y1, m1, d1] = from.split("-").map(Number);
     const [y2, m2, d2] = to.split("-").map(Number);
-    // Inicio del primer día y fin del último día en UTC para el filtro
+    // Start of first day and end of last day in UTC for filtering
     const start = new Date(Date.UTC(y1, m1 - 1, d1, 0, 0, 0, 0));
     const end = new Date(Date.UTC(y2, m2 - 1, d2, 23, 59, 59, 999));
     if (start.getTime() > end.getTime()) {
@@ -126,8 +126,8 @@ export class DashboardService {
       select: { entryTime: true },
     });
 
-    // Construir las claves del rango exactamente desde `from` hasta effectiveEnd (inclusive)
-    // para que el chart coincida con los días elegidos sin desfase.
+    // Build the range keys exactly from `from` through effectiveEnd (inclusive)
+    // so the chart matches the selected days without offsets.
     const byDay: Record<string, number> = {};
     let cursor = new Date(Date.UTC(y1, m1 - 1, d1, 12, 0, 0, 0)); // mediodía UTC evita bordes
     const endCursor = new Date(Date.UTC(

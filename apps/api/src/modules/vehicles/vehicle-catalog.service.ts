@@ -1,11 +1,11 @@
 /**
- * Catálogo de vehículos: marcas, modelos y dimensiones.
- * Usa CarQuery API cuando está disponible; si falla (ej. 403), se usa lista estática de marcas.
+ * Vehicle catalog: makes, models, and dimensions.
+ * Uses CarQuery API when available; if it fails (e.g. 403), a static makes list is used.
  */
 
 const CARQUERY_BASE = "https://www.carqueryapi.com/api/0.3";
 
-/** Lista estática de marcas cuando la API externa no está disponible (ej. CarQuery 403). */
+/** Static list of makes when the external API is unavailable (e.g. CarQuery 403). */
 const FALLBACK_MAKES: MakeItem[] = [
   "Acura", "Alfa Romeo", "Audi", "BMW", "Buick", "Cadillac", "Chevrolet", "Chrysler", "Dodge",
   "Fiat", "Ford", "GMC", "Honda", "Hyundai", "Infiniti", "Jaguar", "Jeep", "Kia", "Land Rover",
@@ -29,7 +29,7 @@ export interface VehicleDimensions {
   widthCm?: number;
   heightCm?: number;
   /**
-   * Peso aproximado en kilogramos, cuando CarQuery lo provee.
+   * Approximate weight in kilograms, when CarQuery provides it.
    */
   weightKg?: number;
 }
@@ -86,8 +86,8 @@ async function getDimensionsFromCarQuery(
         model_length_mm?: string | null;
         model_width_mm?: string | null;
         model_height_mm?: string | null;
-        // Los nombres exactos pueden variar según la versión de CarQuery,
-        // pero estos son los campos documentados/comunes.
+        // Exact field names may vary depending on the CarQuery version,
+        // but these are the documented/common fields.
         model_weight_kg?: string | null;
         model_weight_lbs?: string | null;
       }>;
@@ -101,13 +101,13 @@ async function getDimensionsFromCarQuery(
         return Number(kg);
       }
       if (lbs != null && lbs !== "" && !Number.isNaN(Number(lbs))) {
-        // Conversión aproximada de libras a kilogramos
+        // Approximate pounds-to-kilograms conversion
         return Math.round((Number(lbs) * 0.45359237 + Number.EPSILON) * 10) / 10;
       }
       return undefined;
     };
 
-    // Elegimos el trim "más completo": el que tenga más campos de dimensiones presentes.
+    // Choose the "most complete" trim: the one with more dimension fields present.
     let best: VehicleDimensions | null = null;
     let bestScore = -1;
     for (const t of trims) {

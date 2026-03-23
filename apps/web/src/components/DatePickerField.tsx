@@ -10,17 +10,17 @@ interface DatePickerFieldProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
-  /** Si es true al montar, abre inmediatamente el datepicker. Útil para rangos personalizados. */
+  /** If true on mount, opens datepicker immediately. Useful for custom ranges. */
   autoOpen?: boolean;
-  /** Trigger más bajo (py-2, rounded-md) para alinearse con botones tipo segment. */
+  /** Lower trigger style (py-2, rounded-md) to align with segmented buttons. */
   compact?: boolean;
-  /** Fecha mínima seleccionable YYYY-MM-DD (inclusive). */
+  /** Minimum selectable date YYYY-MM-DD (inclusive). */
   minDate?: string;
-  /** Fecha máxima seleccionable YYYY-MM-DD (inclusive). */
+  /** Maximum selectable date YYYY-MM-DD (inclusive). */
   maxDate?: string;
 }
 
-/** Parsea YYYY-MM-DD como fecha de calendario en hora local (evita desfase de un día en zonas detrás de UTC). */
+/** Parses YYYY-MM-DD as local calendar date (avoids one-day offset in UTC-behind timezones). */
 function parseDate(v: string): Date | null {
   if (!v) return null;
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v.trim());
@@ -132,7 +132,7 @@ export function DatePickerField({
     setOpen((o) => !o);
   };
 
-  // Abrir automáticamente cuando se active autoOpen (por ejemplo al elegir "Rango" en el overview).
+  // Open automatically when autoOpen is set (for example when choosing "Range" in overview).
   useEffect(() => {
     if (autoOpen && !open) {
       handleOpen();

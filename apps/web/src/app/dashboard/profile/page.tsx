@@ -20,7 +20,7 @@ import { isSuperAdmin } from "@/lib/auth";
 type ThemeValue = "light" | "dark";
 type LocaleValue = "es" | "en";
 
-/** Idiomas disponibles; añadir aquí y en i18n (profile.languageX) para más idiomas. */
+/** Available languages; add here and in i18n (profile.languageX) for additional languages. */
 const LOCALE_OPTIONS: { value: LocaleValue; labelKey: string }[] = [
   { value: "es", labelKey: "profile.languageEs" },
   { value: "en", labelKey: "profile.languageEn" },
@@ -192,10 +192,10 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Misma estructura que Company Settings: scroll interno + grid + cards con header en gradiente */}
+      {/* Same structure as Company Settings: internal scroll + grid + cards with gradient header */}
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-8 items-start">
-          {/* Sección 1 — Foto de perfil (opcional), mismo estilo que settings */}
+          {/* Section 1 - Profile photo (optional), same style as settings */}
           <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0">
             <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent">
               <div className="flex items-center gap-2 mb-1">
@@ -221,7 +221,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Sección 2 — Datos personales (requerido), mismo estilo que settings */}
+          {/* Section 2 - Personal info (required), same style as settings */}
           <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0">
             <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent flex items-center gap-3">
               <div className="flex-1 min-w-0">
@@ -290,7 +290,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Sección 3 — Preferencias: tema e idioma (ancho completo), mismo estilo que settings */}
+          {/* Section 3 - Preferences: theme and language (full width), same style as settings */}
           <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0 xl:col-span-2">
             <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent">
               <p className="text-sm font-semibold text-text-primary">{t("profile.sectionPreferences")}</p>
@@ -298,7 +298,7 @@ export default function ProfilePage() {
             </div>
             <div className="px-6 pb-6 pt-2">
               <div className="flex flex-col gap-6 md:flex-row md:gap-8 max-w-3xl">
-                {/* Tema */}
+                {/* Theme */}
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-text-primary mb-3">{t("profile.themeLabel")}</p>
                   <div className="grid grid-cols-2 gap-3">
@@ -346,7 +346,7 @@ export default function ProfilePage() {
                     </button>
                   </div>
                 </div>
-                {/* Idioma */}
+                {/* Language */}
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-text-primary mb-3">{t("profile.languageLabel")}</p>
                   <SelectField

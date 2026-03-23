@@ -29,7 +29,7 @@ export function ThemeToggle() {
         appPreferences: { theme: nextTheme },
       })
       .catch(() => {
-        // No bloquear la UI si falla guardar la preferencia.
+        // Do not block UI if saving preference fails.
       });
   };
 

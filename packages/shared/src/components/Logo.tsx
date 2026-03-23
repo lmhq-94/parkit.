@@ -6,7 +6,7 @@ import {
   logoLetterSpacingPx,
 } from "../logoTokens";
 
-/** Colores alineados con `apps/web/src/components/Logo.tsx`; tipografía con `logoTokens`. */
+/** Colors aligned with `apps/web/src/components/Logo.tsx`; typography with `logoTokens`. */
 export type LogoVariant = "default" | "onDark" | "onLight" | "mark" | "markOnDark";
 
 export function Logo({
@@ -18,14 +18,14 @@ export function Logo({
   size?: number;
   style?: object;
   /**
-   * @deprecated Usa `variant="onDark"`. Si se pasa, equivale a forzar fondo oscuro en el logo.
+   * @deprecated Use `variant="onDark"`. If passed, it forces a dark logo background.
    */
   darkBackground?: boolean;
-  /** Si no se indica, se infiere de `darkBackground` o del tema. */
+  /** If omitted, it is inferred from `darkBackground` or the current theme. */
   variant?: LogoVariant;
 }) {
   const colorScheme = useColorScheme();
-  /** Misma regla que mobile-valet: oscuro por defecto si el sistema no es `light`. */
+  /** Same rule as mobile-valet: dark by default unless system is `light`. */
   const systemDark = colorScheme !== "light";
 
   const resolvedVariant: LogoVariant =
@@ -35,19 +35,19 @@ export function Logo({
   const isOnLight = resolvedVariant === "onLight";
   const isMark = resolvedVariant === "mark" || resolvedVariant === "markOnDark";
 
-  // Colores equivalentes a Tailwind en la web (Logo.tsx)
+  // Tailwind-equivalent colors from the web app (Logo.tsx)
   let parkColor: string;
   let itColor: string;
   if (isOnDark) {
     parkColor = "#FFFFFF";
     itColor = "#7DD3FC"; // sky-300 (variant onDark / markOnDark)
   } else if (isOnLight) {
-    /** Fondo claro explícito (p. ej. header app en tema claro): siempre legible, sin depender del sistema. */
+    /** Explicit light background (e.g. app header in light theme): always legible, independent of system. */
     parkColor = "#0F172A";
     itColor = "#2563EB";
   } else if (isMark) {
     parkColor = "#0F172A"; // slate-900
-    itColor = "#2563EB"; // blue-600 — el punto sigue el mismo azul que "it."
+    itColor = "#2563EB"; // blue-600 - the dot uses the same blue as "it."
   } else {
     // default: slate-900 + blue-600 en claro; white + blue-500 en oscuro
     parkColor = systemDark ? "#FFFFFF" : "#0F172A";
@@ -57,7 +57,7 @@ export function Logo({
   const firstWord = isMark ? "p" : "park";
   const secondWord = isMark ? "." : "it.";
 
-  /** Aproxima los `drop-shadow` de la web en `Logo` variant onDark. */
+  /** Approximates web `drop-shadow` values for `Logo` onDark variant. */
   const parkShadow = isOnDark
     ? {
         textShadowColor: "rgba(255, 255, 255, 0.12)",

@@ -123,7 +123,7 @@ export default function NewVehiclePage() {
         setLoadingModels(false);
       }
     })();
-    // Solo al cambiar marca: no refetch al escribir año para no perder el modelo elegido
+    // Only when brand changes: do not refetch while typing year to avoid losing selected model
   }, [form.brand, setValue]);
 
   const getDimensionsData = useCallback(async (): Promise<{ lengthCm?: number; widthCm?: number; heightCm?: number; weightKg?: number } | null> => {

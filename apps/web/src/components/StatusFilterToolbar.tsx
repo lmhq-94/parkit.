@@ -16,8 +16,8 @@ interface StatusFilterToolbarProps {
   options: StatusFilterOption[];
   selected: string[];
   onChange: (values: string[]) => void;
-  tableKey: string; // para data-status-filter-dropdown
-  /** Clases extra para el contenedor; útil para controlar márgenes desde afuera. */
+  tableKey: string; // for data-status-filter-dropdown
+  /** Extra classes for the container; useful to control margins from parent. */
   className?: string;
 }
 

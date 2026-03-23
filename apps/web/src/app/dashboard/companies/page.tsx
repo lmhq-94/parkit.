@@ -148,7 +148,7 @@ export default function CompaniesPage() {
       if (Object.keys(payload).length === 0) return;
       if (superAdmin) {
         await apiClient.patch(`/companies/${row.id}`, payload);
-        // Si el super admin está editando la empresa seleccionada, actualizar el nombre en el selector.
+        // If super admin edits the selected company, update its name in the selector.
         if (row.id === selectedCompanyId) {
           const newName =
             (payload.commercialName as string | undefined)?.trim() ||

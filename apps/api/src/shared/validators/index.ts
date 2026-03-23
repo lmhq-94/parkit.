@@ -15,7 +15,7 @@ export const CreateCompanySchema = z.object({
   requiresCustomerApp: z.boolean().optional(),
 });
 
-// logoImageUrl y bannerImageUrl pueden ser data URLs en base64 (muy largas)
+// logoImageUrl and bannerImageUrl can be very long base64 data URLs
 const BrandingConfigSchema = z
   .object({
     bannerImageUrl: z.union([z.string(), z.null()]).optional(),
@@ -100,7 +100,7 @@ export const UpdateUserSchema = z.object({
   phone: z.string().optional(),
   isActive: z.boolean().optional(),
   systemRole: z.enum(["SUPER_ADMIN", "ADMIN", "STAFF", "CUSTOMER"]).optional(),
-  /** `null` borra la foto de perfil (misma semántica que en update de perfil). */
+  /** `null` removes the profile photo (same semantics as profile update). */
   avatarUrl: z.union([z.string(), z.null()]).optional(),
 });
 
@@ -110,7 +110,7 @@ export const UpdateProfileSchema = z.object({
   email: z.string().email().optional(),
   phone: z.string().optional(),
   timezone: z.string().optional(),
-  /** `null` quita el avatar (app móvil / web). */
+  /** `null` removes the avatar (mobile app / web). */
   avatarUrl: z.union([z.string(), z.null()]).optional(),
   appPreferences: z
     .object({
@@ -123,7 +123,7 @@ export const UpdateProfileSchema = z.object({
 export type CreateUserInput = z.infer<typeof CreateUserSchema>;
 export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
 
-// Valets: crear por userId (usuario existente) o por datos de usuario (crear User + Valet)
+// Valets: create via userId (existing user) or via user details (create User + Valet)
 export const valetStaffRoleEnum = z.enum(["RECEPTIONIST", "DRIVER"]);
 
 export const CreateValetSchema = z
@@ -153,10 +153,10 @@ export const UpdateValetSchema = z.object({
   staffRole: valetStaffRoleEnum.nullable().optional(),
 });
 
-/** Valet autenticado: función y opcionalmente licencia (conductores). */
+/** Authenticated valet: role and optional license fields (drivers). */
 export const UpdateValetMeSchema = z.object({
   staffRole: valetStaffRoleEnum,
-  /** Tipos separados por coma, igual que en panel web (p. ej. "A1, B1"). */
+  /** Comma-separated license types, same as web panel (e.g. "A1, B1"). */
   licenseNumber: z.union([z.string(), z.null()]).optional(),
   licenseExpiry: z.union([z.string().datetime(), z.null()]).optional(),
 });
@@ -358,7 +358,7 @@ export const ResetPasswordSchema = z.object({
 
 export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
 
-// Valet self-registration (public, no auth). Licencia solo si el cliente la envía; mobile-valet no la envía.
+// Valet self-registration (public, no auth). License fields only if the client sends them; mobile-valet does not.
 export const RegisterValetSchema = z.object({
   firstName: z.string().min(1, "First name required"),
   lastName: z.string().min(1, "Last name required"),

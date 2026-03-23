@@ -61,8 +61,8 @@ interface LocaleStore {
   setLocale: (locale: Locale) => void;
 }
 
-// Siempre inicializar a "es" para que SSR y primer paint del cliente coincidan (evita hydration mismatch).
-// El valor real se restaura en Providers con getStoredLocale() en useEffect.
+// Always initialize to "es" so SSR and first client paint match (avoids hydration mismatch).
+// Actual value is restored in Providers with getStoredLocale() in useEffect.
 export const useLocaleStore = create<LocaleStore>((set) => ({
   locale: "es",
   setLocale: (locale: Locale) => {
@@ -73,7 +73,7 @@ export const useLocaleStore = create<LocaleStore>((set) => ({
   },
 }));
 
-// Branding de la empresa actual (banner, logo, color principal). Se carga al entrar al dashboard o al guardar en Settings.
+// Current company branding (banner, logo, primary color). Loaded when entering dashboard or saving in Settings.
 export type CompanyBranding = {
   bannerImageUrl?: string | null;
   logoImageUrl?: string | null;
@@ -85,7 +85,7 @@ export type CompanyBranding = {
   tertiaryColorDark?: string | null;
 } | null;
 
-// UI/Dashboard state (sidebarCollapsed inicia true para evitar mismatch SSR; se hidrata desde localStorage en el sidebar)
+// UI/Dashboard state (sidebarCollapsed starts true to avoid SSR mismatch; hydrated from localStorage in sidebar)
 export const SIDEBAR_COLLAPSED_KEY = "parkit_sidebar_collapsed";
 
 interface DashboardStore {

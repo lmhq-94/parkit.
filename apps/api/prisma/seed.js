@@ -12,8 +12,8 @@ const prisma = new PrismaClient({
 async function main() {
   const passwordHash = await bcrypt.hash("Parkit123!", 10);
 
-  // Flujo: SUPER_ADMIN crea empresas por API, elige una en el company selector (x-company-id),
-  // y todo lo que cree (usuarios, parkings, etc.) queda ligado a esa empresa.
+  // Flow: SUPER_ADMIN creates companies via API, picks one in the company selector (x-company-id),
+  // and everything created afterward (users, parkings, etc.) is linked to that company.
   await prisma.user.upsert({
     where: { email: "superadmin@parkit.cr" },
     update: {

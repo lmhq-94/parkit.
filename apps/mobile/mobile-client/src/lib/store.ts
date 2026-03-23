@@ -60,7 +60,7 @@ export const useBookingStore = create<BookingStore>((set) => ({
   clearSelection: () => set({ selectedVehicleId: null, selectedParkingId: null }),
 }));
 
-// Locale (es / en) – se cambia desde Settings/Profile y persiste
+// Locale (es / en) - changed from Settings/Profile and persisted
 interface LocaleStore {
   locale: Locale;
   isHydrated: boolean;

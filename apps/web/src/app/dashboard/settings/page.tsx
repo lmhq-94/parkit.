@@ -93,7 +93,7 @@ export default function SettingsPage() {
     return () => clearTimeout(t);
   }, [copiedId]);
 
-  // Cargar branding solo al montar; [t] provocaba re-ejecución y reseteaba colores/imagen al cambiar el formulario
+  // Load branding only on mount; [t] caused re-runs and reset colors/image while editing form
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -237,11 +237,11 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* Contenido con scroll interno: así la página no crece y el scroll queda dentro */}
+      {/* Content with internal scroll: page does not grow and scroll stays inside */}
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-      {/* En xl las dos secciones van lado a lado para reducir altura */}
+      {/* In xl both sections are side by side to reduce height */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-8 items-start">
-        {/* Sección 1 — Tema de la empresa (Logo y Banner) */}
+        {/* Section 1 - Company theme (Logo and Banner) */}
         <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0">
           <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent">
             <div className="flex items-center gap-2 mb-1">
@@ -278,7 +278,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Sección 2 — Colores */}
+        {/* Section 2 - Colors */}
         <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0">
           <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent flex items-center gap-3">
             <div>
@@ -288,7 +288,7 @@ export default function SettingsPage() {
           </div>
           <div className="px-6 pb-6 pt-2">
           <div className="flex flex-col gap-6">
-            {/* Fila: Principal */}
+            {/* Row: Primary */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 min-w-0 border-b border-card-border pb-6 last:border-0 last:pb-0">
               <div className="sm:w-40 shrink-0">
                 <label className={LABEL}>{t("settings.primaryColor")}</label>
@@ -309,7 +309,7 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
-            {/* Fila: Secundario */}
+            {/* Row: Secondary */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 min-w-0 border-b border-card-border pb-6 last:border-0 last:pb-0">
               <div className="sm:w-40 shrink-0">
                 <label className={LABEL}>{t("settings.secondaryColor")}</label>
@@ -330,7 +330,7 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
-            {/* Fila: Terciario */}
+            {/* Row: Tertiary */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 min-w-0">
               <div className="sm:w-40 shrink-0">
                 <label className={LABEL}>{t("settings.tertiaryColor")}</label>

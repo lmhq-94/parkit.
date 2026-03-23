@@ -25,7 +25,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer);
   }, [hydrate, router]);
 
-  // Durante el logout activo: no renderiza nada (el sidebar ya navega a /login)
+  // During active logout: render nothing (sidebar already navigates to /login)
   if (loggingOut) return null;
 
   if (!user) {

@@ -177,7 +177,7 @@ function LinkCellRenderer(
 
 type DetailRow<T> = { __detail: true; __parent: T };
 
-// Altura mínima de filas de detalle (suficiente para varias filas sin cortar texto, sin dejar tanto aire en pantallas muy grandes).
+// Minimum height for detail rows (enough for multiple lines without clipping, without too much empty space on very large screens).
 const DETAIL_ROW_MIN_HEIGHT = 210;
 
 function DetailRowMeasureWrapper({
@@ -444,7 +444,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   const [navigating, setNavigating] = useState(false);
   const gridRef = useRef<AgGridReact<T>>(null);
   const [quickFilter, setQuickFilter] = useState("");
-  // Alturas medidos de filas de detalle por id de fila (para que cada grid/fila se adapte a su contenido).
+  // Measured detail-row heights by row id (so each grid/row adapts to its content).
   const [detailRowHeights, setDetailRowHeights] = useState<Record<string | number, number>>({});
 
 
@@ -802,7 +802,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
     if (!canCreate || draftRow) return;
     setError(null);
     setDraftRow({ __isNew: true } as unknown as T & { __isNew?: true });
-    // Esperar a que pinte la fila para abrir edición
+    // Wait for row to render before opening edit
     setTimeout(() => {
       if (firstEditableColId) {
         gridRef.current?.api?.startEditingCell({ rowIndex: 0, colKey: firstEditableColId });
@@ -823,7 +823,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
     });
   }, [draftRow, rows, renderRowDetail, hasRowDetail, expandedRowId]);
 
-  // Sincronizar rowData con la API del grid para evitar que a veces no se pinten las filas (race/hydration).
+  // Sync rowData with grid API to avoid rows occasionally not rendering (race/hydration).
   useEffect(() => {
     const api = gridRef.current?.api as { setGridOption: (k: string, v: unknown) => void; refreshCells: (o?: { force?: boolean }) => void } | undefined;
     if (!api) return;
@@ -847,14 +847,14 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
               className="shrink-0 w-[3px] min-h-[2rem] rounded-full bg-company-secondary self-stretch ml-6 mr-4"
               aria-hidden
             />
-            {/* Contenido de Additional info, con fondo suave solo a la derecha de la línea */}
+            {/* Additional info content, with soft background only to the right of the line */}
             <div className="min-w-0 flex-1 px-5 py-1 bg-slate-500/5 dark:bg-slate-900/70 rounded-l-none rounded-r-xl [&_dl]:grid [&_dl]:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] [&_dl]:gap-x-6 [&_dl]:gap-y-3 [&_dl]:text-sm [&_dl]:w-full [&_dl]:content-start">
               {renderRowDetail(data.__parent)}
             </div>
           </div>
         </div>
       );
-      // Medir la altura real de este detalle y actualizar solo esa fila.
+      // Measure actual height of this detail and update only that row.
       return (
         <DetailRowMeasureWrapper
           onMeasured={(height) => {

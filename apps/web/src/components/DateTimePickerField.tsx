@@ -10,11 +10,11 @@ interface DateTimePickerFieldProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
-  /** Si true, abre el popup automáticamente al montarse (útil para inline edits en tablas). */
+  /** If true, opens the popup automatically on mount (useful for inline table edits). */
   autoOpenOnMount?: boolean;
-  /** Variantes de estilo: "default" (formularios) o "inline" (edición en celdas de tabla). */
+  /** Style variants: "default" (forms) or "inline" (table cell editing). */
   variant?: "default" | "inline";
-  /** Fecha-hora mínima (ISO o "YYYY-MM-DDTHH:mm"). No se pueden elegir días ni horas anteriores. */
+  /** Minimum date-time (ISO or "YYYY-MM-DDTHH:mm"). Earlier days/hours cannot be selected. */
   min?: string;
 }
 
@@ -150,7 +150,7 @@ export function DateTimePickerField({
     setOpen((o) => !o);
   };
 
-  // Abrir automáticamente al montarse (para inline edit: primer clic ya muestra el popup)
+  // Open automatically on mount (for inline edit: first click already shows popup)
   useEffect(() => {
     if (!autoOpenOnMount) return;
     const id = window.setTimeout(() => {
@@ -383,7 +383,7 @@ export function DateTimePickerField({
           })}
         </div>
 
-        {/* Time row — 12h con AM/PM */}
+        {/* Time row - 12h with AM/PM */}
         <div className="px-2.5 py-2 border-t border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2 flex-nowrap">
             <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />

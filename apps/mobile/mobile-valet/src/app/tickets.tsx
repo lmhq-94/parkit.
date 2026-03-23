@@ -22,6 +22,7 @@ import {
   useValetTheme,
   statusVisuals as statusVisualsForTheme,
   ticketsA11y,
+  useResponsiveLayout,
 } from "@/theme/valetTheme";
 /** Assignment from API GET /valets/me/assignments */
 interface ApiAssignment {
@@ -88,7 +89,7 @@ function mapApiAssignmentToDisplay(a: ApiAssignment): TicketAssignment {
 
 type Theme = ReturnType<typeof useValetTheme>;
 
-function createTicketStyles(theme: Theme) {
+function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPadding: number) {
   const C = theme.colors;
   const S = theme.space;
   const F = ticketsA11y.font;
@@ -103,9 +104,15 @@ function createTicketStyles(theme: Theme) {
     container: {
       flex: 1,
       backgroundColor: C.bg,
+      alignItems: "center",
+    },
+    contentFrame: {
+      flex: 1,
+      width: "100%",
+      maxWidth: contentMaxWidth,
     },
     header: {
-      paddingHorizontal: S.lg,
+      paddingHorizontal: sectionPadding,
       paddingTop: S.sm,
       paddingBottom: S.md,
       borderBottomWidth: StyleSheet.hairlineWidth,
@@ -139,7 +146,7 @@ function createTicketStyles(theme: Theme) {
       justifyContent: "space-around",
       alignItems: "stretch",
       paddingVertical: S.md,
-      paddingHorizontal: S.md,
+      paddingHorizontal: sectionPadding,
       gap: S.md,
       backgroundColor: C.card,
       borderBottomWidth: StyleSheet.hairlineWidth,
@@ -168,7 +175,7 @@ function createTicketStyles(theme: Theme) {
       color: C.logout,
     },
     list: {
-      padding: S.md,
+      padding: sectionPadding,
       paddingBottom: S.xxl,
     },
     listEmptyGrow: {
@@ -325,7 +332,11 @@ export default function TicketsScreen() {
   useValetProfileSync(user);
   const locale = useLocaleStore((s) => s.locale);
   const theme = useValetTheme();
-  const styles = useMemo(() => createTicketStyles(theme), [theme]);
+  const responsive = useResponsiveLayout();
+  const styles = useMemo(
+    () => createTicketStyles(theme, responsive.contentMaxWidth, responsive.sectionPadding),
+    [theme, responsive.contentMaxWidth, responsive.sectionPadding]
+  );
 
   const [tickets, setTickets] = useState<TicketAssignment[]>([]);
   const [loading, setLoading] = useState(false);
@@ -643,6 +654,7 @@ export default function TicketsScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       <View style={styles.container}>
+        <View style={styles.contentFrame}>
         <View style={styles.header}>
           <View style={styles.headerTextBlock}>
             <Text style={styles.title} maxFontSizeMultiplier={1.8}>
@@ -696,6 +708,7 @@ export default function TicketsScreen() {
           contentContainerStyle={filteredTickets.length === 0 ? styles.listEmptyGrow : styles.list}
           ListEmptyComponent={listEmpty}
         />
+        </View>
       </View>
     </SafeAreaView>
   );

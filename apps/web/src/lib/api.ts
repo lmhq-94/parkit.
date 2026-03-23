@@ -13,7 +13,7 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
-const GET_CACHE_TTL_MS = 30_000; // 30s para branding y datos que no cambian a cada rato
+const GET_CACHE_TTL_MS = 30_000; // 30s for branding and data that does not change constantly
 const CACHEABLE_GET_PREFIXES = ["/companies/me", "/companies/"];
 
 function isCacheableGet(url: string): boolean {
@@ -124,7 +124,7 @@ class ApiClient {
     return data;
   }
 
-  /** Invalida la caché de GET (p. ej. tras actualizar branding). */
+  /** Invalidates GET cache (e.g. after branding update). */
   public clearGetCache(): void {
     this.getCache.clear();
   }
@@ -147,7 +147,7 @@ class ApiClient {
 
 export const apiClient = new ApiClient();
 
-/** Extrae el mensaje de error de la API a partir de un error (Axios u otro). */
+/** Extracts API error message from an error object (Axios or otherwise). */
 export function getApiErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error) && error.response?.data) {
     const data = error.response.data as Record<string, unknown>;
@@ -161,7 +161,7 @@ export function getApiErrorMessage(error: unknown): string {
   return "Request failed";
 }
 
-/** Mensajes del API (en inglés) a claves de traducción para mostrar en el idioma seleccionado. */
+/** Maps API messages (in English) to translation keys for the selected locale. */
 const API_MESSAGE_TO_I18N_KEY: Record<string, string> = {
   "Email already in use": "apiErrors.emailAlreadyInUse",
   "Vehicle with this plate already exists": "apiErrors.vehiclePlateAlreadyExists",
@@ -172,9 +172,9 @@ const API_MESSAGE_TO_I18N_KEY: Record<string, string> = {
 };
 
 /**
- * Devuelve el mensaje de error del API traducido al idioma actual.
- * @param error - Error devuelto por la API o por Axios.
- * @param t - Función de traducción (ej. la que devuelve useTranslation().t).
+ * Returns the API error message translated to the current locale.
+ * @param error - Error returned by the API or Axios.
+ * @param t - Translation function (e.g. from useTranslation().t).
  */
 export function getTranslatedApiErrorMessage(
   error: unknown,

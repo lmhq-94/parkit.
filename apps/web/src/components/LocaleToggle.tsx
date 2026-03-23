@@ -72,7 +72,7 @@ export function LocaleToggle() {
                 appPreferences: { locale: "es" },
               })
               .catch(() => {
-                // Preferencia de idioma no debe romper la UI si falla.
+                // Language preference should not break UI if it fails.
               });
           }}
           className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg ${
@@ -93,7 +93,7 @@ export function LocaleToggle() {
                 appPreferences: { locale: "en" },
               })
               .catch(() => {
-                // Preferencia de idioma no debe romper la UI si falla.
+                // Language preference should not break UI if it fails.
               });
           }}
           className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg ${

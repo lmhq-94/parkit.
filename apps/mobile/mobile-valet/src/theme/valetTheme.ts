@@ -3,7 +3,7 @@
  * Si es `dark`, `null` o indeterminado → tema oscuro (fondo #020617, etc.).
  */
 import type { ViewStyle } from "react-native";
-import { useColorScheme } from "react-native";
+import { useColorScheme, useWindowDimensions } from "react-native";
 import { useMemo } from "react";
 import { useThemeStore } from "@/lib/themeStore";
 
@@ -186,6 +186,28 @@ export function useValetTheme() {
       ...valetStaticTokens,
     }),
     [isDark]
+  );
+}
+
+export function useResponsiveLayout() {
+  const { width, height } = useWindowDimensions();
+  const shortestSide = Math.min(width, height);
+  const isTablet = shortestSide >= 600;
+  const isLandscape = width > height;
+
+  return useMemo(
+    () => ({
+      width,
+      height,
+      shortestSide,
+      isTablet,
+      isLandscape,
+      contentMaxWidth: isTablet ? 1100 : 860,
+      formMaxWidth: isTablet ? 640 : 560,
+      horizontalPadding: isTablet ? 36 : 20,
+      sectionPadding: isTablet ? 28 : 20,
+    }),
+    [height, isLandscape, isTablet, shortestSide, width]
   );
 }
 

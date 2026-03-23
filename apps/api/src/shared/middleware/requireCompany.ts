@@ -25,7 +25,7 @@ export async function requireCompany(
 
   const headerCompanyId = req.headers["x-company-id"] as string | undefined;
 
-  // SUPER_ADMIN o valet sin empresa: pueden enviar x-company-id para actuar en una empresa
+  // SUPER_ADMIN or valet without a company: can send x-company-id to act in a company
   const canUseHeaderCompany =
     req.user.role === "SUPER_ADMIN" || (req.user.role === "STAFF" && !req.user.companyId);
   if (canUseHeaderCompany) {

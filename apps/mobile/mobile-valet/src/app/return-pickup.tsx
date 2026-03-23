@@ -15,7 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
-import { useValetTheme, ticketsA11y } from "@/theme/valetTheme";
+import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useCompanyContext } from "@/lib/useCompanyContext";
 import api from "@/lib/api";
@@ -42,7 +42,11 @@ export default function ReturnPickupScreen() {
   useValetProfileSync(user);
   const { companyId, loading: companyLoading } = useCompanyContext(user);
   const theme = useValetTheme();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const responsive = useResponsiveLayout();
+  const styles = useMemo(
+    () => createStyles(theme, responsive.contentMaxWidth, responsive.sectionPadding),
+    [theme, responsive.contentMaxWidth, responsive.sectionPadding]
+  );
 
   const [tickets, setTickets] = useState<TicketRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -114,6 +118,7 @@ export default function ReturnPickupScreen() {
   if (!isReception) {
     return (
       <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+        <View style={styles.frame}>
         <View style={styles.screenHeader}>
           <ValetBackButton
             onPress={() => router.back()}
@@ -127,12 +132,14 @@ export default function ReturnPickupScreen() {
           <Text style={styles.blockedTitle}>{t(locale, "receive.driverBlockedTitle")}</Text>
           <Text style={styles.blockedBody}>{t(locale, "receive.driverBlockedBody")}</Text>
         </View>
+        </View>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+      <View style={styles.frame}>
       <View style={styles.screenHeader}>
         <ValetBackButton
           onPress={() => router.back()}
@@ -241,13 +248,14 @@ export default function ReturnPickupScreen() {
           </StickyFormFooter>
         ) : null}
       </View>
+      </View>
     </SafeAreaView>
   );
 }
 
 type Theme = ReturnType<typeof useValetTheme>;
 
-function createStyles(theme: Theme) {
+function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: number) {
   const C = theme.colors;
   const S = theme.space;
   const F = ticketsA11y.font;
@@ -255,17 +263,23 @@ function createStyles(theme: Theme) {
 
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: C.bg },
+    frame: {
+      flex: 1,
+      width: "100%",
+      maxWidth: contentMaxWidth,
+      alignSelf: "center",
+    },
     screenHeader: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      paddingHorizontal: S.md,
+      paddingHorizontal: sectionPadding,
       paddingVertical: S.md,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: C.border,
       backgroundColor: C.card,
     },
-    scroll: { padding: S.lg, paddingBottom: S.xl },
+    scroll: { padding: sectionPadding, paddingBottom: S.xl },
     screenTitle: {
       fontSize: F.title - 2,
       fontWeight: "800",

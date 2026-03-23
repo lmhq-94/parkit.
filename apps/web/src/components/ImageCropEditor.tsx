@@ -5,10 +5,10 @@ import { useState, useRef, useCallback } from "react";
 type Props = {
   sourceDataUrl: string;
   aspectRatio: [number, number]; // [width, height] e.g. [1, 1] or [5, 1]
-  /** Tamaño en px del área de crop (cómo se ve en la app). Ej: logo 144x144, banner 400×80 */
+  /** Crop area size in px (how it appears in app). Example: logo 144x144, banner 400x80 */
   cropBoxWidth: number;
   cropBoxHeight: number;
-  /** Ancho y alto de salida fijos (ej. logo 400×400, banner 1200×240) para que la imagen ocupe todo el espacio y mantenga calidad. */
+  /** Fixed output width/height (e.g. logo 400x400, banner 1200x240) to fill area and preserve quality. */
   outputWidth: number;
   outputHeight: number;
   onApply: (croppedDataUrl: string) => void;
@@ -16,9 +16,9 @@ type Props = {
   applyLabel?: string;
   cancelLabel?: string;
   hintText?: string;
-  /** Badge pequeño con el ratio, ej. "1:1" o "4:1" */
+  /** Small badge with ratio, e.g. "1:1" or "4:1" */
   aspectLabel?: string;
-  /** Si true, muestra el área de crop en círculo (para logo/avatar) */
+  /** If true, shows circular crop area (for logo/avatar) */
   circular?: boolean;
 };
 
@@ -44,7 +44,7 @@ export function ImageCropEditor({
   const dragStart = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
-  /** Zoom mínimo para que imágenes muy grandes se puedan reducir y ver enteras en el recorte. */
+  /** Minimum zoom so very large images can be reduced and fully seen in crop area. */
   const MIN_SCALE = 0.05;
 
   const imgOnLoad = useCallback(
@@ -53,7 +53,7 @@ export function ImageCropEditor({
       const w = img.naturalWidth;
       const h = img.naturalHeight;
       setImageSize({ w, h });
-      // Scale to COVER: imagen llena todo el área (logo/banner), centrada; zoom mínimo para imágenes muy grandes
+      // Scale to COVER: image fills whole area (logo/banner), centered; minimum zoom for very large images
       const scaleToCoverW = cropBoxWidth / w;
       const scaleToCoverH = cropBoxHeight / h;
       const scaleToCover = Math.max(scaleToCoverW, scaleToCoverH);
@@ -92,12 +92,12 @@ export function ImageCropEditor({
     const img = new Image();
     img.onload = () => {
       const { width: iw, height: ih } = img;
-      // Qué parte de la imagen está visible en el crop box (en coords de imagen)
+      // Which image area is visible inside crop box (image coordinates)
       const srcX = -position.x / scale;
       const srcY = -position.y / scale;
       const srcW = cropBoxWidth / scale;
       const srcH = cropBoxHeight / scale;
-      // Clamp al tamaño de la imagen
+      // Clamp to image bounds
       const x = Math.max(0, Math.min(srcX, iw - 1));
       const y = Math.max(0, Math.min(srcY, ih - 1));
       const w = Math.min(srcW, iw - x);
@@ -136,7 +136,7 @@ export function ImageCropEditor({
             onPointerUp={handlePointerUp}
             onPointerLeave={() => setDragging(false)}
             role="img"
-            aria-label="Área de recorte"
+            aria-label="Crop area"
           >
             <div
               className="absolute left-0 top-0 overflow-hidden"

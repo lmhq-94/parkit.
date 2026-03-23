@@ -99,7 +99,7 @@
   border-radius: 0.5rem !important; /* rounded-lg */
   box-shadow: none !important;
   padding: 0.5rem 0.75rem !important;
-  padding-left: 2rem !important; /* espacio para la lupa */
+  padding-left: 2rem !important; /* space for search icon */
   font-size: 0.875rem !important; /* text-sm */
   box-sizing: border-box !important;
   width: 100% !important;
@@ -136,7 +136,7 @@
   font-size: 0.875rem !important;
 }
 
-/* Icono de búsqueda (lupa): visible y separado del texto */
+/* Search icon: visible and separated from text */
 .ag-filter-filter .ag-input-wrapper::before,
 .ag-mini-filter .ag-input-wrapper::before,
 .ag-theme-quartz .ag-filter-filter .ag-input-wrapper::before,
@@ -305,7 +305,7 @@
   border-color: var(--input-border) !important;
 }
 
-/* Separadores entre columnas: solo en el centro del alto, finos, sin tocar el contenido */
+/* Column separators: only in vertical center, thin, without touching content */
 .ag-theme-quartz.ag-theme-parkit .ag-header-cell,
 .ag-theme-quartz.ag-theme-parkit .ag-header-group-cell {
   border-right: 1px solid transparent;
@@ -391,7 +391,7 @@
   height: 100% !important;
 }
 
-/* Input de edición: un solo borde, llena la celda */
+/* Edit input: single border, fills the cell */
 .ag-theme-parkit .ag-cell-inline-editing .ag-cell-edit-input,
 .ag-theme-parkit .ag-cell-inline-editing input.ag-input-field-input,
 .ag-theme-parkit .ag-cell-inline-editing .ag-select-cell-editor {

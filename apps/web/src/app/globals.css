@@ -12,7 +12,7 @@
     --text-muted: #64748b;
     --input-bg: rgba(0, 0, 0, 0.04);
     --input-border: rgba(0, 0, 0, 0.1);
-    /* Colores de la empresa (Settings). Valores por defecto = lib/themeDefaults.ts (light). Secondary/tertiary un poco más oscuros para texto sidebar inactivo. */
+    /* Company colors (Settings). Default values = lib/themeDefaults.ts (light). Secondary/tertiary slightly darker for inactive sidebar text. */
     --company-primary: #2563eb;
     --company-secondary: #475569;
     --company-tertiary: #64748b;
@@ -27,7 +27,7 @@
     --text-muted: #94a3b8;
     --input-bg: rgba(255, 255, 255, 0.06);
     --input-border: rgba(255, 255, 255, 0.1);
-    /* Valores por defecto = lib/themeDefaults.ts (dark) */
+    /* Default values = lib/themeDefaults.ts (dark) */
     --company-primary: #3b82f6;
     --company-secondary: #94a3b8;
     --company-tertiary: #cbd5e1;
@@ -46,7 +46,7 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Animación del spinner de carga (círculo girando) */
+/* Loading spinner animation (rotating ring) */
 @keyframes loading-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -108,12 +108,12 @@ body {
   @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800;
 }
 
-/* AG Grid: headers sin mayúsculas */
+/* AG Grid: headers without uppercase */
 .ag-theme-quartz .ag-header-cell-label {
   text-transform: none;
 }
 
-/* AG Grid: tema Parkit (usa --company-primary del tema de la empresa) */
+/* AG Grid: Parkit theme (uses company theme --company-primary) */
 .ag-theme-parkit.ag-theme-quartz {
   --ag-background-color: transparent;
   --ag-foreground-color: var(--text-primary);
@@ -153,13 +153,13 @@ body {
   --ag-tooltip-background-color: #0f172a;
 }
 
-/* Grid: cabecera y celdas con misma tipografía que la app */
+/* Grid: header and cells with same typography as the app */
 .ag-theme-parkit .ag-header {
   border-bottom: 1px solid var(--card-border);
   font-weight: 600;
   letter-spacing: 0.01em;
   font-family: inherit;
-  font-size: 0.875rem; /* 14px, acorde a text-sm de la app */
+  font-size: 0.875rem; /* 14px, matches app text-sm */
 }
 
 .ag-theme-parkit .ag-header-cell {
@@ -172,7 +172,7 @@ body {
   font-family: inherit;
 }
 
-/* Sin bordes ni espacio entre filas: filas unidas */
+/* No borders or spacing between rows: contiguous rows */
 .ag-theme-parkit .ag-row {
   border: none !important;
   border-top: none !important;
@@ -196,12 +196,12 @@ body {
   border-bottom: none !important;
 }
 
-/* Quitar borde entre celdas que pueda crear línea entre filas */
+/* Remove cell border that could create row separator line */
 .ag-theme-parkit .ag-cell-wrapper {
   border: none !important;
 }
 
-/* Permitir que el panel de paginación scrollee sin ser recortado por el root wrapper */
+/* Allow pagination panel to scroll without clipping by root wrapper */
 .ag-theme-parkit .ag-root-wrapper {
   overflow: visible !important;
   border-radius: 1rem;
@@ -212,7 +212,7 @@ body {
   border-radius: 1rem 1rem 0 0;
 }
 
-/* Paginación: transparente y tipografía de la app */
+/* Pagination: transparent and app typography */
 .ag-theme-parkit .ag-paging-panel {
   border-top: 1px solid var(--card-border);
   border-radius: 0 0 1rem 1rem;
@@ -225,14 +225,14 @@ body {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  justify-content: flex-start !important; /* móvil: scroll de izquierda a derecha */
+  justify-content: flex-start !important; /* mobile: horizontal left-to-right scroll */
   flex-wrap: nowrap !important;
   overflow-x: auto;
   min-width: 0;
   gap: 0.75rem;
 }
 
-/* Evitar que los hijos del panel se compriman o rompan */
+/* Prevent panel children from shrinking or wrapping */
 .ag-theme-parkit .ag-paging-row-summary-panel,
 .ag-theme-parkit .ag-paging-page-number,
 .ag-theme-parkit .ag-paging-page-size,
@@ -242,7 +242,7 @@ body {
   flex-shrink: 0 !important;
 }
 
-/* El resumen de filas ("1 a 20 de 100") debe mostrarse en fila, nunca apilado */
+/* Row summary ("1 to 20 of 100") should be inline, never stacked */
 .ag-theme-parkit .ag-paging-row-summary-panel {
   display: inline-flex !important;
   flex-direction: row !important;
@@ -251,7 +251,7 @@ body {
   color: var(--text-muted);
 }
 
-/* "Página 1" — el label y el número deben estar en fila sin superponerse */
+/* "Page 1" - label and number must stay inline without overlapping */
 .ag-theme-parkit .ag-paging-page-number {
   display: inline-flex !important;
   flex-direction: row !important;
@@ -275,13 +275,13 @@ body {
   color: var(--company-primary, #0ea5e9) !important;
 }
 
-/* Iconos de ordenación con color del tema */
+/* Sorting icons with theme color */
 .ag-theme-parkit .ag-header-cell-sorted-asc .ag-icon-asc,
 .ag-theme-parkit .ag-header-cell-sorted-desc .ag-icon-desc {
   color: var(--company-primary, #0ea5e9) !important;
 }
 
-/* Inputs de filtro y controles */
+/* Filter inputs and controls */
 .ag-theme-parkit .ag-input-field-input {
   background: var(--card-bg) !important;
   color: var(--text-primary) !important;
@@ -301,14 +301,14 @@ body {
   padding: 0.25rem 0.5rem;
 }
 
-/* En pantallas grandes: alinear el footer a la derecha (comportamiento original de AG Grid) */
+/* On large screens: align footer to the right (original AG Grid behavior) */
 @media (min-width: 640px) {
   .ag-theme-parkit .ag-paging-panel {
     justify-content: flex-end !important;
   }
 }
 
-/* Tema de la empresa: utilidades para botones, links, inputs y estados (opacidad vía color-mix) */
+/* Company theme: utilities for buttons, links, inputs, and states (opacity via color-mix) */
 .bg-company-primary {
   background-color: var(--company-primary, #0ea5e9);
 }
@@ -325,7 +325,7 @@ body {
 .focus\:border-company-primary:focus {
   border-color: var(--company-primary, #0ea5e9);
 }
-/* Fondos/bordes suaves para estados activos y hovers */
+/* Soft backgrounds/borders for active and hover states */
 .bg-company-primary-subtle {
   background-color: color-mix(in srgb, var(--company-primary, #2563eb) 10%, transparent);
 }
@@ -361,7 +361,7 @@ body {
   --tw-ring-color: var(--company-primary, #2563eb);
 }
 
-/* Secondary: botones secundarios, bordes suaves, badges, texto de apoyo */
+/* Secondary: secondary buttons, soft borders, badges, supporting text */
 .text-company-secondary {
   color: var(--company-secondary, #64748b);
 }
@@ -380,7 +380,7 @@ body {
   border-color: color-mix(in srgb, var(--company-secondary, #64748b) 35%, transparent);
 }
 
-/* Tertiary: fondos muy suaves, elementos terciarios, texto de apoyo */
+/* Tertiary: very soft backgrounds, tertiary elements, supporting text */
 .bg-company-tertiary-subtle {
   background-color: color-mix(in srgb, var(--company-tertiary, #94a3b8) 8%, transparent);
 }
@@ -397,25 +397,25 @@ body {
   background-color: var(--company-tertiary, #94a3b8);
 }
 
-/* Focus en inputs y botones del dashboard usa el color principal del tema */
+/* Dashboard input/button focus uses primary theme color */
 [data-dashboard] input:focus,
 [data-dashboard] button:focus-visible,
 [data-dashboard] [role="button"]:focus-visible {
   --tw-ring-color: var(--company-primary, #0ea5e9);
 }
 
-/* Leaflet: asegurar que el contenedor del mapa tenga altura para que se vean los tiles */
+/* Leaflet: ensure map container has height so tiles are visible */
 .leaflet-container {
   min-height: 200px;
   font: inherit;
 }
 
-/* Modo oscuro: mismo mapa OSM colorido pero oscurecido (solo las tiles, no el marcador) */
+/* Dark mode: same OSM colored map but darkened (tiles only, not marker) */
 .map-dark .leaflet-tile-pane {
   filter: brightness(0.6) saturate(0.85) contrast(1.08);
 }
 
-/* Leaflet zoom: mismo aspecto que los botones del resto de la app */
+/* Leaflet zoom: same look as the rest of app buttons */
 .leaflet-control-zoom {
   border: 1px solid var(--input-border) !important;
   border-radius: 0.5rem !important;
@@ -449,7 +449,7 @@ body {
   color: var(--company-primary) !important;
 }
 
-/* Slider de radio de geovalla: track y thumb visibles */
+/* Geofence radius slider: visible track and thumb */
 .address-picker-geofence-slider {
   height: 0.5rem;
   -webkit-appearance: none;
