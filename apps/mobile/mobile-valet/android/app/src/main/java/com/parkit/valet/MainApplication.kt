@@ -1,4 +1,4 @@
-package com.parkitvalet
+package com.parkit.valet
 
 import android.app.Application
 import android.content.res.Configuration

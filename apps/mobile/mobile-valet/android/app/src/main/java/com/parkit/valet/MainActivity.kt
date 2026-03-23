@@ -1,4 +1,4 @@
-package com.parkitvalet
+package com.parkit.valet
 
 import android.os.Build
 import android.os.Bundle
