@@ -370,7 +370,11 @@ export default function LoginScreen() {
         err && typeof err === "object" && "response" in err
           ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
           : null;
-      setError(msg || t(locale, "common.loginFailed"));
+      setError(
+        msg === "USER_INACTIVE"
+          ? t(locale, "login.accountInactive")
+          : msg || t(locale, "common.loginFailed")
+      );
     } finally {
       setLoading(false);
     }

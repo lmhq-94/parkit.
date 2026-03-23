@@ -164,6 +164,10 @@ export class AuthService {
       throw new Error("Invalid or expired invitation link. Ask your admin to resend the invitation.");
     }
 
+    if (user.isActive === false) {
+      throw new Error("USER_INACTIVE");
+    }
+
     const passwordHash = await hashPassword(data.password);
 
     const updated = await prisma.user.update({
@@ -231,6 +235,10 @@ export class AuthService {
       throw new Error(
         "Invalid or expired reset link. Request a new one from the login page."
       );
+    }
+
+    if (user.isActive === false) {
+      throw new Error("USER_INACTIVE");
     }
 
     const passwordHash = await hashPassword(data.password);

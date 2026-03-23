@@ -348,10 +348,16 @@ export class UsersService {
         data,
       });
     }
+    const existing = await prisma.user.findFirst({
+      where: { id: userId, companyId },
+      select: { id: true },
+    });
+    if (!existing) {
+      throw new Error("User not found");
+    }
     return prisma.user.update({
       where: {
         id: userId,
-        companyId,
       },
       data,
     });
@@ -417,10 +423,16 @@ export class UsersService {
   }
 
   static async deactivate(companyId: string, userId: string) {
+    const existing = await prisma.user.findFirst({
+      where: { id: userId, companyId },
+      select: { id: true },
+    });
+    if (!existing) {
+      throw new Error("User not found");
+    }
     return prisma.user.update({
       where: {
         id: userId,
-        companyId,
       },
       data: {
         isActive: false,

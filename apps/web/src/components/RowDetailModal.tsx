@@ -137,14 +137,14 @@ export function DetailField({
   const href = linkType === "email" ? `mailto:${str}` : linkType === "phone" ? `tel:${str}` : undefined;
   return (
     <div className={wide ? "col-span-2" : ""}>
-      <dt className="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">
+      <dt className="text-[11px] font-medium uppercase tracking-wide text-slate-500/90 dark:text-slate-400/90 mb-1">
         {label}
       </dt>
       <dd
         className={
           multiline
-            ? "text-sm text-slate-900 dark:text-slate-100 font-normal leading-snug break-words whitespace-pre-wrap"
-            : "text-sm text-slate-900 dark:text-slate-100 font-normal leading-snug"
+            ? "text-sm text-slate-900 dark:text-slate-50 font-medium leading-relaxed break-words whitespace-pre-wrap"
+            : "text-sm text-slate-900 dark:text-slate-50 font-medium leading-relaxed"
         }
         title={multiline ? str : undefined}
       >
@@ -166,8 +166,8 @@ export function DetailSeparator() {
 
 export function DetailSectionLabel({ text }: { text: string }) {
   return (
-    <div className="col-span-full mt-3 first:mt-0">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+    <div className="col-span-full mt-5 first:mt-0 mb-0.5">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500/95 dark:text-slate-400/95">
         {text}
       </p>
     </div>

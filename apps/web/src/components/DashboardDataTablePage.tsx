@@ -177,24 +177,100 @@ function LinkCellRenderer(
 
 type DetailRow<T> = { __detail: true; __parent: T };
 
-// Minimum height for detail rows (enough for multiple lines without clipping, without too much empty space on very large screens).
-const DETAIL_ROW_MIN_HEIGHT = 210;
+/**
+ * Altura inicial antes de medir: debe ser >0 para que el contenido no quede recortado.
+ * Tras el primer layout, ResizeObserver + medición “ajustada” fijan la altura real por fila/grid.
+ */
+const DETAIL_ROW_FALLBACK_HEIGHT = 120;
+
+/**
+ * Altura visual desde la parte superior del root hasta el borde inferior más bajo del contenido
+ * (cada grid tiene distinto DOM en renderRowDetail; esto evita scrollHeight inflado por stretch del grid).
+ */
+function measureTightDetailHeight(root: HTMLElement): number {
+  const rootTop = root.getBoundingClientRect().top;
+  let maxBottom = rootTop;
+  const walk = (node: Element) => {
+    const el = node as HTMLElement;
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 || r.height > 0) {
+      maxBottom = Math.max(maxBottom, r.bottom);
+    }
+    for (const c of el.children) walk(c);
+  };
+  for (const c of root.children) walk(c);
+  const h = maxBottom - rootTop;
+  const rootBox = root.getBoundingClientRect().height;
+  const merged = Math.max(h, rootBox, root.offsetHeight, root.scrollHeight);
+  if (merged <= 0) {
+    return Math.max(1, Math.ceil(rootBox));
+  }
+  return Math.max(1, Math.ceil(merged));
+}
 
 function DetailRowMeasureWrapper({
   children,
   onMeasured,
+  trimPx = 0,
 }: {
   children: React.ReactNode;
   onMeasured: (height: number) => void;
+  /** Resta fina (píxeles) tras medir; cada página puede pasar un extra vía DashboardDataTablePage.detailRowHeightTrimPx */
+  trimPx?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const onMeasuredRef = useRef(onMeasured);
+  const trimRef = useRef(trimPx);
+  onMeasuredRef.current = onMeasured;
+  trimRef.current = trimPx;
+
   useLayoutEffect(() => {
+    const measure = () => {
+      const el = ref.current;
+      if (!el) return;
+      // offsetHeight / border box del contenedor: incluye padding interno del panel (additional info)
+      const layoutH = Math.max(
+        el.offsetHeight,
+        Math.ceil(el.getBoundingClientRect().height),
+        el.scrollHeight,
+        measureTightDetailHeight(el)
+      );
+      const trimmed = Math.max(1, Math.floor(layoutH) - trimRef.current);
+      onMeasuredRef.current(trimmed);
+    };
+
+    measure();
+    const t1 = requestAnimationFrame(() => {
+      requestAnimationFrame(measure);
+    });
+
     const el = ref.current;
-    if (!el) return;
-    const height = Math.max(el.scrollHeight, el.getBoundingClientRect().height);
-    onMeasured(Math.max(DETAIL_ROW_MIN_HEIGHT, Math.ceil(height)));
-  }, [onMeasured]);
-  return <div ref={ref}>{children}</div>;
+    if (!el || typeof ResizeObserver === "undefined") {
+      return () => cancelAnimationFrame(t1);
+    }
+
+    let raf: number | null = null;
+    const ro = new ResizeObserver(() => {
+      if (raf != null) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        raf = null;
+        measure();
+      });
+    });
+    ro.observe(el, { box: "border-box" });
+    return () => {
+      cancelAnimationFrame(t1);
+      ro.disconnect();
+      if (raf != null) cancelAnimationFrame(raf);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- medición vía ResizeObserver al mutar el DOM del detalle
+  }, []);
+
+  return (
+    <div ref={ref} className="w-full min-h-0 h-fit parkit-grid-detail-measure parkit-grid-detail-root">
+      {children}
+    </div>
+  );
 }
 
 function ExpandCellRenderer<T extends { id?: string | number }>(
@@ -255,6 +331,12 @@ interface DashboardDataTablePageProps<T> {
   renderRowDetail?: (row: T) => React.ReactNode;
   /** Si se pasa, solo las filas con información adicional muestran el botón expandir. Por defecto todas son expandibles. */
   hasRowDetail?: (row: T) => boolean;
+  /**
+   * Píxeles a restar de la altura medida del panel “Additional info” (por grid).
+   * Cada tabla tiene distinto contenido; si tras el layout automático queda un pelo de más, sube el valor (p. ej. 2–4).
+   * Valores negativos añaden altura si el detalle se recorta.
+   */
+  detailRowHeightTrimPx?: number;
   /** Callback al hacer clic en Eliminar (opcional). Si se pasa, se muestra el botón Eliminar. Tras eliminar se recarga la tabla. */
   onDelete?: (row: T) => void | Promise<void>;
   /** Mensaje de confirmación antes de eliminar (opcional). */
@@ -427,6 +509,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   onCreate,
   renderRowDetail,
   hasRowDetail,
+  detailRowHeightTrimPx = 0,
   customActions,
 }: DashboardDataTablePageProps<T>) {
   const { resolvedTheme } = useTheme();
@@ -499,6 +582,11 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   useEffect(() => {
     loadData();
   }, [loadData, refreshToken, selectedCompanyId]);
+
+  /** Evita alturas cacheadas de otra fila detalle; fuerza nueva medición al expandir. */
+  useEffect(() => {
+    setDetailRowHeights({});
+  }, [expandedRowId]);
 
   const handleDeleteConfirm = useCallback(
     async (row: T) => {
@@ -840,15 +928,14 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
       if (!data?.__detail || !data.__parent || !renderRowDetail) return null;
       const nodeId = params.node?.id as string | number | undefined;
       const content = (
-        <div className="w-full">
-          <div className="flex items-stretch w-full py-2">
-            {/* Línea vertical a la izquierda, sin fondo detrás */}
-            <div
-              className="shrink-0 w-[3px] min-h-[2rem] rounded-full bg-company-secondary self-stretch ml-6 mr-4"
-              aria-hidden
-            />
-            {/* Additional info content, with soft background only to the right of the line */}
-            <div className="min-w-0 flex-1 px-5 py-1 bg-slate-500/5 dark:bg-slate-900/70 rounded-l-none rounded-r-xl [&_dl]:grid [&_dl]:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] [&_dl]:gap-x-6 [&_dl]:gap-y-3 [&_dl]:text-sm [&_dl]:w-full [&_dl]:content-start">
+        <div className="flex w-full items-stretch gap-0 mt-2 mb-1.5 min-h-0">
+          <div
+            className="shrink-0 w-[3px] min-h-0 self-stretch bg-gradient-to-b from-company-primary/80 via-company-primary/45 to-company-primary/15 dark:from-company-primary/60 dark:via-company-primary/35 dark:to-company-primary/10 ml-4 mr-4"
+            aria-hidden
+          />
+          {/* Padding inferior (pb) en este bloque = aire dentro del fondo, no fuera del panel */}
+          <div className="box-border min-h-0 min-w-0 flex-1 bg-slate-100/90 dark:bg-zinc-900/80 px-6 pt-4 pb-12 backdrop-blur-sm mr-3">
+            <div className="min-w-0 [&_dl]:m-0 [&_dl]:grid [&_dl]:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] [&_dl]:gap-x-8 [&_dl]:gap-y-3.5 [&_dl]:text-sm [&_dl]:w-full [&_dl]:content-start [&_dl]:leading-snug [&_dl]:pb-0">
               {renderRowDetail(data.__parent)}
             </div>
           </div>
@@ -857,11 +944,13 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
       // Measure actual height of this detail and update only that row.
       return (
         <DetailRowMeasureWrapper
+          key={nodeId != null ? `detail-${String(nodeId)}` : "detail"}
+          trimPx={detailRowHeightTrimPx}
           onMeasured={(height) => {
             if (nodeId == null) return;
             setDetailRowHeights((prev) => {
               const prevHeight = prev[nodeId];
-              const nextHeight = Math.max(DETAIL_ROW_MIN_HEIGHT, Math.ceil(height));
+              const nextHeight = Math.max(1, Math.floor(height));
               if (prevHeight === nextHeight) return prev;
               const next = { ...prev, [nodeId]: nextHeight };
               params.api?.resetRowHeights();
@@ -873,7 +962,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
         </DetailRowMeasureWrapper>
       );
     },
-    [renderRowDetail]
+    [renderRowDetail, detailRowHeightTrimPx]
   );
 
   const isFullWidthRow = useCallback(
@@ -899,10 +988,34 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
       const data = params.data as DetailRow<T> | undefined;
       if (!data || data.__detail !== true) return 44;
       const id = params.node?.id;
-      if (id == null) return DETAIL_ROW_MIN_HEIGHT;
-      return detailRowHeights[id] ?? DETAIL_ROW_MIN_HEIGHT;
+      if (id == null) return DETAIL_ROW_FALLBACK_HEIGHT;
+      return detailRowHeights[id] ?? DETAIL_ROW_FALLBACK_HEIGHT;
     },
     [detailRowHeights]
+  );
+
+  const getRowClass = useCallback(
+    (params: { data?: T | DetailRow<T> }) => {
+      if (!renderRowDetail) return undefined;
+      const d = params.data as DetailRow<T> | undefined;
+      if (d && d.__detail) return "parkit-grid-detail-fullwidth-row";
+      return undefined;
+    },
+    [renderRowDetail]
+  );
+
+  const getRowStyle = useCallback(
+    (params: { data?: T | DetailRow<T> }) => {
+      if (!renderRowDetail) return undefined;
+      const d = params.data as DetailRow<T> | undefined;
+      if (!d || !d.__detail) return undefined;
+      return {
+        marginBottom: 0,
+        paddingBottom: 0,
+        borderBottom: "none",
+      } as const;
+    },
+    [renderRowDetail]
   );
 
   const showAddInBar = onCreate != null && canCreate;
@@ -962,6 +1075,9 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                     ref={gridRef as React.RefObject<AgGridReact<T | DetailRow<T>>>}
                     rowData={rowData}
                     columnDefs={columnDefs}
+                    embedFullWidthRows={Boolean(renderRowDetail)}
+                    getRowClass={renderRowDetail ? getRowClass : undefined}
+                    getRowStyle={renderRowDetail ? getRowStyle : undefined}
                     quickFilterText={quickFilter || undefined}
                     defaultColDef={{
                       sortable: true,

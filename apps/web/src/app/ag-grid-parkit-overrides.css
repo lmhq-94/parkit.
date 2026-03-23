@@ -434,3 +434,79 @@
   background: #0f172a !important;
   color: #cbd5e1 !important;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Fila expandida "Additional info" (full-width): layout y medición de altura */
+/* -------------------------------------------------------------------------- */
+.ag-theme-parkit .ag-row:has(.parkit-grid-detail-root) .ag-cell {
+  align-items: stretch !important;
+  align-self: stretch !important;
+  overflow: visible !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.ag-theme-parkit .ag-row:has(.parkit-grid-detail-root) .ag-cell-wrapper {
+  width: 100% !important;
+  align-items: flex-start !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+.ag-theme-parkit .ag-row:has(.parkit-grid-detail-root) .ag-cell-value,
+.ag-theme-parkit .ag-row:has(.parkit-grid-detail-root) .ag-cell-value-wrapper {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+.ag-theme-parkit .parkit-grid-detail-measure,
+.ag-theme-parkit .parkit-grid-detail-root {
+  width: 100%;
+  min-height: 0;
+  height: fit-content;
+  max-height: none;
+}
+
+/* Fila de detalle: sin separación extra respecto a la fila siguiente */
+.ag-theme-parkit .ag-row:has(.parkit-grid-detail-root) {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Clase explícita (getRowClass): evita huecos si :has() falla en algún navegador */
+.ag-theme-parkit .ag-row.parkit-grid-detail-fullwidth-row {
+  margin: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-bottom: none !important;
+}
+
+.ag-theme-parkit .ag-row.parkit-grid-detail-fullwidth-row .ag-cell {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.ag-theme-parkit .ag-row.parkit-grid-detail-fullwidth-row .ag-cell-wrapper {
+  align-items: flex-start !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+.ag-theme-parkit .ag-row.parkit-grid-detail-fullwidth-row .ag-cell-value,
+.ag-theme-parkit .ag-row.parkit-grid-detail-fullwidth-row .ag-cell-value-wrapper {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+/* Full-width embebido / contenedor: sin margen extra debajo del panel */
+.ag-theme-parkit .ag-full-width-container,
+.ag-theme-parkit .ag-full-width-row {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ag-theme-parkit .ag-row.parkit-grid-detail-fullwidth-row + .ag-row {
+  margin-top: 0 !important;
+  border-top: none !important;
+}

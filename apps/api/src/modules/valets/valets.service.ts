@@ -102,12 +102,26 @@ export class ValetsService {
   }
 
   /** Lista valets. Si companyId es null/undefined (super-admin), devuelve todos e incluye lastActivity. */
-  static async list(companyId: string | null | undefined, statuses?: string[]) {
+  static async list(
+    companyId: string | null | undefined,
+    statuses?: string[],
+    accountStatuses?: string[]
+  ) {
+    const hasActive = accountStatuses?.includes("active") ?? false;
+    const hasInactive = accountStatuses?.includes("inactive") ?? false;
+    const accountFilterUser =
+      accountStatuses != null &&
+      accountStatuses.length > 0 &&
+      hasActive !== hasInactive
+        ? { isActive: hasActive }
+        : undefined;
+
     const where = {
       ...(companyId != null ? { companyId } : {}),
       currentStatus: statuses?.length
         ? { in: statuses as ValetStatus[] }
         : undefined,
+      ...(accountFilterUser ? { user: accountFilterUser } : {}),
     };
     const userSelectWithInvitation = {
       id: true,

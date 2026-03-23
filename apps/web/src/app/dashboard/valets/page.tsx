@@ -43,8 +43,8 @@ type ValetRow = {
   };
   currentStatus?: string;
   staffRole?: string | null;
-  licenseNumber?: string;
-  licenseExpiry?: string;
+  licenseNumber?: string | null;
+  licenseExpiry?: string | null;
   ratingAvg?: number | null;
   lastActivity?: ValetLastActivity | null;
 };
@@ -88,18 +88,24 @@ export default function ValetsPage() {
   const superAdmin = isSuperAdmin(user);
   const router = useRouter();
   const [refreshToken, setRefreshToken] = useState(0);
-  const [statusFilters, setStatusFilters] = useState<string[]>([]);
+  /** Filtro de cuenta de usuario: activo / inactivo (antes que disponibilidad). */
+  const [accountFilters, setAccountFilters] = useState<string[]>([]);
+  /** Filtro de disponibilidad del valet (AVAILABLE / BUSY / AWAY). */
+  const [availabilityFilters, setAvailabilityFilters] = useState<string[]>([]);
 
   const fetchData = useCallback(
     async (_userId: string) => {
-      const params =
-        statusFilters.length > 0
-          ? statusFilters.map((s) => `status=${encodeURIComponent(s)}`).join("&")
-          : "";
-      const url = params ? `/valets?${params}` : "/valets";
+      const qs: string[] = [];
+      for (const a of accountFilters) {
+        qs.push(`accountStatus=${encodeURIComponent(a)}`);
+      }
+      for (const s of availabilityFilters) {
+        qs.push(`status=${encodeURIComponent(s)}`);
+      }
+      const url = qs.length > 0 ? `/valets?${qs.join("&")}` : "/valets";
       return apiClient.get<ValetRow[]>(url);
     },
-    [statusFilters]
+    [accountFilters, availabilityFilters]
   );
 
   const onUpdate = useCallback(async (row: ValetRow) => {
@@ -118,8 +124,12 @@ export default function ValetsPage() {
       await apiClient.patch(`/users/${userId}`, userPayload);
     }
     const valetPayload: Record<string, unknown> = {};
-    if (row.licenseNumber !== undefined) valetPayload.licenseNumber = String(row.licenseNumber).trim();
-    if (row.licenseExpiry !== undefined) valetPayload.licenseExpiry = row.licenseExpiry;
+    if (typeof row.licenseNumber === "string") {
+      valetPayload.licenseNumber = row.licenseNumber.trim();
+    }
+    if (typeof row.licenseExpiry === "string" && row.licenseExpiry.trim() !== "") {
+      valetPayload.licenseExpiry = row.licenseExpiry;
+    }
     if (Object.keys(valetPayload).length > 0) {
       await apiClient.patch(`/valets/${row.id}`, valetPayload);
     }
@@ -214,18 +224,32 @@ export default function ValetsPage() {
         columns={columns}
         refreshToken={refreshToken}
         toolbar={
-          <StatusFilterToolbar
-            tableKey="valets"
-            allLabel={t("tables.valets.filterAll")}
-            placeholder={t("tables.valets.filterStatusPlaceholder")}
-            clearSelectionLabel={t("grid.clearSelection")}
-            options={VALET_STATUS_OPTIONS.map((o) => ({
-              value: o.value,
-              label: tEnum("valetStatus", o.key),
-            }))}
-            selected={statusFilters}
-            onChange={setStatusFilters}
-          />
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusFilterToolbar
+              tableKey="valets-account"
+              allLabel={t("tables.valets.filterAll")}
+              placeholder={t("tables.valets.filterAccountPlaceholder")}
+              clearSelectionLabel={t("grid.clearSelection")}
+              options={[
+                { value: "active", label: t("tables.employees.active") },
+                { value: "inactive", label: t("tables.employees.inactive") },
+              ]}
+              selected={accountFilters}
+              onChange={setAccountFilters}
+            />
+            <StatusFilterToolbar
+              tableKey="valets-availability"
+              allLabel={t("tables.valets.filterAll")}
+              placeholder={t("tables.valets.filterAvailabilityPlaceholder")}
+              clearSelectionLabel={t("grid.clearSelection")}
+              options={VALET_STATUS_OPTIONS.map((o) => ({
+                value: o.value,
+                label: tEnum("valetStatus", o.key),
+              }))}
+              selected={availabilityFilters}
+              onChange={setAvailabilityFilters}
+            />
+          </div>
         }
         hasRowDetail={superAdmin ? () => true : undefined}
         renderRowDetail={

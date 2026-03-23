@@ -100,10 +100,15 @@ export class ValetsController {
   static async list(req: Request, res: Response) {
     try {
       const statusArr = parseQueryParamArray(req.query.status as string | string[] | undefined);
+      const accountStatusRaw = parseQueryParamArray(
+        req.query.accountStatus as string | string[] | undefined
+      );
+      const accountStatusArr = accountStatusRaw.filter((v) => v === "active" || v === "inactive");
 
       const valets = await ValetsService.list(
         req.user.companyId ?? undefined,
-        statusArr.length > 0 ? statusArr : undefined
+        statusArr.length > 0 ? statusArr : undefined,
+        accountStatusArr.length > 0 ? accountStatusArr : undefined
       );
 
       return ok(res, valets);
