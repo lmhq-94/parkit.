@@ -15,6 +15,8 @@ import {
   Linking,
   KeyboardAvoidingView,
   useWindowDimensions,
+  LayoutAnimation,
+  UIManager,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -25,7 +27,6 @@ import { useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
 import { AuthHeroGradient } from "@/components/AuthHeroGradient";
-import { StickyFormFooter } from "@/components/StickyFormFooter";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
 
 const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
@@ -52,11 +53,12 @@ export default function ForgotPasswordScreen() {
         heroStrip: {
           backgroundColor: a.authHeroStripBg,
           zIndex: 0,
+          overflow: "hidden",
         },
         topBar: {
           flexDirection: "row",
           alignItems: "center",
-          paddingHorizontal: horizontalPadding,
+          paddingHorizontal: Math.max(12, horizontalPadding - 12),
           paddingTop: 8,
           paddingBottom: 16,
           width: "100%",
@@ -70,6 +72,7 @@ export default function ForgotPasswordScreen() {
           backgroundColor: a.authHeroBackBtnBg,
           alignItems: "center",
           justifyContent: "center",
+          marginLeft: -2,
         },
         hero: {
           alignItems: "center",
@@ -91,12 +94,12 @@ export default function ForgotPasswordScreen() {
           backgroundColor: "transparent",
           marginTop: -28,
           zIndex: 1,
+          justifyContent: "flex-end",
         },
         scrollContent: {
           flexGrow: 1,
           width: "100%",
         },
-        scrollTopSpacer: { flexGrow: 1, minHeight: 1 },
         bottomSection: {
           backgroundColor: a.bottomSheet,
           borderTopLeftRadius: 28,
@@ -110,6 +113,8 @@ export default function ForgotPasswordScreen() {
           alignSelf: "center",
         },
         formContent: { paddingBottom: 0 },
+        inputsScroll: {},
+        inputsScrollContent: { paddingBottom: 12 },
         cardHeadline: {
           fontSize: 26,
           fontWeight: "700",
@@ -117,7 +122,7 @@ export default function ForgotPasswordScreen() {
           marginBottom: 8,
           letterSpacing: -0.4,
         },
-        subtitle: { fontSize: 15, lineHeight: 22, color: a.textMuted, marginBottom: 18 },
+        subtitle: { fontSize: 15, lineHeight: 22, color: a.textMuted, marginBottom: 40 },
         inputBlock: { marginBottom: 14 },
         label: { fontSize: 13, fontWeight: "600", color: a.textSecondary, marginBottom: 6 },
         inputRow: {
@@ -149,7 +154,7 @@ export default function ForgotPasswordScreen() {
           borderRadius: 16,
           alignItems: "center",
           justifyContent: "center",
-          marginTop: 4,
+          marginTop: 8,
           marginBottom: 6,
           backgroundColor: a.btnLoginBg,
           ...Platform.select({
@@ -174,8 +179,9 @@ export default function ForgotPasswordScreen() {
           justifyContent: "center",
           alignItems: "center",
           gap: 4,
-          marginTop: 0,
-          paddingTop: 14,
+          marginTop: 10,
+          paddingTop: 22,
+          paddingBottom: 18,
         },
         footerText: { fontSize: 12, color: a.textMuted },
         footerLink: { fontSize: 14, fontWeight: "600", color: a.linkAccent },
@@ -189,11 +195,23 @@ export default function ForgotPasswordScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const heroTranslateY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const showSub = Keyboard.addListener("keyboardDidShow", () => {
+    if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setKeyboardVisible(true);
+      setKeyboardHeight(e.endCoordinates?.height ?? 0);
       Animated.timing(heroTranslateY, {
         toValue: -48,
         duration: 220,
@@ -201,8 +219,10 @@ export default function ForgotPasswordScreen() {
         useNativeDriver: true,
       }).start();
     });
-    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setKeyboardVisible(false);
+      setKeyboardHeight(0);
       Animated.timing(heroTranslateY, {
         toValue: 0,
         duration: 220,
@@ -238,6 +258,11 @@ export default function ForgotPasswordScreen() {
   };
 
   const ph = a.placeholder;
+  const keyboardInputsMaxHeight = Math.max(
+    160,
+    height - keyboardHeight - Math.max(insets.top, 12) - Math.round(height * (isTablet ? 0.30 : 0.36))
+  );
+  const inputsMaxHeight = keyboardVisible ? keyboardInputsMaxHeight : Math.round(height * 0.24);
 
   return (
     <AuthHeroGradient chromeBg={a.authScreenChromeBg}>
@@ -247,6 +272,10 @@ export default function ForgotPasswordScreen() {
           <SafeAreaView style={styles.topBar} edges={["top"]}>
             <TouchableOpacity
               onPress={() => {
+                if (Platform.OS === "android") {
+                  router.back();
+                  return;
+                }
                 Keyboard.dismiss();
                 requestAnimationFrame(() => {
                   router.back();
@@ -259,27 +288,30 @@ export default function ForgotPasswordScreen() {
             </TouchableOpacity>
           </SafeAreaView>
 
-          <Animated.View style={[styles.hero, { transform: [{ translateY: heroTranslateY }] }]}>
+          <Animated.View
+            style={[
+              styles.hero,
+              keyboardVisible ? { height: 0, opacity: 0, overflow: "hidden" } : null,
+              { transform: [{ translateY: heroTranslateY }] },
+            ]}
+          >
             <Logo size={LOGO_SIZE} style={styles.heroLogo} variant="onDark" />
             <Text style={styles.heroBrand}>valet</Text>
           </Animated.View>
         </View>
 
-        <View style={styles.bottomWrap}>
-          <ScrollView
-            style={{ flex: 1, backgroundColor: "transparent" }}
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-            showsVerticalScrollIndicator={false}
-            bounces={false}
-          >
-          <View style={styles.scrollTopSpacer} />
+        <View
+          style={[
+            styles.bottomWrap,
+            keyboardVisible ? { marginTop: 0, paddingTop: Math.max(insets.top, 12) } : null,
+          ]}
+        >
           <View
             style={[
               styles.bottomSection,
+              keyboardVisible ? { paddingTop: 16 } : null,
               {
-                paddingBottom: submitted ? Math.max(insets.bottom, 14) : 14,
+                paddingBottom: keyboardVisible ? 0 : submitted ? Math.max(insets.bottom, 14) : 14,
                 width: "100%",
               },
             ]}
@@ -300,7 +332,14 @@ export default function ForgotPasswordScreen() {
                 <Text style={styles.backToLoginText}>{t(locale, "forgot.backToLogin")}</Text>
               </TouchableOpacity>
             ) : (
-              <>
+              <ScrollView
+                style={[styles.inputsScroll, { maxHeight: inputsMaxHeight }]}
+                contentContainerStyle={styles.inputsScrollContent}
+                scrollEnabled
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                bounces={false}
+              >
                 <View style={styles.inputBlock}>
                   <Text style={styles.label}>{t(locale, "login.email")}</Text>
                   <View style={styles.inputRow}>
@@ -329,19 +368,16 @@ export default function ForgotPasswordScreen() {
                   </View>
                 ) : null}
 
-                <TouchableOpacity onPress={() => router.replace("/login")} hitSlop={8} style={styles.footerLinkWrap}>
-                  <Text style={styles.footerLink}>{t(locale, "forgot.backToLogin")}</Text>
-                </TouchableOpacity>
-              </>
+              </ScrollView>
             )}
 
-            {!submitted && !keyboardVisible ? (
+            {!submitted ? (
               <Pressable
                 onPress={handleSubmit}
                 disabled={loading || !email.trim()}
                 style={({ pressed }) => [
                   styles.submitBtn,
-                  { marginTop: 0, marginBottom: 0 },
+                  keyboardVisible ? { marginTop: 12, marginBottom: 0 } : null,
                   pressed && styles.btnPressed,
                   (loading || !email.trim()) && styles.btnDisabled,
                 ]}
@@ -354,48 +390,30 @@ export default function ForgotPasswordScreen() {
               </Pressable>
             ) : null}
 
-            {!keyboardVisible ? (
-              <View style={styles.footer}>
-                <Text style={styles.footerText}>{t(locale, "login.footer")}</Text>
-                <Pressable onPress={() => Linking.openURL(SUPPORT_EMAIL)}>
-                  <Text style={styles.footerLinkMuted}>{t(locale, "login.contactSupport")}</Text>
-                </Pressable>
-              </View>
+            {!submitted ? (
+              <TouchableOpacity
+                onPress={() => router.replace("/login")}
+                hitSlop={8}
+                style={[styles.footerLinkWrap, { marginTop: 12, marginBottom: 12 }]}
+              >
+                <Text style={styles.footerLink}>{t(locale, "forgot.backToLogin")}</Text>
+              </TouchableOpacity>
             ) : null}
-            </View>
-          </View>
-          </ScrollView>
-        </View>
-        {!submitted && keyboardVisible ? (
-          <StickyFormFooter
-            backgroundColor={a.bottomSheet}
-            borderColor="transparent"
-            paddingHorizontal={horizontalPadding}
-          >
-            <Pressable
-              onPress={handleSubmit}
-              disabled={loading || !email.trim()}
-              style={({ pressed }) => [
-                styles.submitBtn,
-                { marginTop: 0, marginBottom: 0 },
-                pressed && styles.btnPressed,
-                (loading || !email.trim()) && styles.btnDisabled,
+
+            <View
+              style={[
+                styles.footer,
+                keyboardVisible ? { marginBottom: 0, paddingBottom: 16 } : null,
               ]}
             >
-              {loading ? (
-                <ActivityIndicator color="#FFFFFF" size="small" />
-              ) : (
-                <Text style={styles.submitBtnText}>{t(locale, "forgot.sendLink")}</Text>
-              )}
-            </Pressable>
-            <View style={styles.footer}>
               <Text style={styles.footerText}>{t(locale, "login.footer")}</Text>
               <Pressable onPress={() => Linking.openURL(SUPPORT_EMAIL)}>
                 <Text style={styles.footerLinkMuted}>{t(locale, "login.contactSupport")}</Text>
               </Pressable>
             </View>
-          </StickyFormFooter>
-        ) : null}
+            </View>
+          </View>
+        </View>
       </KeyboardAvoidingView>
     </AuthHeroGradient>
   );

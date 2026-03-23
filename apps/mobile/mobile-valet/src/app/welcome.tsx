@@ -1,10 +1,10 @@
-import { View, Text, StyleSheet, Pressable, StatusBar, Animated, Easing } from "react-native";
+import { View, Text, StyleSheet, Pressable, StatusBar } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Logo } from "@parkit/shared";
 import { useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
-import { useEffect, useRef, useMemo } from "react";
+import { useMemo } from "react";
 import { AuthHeroGradient } from "@/components/AuthHeroGradient";
 import { useValetTheme, ACCENT, useResponsiveLayout } from "@/theme/valetTheme";
 import { getAppVersionString } from "@/lib/appVersion";
@@ -30,8 +30,6 @@ export function WelcomeContent({
   const heroMinHeight = Math.round(
     (responsive.isLandscape ? responsive.height * 0.24 : responsive.height * 0.32)
   );
-  const buttonsTranslateY = useRef(new Animated.Value(26)).current;
-  const buttonsOpacity = useRef(new Animated.Value(0)).current;
 
   const styles = useMemo(
     () =>
@@ -126,23 +124,6 @@ export function WelcomeContent({
     version: getAppVersionString() || "—",
   });
 
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(buttonsTranslateY, {
-        toValue: 0,
-        duration: 380,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(buttonsOpacity, {
-        toValue: 1,
-        duration: 320,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [buttonsOpacity, buttonsTranslateY]);
-
   return (
     <AuthHeroGradient chromeBg={a.authScreenChromeBg}>
       <StatusBar barStyle={a.statusBarStyle} backgroundColor={a.statusBarBg} />
@@ -156,12 +137,7 @@ export function WelcomeContent({
           </View>
         </View>
 
-        <Animated.View
-          style={{
-            transform: [{ translateY: buttonsTranslateY }],
-            opacity: buttonsOpacity,
-          }}
-        >
+        <View>
           <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom, 12) }]}>
             <Text style={styles.ctaText}>{t(locale, "welcome.cta")}</Text>
             <Pressable
@@ -180,7 +156,7 @@ export function WelcomeContent({
               {versionLabel}
             </Text>
           </View>
-        </Animated.View>
+        </View>
       </View>
     </AuthHeroGradient>
   );

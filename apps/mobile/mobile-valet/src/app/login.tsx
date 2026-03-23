@@ -16,6 +16,8 @@ import {
   Modal,
   KeyboardAvoidingView,
   useWindowDimensions,
+  LayoutAnimation,
+  UIManager,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -27,7 +29,6 @@ import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
 import { AuthHeroGradient } from "@/components/AuthHeroGradient";
-import { StickyFormFooter } from "@/components/StickyFormFooter";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
 
 const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
@@ -59,11 +60,12 @@ export default function LoginScreen() {
         heroStrip: {
           backgroundColor: a.authHeroStripBg,
           zIndex: 0,
+          overflow: "hidden",
         },
         topBar: {
           flexDirection: "row",
           alignItems: "center",
-          paddingHorizontal: horizontalPadding,
+          paddingHorizontal: Math.max(12, horizontalPadding - 12),
           paddingTop: 8,
           paddingBottom: 16,
           width: "100%",
@@ -77,6 +79,7 @@ export default function LoginScreen() {
           backgroundColor: a.authHeroBackBtnBg,
           alignItems: "center",
           justifyContent: "center",
+          marginLeft: -2,
         },
         hero: {
           alignItems: "center",
@@ -117,15 +120,18 @@ export default function LoginScreen() {
           backgroundColor: "transparent",
           marginTop: -28,
           zIndex: 1,
+          justifyContent: "flex-end",
         },
         scrollContent: {
           flexGrow: 1,
           width: "100%",
         },
-        /** Relleno superior para mantener la hoja abajo cuando hay espacio; permite scroll real al abrir el teclado. */
-        scrollTopSpacer: { flexGrow: 1, minHeight: 1 },
         formContent: {
           paddingBottom: 0,
+        },
+        inputsScroll: {},
+        inputsScrollContent: {
+          paddingBottom: 12,
         },
         formContentLogin: { justifyContent: "flex-start" },
         formContentSignup: {
@@ -143,7 +149,7 @@ export default function LoginScreen() {
           lineHeight: 21,
           fontWeight: "500",
           color: a.textMuted,
-          marginBottom: 20,
+          marginBottom: 40,
         },
         inputBlock: { marginBottom: 12 },
         label: { fontSize: 13, fontWeight: "600", color: a.textSecondary, marginBottom: 6 },
@@ -180,7 +186,7 @@ export default function LoginScreen() {
           borderRadius: 16,
           alignItems: "center",
           justifyContent: "center",
-          marginTop: 2,
+          marginTop: 8,
           marginBottom: 4,
         },
         loginBtnLogin: {
@@ -216,8 +222,9 @@ export default function LoginScreen() {
           justifyContent: "center",
           alignItems: "center",
           gap: 4,
-          marginTop: 0,
-          paddingTop: 14,
+          marginTop: 10,
+          paddingTop: 22,
+          paddingBottom: 18,
         },
         footerText: { fontSize: 12, color: a.textMuted },
         footerLink: { fontSize: 13, fontWeight: "600", color: a.linkAccent },
@@ -274,6 +281,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const heroTranslateY = useRef(new Animated.Value(0)).current;
   const formTranslateY = useRef(new Animated.Value(22)).current;
   const formOpacity = useRef(new Animated.Value(0)).current;
@@ -304,8 +312,19 @@ export default function LoginScreen() {
   }, [formOpacity, formTranslateY, mode]);
 
   useEffect(() => {
-    const showSub = Keyboard.addListener("keyboardDidShow", () => {
+    if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setKeyboardVisible(true);
+      setKeyboardHeight(e.endCoordinates?.height ?? 0);
       Animated.timing(heroTranslateY, {
         toValue: -56,
         duration: 220,
@@ -313,8 +332,11 @@ export default function LoginScreen() {
         useNativeDriver: true,
       }).start();
     });
-    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      if (staffRolePickerOpen) return;
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setKeyboardVisible(false);
+      setKeyboardHeight(0);
       Animated.timing(heroTranslateY, {
         toValue: 0,
         duration: 220,
@@ -326,7 +348,7 @@ export default function LoginScreen() {
       showSub.remove();
       hideSub.remove();
     };
-  }, [heroTranslateY]);
+  }, [heroTranslateY, staffRolePickerOpen]);
 
 
   const handleLogin = async () => {
@@ -387,6 +409,13 @@ export default function LoginScreen() {
   };
 
   const ph = a.placeholder;
+  const keyboardInputsMaxHeight = Math.max(
+    160,
+    height - keyboardHeight - Math.max(insets.top, 12) - Math.round(height * (isTablet ? 0.30 : 0.36))
+  );
+  const inputsMaxHeight = keyboardVisible
+    ? keyboardInputsMaxHeight
+    : Math.round(height * (mode === "signup" ? 0.38 : 0.30));
 
   return (
     <AuthHeroGradient chromeBg={a.authScreenChromeBg}>
@@ -396,6 +425,10 @@ export default function LoginScreen() {
           <SafeAreaView style={styles.topBar} edges={["top"]}>
             <TouchableOpacity
               onPress={() => {
+                if (Platform.OS === "android") {
+                  router.replace("/welcome");
+                  return;
+                }
                 Keyboard.dismiss();
                 requestAnimationFrame(() => {
                   router.replace("/welcome");
@@ -412,6 +445,7 @@ export default function LoginScreen() {
             style={[
               styles.hero,
               mode === "signup" ? styles.heroCompact : styles.heroLogin,
+              keyboardVisible ? { height: 0, opacity: 0, overflow: "hidden" } : null,
               { transform: [{ translateY: heroTranslateY }] },
             ]}
           >
@@ -420,16 +454,12 @@ export default function LoginScreen() {
           </Animated.View>
         </View>
 
-        <View style={styles.bottomWrap}>
-          <ScrollView
-            style={{ flex: 1, backgroundColor: "transparent" }}
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-            showsVerticalScrollIndicator={false}
-            bounces={false}
-          >
-          <View style={styles.scrollTopSpacer} />
+        <View
+          style={[
+            styles.bottomWrap,
+            keyboardVisible ? { marginTop: 0, paddingTop: Math.max(insets.top, 12) } : null,
+          ]}
+        >
           <Animated.View
             style={{
               transform: [{ translateY: formTranslateY }],
@@ -440,7 +470,8 @@ export default function LoginScreen() {
             <View
               style={[
                 styles.bottomSection,
-                { paddingBottom: 14 },
+                keyboardVisible ? { paddingTop: 16 } : null,
+                { paddingBottom: keyboardVisible ? 0 : 14 },
               ]}
             >
               <View
@@ -455,248 +486,224 @@ export default function LoginScreen() {
               <Text style={styles.cardTagline}>
                 {mode === "login" ? t(locale, "login.tagline") : t(locale, "signup.tagline")}
               </Text>
-
-              {mode === "signup" ? (
-                <>
-                  <View style={styles.inputBlock}>
-                    <Text style={styles.label}>{t(locale, "signup.firstName")}</Text>
-                    <View style={styles.inputRow}>
-                      <TextInput
-                        style={styles.input}
-                        placeholder={t(locale, "signup.placeholderFirstName")}
-                        placeholderTextColor={ph}
-                        value={firstName}
-                        onChangeText={(v) => {
-                          setFirstName(v);
-                          setError(null);
-                        }}
-                        editable={!loading}
-                        autoCapitalize="words"
-                      />
+              <ScrollView
+                style={[styles.inputsScroll, { maxHeight: inputsMaxHeight }]}
+                contentContainerStyle={styles.inputsScrollContent}
+                scrollEnabled
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                bounces={false}
+              >
+                {mode === "signup" ? (
+                  <>
+                    <View style={styles.inputBlock}>
+                      <Text style={styles.label}>{t(locale, "signup.firstName")}</Text>
+                      <View style={styles.inputRow}>
+                        <TextInput
+                          style={styles.input}
+                          placeholder={t(locale, "signup.placeholderFirstName")}
+                          placeholderTextColor={ph}
+                          value={firstName}
+                          onChangeText={(v) => {
+                            setFirstName(v);
+                            setError(null);
+                          }}
+                          editable={!loading}
+                          autoCapitalize="words"
+                        />
+                      </View>
                     </View>
-                  </View>
 
-                  <View style={styles.inputBlock}>
-                    <Text style={styles.label}>{t(locale, "signup.lastName")}</Text>
-                    <View style={styles.inputRow}>
-                      <TextInput
-                        style={styles.input}
-                        placeholder={t(locale, "signup.placeholderLastName")}
-                        placeholderTextColor={ph}
-                        value={lastName}
-                        onChangeText={(v) => {
-                          setLastName(v);
-                          setError(null);
-                        }}
-                        editable={!loading}
-                        autoCapitalize="words"
-                      />
+                    <View style={styles.inputBlock}>
+                      <Text style={styles.label}>{t(locale, "signup.lastName")}</Text>
+                      <View style={styles.inputRow}>
+                        <TextInput
+                          style={styles.input}
+                          placeholder={t(locale, "signup.placeholderLastName")}
+                          placeholderTextColor={ph}
+                          value={lastName}
+                          onChangeText={(v) => {
+                            setLastName(v);
+                            setError(null);
+                          }}
+                          editable={!loading}
+                          autoCapitalize="words"
+                        />
+                      </View>
                     </View>
-                  </View>
 
-                  <View style={styles.inputBlock}>
-                    <Text style={styles.label}>{t(locale, "signup.staffRoleLabel")}</Text>
-                    <TouchableOpacity
-                      style={styles.inputRow}
-                      onPress={() => {
-                        if (!loading) setStaffRolePickerOpen(true);
-                      }}
-                      activeOpacity={0.85}
-                      disabled={loading}
-                    >
-                      <Text style={styles.input}>
-                        {staffRole === "RECEPTIONIST"
-                          ? t(locale, "signup.staffRoleReceptionist")
-                          : t(locale, "signup.staffRoleDriver")}
-                      </Text>
-                      <Ionicons name="chevron-down" size={22} color={ph} style={styles.inputIconRight} />
-                    </TouchableOpacity>
-                    <Modal
-                      visible={staffRolePickerOpen}
-                      transparent
-                      animationType="fade"
-                      onRequestClose={() => setStaffRolePickerOpen(false)}
-                    >
-                      <Pressable style={styles.modalBackdrop} onPress={() => setStaffRolePickerOpen(false)}>
-                        <Pressable style={styles.modalSheet} onPress={(e) => e.stopPropagation()}>
-                          <Text style={styles.modalTitle}>{t(locale, "signup.staffRoleLabel")}</Text>
-                          {STAFF_ROLES.map((r) => (
-                            <TouchableOpacity
-                              key={r}
-                              style={[styles.modalOption, staffRole === r && styles.modalOptionActive]}
-                              onPress={() => {
-                                setStaffRole(r);
-                                setStaffRolePickerOpen(false);
-                                setError(null);
-                              }}
-                            >
-                              <Text
-                                style={[
-                                  styles.modalOptionText,
-                                  staffRole === r && styles.modalOptionTextActive,
-                                ]}
+                    <View style={styles.inputBlock}>
+                      <Text style={styles.label}>{t(locale, "signup.staffRoleLabel")}</Text>
+                      <TouchableOpacity
+                        style={styles.inputRow}
+                        onPress={() => {
+                          if (!loading) setStaffRolePickerOpen(true);
+                        }}
+                        activeOpacity={0.85}
+                        disabled={loading}
+                      >
+                        <Text style={styles.input}>
+                          {staffRole === "RECEPTIONIST"
+                            ? t(locale, "signup.staffRoleReceptionist")
+                            : t(locale, "signup.staffRoleDriver")}
+                        </Text>
+                        <Ionicons name="chevron-down" size={22} color={ph} style={styles.inputIconRight} />
+                      </TouchableOpacity>
+                      <Modal
+                        visible={staffRolePickerOpen}
+                        transparent
+                        animationType="fade"
+                        onRequestClose={() => setStaffRolePickerOpen(false)}
+                      >
+                        <Pressable style={styles.modalBackdrop} onPress={() => setStaffRolePickerOpen(false)}>
+                          <Pressable style={styles.modalSheet} onPress={(e) => e.stopPropagation()}>
+                            <Text style={styles.modalTitle}>{t(locale, "signup.staffRoleLabel")}</Text>
+                            {STAFF_ROLES.map((r) => (
+                              <TouchableOpacity
+                                key={r}
+                                style={[styles.modalOption, staffRole === r && styles.modalOptionActive]}
+                                onPress={() => {
+                                  setStaffRole(r);
+                                  setStaffRolePickerOpen(false);
+                                  setError(null);
+                                }}
                               >
-                                {r === "RECEPTIONIST"
-                                  ? t(locale, "signup.staffRoleReceptionist")
-                                  : t(locale, "signup.staffRoleDriver")}
-                              </Text>
-                              {staffRole === r ? (
-                                <Ionicons name="checkmark-circle" size={22} color={a.linkAccent} />
-                              ) : null}
+                                <Text
+                                  style={[
+                                    styles.modalOptionText,
+                                    staffRole === r && styles.modalOptionTextActive,
+                                  ]}
+                                >
+                                  {r === "RECEPTIONIST"
+                                    ? t(locale, "signup.staffRoleReceptionist")
+                                    : t(locale, "signup.staffRoleDriver")}
+                                </Text>
+                                {staffRole === r ? (
+                                  <Ionicons name="checkmark-circle" size={22} color={a.linkAccent} />
+                                ) : null}
+                              </TouchableOpacity>
+                            ))}
+                            <TouchableOpacity
+                              style={styles.modalCloseBtn}
+                              onPress={() => setStaffRolePickerOpen(false)}
+                            >
+                              <Text style={styles.modalCloseBtnText}>{t(locale, "common.cancel")}</Text>
                             </TouchableOpacity>
-                          ))}
-                          <TouchableOpacity
-                            style={styles.modalCloseBtn}
-                            onPress={() => setStaffRolePickerOpen(false)}
-                          >
-                            <Text style={styles.modalCloseBtnText}>{t(locale, "common.cancel")}</Text>
-                          </TouchableOpacity>
+                          </Pressable>
                         </Pressable>
-                      </Pressable>
-                    </Modal>
-                  </View>
-                </>
-              ) : null}
-
-              <View style={styles.inputBlock}>
-                <Text style={styles.label}>
-                  {mode === "login" ? t(locale, "login.email") : t(locale, "signup.email")}
-                </Text>
-                <View style={styles.inputRow}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder={
-                      mode === "login"
-                        ? t(locale, "login.placeholderEmail")
-                        : t(locale, "signup.placeholderEmail")
-                    }
-                    placeholderTextColor={ph}
-                    value={email}
-                    onChangeText={(v) => {
-                      setEmail(v);
-                      setError(null);
-                    }}
-                    editable={!loading}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    autoComplete="email"
-                  />
-                  <Ionicons name="mail-outline" size={20} color={ph} style={styles.inputIconRight} />
-                </View>
-              </View>
-
-              <View style={styles.inputBlock}>
-                <Text style={styles.label}>
-                  {mode === "login" ? t(locale, "login.password") : t(locale, "signup.password")}
-                </Text>
-                <View style={styles.inputRow}>
-                  <TextInput
-                    style={[styles.input, styles.passwordInput]}
-                    placeholder={
-                      mode === "login"
-                        ? t(locale, "login.placeholderPassword")
-                        : t(locale, "signup.placeholderPassword")
-                    }
-                    placeholderTextColor={ph}
-                    value={password}
-                    onChangeText={(v) => {
-                      setPassword(v);
-                      setError(null);
-                    }}
-                    secureTextEntry={!showPassword}
-                    editable={!loading}
-                    autoComplete="password"
-                  />
-                  <TouchableOpacity onPress={() => setShowPassword((v) => !v)} hitSlop={8} style={styles.eyeWrap}>
-                    <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={22} color={ph} />
-                  </TouchableOpacity>
-                </View>
-                {mode === "login" ? (
-                  <TouchableOpacity
-                    style={styles.forgotWrap}
-                    onPress={() => router.push("/forgot-password")}
-                    hitSlop={8}
-                  >
-                    <Text style={styles.forgot}>{t(locale, "login.forgetPassword")}</Text>
-                  </TouchableOpacity>
+                      </Modal>
+                    </View>
+                  </>
                 ) : null}
-              </View>
 
-              {error ? (
-                <View style={styles.errorWrap}>
-                  <Ionicons name="alert-circle" size={18} color={a.errorText} />
-                  <Text style={styles.errorText}>{error}</Text>
+                <View style={styles.inputBlock}>
+                  <Text style={styles.label}>
+                    {mode === "login" ? t(locale, "login.email") : t(locale, "signup.email")}
+                  </Text>
+                  <View style={styles.inputRow}>
+                    <TextInput
+                      style={styles.input}
+                      placeholder={
+                        mode === "login"
+                          ? t(locale, "login.placeholderEmail")
+                          : t(locale, "signup.placeholderEmail")
+                      }
+                      placeholderTextColor={ph}
+                      value={email}
+                      onChangeText={(v) => {
+                        setEmail(v);
+                        setError(null);
+                      }}
+                      editable={!loading}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      autoComplete="email"
+                    />
+                    <Ionicons name="mail-outline" size={20} color={ph} style={styles.inputIconRight} />
+                  </View>
                 </View>
-              ) : null}
 
-              {!keyboardVisible ? (
-                <Pressable
-                  onPress={mode === "login" ? handleLogin : handleSignup}
-                  disabled={loading}
-                  style={({ pressed }) => [
-                    styles.loginBtn,
-                    mode === "login" ? styles.loginBtnLogin : styles.loginBtnSignup,
-                    pressed && styles.btnPressed,
-                    loading && styles.btnDisabled,
-                  ]}
-                >
-                  {loading ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
-                  ) : (
-                    <Text style={styles.loginBtnText}>
-                      {mode === "login" ? t(locale, "login.submit") : t(locale, "signup.submit")}
-                    </Text>
-                  )}
+                <View style={styles.inputBlock}>
+                  <Text style={styles.label}>
+                    {mode === "login" ? t(locale, "login.password") : t(locale, "signup.password")}
+                  </Text>
+                  <View style={styles.inputRow}>
+                    <TextInput
+                      style={[styles.input, styles.passwordInput]}
+                      placeholder={
+                        mode === "login"
+                          ? t(locale, "login.placeholderPassword")
+                          : t(locale, "signup.placeholderPassword")
+                      }
+                      placeholderTextColor={ph}
+                      value={password}
+                      onChangeText={(v) => {
+                        setPassword(v);
+                        setError(null);
+                      }}
+                      secureTextEntry={!showPassword}
+                      editable={!loading}
+                      autoComplete="password"
+                    />
+                    <TouchableOpacity onPress={() => setShowPassword((v) => !v)} hitSlop={8} style={styles.eyeWrap}>
+                      <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={22} color={ph} />
+                    </TouchableOpacity>
+                  </View>
+                  {mode === "login" ? (
+                    <TouchableOpacity
+                      style={styles.forgotWrap}
+                      onPress={() => router.push("/forgot-password")}
+                      hitSlop={8}
+                    >
+                      <Text style={styles.forgot}>{t(locale, "login.forgetPassword")}</Text>
+                    </TouchableOpacity>
+                  ) : null}
+                </View>
+
+                {error ? (
+                  <View style={styles.errorWrap}>
+                    <Ionicons name="alert-circle" size={18} color={a.errorText} />
+                    <Text style={styles.errorText}>{error}</Text>
+                  </View>
+                ) : null}
+              </ScrollView>
+
+              <Pressable
+                onPress={mode === "login" ? handleLogin : handleSignup}
+                disabled={loading}
+                style={({ pressed }) => [
+                  styles.loginBtn,
+                  keyboardVisible ? { marginTop: 10 } : null,
+                  mode === "login" ? styles.loginBtnLogin : styles.loginBtnSignup,
+                  pressed && styles.btnPressed,
+                  loading && styles.btnDisabled,
+                ]}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <Text style={styles.loginBtnText}>
+                    {mode === "login" ? t(locale, "login.submit") : t(locale, "signup.submit")}
+                  </Text>
+                )}
+              </Pressable>
+
+              <View
+                style={[
+                  styles.footer,
+                  keyboardVisible ? { marginBottom: 0, paddingBottom: 16 } : null,
+                ]}
+              >
+                <Text style={styles.footerText}>{t(locale, "login.footer")}</Text>
+                <Pressable onPress={() => Linking.openURL(SUPPORT_EMAIL)}>
+                  <Text style={styles.footerLink}>{t(locale, "login.contactSupport")}</Text>
                 </Pressable>
-              ) : null}
-
-              {!keyboardVisible ? (
-                <View style={styles.footer}>
-                  <Text style={styles.footerText}>{t(locale, "login.footer")}</Text>
-                  <Pressable onPress={() => Linking.openURL(SUPPORT_EMAIL)}>
-                    <Text style={styles.footerLink}>{t(locale, "login.contactSupport")}</Text>
-                  </Pressable>
-                </View>
-              ) : null}
+              </View>
               </View>
             </View>
           </Animated.View>
-          </ScrollView>
         </View>
-        {keyboardVisible ? (
-          <StickyFormFooter
-            backgroundColor={a.bottomSheet}
-            borderColor="transparent"
-            paddingHorizontal={horizontalPadding}
-          >
-            <Pressable
-              onPress={mode === "login" ? handleLogin : handleSignup}
-              disabled={loading}
-              style={({ pressed }) => [
-                styles.loginBtn,
-                { marginTop: 0, marginBottom: 0 },
-                mode === "login" ? styles.loginBtnLogin : styles.loginBtnSignup,
-                pressed && styles.btnPressed,
-                loading && styles.btnDisabled,
-              ]}
-            >
-              {loading ? (
-                <ActivityIndicator color="#FFFFFF" size="small" />
-              ) : (
-                <Text style={styles.loginBtnText}>
-                  {mode === "login" ? t(locale, "login.submit") : t(locale, "signup.submit")}
-                </Text>
-              )}
-            </Pressable>
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>{t(locale, "login.footer")}</Text>
-              <Pressable onPress={() => Linking.openURL(SUPPORT_EMAIL)}>
-                <Text style={styles.footerLink}>{t(locale, "login.contactSupport")}</Text>
-              </Pressable>
-            </View>
-          </StickyFormFooter>
-        ) : null}
       </KeyboardAvoidingView>
     </AuthHeroGradient>
   );
