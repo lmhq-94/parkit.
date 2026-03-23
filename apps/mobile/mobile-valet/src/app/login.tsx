@@ -6,6 +6,7 @@ import {
   Pressable,
   ScrollView,
   Keyboard,
+  BackHandler,
   Platform,
   StatusBar,
   ActivityIndicator,
@@ -13,7 +14,6 @@ import {
   Linking,
   Animated,
   Easing,
-  Modal,
   KeyboardAvoidingView,
   useWindowDimensions,
   LayoutAnimation,
@@ -228,26 +228,12 @@ export default function LoginScreen() {
         },
         footerText: { fontSize: 12, color: a.textMuted },
         footerLink: { fontSize: 13, fontWeight: "600", color: a.linkAccent },
-        modalBackdrop: {
-          flex: 1,
-          backgroundColor: a.modalBackdrop,
-          justifyContent: "flex-end",
-          paddingHorizontal: 20,
-          paddingBottom: 28,
-        },
-        modalSheet: {
+        roleDropdown: {
+          marginTop: 8,
           backgroundColor: a.modalSheet,
           borderRadius: 20,
           paddingVertical: 12,
           paddingHorizontal: 8,
-          maxHeight: "50%",
-        },
-        modalTitle: {
-          fontSize: 16,
-          fontWeight: "700",
-          color: a.text,
-          paddingHorizontal: 16,
-          paddingVertical: 10,
         },
         modalOption: {
           flexDirection: "row",
@@ -349,6 +335,19 @@ export default function LoginScreen() {
       hideSub.remove();
     };
   }, [heroTranslateY, staffRolePickerOpen]);
+
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      if (staffRolePickerOpen) {
+        setStaffRolePickerOpen(false);
+        return true;
+      }
+      router.replace("/welcome");
+      return true;
+    });
+    return () => sub.remove();
+  }, [router, staffRolePickerOpen]);
 
 
   const handleLogin = async () => {
@@ -490,7 +489,7 @@ export default function LoginScreen() {
                 style={[styles.inputsScroll, { maxHeight: inputsMaxHeight }]}
                 contentContainerStyle={styles.inputsScrollContent}
                 scrollEnabled
-                keyboardShouldPersistTaps="handled"
+                keyboardShouldPersistTaps="always"
                 showsVerticalScrollIndicator={false}
                 bounces={false}
               >
@@ -549,15 +548,8 @@ export default function LoginScreen() {
                         </Text>
                         <Ionicons name="chevron-down" size={22} color={ph} style={styles.inputIconRight} />
                       </TouchableOpacity>
-                      <Modal
-                        visible={staffRolePickerOpen}
-                        transparent
-                        animationType="fade"
-                        onRequestClose={() => setStaffRolePickerOpen(false)}
-                      >
-                        <Pressable style={styles.modalBackdrop} onPress={() => setStaffRolePickerOpen(false)}>
-                          <Pressable style={styles.modalSheet} onPress={(e) => e.stopPropagation()}>
-                            <Text style={styles.modalTitle}>{t(locale, "signup.staffRoleLabel")}</Text>
+                      {staffRolePickerOpen ? (
+                        <View style={styles.roleDropdown}>
                             {STAFF_ROLES.map((r) => (
                               <TouchableOpacity
                                 key={r}
@@ -589,9 +581,8 @@ export default function LoginScreen() {
                             >
                               <Text style={styles.modalCloseBtnText}>{t(locale, "common.cancel")}</Text>
                             </TouchableOpacity>
-                          </Pressable>
-                        </Pressable>
-                      </Modal>
+                        </View>
+                      ) : null}
                     </View>
                   </>
                 ) : null}

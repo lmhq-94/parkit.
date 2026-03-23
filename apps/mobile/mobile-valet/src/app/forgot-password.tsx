@@ -6,6 +6,7 @@ import {
   Pressable,
   ScrollView,
   Keyboard,
+  BackHandler,
   Animated,
   Easing,
   Platform,
@@ -235,6 +236,15 @@ export default function ForgotPasswordScreen() {
       hideSub.remove();
     };
   }, [heroTranslateY]);
+
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      router.back();
+      return true;
+    });
+    return () => sub.remove();
+  }, [router]);
 
   const handleSubmit = async () => {
     setError(null);
