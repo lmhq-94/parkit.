@@ -18,23 +18,25 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   platforms: ['ios', 'android', 'web'],
   ios: {
-    supportsTabletMode: false,
+    supportsTablet: false,
     bundleIdentifier: 'com.parkit.valet',
     infoPlist: {
       NSLocationWhenInUseUsageDescription:
         'Usamos tu ubicación para mostrar el parqueo de la empresa más cercano.',
       NSPhotoLibraryUsageDescription:
         'Para elegir una foto de perfil desde tu galería.',
-      NSCameraUsageDescription: 'Para tomar una foto de perfil si lo prefieres.',
+      NSCameraUsageDescription:
+        'Para foto de perfil y para escanear códigos QR de reservas en recepción.',
     },
   },
   android: {
+    icon: './assets/icon.png',
     adaptiveIcon: {
-      foregroundImage: './assets/adaptive-icon.png',
-      backgroundColor: '#FFFFFF',
+      foregroundImage: './assets/icon.png',
+      backgroundColor: '#020617',
     },
     package: 'com.parkit.valet',
-    permissions: ['ACCESS_FINE_LOCATION', 'INTERNET'],
+    permissions: ['ACCESS_FINE_LOCATION', 'INTERNET', 'CAMERA'],
     /** Permite redimensionar la ventana con el teclado (junto con adjustResize en el manifest). */
     softwareKeyboardLayoutMode: 'resize',
   },
@@ -61,6 +63,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     '@react-native-community/datetimepicker',
+    [
+      'expo-camera',
+      {
+        cameraPermission:
+          'Permite escanear el QR de la reserva del cliente y usar la cámara si lo necesitas.',
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,

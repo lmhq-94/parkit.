@@ -1,5 +1,10 @@
 import type { ReactNode } from "react";
-import { View, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
+import {
+  View,
+  StyleSheet,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useValetTheme } from "@/theme/valetTheme";
 
@@ -30,6 +35,7 @@ export function StickyFormFooter({
   const bg = backgroundColor ?? C.card;
   const bc = borderColor ?? C.border;
   const padH = ph ?? S.lg;
+  const footerBottomPadding = Math.max(insets.bottom, S.md);
 
   return (
     <View
@@ -40,7 +46,7 @@ export function StickyFormFooter({
           backgroundColor: bg,
           paddingHorizontal: padH,
           paddingTop: S.md,
-          paddingBottom: Math.max(insets.bottom, S.md),
+          paddingBottom: footerBottomPadding,
         },
         style,
       ]}

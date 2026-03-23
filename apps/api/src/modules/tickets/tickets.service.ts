@@ -1,5 +1,24 @@
+import { randomBytes } from "node:crypto";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "../../shared/prisma";
 import { TicketStatus, AssignmentRole, ValetStatus } from "@prisma/client";
+
+async function allocateTicketCodes(tx: Prisma.TransactionClient): Promise<{
+  keyCode: string;
+  ticketCode: string;
+}> {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const keyCode = randomBytes(4).toString("hex").toUpperCase();
+    const ticketCode = `PKT-${randomBytes(5).toString("hex").toUpperCase()}`;
+    const clash = await tx.ticket.count({
+      where: { OR: [{ keyCode }, { ticketCode }] },
+    });
+    if (clash === 0) {
+      return { keyCode, ticketCode };
+    }
+  }
+  throw new Error("Could not allocate unique ticket codes");
+}
 
 interface CreateTicketDTO {
   bookingId?: string;
@@ -95,6 +114,7 @@ export class TicketsService {
     } as const;
 
     return prisma.$transaction(async (tx) => {
+      const { keyCode, ticketCode } = await allocateTicketCodes(tx);
       const ticket = await tx.ticket.create({
         data: {
           companyId,
@@ -103,6 +123,8 @@ export class TicketsService {
           vehicleId: data.vehicleId,
           clientId: data.clientId,
           slotId: data.slotId,
+          keyCode,
+          ticketCode,
         },
       });
 

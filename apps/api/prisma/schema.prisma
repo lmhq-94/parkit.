@@ -324,6 +324,10 @@ model Ticket {
   vehicleId String
   clientId  String
   slotId    String?
+  /** Código corto interno (p. ej. llave / mostrador). */
+  keyCode   String?      @unique
+  /** Código legible para el cliente (ticket / QR). */
+  ticketCode String?     @unique
   status    TicketStatus @default(PARKED)
   entryTime DateTime     @default(now())
   exitTime  DateTime?

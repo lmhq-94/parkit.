@@ -60,6 +60,8 @@ export class VehiclesService {
                   select: {
                     firstName: true,
                     lastName: true,
+                    email: true,
+                    phone: true,
                   },
                 },
               },
@@ -185,8 +187,11 @@ export class VehiclesService {
                 id: true,
                 user: {
                   select: {
+                    id: true,
                     firstName: true,
                     lastName: true,
+                    email: true,
+                    phone: true,
                   },
                 },
               },
@@ -214,8 +219,11 @@ export class VehiclesService {
                 id: true,
                 user: {
                   select: {
+                    id: true,
                     firstName: true,
                     lastName: true,
+                    email: true,
+                    phone: true,
                   },
                 },
               },
