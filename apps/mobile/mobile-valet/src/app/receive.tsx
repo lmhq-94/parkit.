@@ -2,16 +2,18 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TextInput,
   Pressable,
   Platform,
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
   Modal,
   FlatList,
 } from "react-native";
+import {
+  KeyboardAwareScrollView,
+  KeyboardStickyView,
+} from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Redirect, useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -713,29 +715,6 @@ export default function ReceiveScreen() {
     }
   };
 
-  if (!user) return <Redirect href="/login" />;
-  if (!isReception) {
-    return (
-      <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
-        <View style={styles.frame}>
-        <View style={styles.screenHeader}>
-          <ValetBackButton
-            onPress={() => router.back()}
-            accessibilityLabel={t(locale, "common.back")}
-          />
-          <Text style={styles.screenTitle}>{receiveTitle}</Text>
-          <View style={{ width: 44 }} />
-        </View>
-        <View style={styles.blocked}>
-          <Ionicons name="hand-left-outline" size={56} color={C.textMuted} />
-          <Text style={styles.blockedTitle}>{t(locale, "receive.driverBlockedTitle")}</Text>
-          <Text style={styles.blockedBody}>{t(locale, "receive.driverBlockedBody")}</Text>
-        </View>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   const showNewDriverFields =
     vehicleResolved && (vehicle === null || !vehicle?.owners?.length);
 
@@ -832,12 +811,35 @@ export default function ReceiveScreen() {
     };
   }, [vehBrand, vehModel, vehYear]);
 
+  if (!user) return <Redirect href="/login" />;
+  if (!isReception) {
+    return (
+      <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+        <View style={styles.frame}>
+        <View style={styles.screenHeader}>
+          <ValetBackButton
+            onPress={() => router.back()}
+            accessibilityLabel={t(locale, "common.back")}
+          />
+          <Text style={styles.screenTitle}>{receiveTitle}</Text>
+          <View style={{ width: 44 }} />
+        </View>
+        <View style={styles.blocked}>
+          <Ionicons name="hand-left-outline" size={56} color={C.textMuted} />
+          <Text style={styles.blockedTitle}>{t(locale, "receive.driverBlockedTitle")}</Text>
+          <Text style={styles.blockedBody}>{t(locale, "receive.driverBlockedBody")}</Text>
+        </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   const backStepForDriver = reservationFlow ? 3 : 2;
 
   let footer: ReactNode = null;
   if (wizardStep === 1) {
     footer = (
-      <StickyFormFooter>
+      <StickyFormFooter keyboardPinned>
         <Pressable
           style={({ pressed }) => [
             styles.primaryBtn,
@@ -856,7 +858,7 @@ export default function ReceiveScreen() {
     );
   } else if (wizardStep === 2) {
     footer = (
-      <StickyFormFooter>
+      <StickyFormFooter keyboardPinned>
         <View style={styles.footerRow}>
           <Pressable
             style={({ pressed }) => [
@@ -889,7 +891,7 @@ export default function ReceiveScreen() {
     );
   } else if (wizardStep === 3 && reservationFlow) {
     footer = (
-      <StickyFormFooter>
+      <StickyFormFooter keyboardPinned>
         <View style={styles.footerRow}>
           <Pressable
             style={({ pressed }) => [
@@ -922,7 +924,7 @@ export default function ReceiveScreen() {
     );
   } else if (wizardStep === driverStepNum) {
     footer = (
-      <StickyFormFooter>
+      <StickyFormFooter keyboardPinned>
         <View style={styles.footerRow}>
           <Pressable
             style={({ pressed }) => [
@@ -955,7 +957,7 @@ export default function ReceiveScreen() {
     );
   } else if (wizardStep === vehicleStepNum) {
     footer = (
-      <StickyFormFooter>
+      <StickyFormFooter keyboardPinned>
         <View style={styles.footerRow}>
           <Pressable
             style={({ pressed }) => [
@@ -988,7 +990,7 @@ export default function ReceiveScreen() {
     );
   } else if (wizardStep === ticketStepNum) {
     footer = (
-      <StickyFormFooter>
+      <StickyFormFooter keyboardPinned>
         <View style={styles.footerRow}>
           <Pressable
             style={({ pressed }) => [
@@ -1021,7 +1023,7 @@ export default function ReceiveScreen() {
     );
   } else if (wizardStep === parkingStepNum) {
     footer = (
-      <StickyFormFooter>
+      <StickyFormFooter keyboardPinned>
         <View style={styles.footerRow}>
           <Pressable
             style={({ pressed }) => [
@@ -1071,16 +1073,13 @@ export default function ReceiveScreen() {
         <Text style={styles.screenTitle}>{receiveTitle}</Text>
         <View style={{ width: 44 }} />
       </View>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <View style={{ flex: 1, minHeight: 0 }}>
-        <ScrollView
+      <View style={{ flex: 1, minHeight: 0 }}>
+        <KeyboardAwareScrollView
           style={{ flex: 1 }}
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          bottomOffset={96}
         >
           {wizardStep === 1 && (
             <>
@@ -1539,9 +1538,9 @@ export default function ReceiveScreen() {
               )}
             </>
           )}
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
-        {footer}
+        {footer ? <KeyboardStickyView>{footer}</KeyboardStickyView> : null}
 
         <Modal
           visible={vehicleBrandModalOpen}
@@ -1724,8 +1723,7 @@ export default function ReceiveScreen() {
             </View>
           </View>
         </Modal>
-        </View>
-      </KeyboardAvoidingView>
+      </View>
       </View>
     </SafeAreaView>
   );

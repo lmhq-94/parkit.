@@ -2,7 +2,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TextInput,
   Pressable,
   Platform,
@@ -22,6 +21,10 @@ import api from "@/lib/api";
 import { messageFromAxios } from "@/lib/apiErrors";
 import { ValetBackButton } from "@/components/ValetBackButton";
 import { StickyFormFooter } from "@/components/StickyFormFooter";
+import {
+  KeyboardAwareScrollView,
+  KeyboardStickyView,
+} from "react-native-keyboard-controller";
 
 interface TicketRow {
   id: string;
@@ -55,7 +58,6 @@ export default function ReturnPickupScreen() {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [delivererId, setDelivererId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-
   const isReception = user?.valetStaffRole !== "DRIVER";
   const C = theme.colors;
   const M = ticketsA11y.minTouch;
@@ -149,11 +151,12 @@ export default function ReturnPickupScreen() {
         <View style={{ width: 44 }} />
       </View>
       <View style={{ flex: 1, minHeight: 0 }}>
-        <ScrollView
+        <KeyboardAwareScrollView
           style={{ flex: 1 }}
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          bottomOffset={96}
         >
           <Text style={styles.sub}>{t(locale, "returnPickup.subtitle")}</Text>
 
@@ -222,10 +225,11 @@ export default function ReturnPickupScreen() {
               </View>
             </>
           ) : null}
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
         {selectedTicketId ? (
-          <StickyFormFooter>
+          <KeyboardStickyView>
+          <StickyFormFooter keyboardPinned>
             <Pressable
               style={({ pressed }) => [
                 styles.primaryBtn,
@@ -246,6 +250,7 @@ export default function ReturnPickupScreen() {
               )}
             </Pressable>
           </StickyFormFooter>
+          </KeyboardStickyView>
         ) : null}
       </View>
       </View>

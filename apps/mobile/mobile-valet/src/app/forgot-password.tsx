@@ -14,7 +14,6 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Linking,
-  KeyboardAvoidingView,
   useWindowDimensions,
   LayoutAnimation,
   UIManager,
@@ -27,6 +26,7 @@ import api from "@/lib/api";
 import { useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { AuthHeroGradient } from "@/components/AuthHeroGradient";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
 

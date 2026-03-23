@@ -210,7 +210,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "workflow.driver2": "Actualiza el estado del servicio (traslado, en entrega, etc.) según lo vayas completando.",
     "workflow.driver3": "Coordina con recepción si hay dudas de plaza o cliente.",
     "workflow.driver4": "Marca el trabajo como completado cuando el cliente reciba el vehículo.",
-    "receive.title": "Recibir vehículo",
+    "receive.title": "Recepción de Vehículo",
     "receive.titleReservation": "Reservación",
     "receive.reservationIntro":
       "Primero verifica la tarjeta, luego la matrícula. En el paso del QR escanea o introduce el ID de la reserva; después completa conductor, vehículo, tiquete y parqueo.",
@@ -522,7 +522,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "workflow.driver2": "Update service status (in transit, handover, etc.) as you progress.",
     "workflow.driver3": "Coordinate with reception if there are questions about the slot or guest.",
     "workflow.driver4": "Mark the job complete when the guest has received the vehicle.",
-    "receive.title": "Receive vehicle",
+    "receive.title": "Vehicle Check-in",
     "receive.titleReservation": "Booking",
     "receive.reservationIntro":
       "First verify the card, then the plate. On the QR step scan or enter the booking ID; then complete driver, vehicle, ticket and parking.",

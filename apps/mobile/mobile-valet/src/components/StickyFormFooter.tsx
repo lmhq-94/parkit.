@@ -1,11 +1,5 @@
 import type { ReactNode } from "react";
-import {
-  View,
-  StyleSheet,
-  type StyleProp,
-  type ViewStyle,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { View, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
 import { useValetTheme } from "@/theme/valetTheme";
 
 type Props = {
@@ -15,6 +9,13 @@ type Props = {
   borderColor?: string;
   /** Padding horizontal; por defecto `theme.space.lg` (perfil). */
   paddingHorizontal?: number;
+  /** Suma al padding inferior (p. ej. iOS + teclado: separar botones del teclado). */
+  extraBottomPadding?: number;
+  /**
+   * Usar con `KeyboardStickyView` (receive, return-pickup): escucha teclado en iOS y Android
+   * y deja padding inferior casi a 0 al abrir para no duplicar aire con el sticky.
+   */
+  keyboardPinned?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -26,16 +27,18 @@ export function StickyFormFooter({
   backgroundColor,
   borderColor,
   paddingHorizontal: ph,
+  extraBottomPadding = 0,
+  keyboardPinned = false,
   style,
 }: Props) {
-  const insets = useSafeAreaInsets();
   const theme = useValetTheme();
   const C = theme.colors;
   const S = theme.space;
   const bg = backgroundColor ?? C.card;
   const bc = borderColor ?? C.border;
   const padH = ph ?? S.lg;
-  const footerBottomPadding = Math.max(insets.bottom, S.md);
+  const footerVerticalPadding = keyboardPinned ? S.md : S.md;
+  const footerBottomPadding = footerVerticalPadding + extraBottomPadding;
 
   return (
     <View
@@ -45,7 +48,7 @@ export function StickyFormFooter({
           borderTopColor: bc,
           backgroundColor: bg,
           paddingHorizontal: padH,
-          paddingTop: S.md,
+          paddingTop: footerVerticalPadding,
           paddingBottom: footerBottomPadding,
         },
         style,

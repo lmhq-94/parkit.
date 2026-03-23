@@ -14,7 +14,6 @@ import {
   Linking,
   Animated,
   Easing,
-  KeyboardAvoidingView,
   useWindowDimensions,
   LayoutAnimation,
   UIManager,
@@ -28,6 +27,7 @@ import { saveUser } from "@/lib/auth";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { AuthHeroGradient } from "@/components/AuthHeroGradient";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
 
