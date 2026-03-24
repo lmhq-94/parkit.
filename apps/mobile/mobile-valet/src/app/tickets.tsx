@@ -4,7 +4,6 @@ import {
   FlatList,
   Text,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
   Platform,
 } from "react-native";
@@ -18,6 +17,7 @@ import api, { clearAuthToken } from "@/lib/api";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useOnAppForeground } from "@/lib/useOnAppForeground";
 import { TICKETS_POLL_MS } from "@/lib/syncConstants";
+import { createFeedback } from "@/lib/feedback";
 import {
   useValetTheme,
   statusVisuals as statusVisualsForTheme,
@@ -352,13 +352,7 @@ export default function TicketsScreen() {
     return tickets.filter((x) => RECEPTION_UI_ROLES.has(x.assignmentRole));
   }, [tickets, isDriverUi]);
 
-  const tx = useMemo(
-    () => ({
-      cancel: t(locale, "common.cancel"),
-      ok: t(locale, "common.ok"),
-    }),
-    [locale]
-  );
+  const feedback = useMemo(() => createFeedback(locale), [locale]);
 
   const loadTickets = useCallback(async (opts?: { silent?: boolean }) => {
     if (!user) return;
@@ -417,92 +411,84 @@ export default function TicketsScreen() {
   };
 
   const handleRequestReturn = (item: TicketAssignment) => {
-    Alert.alert(
-      t(locale, "tickets.confirmRequestReturnTitle"),
-      t(locale, "tickets.confirmRequestReturnMessage"),
-      [
-        { text: tx.cancel, style: "cancel" },
-        {
-          text: t(locale, "tickets.yesContinue"),
-          onPress: async () => {
-            try {
-              await api.patch(
-                `/tickets/${item.ticketId}`,
-                { status: "REQUESTED" },
-                { headers: { "x-company-id": item.companyId } }
-              );
-              Alert.alert(t(locale, "common.successTitle"), t(locale, "tickets.successRequested"));
-              await loadTickets();
-            } catch (e: unknown) {
-              const msg =
-                e && typeof e === "object" && "response" in e
-                  ? (e as { response?: { data?: { message?: string } } }).response?.data?.message
-                  : null;
-              Alert.alert(t(locale, "common.errorTitle"), msg || t(locale, "tickets.errorUpdate"));
-            }
-          },
-        },
-      ]
-    );
+    feedback.confirm({
+      title: t(locale, "tickets.confirmRequestReturnTitle"),
+      message: t(locale, "tickets.confirmRequestReturnMessage"),
+      confirmText: t(locale, "tickets.yesContinue"),
+      onConfirm: async () => {
+        try {
+          await api.patch(
+            `/tickets/${item.ticketId}`,
+            { status: "REQUESTED" },
+            { headers: { "x-company-id": item.companyId } }
+          );
+          feedback.success(t(locale, "tickets.successRequested"));
+          await loadTickets();
+        } catch (e: unknown) {
+          const msg =
+            e && typeof e === "object" && "response" in e
+              ? (e as { response?: { data?: { message?: string } } }).response?.data?.message
+              : null;
+          feedback.error(msg || t(locale, "tickets.errorUpdate"));
+        }
+      },
+    });
   };
 
   const handleStatusUpdate = (item: TicketAssignment, newStatus: "in-transit" | "completed") => {
     const isComplete = newStatus === "completed";
-    Alert.alert(
-      isComplete ? t(locale, "tickets.confirmCompleteTitle") : t(locale, "tickets.confirmStartTitle"),
-      isComplete ? t(locale, "tickets.confirmCompleteMessage") : t(locale, "tickets.confirmStartMessage"),
-      [
-        { text: tx.cancel, style: "cancel" },
-        {
-          text: t(locale, "tickets.yesContinue"),
-          onPress: async () => {
-            if (isComplete) {
-              try {
-                await api.patch(
-                  `/tickets/${item.ticketId}`,
-                  { status: "DELIVERED" },
-                  { headers: { "x-company-id": item.companyId } }
-                );
-                setTickets((prev) =>
-                  prev.map((tkt) =>
-                    tkt.ticketId === item.ticketId ? { ...tkt, status: "completed" as const } : tkt
-                  )
-                );
-                Alert.alert(t(locale, "common.successTitle"), t(locale, "tickets.successDelivered"));
-              } catch (e: unknown) {
-                const msg =
-                  e && typeof e === "object" && "response" in e
-                    ? (e as { response?: { data?: { message?: string } } }).response?.data?.message
-                    : null;
-                Alert.alert(t(locale, "common.errorTitle"), msg || t(locale, "tickets.errorUpdate"));
-              }
-            } else {
-              setTickets((prev) =>
-                prev.map((tkt) =>
-                  tkt.ticketId === item.ticketId ? { ...tkt, status: "in-transit" as const } : tkt
-                )
-              );
-              Alert.alert(t(locale, "common.successTitle"), t(locale, "tickets.successInTransit"));
-            }
-          },
-        },
-      ]
-    );
+    feedback.confirm({
+      title: isComplete ? t(locale, "tickets.confirmCompleteTitle") : t(locale, "tickets.confirmStartTitle"),
+      message: isComplete
+        ? t(locale, "tickets.confirmCompleteMessage")
+        : t(locale, "tickets.confirmStartMessage"),
+      confirmText: t(locale, "tickets.yesContinue"),
+      onConfirm: async () => {
+        if (isComplete) {
+          try {
+            await api.patch(
+              `/tickets/${item.ticketId}`,
+              { status: "DELIVERED" },
+              { headers: { "x-company-id": item.companyId } }
+            );
+            setTickets((prev) =>
+              prev.map((tkt) =>
+                tkt.ticketId === item.ticketId ? { ...tkt, status: "completed" as const } : tkt
+              )
+            );
+            feedback.success(t(locale, "tickets.successDelivered"));
+          } catch (e: unknown) {
+            const msg =
+              e && typeof e === "object" && "response" in e
+                ? (e as { response?: { data?: { message?: string } } }).response?.data?.message
+                : null;
+            feedback.error(msg || t(locale, "tickets.errorUpdate"));
+          }
+        } else {
+          setTickets((prev) =>
+            prev.map((tkt) =>
+              tkt.ticketId === item.ticketId ? { ...tkt, status: "in-transit" as const } : tkt
+            )
+          );
+          feedback.success(t(locale, "tickets.successInTransit"));
+        }
+      },
+    });
   };
 
   const handleLogout = () => {
-    Alert.alert(t(locale, "tickets.logoutConfirmTitle"), t(locale, "tickets.logoutConfirmMessage"), [
-      { text: tx.cancel, style: "cancel" },
-      {
-        text: t(locale, "tickets.logout"),
-        style: "destructive",
-        onPress: async () => {
-          await clearAuthToken();
-          setUser(null);
-          router.replace("/login");
-        },
+    feedback.confirm({
+      title: t(locale, "tickets.logoutConfirmTitle"),
+      message: t(locale, "tickets.logoutConfirmMessage"),
+      confirmText: t(locale, "tickets.logout"),
+      destructive: true,
+      onConfirm: async () => {
+        await api.post("/valets/me/presence", { status: "AWAY" }).catch(() => {});
+        await clearAuthToken();
+        setUser(null);
+        router.replace("/login");
       },
-    ]);
+    });
   };
 
   const renderTicket = ({ item }: { item: TicketAssignment }) => {

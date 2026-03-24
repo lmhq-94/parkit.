@@ -164,6 +164,25 @@ export class TicketsService {
     } as const;
 
     return prisma.$transaction(async (tx) => {
+      if (data.driverValetId) {
+        const driver = await tx.valet.findFirst({
+          where: {
+            id: data.driverValetId,
+            currentParkingId: data.parkingId,
+            currentStatus: ValetStatus.AVAILABLE,
+            AND: [
+              { OR: [{ companyId }, { companyId: null }] },
+              { OR: [{ staffRole: ValetStaffRole.DRIVER }, { staffRole: null }] },
+            ],
+            user: { isActive: true },
+          },
+          select: { id: true },
+        });
+        if (!driver) {
+          throw new Error("Selected driver is not available for this parking");
+        }
+      }
+
       const { keyCode, ticketCode } = await resolveTicketCodes(tx, {
         keyCode: data.keyCode,
         ticketCode: data.ticketCode,

@@ -362,6 +362,7 @@ export default function LoginScreen() {
       const response = await api.post("/auth/login", { email: email.trim(), password });
       const { token, user } = response.data.data;
       await setAuthToken(token);
+      await api.post("/valets/me/presence", { status: "AVAILABLE" }).catch(() => {});
       await saveUser(user);
       setUser(user);
       router.replace("/home");
@@ -397,6 +398,7 @@ export default function LoginScreen() {
       });
       const { token, user } = response.data.data;
       await setAuthToken(token);
+      await api.post("/valets/me/presence", { status: "AVAILABLE" }).catch(() => {});
       await saveUser(user);
       setUser(user);
       router.replace("/home");

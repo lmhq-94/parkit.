@@ -7,7 +7,6 @@ import {
   Pressable,
   Platform,
   ActivityIndicator,
-  Alert,
   Image,
   Modal,
   FlatList,
@@ -27,6 +26,7 @@ import { ValetBackButton } from "@/components/ValetBackButton";
 import api from "@/lib/api";
 import { messageFromAxios } from "@/lib/apiErrors";
 import { saveUser } from "@/lib/auth";
+import { createFeedback } from "@/lib/feedback";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { LICENSE_TYPE_OPTIONS, LICENSE_TYPE_VALUES, labelForLicenseType } from "@/lib/licenseTypes";
 import {
@@ -73,6 +73,7 @@ export default function ProfileScreen() {
     [theme, responsive.contentMaxWidth, responsive.sectionPadding]
   );
   const C = theme.colors;
+  const feedback = useMemo(() => createFeedback(locale), [locale]);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -149,11 +150,11 @@ export default function ProfileScreen() {
         }
       }
     } catch {
-      Alert.alert(t(locale, "common.errorTitle"), t(locale, "profile.loadError"));
+      feedback.error(t(locale, "profile.loadError"));
     } finally {
       setLoading(false);
     }
-  }, [locale]);
+  }, [feedback]);
 
   useEffect(() => {
     load();
@@ -187,14 +188,14 @@ export default function ProfileScreen() {
         setAvatarRemoved(false);
       }
     } catch {
-      Alert.alert(t(locale, "common.errorTitle"), t(locale, "profile.photoProcessError"));
+      feedback.error(t(locale, "profile.photoProcessError"));
     }
   };
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(t(locale, "common.errorTitle"), t(locale, "profile.photoPermissionDenied"));
+      feedback.error(t(locale, "profile.photoPermissionDenied"));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -210,7 +211,7 @@ export default function ProfileScreen() {
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(t(locale, "common.errorTitle"), t(locale, "profile.photoCameraDenied"));
+      feedback.error(t(locale, "profile.photoCameraDenied"));
       return;
     }
     const result = await ImagePicker.launchCameraAsync({
@@ -265,13 +266,13 @@ export default function ProfileScreen() {
         nextErr.email ||
         nextErr.phone ||
         t(locale, "profile.errorRequired");
-      Alert.alert(t(locale, "common.errorTitle"), firstMsg);
+      feedback.error(firstMsg);
       return false;
     }
 
     setFieldErrors({});
     return true;
-  }, [firstName, lastName, email, phone, locale]);
+  }, [firstName, lastName, email, phone, locale, feedback]);
 
   const handleSave = async () => {
     if (!validate()) return;
@@ -339,13 +340,10 @@ export default function ProfileScreen() {
         } else {
           setPhone("");
         }
-        Alert.alert(t(locale, "common.successTitle"), t(locale, "profile.saveSuccess"));
+        feedback.success(t(locale, "profile.saveSuccess"));
       }
     } catch (e) {
-      Alert.alert(
-        t(locale, "common.errorTitle"),
-        messageFromAxios(e) || t(locale, "profile.saveError")
-      );
+      feedback.error(messageFromAxios(e) || t(locale, "profile.saveError"));
     } finally {
       setSaving(false);
     }
@@ -394,7 +392,7 @@ export default function ProfileScreen() {
       void pickImage();
       return;
     }
-    Alert.alert(t(locale, "profile.changePhoto"), "", [
+    feedback.alert(t(locale, "profile.changePhoto"), "", [
       { text: t(locale, "common.cancel"), style: "cancel" },
       { text: t(locale, "profile.photoFromLibrary"), onPress: () => void pickImage() },
       { text: t(locale, "profile.photoFromCamera"), onPress: () => void takePhoto() },

@@ -220,13 +220,13 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.reservationIntro":
       "Empieza escaneando el QR de la reserva: se cargan los datos del huésped y el vehículo. Luego elige parqueo, códigos de tiquete y valet para completar el ingreso.",
     "receive.walkInIntroCardStep":
-      "Primero verifica la tarjeta con el cliente; en el siguiente paso introduce la matrícula y continúa con el ingreso.",
+      "Comienza con la verificación de tarjeta para brindar una recepción más ágil y segura. Luego registra la matrícula y completa el ingreso.",
     "receive.cardVerifyNext": "Siguiente",
     "receive.stepCardVerify": "1. Tarjeta del cliente",
-    "receive.cardVerifyOnHoldTitle": "Validación con el banco",
+    "receive.cardVerifyOnHoldTitle": "Validación premium",
     "receive.cardVerifyOnHoldBody":
-      "Aquí podrás comprobar que la tarjeta está activa (p. ej. con Stripe). Por ahora está en espera: pulsa Siguiente para continuar.",
-    "receive.cardVerifyBadge": "En espera",
+      "Verifica en segundos que el método de pago esté activo con una experiencia segura de Stripe. Puedes continuar aunque no lo completes en este momento.",
+    "receive.cardVerifyBadge": "Opcional",
     "receive.stepReservationQr": "1. Reserva (QR)",
     "receive.reservationQrHelp":
       "Escanea el QR de la reserva; los datos del cliente y el vehículo se cargan solos.",
@@ -234,11 +234,11 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.qrNext": "Siguiente",
     "receive.qrWebHint": "En web no hay cámara para QR: usa el campo de ID manual y Validar.",
     "receive.qrPermissionExplain": "Necesitamos acceso a la cámara para leer el código QR de la reserva.",
-    "receive.qrPermissionTitle": "Cámara para el QR",
+    "receive.qrPermissionTitle": "Permiso de cámara",
     "receive.qrPremiumKicker": "Cliente con reserva",
-    "receive.qrPremiumTitle": "Escanear código",
+    "receive.qrPremiumTitle": "Escanear QR de reserva",
     "receive.qrPremiumSubtitle":
-      "Alinea el QR dentro del marco. La lectura es automática y la reserva se confirma al instante.",
+      "Apunta la cámara al código QR de la reserva del huésped; la validación es automática.",
     "receive.qrValidating": "Validando reserva…",
     "receive.qrAllowCamera": "Permitir cámara",
     "receive.qrOpenSettings": "Abrir ajustes",
@@ -253,12 +253,19 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.next": "Siguiente",
     "receive.wizardPlateTitle": "Matrícula",
     "receive.wizardPlateHelp":
-      "Después de verificar la tarjeta, escribe la matrícula. La búsqueda se hará automáticamente mientras escribes.",
+      "Escribe la matrícula. La búsqueda se hará automáticamente mientras escribes.",
     "receive.lookupInlineLoading": "Buscando matrícula...",
     "receive.wizardCardTitle": "Verificación de Tarjeta",
     "receive.wizardCardHelp":
-      "El cobro o la preautorización con tarjeta queda en verificación con el banco. Confirma con el cliente y marca la casilla para continuar.",
+      "Ofrece una experiencia más profesional iniciando la verificación de tarjeta con Stripe. Este paso es opcional por ahora.",
     "receive.wizardCardAck": "Confirmo que seguimos con el proceso de tarjeta acordado con el cliente",
+    "receive.cardVerifyStart": "Verificar tarjeta con Stripe",
+    "receive.cardVerifyOptionalHint":
+      "Sugerido para una recepción premium. Si lo prefieres, puedes continuar sin verificar tarjeta.",
+    "receive.cardVerifyStartedHint":
+      "Stripe ya está abierto para completar la verificación de forma segura. Cuando termines, regresa para seguir con el check-in.",
+    "receive.cardVerifyStarted": "Se abrió Stripe para verificación de tarjeta.",
+    "receive.cardVerifyError": "No se pudo iniciar la verificación de tarjeta.",
     "receive.wizardQrTitle": "Reserva",
     "receive.wizardQrHelp":
       "Apunta la cámara al código QR de la reserva del huésped; la validación es automática.",
@@ -269,10 +276,10 @@ const translations: Record<Locale, Record<string, string>> = {
       "Nombre, apellidos y correo son obligatorios. El teléfono es opcional.",
     "receive.wizardVehicleTitle": "Datos del vehículo",
     "receive.wizardVehicleHelp":
-      "Si la placa ya existía, revisa el resumen. Si no, completa marca, modelo y año.",
+      "Marca, modelo y año son obligatorios.",
     "receive.wizardTicketTitle": "Código del tiquete",
     "receive.wizardTicketHelp":
-      "Ya confirmaste el parqueo. Escribe el código del tiquete y el de las llaves. Suele ser el mismo: un solo campo rellena ambos; si no, puedes editar el de llaves aparte. A continuación podrás documentar el estado del vehículo con fotos y luego asignar el conductor valet si aplica.",
+      "Escribe el código del tiquete y el de las llaves. Suele ser el mismo: un solo campo rellena ambos; si no, puedes editar el de llaves aparte.",
     "receive.wizardTicketAck": "He entregado o explicado los códigos del tiquete al cliente",
     "receive.ticketCodeFieldLabel": "Código (tiquete y llaves)",
     "receive.ticketCodeOnlyLabel": "Código del tiquete",
@@ -286,10 +293,10 @@ const translations: Record<Locale, Record<string, string>> = {
       "Solo se permiten letras, números, guiones y guiones bajos (sin espacios).",
     "receive.wizardParkingTitle": "Parqueo",
     "receive.wizardParkingHelp":
-      "Confirma el parqueo de ingreso: por defecto usamos el más cercano a tu ubicación. Puedes elegir otro en la lista; la empresa del ingreso será la de ese parqueo. Luego registrarás los códigos del tiquete.",
+      "Confirma el parqueo de ingreso. Puedes elegir otro en la lista.",
     "receive.wizardValetStepTitle": "Conductor valet",
     "receive.wizardValetStepHelp":
-      "Asigna si un compañero conductor estacionará el vehículo o déjalo sin asignar (opcional). Después pulsa Crear tiquete.",
+      "Asigna a un compañero conductor para que estacione el vehículo. Después pulsa crear tiquete.",
     "receive.valetDriversListHint":
       "Solo se listan conductores disponibles en este parqueo con la app abierta recientemente (latido cada ~30 s; si llevan más de 5 min sin usar la app, no aparecen).",
     "receive.valetDriversEmpty":
@@ -334,7 +341,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.manualEntry": "Ingresar manualmente",
     "receive.brandPickerEmpty": "No hay marcas disponibles en la lista.",
     "receive.modelPickerEmpty": "No hay modelos disponibles para la marca seleccionada.",
-    "receive.vehicleDimensionsAuto": "Dimensiones del vehículo cargadas automáticamente desde catálogo.",
+    "receive.vehicleDimensionsAuto": "Las dimensiones del vehículo son cargadas automáticamente desde catálogo.",
     "receive.benefitSection": "Reserva / beneficio valet",
     "receive.benefitHelp": "Opcional: pega el ID de la reserva para validar horas de cortesía en el parqueo.",
     "receive.placeholderBooking": "ID de reserva",
@@ -355,6 +362,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.errorPlate": "Indica una matrícula válida.",
     "receive.errorDriver": "Nombre, apellido y correo del conductor son obligatorios.",
     "receive.errorContext": "Falta empresa, parqueo o perfil valet. Comprueba tu sesión.",
+    "receive.errorDriverValetRequired": "Debes asignar un conductor valet para crear el tiquete.",
     "receive.errorBookingPlate": "La reserva no coincide con la matrícula indicada.",
     "receive.errorBookingCompany": "No pudimos validar la reserva con el parqueo seleccionado. Revisa el ID o el parqueo.",
     "receive.errorSubmit": "No se pudo crear el ticket.",
@@ -362,14 +370,14 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.driverBlockedTitle": "Modo conductor",
     "receive.driverBlockedBody": "La recepción de vehículos la gestiona personal de recepción. Usa la cola de trabajo para tus entregas.",
     "returnPickup.title": "Devolución del vehículo",
-    "returnPickup.subtitle": "Elige un vehículo en parqueo y solicita la devolución. Puedes asignar un conductor valet.",
-    "returnPickup.filterPlaceholder": "Filtrar por matrícula",
+    "returnPickup.subtitle": "Busca el vehículo por código de ticket y solicita la devolución. Puedes asignar un conductor valet.",
+    "returnPickup.filterPlaceholder": "Buscar por código de ticket",
     "returnPickup.empty": "No hay vehículos en estado «en parqueo».",
     "returnPickup.assignDriver": "Conductor para la devolución",
     "returnPickup.assignHelp": "Opcional: asigna quién devolverá el vehículo al cliente.",
     "returnPickup.cta": "Solicitar devolución",
     "returnPickup.success": "Devolución solicitada.",
-    "returnPickup.selectTicket": "Selecciona un vehículo de la lista.",
+    "returnPickup.selectTicket": "Selecciona un ticket de la lista.",
   },
   en: {
     "welcome.cta": "Let's get started",
@@ -588,13 +596,13 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.reservationIntro":
       "Start by scanning the booking QR: guest and vehicle details load automatically. Then choose parking, ticket codes, and valet to finish check-in.",
     "receive.walkInIntroCardStep":
-      "First verify the card with the guest; on the next step enter the plate and continue check-in.",
+      "Start with card verification for a smoother, more secure check-in experience. Then enter the plate and complete intake.",
     "receive.cardVerifyNext": "Next",
     "receive.stepCardVerify": "1. Customer card",
-    "receive.cardVerifyOnHoldTitle": "Bank validation",
+    "receive.cardVerifyOnHoldTitle": "Premium verification",
     "receive.cardVerifyOnHoldBody":
-      "You’ll be able to check the card is active (e.g. via Stripe). On hold for now—tap Next to continue.",
-    "receive.cardVerifyBadge": "On hold",
+      "Confirm in seconds that the payment method is active using Stripe's secure flow. You can still continue even if you skip this step.",
+    "receive.cardVerifyBadge": "Optional",
     "receive.stepReservationQr": "1. Booking (QR)",
     "receive.reservationQrHelp":
       "Scan the booking QR; guest and vehicle details load automatically.",
@@ -602,11 +610,11 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.qrNext": "Next",
     "receive.qrWebHint": "QR scanning isn’t available on web: use the manual ID field and Validate.",
     "receive.qrPermissionExplain": "We need camera access to read the booking QR code.",
-    "receive.qrPermissionTitle": "Camera for QR",
+    "receive.qrPermissionTitle": "Camera permission",
     "receive.qrPremiumKicker": "Guest with booking",
-    "receive.qrPremiumTitle": "Scan code",
+    "receive.qrPremiumTitle": "Scan booking QR",
     "receive.qrPremiumSubtitle":
-      "Align the QR inside the frame. Scanning is automatic and the booking is confirmed instantly.",
+      "Point the camera at the guest’s booking QR; validation happens automatically.",
     "receive.qrValidating": "Validating booking…",
     "receive.qrAllowCamera": "Allow camera",
     "receive.qrOpenSettings": "Open settings",
@@ -621,12 +629,19 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.next": "Next",
     "receive.wizardPlateTitle": "License plate",
     "receive.wizardPlateHelp":
-      "After card verification, enter the plate. Lookup runs automatically while you type.",
+      "Enter the plate. Lookup runs automatically while you type.",
     "receive.lookupInlineLoading": "Searching plate...",
     "receive.wizardCardTitle": "Card Verification",
     "receive.wizardCardHelp":
-      "First step: card charge or pre-authorization is pending bank verification. Confirm with the guest and check the box to continue.",
+      "Deliver a more premium experience by starting Stripe card verification here. This step is optional for now.",
     "receive.wizardCardAck": "I confirm we are proceeding with the agreed card step with the customer",
+    "receive.cardVerifyStart": "Verify card with Stripe",
+    "receive.cardVerifyOptionalHint":
+      "Recommended for a premium check-in flow. You can still tap Next without card verification.",
+    "receive.cardVerifyStartedHint":
+      "Stripe is now open to complete secure verification. Come back when finished to continue check-in.",
+    "receive.cardVerifyStarted": "Stripe opened for card verification.",
+    "receive.cardVerifyError": "Could not start card verification.",
     "receive.wizardQrTitle": "Booking",
     "receive.wizardQrHelp":
       "Point the camera at the guest’s booking QR; validation happens automatically.",
@@ -637,10 +652,10 @@ const translations: Record<Locale, Record<string, string>> = {
       "First name, last name and email are required. Phone is optional.",
     "receive.wizardVehicleTitle": "Vehicle details",
     "receive.wizardVehicleHelp":
-      "If the plate was already on file, review the summary. Otherwise enter make, model and year.",
+      "Make, model and year are required.",
     "receive.wizardTicketTitle": "Ticket codes",
     "receive.wizardTicketHelp":
-      "Parking is already confirmed. Enter the ticket code and the key code. They are often the same: one field fills both; if not, you can enter a different key code. Next you can photograph the vehicle’s condition, then assign a valet driver if needed.",
+      "Enter the ticket code and the key code. They are often the same: one field fills both; if not, you can enter a different key code.",
     "receive.wizardTicketAck": "I have given or explained the ticket codes to the customer",
     "receive.ticketCodeFieldLabel": "Code (ticket & keys)",
     "receive.ticketCodeOnlyLabel": "Ticket code",
@@ -654,10 +669,10 @@ const translations: Record<Locale, Record<string, string>> = {
       "Only letters, numbers, hyphens and underscores are allowed (no spaces).",
     "receive.wizardParkingTitle": "Parking",
     "receive.wizardParkingHelp":
-      "Confirm check-in parking: by default we use the one closest to you. You can pick another from the list; check-in will use that parking’s company. You will enter ticket codes next.",
+      "Confirm check-in parking. You can pick another from the list.",
     "receive.wizardValetStepTitle": "Valet driver",
     "receive.wizardValetStepHelp":
-      "Assign a colleague to park the vehicle or leave unassigned (optional). Then create the check-in.",
+      "Assign a colleague to park the vehicle. Then create the check-in.",
     "receive.valetDriversListHint":
       "Only drivers available at this parking with a recently active app are listed (~30 s heartbeat; after about 5 minutes without the app, they drop off).",
     "receive.valetDriversEmpty":
@@ -723,6 +738,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.errorPlate": "Enter a valid plate.",
     "receive.errorDriver": "Driver first name, last name and email are required.",
     "receive.errorContext": "Missing company, parking or valet profile. Check your session.",
+    "receive.errorDriverValetRequired": "You must assign a valet driver before creating the ticket.",
     "receive.errorBookingPlate": "The booking does not match the plate entered.",
     "receive.errorBookingCompany": "We couldn't validate the booking with the selected parking. Check the ID or parking.",
     "receive.errorSubmit": "Could not create the ticket.",
@@ -730,14 +746,14 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.driverBlockedTitle": "Driver mode",
     "receive.driverBlockedBody": "Vehicle intake is handled by reception staff. Use the work queue for your deliveries.",
     "returnPickup.title": "Vehicle return",
-    "returnPickup.subtitle": "Pick a parked vehicle and request return. You can assign a valet driver.",
-    "returnPickup.filterPlaceholder": "Filter by plate",
+    "returnPickup.subtitle": "Search the vehicle by ticket code and request return. You can assign a valet driver.",
+    "returnPickup.filterPlaceholder": "Search by ticket code",
     "returnPickup.empty": "No vehicles currently parked.",
     "returnPickup.assignDriver": "Driver for return",
     "returnPickup.assignHelp": "Optional: assign who will return the vehicle to the customer.",
     "returnPickup.cta": "Request return",
     "returnPickup.success": "Return requested.",
-    "returnPickup.selectTicket": "Select a vehicle from the list.",
+    "returnPickup.selectTicket": "Select a ticket from the list.",
   },
 };
 

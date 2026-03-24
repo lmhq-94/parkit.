@@ -576,7 +576,6 @@ export class ValetsService {
 
     return prisma.valet.findMany({
       where: {
-        companyId,
         currentParkingId: parkingId,
         currentStatus: ValetStatus.AVAILABLE,
         lastPresenceAt: { gte: presenceSince },

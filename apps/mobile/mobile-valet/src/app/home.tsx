@@ -6,7 +6,6 @@ import {
   Platform,
   useWindowDimensions,
   ActivityIndicator,
-  Alert,
   Image,
   Modal,
   FlatList,
@@ -19,12 +18,13 @@ import { useMemo, useEffect, useState, type ComponentType } from "react";
 import { SquareParking } from "lucide-react-native";
 import { Logo } from "@parkit/shared";
 import type { ValetOperationalStatus } from "@parkit/shared";
-import { clearAuthToken } from "@/lib/api";
+import api, { clearAuthToken } from "@/lib/api";
 import { useAuthStore, useLocaleStore, useCompanyStore, useParkingPreferenceStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { useValetTheme, ticketsA11y } from "@/theme/valetTheme";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useNearestParking, haversineKm } from "@/lib/useNearestParking";
+import { createFeedback } from "@/lib/feedback";
 import { LinearGradient } from "expo-linear-gradient";
 
 /** Tonos por tile: modo claro (más profundos) vs oscuro (más vivos sobre fondo oscuro). */
@@ -76,6 +76,7 @@ export default function HomeScreen() {
   const manualParkingId = useParkingPreferenceStore((s) => s.manualParkingId);
   const setManualParkingId = useParkingPreferenceStore((s) => s.setManualParkingId);
   const hydrateParkingPreference = useParkingPreferenceStore((s) => s.hydrateParkingPreference);
+  const feedback = useMemo(() => createFeedback(locale), [locale]);
   const [parkingModalOpen, setParkingModalOpen] = useState(false);
 
   useEffect(() => {
@@ -99,6 +100,21 @@ export default function HomeScreen() {
     }
     return null;
   }, [user, manualParkingId, allParkings, nearest, userCoords]);
+
+  useEffect(() => {
+    if (!user || user.systemRole !== "STAFF") return;
+    const p = displayedParking?.parking;
+    if (!p?.id || !p.companyId) return;
+    const timer = setTimeout(() => {
+      void api
+        .patch("/valets/me", {
+          companyId: p.companyId,
+          currentParkingId: p.id,
+        })
+        .catch(() => {});
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [user, displayedParking?.parking?.id, displayedParking?.parking?.companyId]);
 
   const isDriverUi = user?.valetStaffRole === "DRIVER";
 
@@ -132,23 +148,19 @@ export default function HomeScreen() {
   const avatarPresenceColor = avatarPresenceRingColor(theme, statusKey);
 
   const handleLogout = () => {
-    Alert.alert(
-      t(locale, "tickets.logoutConfirmTitle"),
-      t(locale, "tickets.logoutConfirmMessage"),
-      [
-        { text: t(locale, "common.cancel"), style: "cancel" },
-        {
-          text: t(locale, "tickets.logout"),
-          style: "destructive",
-          onPress: async () => {
-            await clearAuthToken();
-            setCompanyId(null);
-            setUser(null);
-            router.replace("/login");
-          },
-        },
-      ]
-    );
+    feedback.confirm({
+      title: t(locale, "tickets.logoutConfirmTitle"),
+      message: t(locale, "tickets.logoutConfirmMessage"),
+      confirmText: t(locale, "tickets.logout"),
+      destructive: true,
+      onConfirm: async () => {
+        await api.post("/valets/me/presence", { status: "AWAY" }).catch(() => {});
+        await clearAuthToken();
+        setCompanyId(null);
+        setUser(null);
+        router.replace("/login");
+      },
+    });
   };
 
   const headerMaxH = Math.min(240, winH * 0.32);

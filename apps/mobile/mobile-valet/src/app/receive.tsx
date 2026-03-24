@@ -6,7 +6,6 @@ import {
   Pressable,
   Platform,
   ActivityIndicator,
-  Alert,
   Modal,
   FlatList,
   Image,
@@ -19,6 +18,7 @@ import {
 } from "react-native-keyboard-controller";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useRouter, useLocalSearchParams } from "expo-router";
+import * as Linking from "expo-linking";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { formatPlate } from "@parkit/shared";
@@ -32,6 +32,7 @@ import { useOnAppForeground } from "@/lib/useOnAppForeground";
 import { RECEIVE_META_POLL_MS } from "@/lib/syncConstants";
 import { useNearestParking, haversineKm } from "@/lib/useNearestParking";
 import { formatPhoneInternational, phoneDigitsForApi } from "@/lib/phoneInternational";
+import { createFeedback } from "@/lib/feedback";
 import { ValetBackButton } from "@/components/ValetBackButton";
 import { StickyFormFooter } from "@/components/StickyFormFooter";
 import { ReservationQrPanel, createQrStyles } from "@/components/ReservationQrPanel";
@@ -236,7 +237,8 @@ export default function ReceiveScreen() {
    * Reserva: 1 QR, 2 parqueo, 3 tiquete, 4 estado vehículo, 5 valet + enviar.
    */
   const [wizardStep, setWizardStep] = useState(1);
-  const [cardAcknowledged, setCardAcknowledged] = useState(false);
+  const [cardVerificationOpening, setCardVerificationOpening] = useState(false);
+  const [cardVerificationStarted, setCardVerificationStarted] = useState(false);
   const [ticketCodesAcknowledged, setTicketCodesAcknowledged] = useState(false);
   const [manualTicketCode, setManualTicketCode] = useState("");
   const [manualKeyCode, setManualKeyCode] = useState("");
@@ -254,10 +256,32 @@ export default function ReceiveScreen() {
   /** null = usar parqueo más cercano según GPS; si no, id elegido manualmente. */
   const [receiveManualParkingId, setReceiveManualParkingId] = useState<string | null>(null);
   const reservationParkingPreselectedRef = useRef<string | null>(null);
+  const qrNoCompanyAlertShownRef = useRef(false);
 
   const isReception = user?.valetStaffRole !== "DRIVER";
   const C = theme.colors;
   const M = ticketsA11y.minTouch;
+  const feedback = useMemo(() => createFeedback(locale), [locale]);
+
+  const startCardVerification = useCallback(async () => {
+    try {
+      setCardVerificationOpening(true);
+      const res = await api.post<{ data?: { url?: string } }>("/payments/card-verification/session", {
+        locale,
+      });
+      const url = res.data?.data?.url;
+      if (!url) throw new Error("No checkout URL");
+      const canOpen = await Linking.canOpenURL(url);
+      if (!canOpen) throw new Error("Cannot open checkout URL");
+      await Linking.openURL(url);
+      setCardVerificationStarted(true);
+      feedback.success(t(locale, "receive.cardVerifyStarted"));
+    } catch (e) {
+      feedback.error(messageFromAxios(e) || t(locale, "receive.cardVerifyError"));
+    } finally {
+      setCardVerificationOpening(false);
+    }
+  }, [feedback, locale]);
 
   const driverStepNum = 3;
   const vehicleStepNum = 4;
@@ -296,6 +320,24 @@ export default function ReceiveScreen() {
       null
     );
   }, [effectiveCompanyId, parkings, allParkings, storedCompanyId]);
+
+  const syncValetWorkingContext = useCallback(
+    async (nextCompanyId?: string | null, nextParkingId?: string | null) => {
+      if (!user || user.systemRole !== "STAFF") return;
+      const companyIdToSave = nextCompanyId ?? effectiveCompanyId;
+      const parkingIdToSave = nextParkingId ?? parkingId;
+      if (!companyIdToSave || !parkingIdToSave) return;
+      try {
+        await api.patch("/valets/me", {
+          companyId: companyIdToSave,
+          currentParkingId: parkingIdToSave,
+        });
+      } catch {
+        /* red o perfil no valet: no bloquear flujo */
+      }
+    },
+    [user, effectiveCompanyId, parkingId]
+  );
 
   const displayedReceiveParking = useMemo(() => {
     if (!allParkings.length) return null;
@@ -371,19 +413,11 @@ export default function ReceiveScreen() {
 
   /** Persistir empresa y parqueo de trabajo del valet en servidor (otros ven la lista disponible). */
   useEffect(() => {
-    if (!user || user.systemRole !== "STAFF") return;
     const timer = setTimeout(() => {
-      void api
-        .patch("/valets/me", {
-          companyId: effectiveCompanyId,
-          currentParkingId: parkingId,
-        })
-        .catch(() => {
-          /* red o perfil no valet: no bloquear flujo */
-        });
+      void syncValetWorkingContext();
     }, 450);
     return () => clearTimeout(timer);
-  }, [user, effectiveCompanyId, parkingId]);
+  }, [syncValetWorkingContext]);
 
   useEffect(() => {
     if (driverValetId == null) return;
@@ -452,7 +486,7 @@ export default function ReceiveScreen() {
     const formatted = formatPlate(opts?.plateValue ?? plate);
     if (!formatted.trim()) {
       if (advanceStep) {
-        Alert.alert(t(locale, "common.errorTitle"), t(locale, "receive.errorPlate"));
+        feedback.error(t(locale, "receive.errorPlate"));
       }
       return;
     }
@@ -570,7 +604,7 @@ export default function ReceiveScreen() {
     }
     const cid = companyIdForBooking;
     if (!cid) {
-      Alert.alert(t(locale, "common.errorTitle"), t(locale, "receive.errorBookingCompany"));
+      feedback.error(t(locale, "receive.errorBookingCompany"));
       return;
     }
     setCompanyId(cid);
@@ -580,19 +614,50 @@ export default function ReceiveScreen() {
       const b = res.data?.data;
       if (!b) {
         setBookingCheck("invalid");
+        feedback.alert(
+          t(locale, "receive.benefitInvalidTitle"),
+          `${t(locale, "receive.benefitInvalid")}\n\n${t(locale, "receive.benefitInvalidHint")}`
+        );
         return;
       }
       if (b.status === "CANCELLED" || b.status === "NO_SHOW") {
         setBookingCheck("invalid");
+        feedback.alert(
+          t(locale, "receive.benefitInvalidTitle"),
+          `${t(locale, "receive.benefitInvalid")}\n\n${t(locale, "receive.benefitInvalidHint")}`
+        );
         return;
       }
       setBookingCheck(b);
+      feedback.success(
+        t(locale, "receive.benefitOk", {
+          hours: String(b.parking?.freeBenefitHours ?? 0),
+        })
+      );
     } catch {
       setBookingCheck("invalid");
+      feedback.alert(
+        t(locale, "receive.benefitInvalidTitle"),
+        `${t(locale, "receive.benefitInvalid")}\n\n${t(locale, "receive.benefitInvalidHint")}`
+      );
     } finally {
       setBookingLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!(wizardStep === 1 && reservationFlow)) {
+      qrNoCompanyAlertShownRef.current = false;
+      return;
+    }
+    if (companyIdForBooking) {
+      qrNoCompanyAlertShownRef.current = false;
+      return;
+    }
+    if (qrNoCompanyAlertShownRef.current) return;
+    qrNoCompanyAlertShownRef.current = true;
+    feedback.error(t(locale, "receive.wizardQrNoCompany"));
+  }, [wizardStep, reservationFlow, companyIdForBooking, feedback, locale]);
 
   const resolveClientAndVehicleIds = async (): Promise<{
     clientId: string;
@@ -668,7 +733,7 @@ export default function ReceiveScreen() {
       const ln = driverLast.trim();
       const em = driverEmail.trim();
       if (!fn || !ln || !em) {
-        Alert.alert(t(locale, "common.errorTitle"), t(locale, "receive.errorDriver"));
+        feedback.error(t(locale, "receive.errorDriver"));
         return null;
       }
       const pwd = randomWalkInPassword();
@@ -698,7 +763,7 @@ export default function ReceiveScreen() {
     const br = vehBrand.trim() || "—";
     const md = vehModel.trim() || "—";
     if (!fn || !ln || !em) {
-      Alert.alert(t(locale, "common.errorTitle"), t(locale, "receive.errorDriver"));
+      feedback.error(t(locale, "receive.errorDriver"));
       return null;
     }
     const pwd = randomWalkInPassword();
@@ -844,10 +909,7 @@ export default function ReceiveScreen() {
   const processAndAddDamagePhoto = useCallback(
     async (uri: string) => {
       if (damagePhotosRef.current.length >= MAX_DAMAGE_PHOTOS) {
-        Alert.alert(
-          t(locale, "common.errorTitle"),
-          t(locale, "receive.damagePhotoLimit", { max: String(MAX_DAMAGE_PHOTOS) })
-        );
+        feedback.error(t(locale, "receive.damagePhotoLimit", { max: String(MAX_DAMAGE_PHOTOS) }));
         return;
       }
       setDamagePhotoBusy(true);
@@ -858,7 +920,7 @@ export default function ReceiveScreen() {
           { compress: 0.7, format: SaveFormat.JPEG, base64: true }
         );
         if (!manipulated.base64) {
-          Alert.alert(t(locale, "common.errorTitle"), t(locale, "profile.photoProcessError"));
+          feedback.error(t(locale, "profile.photoProcessError"));
           return;
         }
         const dataUrl = `data:image/jpeg;base64,${manipulated.base64}`;
@@ -866,7 +928,7 @@ export default function ReceiveScreen() {
           p.length >= MAX_DAMAGE_PHOTOS ? p : [...p, dataUrl]
         );
       } catch {
-        Alert.alert(t(locale, "common.errorTitle"), t(locale, "profile.photoProcessError"));
+        feedback.error(t(locale, "profile.photoProcessError"));
       } finally {
         setDamagePhotoBusy(false);
       }
@@ -876,15 +938,12 @@ export default function ReceiveScreen() {
 
   const pickDamageFromLibrary = useCallback(async () => {
     if (damagePhotosRef.current.length >= MAX_DAMAGE_PHOTOS) {
-      Alert.alert(
-        t(locale, "common.errorTitle"),
-        t(locale, "receive.damagePhotoLimit", { max: String(MAX_DAMAGE_PHOTOS) })
-      );
+      feedback.error(t(locale, "receive.damagePhotoLimit", { max: String(MAX_DAMAGE_PHOTOS) }));
       return;
     }
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(t(locale, "common.errorTitle"), t(locale, "profile.photoPermissionDenied"));
+      feedback.error(t(locale, "profile.photoPermissionDenied"));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -898,15 +957,12 @@ export default function ReceiveScreen() {
 
   const takeDamagePhoto = useCallback(async () => {
     if (damagePhotosRef.current.length >= MAX_DAMAGE_PHOTOS) {
-      Alert.alert(
-        t(locale, "common.errorTitle"),
-        t(locale, "receive.damagePhotoLimit", { max: String(MAX_DAMAGE_PHOTOS) })
-      );
+      feedback.error(t(locale, "receive.damagePhotoLimit", { max: String(MAX_DAMAGE_PHOTOS) }));
       return;
     }
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(t(locale, "common.errorTitle"), t(locale, "profile.photoCameraDenied"));
+      feedback.error(t(locale, "profile.photoCameraDenied"));
       return;
     }
     const result = await ImagePicker.launchCameraAsync({
@@ -924,7 +980,11 @@ export default function ReceiveScreen() {
   const handleSubmit = async () => {
     const cid = effectiveCompanyId;
     if (!cid || !receptorValetId || !parkingId) {
-      Alert.alert(t(locale, "common.errorTitle"), t(locale, "receive.errorContext"));
+      feedback.error(t(locale, "receive.errorContext"));
+      return;
+    }
+    if (!driverValetId) {
+      feedback.error(t(locale, "receive.errorDriverValetRequired"));
       return;
     }
     setCompanyId(cid);
@@ -934,7 +994,7 @@ export default function ReceiveScreen() {
         bookingCheck.vehicle?.plate &&
         formatPlate(bookingCheck.vehicle.plate) !== pl
       ) {
-        Alert.alert(t(locale, "common.errorTitle"), t(locale, "receive.errorBookingPlate"));
+        feedback.error(t(locale, "receive.errorBookingPlate"));
         return;
       }
     }
@@ -948,18 +1008,12 @@ export default function ReceiveScreen() {
       const tc = manualTicketCode.trim();
       const kc = keyCodesUnlinked ? manualKeyCode.trim() : tc;
       if (tc.length < 2 || kc.length < 2) {
-        Alert.alert(
-          t(locale, "common.errorTitle"),
-          t(locale, "receive.errorTicketCodesRequired")
-        );
+        feedback.error(t(locale, "receive.errorTicketCodesRequired"));
         setSubmitting(false);
         return;
       }
       if (!MANUAL_TICKET_CODE_RE.test(tc) || !MANUAL_TICKET_CODE_RE.test(kc)) {
-        Alert.alert(
-          t(locale, "common.errorTitle"),
-          t(locale, "receive.errorTicketCodesFormat")
-        );
+        feedback.error(t(locale, "receive.errorTicketCodesFormat"));
         setSubmitting(false);
         return;
       }
@@ -969,10 +1023,10 @@ export default function ReceiveScreen() {
         vehicleId: ids.vehicleId,
         parkingId,
         receptorValetId,
+        driverValetId,
         ticketCode: tc,
         keyCode: kc,
       };
-      if (driverValetId) payload.driverValetId = driverValetId;
       if (bookingCheck && bookingCheck !== "invalid")
         payload.bookingId = bookingCheck.id;
 
@@ -985,14 +1039,11 @@ export default function ReceiveScreen() {
       }
 
       await api.post("/tickets", payload);
-      Alert.alert(t(locale, "common.successTitle"), t(locale, "receive.success"), [
-        { text: t(locale, "common.ok"), onPress: () => router.replace("/tickets") },
-      ]);
+      feedback.success(t(locale, "receive.success"), {
+        onPress: () => router.replace("/tickets"),
+      });
     } catch (e) {
-      Alert.alert(
-        t(locale, "common.errorTitle"),
-        messageFromAxios(e) || t(locale, "receive.errorSubmit")
-      );
+      feedback.error(messageFromAxios(e) || t(locale, "receive.errorSubmit"));
     } finally {
       setSubmitting(false);
     }
@@ -1024,7 +1075,8 @@ export default function ReceiveScreen() {
     wizardStep === valetStepNum &&
     !!parkingId &&
     !!receptorValetId &&
-    !!effectiveCompanyId;
+    !!effectiveCompanyId &&
+    !!driverValetId;
 
   useEffect(() => {
     let cancelled = false;
@@ -1137,11 +1189,9 @@ export default function ReceiveScreen() {
             styles.primaryBtn,
             styles.primaryBtnSticky,
             { minHeight: M },
-            !cardAcknowledged && styles.btnDisabled,
             pressed && styles.pressed,
           ]}
           onPress={() => setWizardStep(2)}
-          disabled={!cardAcknowledged}
           accessibilityLabel={t(locale, "receive.next")}
         >
           <Text style={styles.primaryBtnText}>{t(locale, "receive.next")}</Text>
@@ -1290,7 +1340,10 @@ export default function ReceiveScreen() {
               !canContinueFromParking && styles.btnDisabled,
               pressed && styles.pressed,
             ]}
-            onPress={() => setWizardStep(ticketStepNum)}
+            onPress={async () => {
+              await syncValetWorkingContext();
+              setWizardStep(ticketStepNum);
+            }}
             disabled={!canContinueFromParking}
             accessibilityLabel={t(locale, "receive.next")}
           >
@@ -1453,9 +1506,7 @@ export default function ReceiveScreen() {
                 }}
               />
             </View>
-            {(Platform.OS === "web" ||
-              !companyIdForBooking ||
-              bookingCheck !== null) && (
+            {Platform.OS === "web" && (
               <View style={styles.reservationQrOverlay} pointerEvents="box-none">
                 <LinearGradient
                   colors={["rgba(2,6,23,0)", "rgba(2,6,23,0.72)", "rgba(2,6,23,0.96)"]}
@@ -1589,98 +1640,7 @@ export default function ReceiveScreen() {
                         </View>
                       )}
                     </>
-                  ) : (
-                    <ScrollView
-                      keyboardShouldPersistTaps="handled"
-                      nestedScrollEnabled
-                      showsVerticalScrollIndicator={bookingCheck === "invalid"}
-                      bounces={false}
-                      style={styles.reservationQrOverlayScroll}
-                      contentContainerStyle={styles.reservationQrOverlayScrollContent}
-                    >
-                      {!companyIdForBooking && (
-                        <View
-                          style={styles.reservationQrCompanyCard}
-                          pointerEvents="none"
-                          accessibilityRole="text"
-                        >
-                          <Ionicons name="business-outline" size={22} color="#FBBF24" />
-                          <Text style={styles.reservationQrCompanyCardText}>
-                            {t(locale, "receive.wizardQrNoCompany")}
-                          </Text>
-                        </View>
-                      )}
-                      {bookingCheck && bookingCheck !== "invalid" && (
-                        <View style={styles.reservationQrSuccessCard} pointerEvents="none">
-                          <Ionicons name="checkmark-circle" size={24} color={C.success} />
-                          <Text style={styles.reservationQrSuccessText}>
-                            {t(locale, "receive.benefitOk", {
-                              hours: String(bookingCheck.parking?.freeBenefitHours ?? 0),
-                            })}
-                          </Text>
-                        </View>
-                      )}
-                      {bookingCheck === "invalid" && (
-                        <View
-                          style={styles.reservationBookingErrorShell}
-                          pointerEvents="none"
-                          accessibilityRole="alert"
-                        >
-                          <LinearGradient
-                            colors={[
-                              "rgba(251, 207, 232, 0.55)",
-                              "rgba(196, 181, 253, 0.4)",
-                              "rgba(125, 211, 252, 0.45)",
-                            ]}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                            style={styles.reservationBookingErrorBorder}
-                          >
-                            <View style={styles.reservationBookingErrorInner}>
-                              <LinearGradient
-                                colors={["rgba(15, 23, 42, 0.97)", "rgba(15, 23, 42, 0.92)"]}
-                                style={StyleSheet.absoluteFill}
-                                start={{ x: 0.5, y: 0 }}
-                                end={{ x: 0.5, y: 1 }}
-                              />
-                              <View style={styles.reservationBookingErrorContent}>
-                                <View style={styles.reservationBookingErrorHeaderRow}>
-                                  <LinearGradient
-                                    colors={["rgba(251, 207, 232, 0.35)", "rgba(147, 197, 253, 0.4)"]}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 1 }}
-                                    style={styles.reservationBookingErrorIconRing}
-                                  >
-                                    <View style={styles.reservationBookingErrorIconCore}>
-                                      <Ionicons
-                                        name="qr-code-outline"
-                                        size={22}
-                                        color="rgba(248,250,252,0.92)"
-                                      />
-                                    </View>
-                                  </LinearGradient>
-                                  <View style={styles.reservationBookingErrorTitleBlock}>
-                                    <Text style={styles.reservationBookingErrorEyebrow}>
-                                      {t(locale, "receive.benefitInvalidEyebrow")}
-                                    </Text>
-                                    <Text style={styles.reservationBookingErrorTitle}>
-                                      {t(locale, "receive.benefitInvalidTitle")}
-                                    </Text>
-                                  </View>
-                                </View>
-                                <Text style={styles.reservationBookingErrorBody} maxFontSizeMultiplier={2}>
-                                  {t(locale, "receive.benefitInvalid")}
-                                </Text>
-                                <Text style={styles.reservationBookingErrorHint} maxFontSizeMultiplier={2}>
-                                  {t(locale, "receive.benefitInvalidHint")}
-                                </Text>
-                              </View>
-                            </View>
-                          </LinearGradient>
-                        </View>
-                      )}
-                    </ScrollView>
-                  )}
+                  ) : null}
                 </LinearGradient>
               </View>
             )}
@@ -1718,19 +1678,27 @@ export default function ReceiveScreen() {
                 </View>
               </View>
               <Pressable
-                onPress={() => setCardAcknowledged(!cardAcknowledged)}
-                style={({ pressed }) => [styles.ackRow, pressed && styles.pressed]}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: cardAcknowledged }}
-                accessibilityLabel={t(locale, "receive.wizardCardAck")}
+                style={({ pressed }) => [
+                  styles.primaryBtn,
+                  styles.stepCardStripeBtn,
+                  cardVerificationOpening && styles.btnDisabled,
+                  pressed && styles.pressed,
+                ]}
+                onPress={startCardVerification}
+                disabled={cardVerificationOpening}
+                accessibilityLabel={t(locale, "receive.cardVerifyStart")}
               >
-                <Ionicons
-                  name={cardAcknowledged ? "checkbox-outline" : "square-outline"}
-                  size={24}
-                  color={cardAcknowledged ? C.primary : C.textMuted}
-                />
-                <Text style={styles.ackRowText}>{t(locale, "receive.wizardCardAck")}</Text>
+                {cardVerificationOpening ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.primaryBtnText}>{t(locale, "receive.cardVerifyStart")}</Text>
+                )}
               </Pressable>
+              <Text style={styles.help}>
+                {cardVerificationStarted
+                  ? t(locale, "receive.cardVerifyStartedHint")
+                  : t(locale, "receive.cardVerifyOptionalHint")}
+              </Text>
             </>
           )}
 
@@ -2227,7 +2195,6 @@ export default function ReceiveScreen() {
             <>
               <Text style={styles.sectionLabel}>{t(locale, "receive.wizardValetStepTitle")}</Text>
               <Text style={styles.stepExplain}>{t(locale, "receive.wizardValetStepHelp")}</Text>
-              <Text style={[styles.help, { marginTop: -8 }]}>{t(locale, "receive.valetDriversListHint")}</Text>
               {metaLoading || valetsLoading ? (
                 <ActivityIndicator color={C.primary} style={{ marginVertical: theme.space.lg }} />
               ) : !parkingId || !effectiveCompanyId ? (
@@ -2236,31 +2203,6 @@ export default function ReceiveScreen() {
                 </Text>
               ) : (
                 <View style={styles.valetDriverList}>
-                  <Pressable
-                    onPress={() => setDriverValetId(null)}
-                    style={({ pressed }) => [
-                      styles.valetDriverRow,
-                      driverValetId === null && styles.valetDriverRowSelected,
-                      pressed && styles.pressed,
-                    ]}
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected: driverValetId === null }}
-                  >
-                    <Ionicons
-                      name="person-outline"
-                      size={22}
-                      color={driverValetId === null ? C.primary : C.textMuted}
-                    />
-                    <Text
-                      style={[
-                        styles.valetDriverRowText,
-                        driverValetId === null && { color: C.primary },
-                      ]}
-                      maxFontSizeMultiplier={2}
-                    >
-                      {t(locale, "receive.noDriver")}
-                    </Text>
-                  </Pressable>
                   {valets.length === 0 ? (
                     <Text style={[styles.help, { marginTop: theme.space.sm }]}>
                       {t(locale, "receive.valetDriversEmpty")}
@@ -3078,6 +3020,9 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       color: C.textMuted,
       textTransform: "uppercase",
       letterSpacing: 0.6,
+    },
+    stepCardStripeBtn: {
+      marginBottom: S.sm,
     },
     chips: { flexDirection: "row", flexWrap: "wrap", gap: S.sm, marginBottom: S.lg },
     chip: {

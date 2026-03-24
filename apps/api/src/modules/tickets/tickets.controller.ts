@@ -6,6 +6,20 @@ import { created, fail, notFound, ok } from "../../shared/utils/response";
 export class TicketsController {
   static async create(req: Request, res: Response) {
     try {
+      // Recepción en app móvil: el conductor asignado es obligatorio.
+      if (req.user.role === "STAFF") {
+        const body = req.body as { driverValetId?: unknown };
+        const driverValetId =
+          typeof body.driverValetId === "string" ? body.driverValetId.trim() : "";
+        if (!driverValetId) {
+          return fail(
+            res,
+            400,
+            "driverValetId is required for staff ticket creation"
+          );
+        }
+      }
+
       const ticket = await TicketsService.create(
         req.user.companyId!,
         req.body

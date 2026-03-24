@@ -6,7 +6,6 @@ import {
   Pressable,
   Platform,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Redirect, useRouter } from "expo-router";
@@ -19,6 +18,7 @@ import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useCompanyContext } from "@/lib/useCompanyContext";
 import api from "@/lib/api";
 import { messageFromAxios } from "@/lib/apiErrors";
+import { createFeedback } from "@/lib/feedback";
 import { ValetBackButton } from "@/components/ValetBackButton";
 import { StickyFormFooter } from "@/components/StickyFormFooter";
 import {
@@ -29,6 +29,7 @@ import {
 interface TicketRow {
   id: string;
   status: string;
+  ticketCode?: string;
   vehicle?: { plate?: string; brand?: string; model?: string };
   parking?: { name?: string };
 }
@@ -53,7 +54,7 @@ export default function ReturnPickupScreen() {
 
   const [tickets, setTickets] = useState<TicketRow[]>([]);
   const [loading, setLoading] = useState(false);
-  const [plateFilter, setPlateFilter] = useState("");
+  const [ticketCodeFilter, setTicketCodeFilter] = useState("");
   const [valets, setValets] = useState<ValetOpt[]>([]);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [delivererId, setDelivererId] = useState<string | null>(null);
@@ -61,6 +62,7 @@ export default function ReturnPickupScreen() {
   const isReception = user?.valetStaffRole !== "DRIVER";
   const C = theme.colors;
   const M = ticketsA11y.minTouch;
+  const feedback = useMemo(() => createFeedback(locale), [locale]);
 
   const load = useCallback(async () => {
     if (!companyId) return;
@@ -85,14 +87,14 @@ export default function ReturnPickupScreen() {
   }, [user, companyId, load]);
 
   const filtered = useMemo(() => {
-    const q = plateFilter.trim().toUpperCase();
+    const q = ticketCodeFilter.trim().toUpperCase();
     if (!q) return tickets;
-    return tickets.filter((x) => (x.vehicle?.plate || "").toUpperCase().includes(q));
-  }, [tickets, plateFilter]);
+    return tickets.filter((x) => (x.ticketCode || "").toUpperCase().includes(q));
+  }, [tickets, ticketCodeFilter]);
 
   const handleRequest = async () => {
     if (!selectedTicketId || !companyId) {
-      Alert.alert(t(locale, "common.errorTitle"), t(locale, "returnPickup.selectTicket"));
+      feedback.error(t(locale, "returnPickup.selectTicket"));
       return;
     }
     setSubmitting(true);
@@ -102,14 +104,11 @@ export default function ReturnPickupScreen() {
       };
       if (delivererId) body.delivererValetId = delivererId;
       await api.patch(`/tickets/${selectedTicketId}`, body);
-      Alert.alert(t(locale, "common.successTitle"), t(locale, "returnPickup.success"), [
-        { text: t(locale, "common.ok"), onPress: () => router.replace("/tickets") },
-      ]);
+      feedback.success(t(locale, "returnPickup.success"), {
+        onPress: () => router.replace("/tickets"),
+      });
     } catch (e) {
-      Alert.alert(
-        t(locale, "common.errorTitle"),
-        messageFromAxios(e) || t(locale, "tickets.errorUpdate")
-      );
+      feedback.error(messageFromAxios(e) || t(locale, "tickets.errorUpdate"));
     } finally {
       setSubmitting(false);
     }
@@ -162,8 +161,8 @@ export default function ReturnPickupScreen() {
 
           <TextInput
             style={styles.input}
-            value={plateFilter}
-            onChangeText={(x) => setPlateFilter(x.toUpperCase())}
+            value={ticketCodeFilter}
+            onChangeText={(x) => setTicketCodeFilter(x.toUpperCase())}
             placeholder={t(locale, "returnPickup.filterPlaceholder")}
             placeholderTextColor={C.textSubtle}
             autoCapitalize="characters"
@@ -188,6 +187,7 @@ export default function ReturnPickupScreen() {
                   }}
                   style={[styles.ticketCard, active && styles.ticketCardOn]}
                 >
+                  <Text style={styles.metaStrong}>{tk.ticketCode || "—"}</Text>
                   <Text style={styles.plate}>{tk.vehicle?.plate || "—"}</Text>
                   <Text style={styles.meta}>
                     {tk.vehicle?.brand} {tk.vehicle?.model}
@@ -328,6 +328,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       letterSpacing: 1,
     },
     meta: { fontSize: F.secondary, color: C.textMuted, marginTop: 4 },
+    metaStrong: { fontSize: F.secondary, color: C.primary, fontWeight: "800", marginBottom: 4 },
     sectionLabel: {
       fontSize: F.secondary,
       fontWeight: "800",
