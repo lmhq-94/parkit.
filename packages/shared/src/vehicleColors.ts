@@ -1,0 +1,15 @@
+export const VEHICLE_COLORS = [
+  { value: "BLANCO", label: "Blanco" },
+  { value: "NEGRO", label: "Negro" },
+  { value: "GRIS", label: "Gris" },
+  { value: "PLATEADO", label: "Plateado" },
+  { value: "AZUL", label: "Azul" },
+  { value: "ROJO", label: "Rojo" },
+  { value: "VERDE", label: "Verde" },
+  { value: "AMARILLO", label: "Amarillo" },
+  { value: "NARANJA", label: "Naranja" },
+  { value: "CAFE", label: "Cafe" },
+  { value: "BEIGE", label: "Beige" },
+  { value: "DORADO", label: "Dorado" },
+  { value: "MORADO", label: "Morado" },
+] as const;

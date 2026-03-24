@@ -227,6 +227,7 @@ export const CreateVehicleSchema = z.object({
   countryCode: z.string().default("CR"),
   brand: z.string().optional(),
   model: z.string().optional(),
+  color: z.string().optional(),
   year: z.number().optional(),
   dimensions: VehicleDimensionsRequiredSchema,
 });
@@ -236,6 +237,7 @@ export const UpdateVehicleSchema = z.object({
   countryCode: z.string().optional(),
   brand: z.string().optional(),
   model: z.string().optional(),
+  color: z.string().optional(),
   year: z.number().optional(),
   dimensions: VehicleDimensionsSchema,
 });

@@ -15,6 +15,7 @@ import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import api, { clearAuthToken } from "@/lib/api";
 import { ValetBackButton } from "@/components/ValetBackButton";
+import { SquareParkingOff } from "lucide-react-native";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useOnAppForeground } from "@/lib/useOnAppForeground";
 import { TICKETS_POLL_MS } from "@/lib/syncConstants";
@@ -36,7 +37,16 @@ interface ApiAssignment {
     id: string;
     status: string;
     companyId: string;
-    vehicle: { plate: string; countryCode?: string };
+    ticketCode?: string | null;
+    keyCode?: string | null;
+    entryTime?: string;
+    vehicle: {
+      plate: string;
+      countryCode?: string;
+      brand?: string | null;
+      model?: string | null;
+      color?: string | null;
+    };
     parking: { name: string; address?: string };
     slot?: { label: string } | null;
   };
@@ -52,7 +62,13 @@ interface TicketAssignment {
   /** Estado real del ticket en backend. */
   ticketStatus: string;
   status: "assigned" | "in-transit" | "completed";
+  ticketCode?: string | null;
+  keyCode?: string | null;
   vehiclePlate: string;
+  vehicleBrandModel: string;
+  vehicleColor: string | null;
+  parkingName: string;
+  createdAt: string;
   location: string;
   timestamp: string;
   companyId: string;
@@ -73,6 +89,11 @@ function mapApiAssignmentToDisplay(a: ApiAssignment): TicketAssignment {
     a.ticket.parking?.address ||
     "—";
   const plate = a.ticket.vehicle?.plate ? `${a.ticket.vehicle.plate}` : "—";
+  const brand = a.ticket.vehicle?.brand?.trim() || "";
+  const model = a.ticket.vehicle?.model?.trim() || "";
+  const brandModel = [brand, model].filter(Boolean).join(" ").trim() || "—";
+  const color = a.ticket.vehicle?.color?.trim() || null;
+  const parkingName = a.ticket.parking?.name?.trim() || "—";
   return {
     id: a.ticket.id,
     assignmentId: a.id,
@@ -81,11 +102,28 @@ function mapApiAssignmentToDisplay(a: ApiAssignment): TicketAssignment {
     assignmentRole: a.role,
     ticketStatus: a.ticket.status,
     status,
+    ticketCode: a.ticket.ticketCode ?? null,
+    keyCode: a.ticket.keyCode ?? null,
     vehiclePlate: plate,
+    vehicleBrandModel: brandModel,
+    vehicleColor: color,
+    parkingName,
+    createdAt: a.ticket.entryTime || a.assignedAt,
     location,
     timestamp: a.assignedAt,
     companyId: a.ticket.companyId,
   };
+}
+
+function formatTicketDateTime(iso: string, locale: "es" | "en"): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "es-CR", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(d);
 }
 
 type Theme = ReturnType<typeof useValetTheme>;
@@ -148,6 +186,7 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
       textAlign: "left",
     },
     introBlock: {
+      marginTop: S.md,
       marginBottom: S.lg,
       gap: 2,
     },
@@ -157,14 +196,16 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
     },
     listEmptyGrow: {
       flexGrow: 1,
-      padding: S.lg,
-      justifyContent: "center",
+      paddingHorizontal: sectionPadding,
+      paddingBottom: S.xxl,
     },
     ticketCard: {
       backgroundColor: C.card,
       borderRadius: R.card,
       borderLeftWidth: 8,
-      padding: S.xl,
+      borderWidth: 1,
+      borderColor: C.border,
+      padding: S.md,
       marginBottom: S.lg,
       ...Platform.select({
         ios: {
@@ -177,28 +218,39 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
       }),
     },
     plateLabel: {
-      fontSize: F.secondary,
-      fontWeight: "600",
+      fontSize: F.secondary - 2,
+      fontWeight: "800",
       color: C.textSubtle,
-      marginBottom: 4,
+      textTransform: "uppercase",
+      letterSpacing: 0.6,
+      marginBottom: 2,
     },
     vehiclePlate: {
-      fontSize: F.hero,
+      fontSize: F.title + 4,
       fontWeight: "800",
       color: C.text,
-      letterSpacing: 2,
-      marginBottom: S.md,
+      letterSpacing: 1.2,
       fontVariant: ["tabular-nums"],
+    },
+    ticketTopRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: S.md,
+      marginBottom: S.md,
+    },
+    plateBlock: {
+      flex: 1,
+      minWidth: 0,
     },
     statusPill: {
       alignSelf: "flex-start",
-      paddingVertical: 10,
-      paddingHorizontal: S.md,
+      paddingVertical: 7,
+      paddingHorizontal: S.sm,
       borderRadius: 12,
-      marginBottom: S.lg,
     },
     statusPillText: {
-      fontSize: F.status,
+      fontSize: F.secondary - 1,
       fontWeight: "800",
     },
     locationLabel: {
@@ -211,7 +263,12 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
       flexDirection: "row",
       alignItems: "flex-start",
       gap: S.sm,
-      marginBottom: S.lg,
+      marginBottom: S.md,
+      borderWidth: 1,
+      borderColor: C.border,
+      borderRadius: R.button,
+      padding: S.sm,
+      backgroundColor: theme.isDark ? "rgba(15, 23, 42, 0.35)" : "rgba(248, 250, 252, 0.8)",
     },
     locationIcon: {
       marginTop: 2,
@@ -225,6 +282,49 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
     },
     actions: {
       marginTop: S.xs,
+    },
+    metaGrid: {
+      gap: 6,
+      marginBottom: S.sm,
+    },
+    metaLine: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    metaKey: {
+      minWidth: 88,
+      fontSize: F.secondary - 2,
+      color: C.textMuted,
+      fontWeight: "700",
+    },
+    metaValue: {
+      flex: 1,
+      fontSize: F.secondary,
+      color: C.text,
+      fontWeight: "700",
+    },
+    tagRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginBottom: S.sm,
+    },
+    infoTag: {
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: C.border,
+      backgroundColor: theme.isDark ? "rgba(15,23,42,0.42)" : "rgba(248,250,252,0.95)",
+      paddingVertical: 4,
+      paddingHorizontal: 10,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+    },
+    infoTagText: {
+      fontSize: 12,
+      color: C.textSubtle,
+      fontWeight: "700",
     },
     btn: {
       minHeight: M + 8,
@@ -280,6 +380,9 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
       paddingVertical: S.xxl,
       paddingHorizontal: S.lg,
       gap: S.md,
+    },
+    centerBoxEmpty: {
+      flex: 1,
     },
     loadingText: {
       fontSize: F.body,
@@ -473,6 +576,10 @@ export default function TicketsScreen() {
   };
 
   const renderTicket = ({ item }: { item: TicketAssignment }) => {
+    const ticketCode = item.ticketCode?.trim() || "—";
+    const keyCode = item.keyCode?.trim() || null;
+    const showDifferentKeyCode = !!keyCode && keyCode !== ticketCode;
+    const createdAtLabel = formatTicketDateTime(item.createdAt, locale);
     if (!isDriverUi) {
       const rVis = statusVisualsForTheme(mapReceptionVisualStatus(item.ticketStatus), theme.isDark);
       return (
@@ -480,15 +587,18 @@ export default function TicketsScreen() {
           style={[styles.ticketCard, { borderLeftColor: rVis.bar }]}
           accessibilityLabel={`${t(locale, "tickets.plateLabel")}: ${item.vehiclePlate}. ${receptionTicketStatusLabel(item.ticketStatus)}. ${t(locale, "tickets.locationLabel")}: ${item.location}`}
         >
-          <Text style={styles.plateLabel}>{t(locale, "tickets.plateLabel")}</Text>
-          <Text style={styles.vehiclePlate} accessibilityRole="header" maxFontSizeMultiplier={2.2}>
-            {item.vehiclePlate}
-          </Text>
-
-          <View style={[styles.statusPill, { backgroundColor: rVis.softBg }]}>
-            <Text style={[styles.statusPillText, { color: rVis.softText }]} maxFontSizeMultiplier={2}>
-              {receptionTicketStatusLabel(item.ticketStatus)}
-            </Text>
+          <View style={styles.ticketTopRow}>
+            <View style={styles.plateBlock}>
+              <Text style={styles.plateLabel}>{t(locale, "tickets.plateLabel")}</Text>
+              <Text style={styles.vehiclePlate} accessibilityRole="header" maxFontSizeMultiplier={2.2}>
+                {item.vehiclePlate}
+              </Text>
+            </View>
+            <View style={[styles.statusPill, { backgroundColor: rVis.softBg }]}>
+              <Text style={[styles.statusPillText, { color: rVis.softText }]} maxFontSizeMultiplier={2}>
+                {receptionTicketStatusLabel(item.ticketStatus)}
+              </Text>
+            </View>
           </View>
 
           <Text style={styles.locationLabel}>{t(locale, "tickets.locationLabel")}</Text>
@@ -497,6 +607,42 @@ export default function TicketsScreen() {
             <Text style={styles.location} maxFontSizeMultiplier={2}>
               {item.location}
             </Text>
+          </View>
+          <View style={styles.metaGrid}>
+            <View style={styles.metaLine}>
+              <Text style={styles.metaKey}>{t(locale, "tickets.ticketCodeLabel")}</Text>
+              <Text style={styles.metaValue}>{ticketCode}</Text>
+            </View>
+            {showDifferentKeyCode ? (
+              <View style={styles.metaLine}>
+                <Text style={styles.metaKey}>{t(locale, "tickets.keyCodeLabel")}</Text>
+                <Text style={styles.metaValue}>{keyCode}</Text>
+              </View>
+            ) : null}
+            <View style={styles.metaLine}>
+              <Text style={styles.metaKey}>{t(locale, "tickets.vehicleLabel")}</Text>
+              <Text style={styles.metaValue}>{item.vehicleBrandModel}</Text>
+            </View>
+            {item.vehicleColor ? (
+              <View style={styles.metaLine}>
+                <Text style={styles.metaKey}>{t(locale, "tickets.colorLabel")}</Text>
+                <Text style={styles.metaValue}>{item.vehicleColor}</Text>
+              </View>
+            ) : null}
+          </View>
+          <View style={styles.tagRow}>
+            <View style={styles.infoTag}>
+              <Ionicons name="time-outline" size={14} color={C.textSubtle} />
+              <Text style={styles.infoTagText}>
+                {t(locale, "tickets.createdAtLabel", { value: createdAtLabel })}
+              </Text>
+            </View>
+            <View style={styles.infoTag}>
+              <Ionicons name="business-outline" size={14} color={C.textSubtle} />
+              <Text style={styles.infoTagText}>
+                {t(locale, "tickets.parkingNameLabel", { value: item.parkingName })}
+              </Text>
+            </View>
           </View>
 
           <View style={styles.actions}>
@@ -533,15 +679,18 @@ export default function TicketsScreen() {
         style={[styles.ticketCard, { borderLeftColor: vis.bar }]}
         accessibilityLabel={`${t(locale, "tickets.plateLabel")}: ${item.vehiclePlate}. ${statusLabel(item.status)}. ${t(locale, "tickets.locationLabel")}: ${item.location}`}
       >
-        <Text style={styles.plateLabel}>{t(locale, "tickets.plateLabel")}</Text>
-        <Text style={styles.vehiclePlate} accessibilityRole="header" maxFontSizeMultiplier={2.2}>
-          {item.vehiclePlate}
-        </Text>
-
-        <View style={[styles.statusPill, { backgroundColor: vis.softBg }]}>
-          <Text style={[styles.statusPillText, { color: vis.softText }]} maxFontSizeMultiplier={2}>
-            {statusLabel(item.status)}
-          </Text>
+        <View style={styles.ticketTopRow}>
+          <View style={styles.plateBlock}>
+            <Text style={styles.plateLabel}>{t(locale, "tickets.plateLabel")}</Text>
+            <Text style={styles.vehiclePlate} accessibilityRole="header" maxFontSizeMultiplier={2.2}>
+              {item.vehiclePlate}
+            </Text>
+          </View>
+          <View style={[styles.statusPill, { backgroundColor: vis.softBg }]}>
+            <Text style={[styles.statusPillText, { color: vis.softText }]} maxFontSizeMultiplier={2}>
+              {statusLabel(item.status)}
+            </Text>
+          </View>
         </View>
 
         <Text style={styles.locationLabel}>{t(locale, "tickets.locationLabel")}</Text>
@@ -550,6 +699,42 @@ export default function TicketsScreen() {
           <Text style={styles.location} maxFontSizeMultiplier={2}>
             {item.location}
           </Text>
+        </View>
+        <View style={styles.metaGrid}>
+          <View style={styles.metaLine}>
+            <Text style={styles.metaKey}>{t(locale, "tickets.ticketCodeLabel")}</Text>
+            <Text style={styles.metaValue}>{ticketCode}</Text>
+          </View>
+          {showDifferentKeyCode ? (
+            <View style={styles.metaLine}>
+              <Text style={styles.metaKey}>{t(locale, "tickets.keyCodeLabel")}</Text>
+              <Text style={styles.metaValue}>{keyCode}</Text>
+            </View>
+          ) : null}
+          <View style={styles.metaLine}>
+            <Text style={styles.metaKey}>{t(locale, "tickets.vehicleLabel")}</Text>
+            <Text style={styles.metaValue}>{item.vehicleBrandModel}</Text>
+          </View>
+          {item.vehicleColor ? (
+            <View style={styles.metaLine}>
+              <Text style={styles.metaKey}>{t(locale, "tickets.colorLabel")}</Text>
+              <Text style={styles.metaValue}>{item.vehicleColor}</Text>
+            </View>
+          ) : null}
+        </View>
+        <View style={styles.tagRow}>
+          <View style={styles.infoTag}>
+            <Ionicons name="time-outline" size={14} color={C.textSubtle} />
+            <Text style={styles.infoTagText}>
+              {t(locale, "tickets.createdAtLabel", { value: createdAtLabel })}
+            </Text>
+          </View>
+          <View style={styles.infoTag}>
+            <Ionicons name="business-outline" size={14} color={C.textSubtle} />
+            <Text style={styles.infoTagText}>
+              {t(locale, "tickets.parkingNameLabel", { value: item.parkingName })}
+            </Text>
+          </View>
         </View>
 
         <View style={styles.actions}>
@@ -606,8 +791,8 @@ export default function TicketsScreen() {
       );
     }
     return (
-      <View style={styles.centerBox}>
-        <Ionicons name="car-sport-outline" size={72} color={C.textSubtle} />
+      <View style={[styles.centerBox, styles.centerBoxEmpty]}>
+        <SquareParkingOff size={72} color={C.textSubtle} strokeWidth={2} />
         <Text style={styles.emptyTitle}>
           {isDriverUi ? t(locale, "tickets.emptyDriver") : t(locale, "tickets.emptyReception")}
         </Text>
@@ -641,9 +826,6 @@ export default function TicketsScreen() {
             <View style={styles.introBlock}>
               <Text style={styles.intro} maxFontSizeMultiplier={2}>
                 {isDriverUi ? t(locale, "tickets.subtitleDriver") : t(locale, "tickets.subtitleReception")}
-              </Text>
-              <Text style={styles.introSecondary} maxFontSizeMultiplier={2}>
-                {isDriverUi ? t(locale, "tickets.roleHintDriver") : t(locale, "tickets.roleHintReception")}
               </Text>
             </View>
           }

@@ -5,6 +5,7 @@ interface CreateVehicleDTO {
   plate: string;
   brand: string;
   model: string;
+  color?: string;
   year?: number;
   countryCode?: string;
   dimensions?: Prisma.InputJsonValue;
@@ -15,6 +16,7 @@ interface UpdateVehicleDTO {
   countryCode?: string;
   brand?: string;
   model?: string;
+  color?: string;
   year?: number;
   dimensions?: Prisma.InputJsonValue;
 }
@@ -40,6 +42,7 @@ export class VehiclesService {
         plate: data.plate,
         brand: data.brand,
         model: data.model,
+        ...(data.color !== undefined ? { color: data.color } : {}),
         year: data.year,
         countryCode: data.countryCode || "CR",
         ...(data.dimensions ? { dimensions: data.dimensions } : {}),
@@ -139,6 +142,7 @@ export class VehiclesService {
         ...(data.countryCode !== undefined && { countryCode: data.countryCode.trim() || "CR" }),
         ...(data.brand !== undefined && { brand: data.brand }),
         ...(data.model !== undefined && { model: data.model }),
+        ...(data.color !== undefined && { color: data.color }),
         ...(data.year !== undefined && { year: data.year }),
         ...(data.dimensions !== undefined ? { dimensions: data.dimensions } : {}),
       },

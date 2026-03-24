@@ -26,6 +26,7 @@ type VehicleRow = {
   plate?: string;
   brand?: string;
   model?: string;
+  color?: string | null;
   year?: number;
   countryCode?: string;
   dimensions?: { lengthCm?: number; widthCm?: number; heightCm?: number; weightKg?: number };
@@ -130,6 +131,7 @@ export default function VehiclesPage() {
         emptyMessage={t("tables.vehicles.empty")}
         columns={columns}
         hasRowDetail={(vehicle) =>
+          (vehicle.color != null && String(vehicle.color).trim() !== "") ||
           (vehicle.countryCode != null && vehicle.countryCode !== "") ||
           (vehicle.dimensions != null && typeof vehicle.dimensions === "object" && Object.keys(vehicle.dimensions as object).length > 0)
         }
@@ -142,11 +144,12 @@ export default function VehiclesPage() {
           return (
             <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
               <DetailSectionLabel text={t("common.additionalInfo")} />
-              <DetailField label={t("tables.vehicles.country")} value={vehicle.countryCode} />
+              <DetailField label={t("vehicles.color")} value={vehicle.color} />
               {lengthM != null && <DetailField label={t("vehicles.lengthM")} value={`${lengthM} m`} />}
               {widthM != null && <DetailField label={t("vehicles.widthM")} value={`${widthM} m`} />}
               {heightM != null && <DetailField label={t("vehicles.heightM")} value={`${heightM} m`} />}
               {hasDims && dims?.weightKg != null && <DetailField label={t("vehicles.weightKg")} value={`${dims.weightKg} kg`} />}
+              <DetailField label={t("tables.vehicles.country")} value={vehicle.countryCode} />
             </dl>
           );
         }}

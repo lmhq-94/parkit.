@@ -15,6 +15,7 @@ import { BrandModelComboField } from "@/components/BrandModelComboField";
 import { COUNTRIES } from "@/lib/companyOptions";
 import { formatPlate, toTitleCase } from "@/lib/inputMasks";
 import { required, selectRequired } from "@/lib/validation";
+import { VEHICLE_COLORS } from "@parkit/shared/src/vehicleColors";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -26,10 +27,21 @@ type CatalogModel = { id: number; name: string };
 type CustomerOption = { id: string; firstName?: string; lastName?: string; email?: string };
 type OwnerRef = { client?: { id: string; userId?: string; user?: { id?: string } } };
 
+function normalizeVehicleColorValue(raw: string): string {
+  const input = raw.trim();
+  if (!input) return "";
+  const byValue = VEHICLE_COLORS.find((c) => c.value.toLowerCase() === input.toLowerCase());
+  if (byValue) return byValue.value;
+  const byLabel = VEHICLE_COLORS.find((c) => c.label.toLowerCase() === input.toLowerCase());
+  if (byLabel) return byLabel.value;
+  return input.toUpperCase();
+}
+
 const defaultForm = {
   plate: "",
   brand: "",
   model: "",
+  color: "",
   year: "",
   countryCode: "",
   lengthCm: "",
@@ -70,6 +82,7 @@ export default function EditVehiclePage() {
             plate: formatPlate(String(data.plate ?? "")),
             brand: String(data.brand ?? ""),
             model: String(data.model ?? ""),
+            color: normalizeVehicleColorValue(String(data.color ?? "")),
             year: data.year != null ? String(data.year) : "",
             countryCode: String(data.countryCode ?? ""),
             lengthCm: dims?.lengthCm != null ? String(dims.lengthCm) : "",
@@ -207,6 +220,7 @@ export default function EditVehiclePage() {
         plate: form.plate.trim().toUpperCase(),
         brand: form.brand.trim(),
         model: form.model.trim(),
+        color: form.color.trim() || undefined,
         year: Number(form.year),
         countryCode: form.countryCode.trim() || undefined,
         ...(dimensions !== undefined && { dimensions }),
@@ -309,6 +323,17 @@ export default function EditVehiclePage() {
                   />
                 </div>
               )}
+            </div>
+            <div>
+              <label className={LABEL}>{t("vehicles.color")}</label>
+              <SelectField value={form.color} onChange={set("color")} icon={Car}>
+                <option value="">{t("common.selectPlaceholder")}</option>
+                {VEHICLE_COLORS.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </SelectField>
             </div>
             <div>
               <label className={LABEL}>

@@ -265,6 +265,7 @@ model Vehicle {
   plate       String
   brand       String
   model       String
+  color       String?
   year        Int?
   dimensions  Json?
 

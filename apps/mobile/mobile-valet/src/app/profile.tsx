@@ -2,7 +2,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TextInput,
   Pressable,
   Platform,
@@ -11,7 +10,7 @@ import {
   Modal,
   FlatList,
 } from "react-native";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { KeyboardAwareScrollView, KeyboardStickyView } from "react-native-keyboard-controller";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,6 +22,7 @@ import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
 import { ValetBackButton } from "@/components/ValetBackButton";
+import { StickyFormFooter } from "@/components/StickyFormFooter";
 import api from "@/lib/api";
 import { messageFromAxios } from "@/lib/apiErrors";
 import { saveUser } from "@/lib/auth";
@@ -402,10 +402,7 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       <View style={styles.frame}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
+      <View style={styles.flex}>
         <View style={styles.header}>
           <ValetBackButton
             onPress={() => router.back()}
@@ -422,11 +419,12 @@ export default function ProfileScreen() {
           </View>
         ) : (
           <View style={styles.bodyColumn}>
-            <ScrollView
+            <KeyboardAwareScrollView
               style={styles.scroll}
               contentContainerStyle={styles.scrollContent}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
+              bottomOffset={96}
             >
               <Text style={styles.intro}>{t(locale, "profile.intro")}</Text>
 
@@ -823,38 +821,34 @@ export default function ProfileScreen() {
                 ) : null}
               </>
             )}
-            </ScrollView>
+            </KeyboardAwareScrollView>
 
-            <View
-              style={[
-                styles.saveFooter,
-                {
-                  borderTopColor: C.border,
-                  backgroundColor: C.card,
-                  paddingBottom: Math.max(insets.bottom, theme.space.md),
-                },
-              ]}
-            >
-              <Pressable
-                style={({ pressed }) => [
-                  styles.primaryBtnFooter,
-                  { backgroundColor: C.primary },
-                  saving && styles.btnDisabled,
-                  pressed && !saving && styles.pressed,
-                ]}
-                onPress={handleSave}
-                disabled={saving}
+            <KeyboardStickyView>
+              <StickyFormFooter
+                extraBottomPadding={Math.max(insets.bottom, theme.space.md) - theme.space.md}
+                keyboardPinned
               >
-                {saving ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.primaryBtnText}>{t(locale, "profile.save")}</Text>
-                )}
-              </Pressable>
-            </View>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.primaryBtnFooter,
+                    { backgroundColor: C.primary },
+                    saving && styles.btnDisabled,
+                    pressed && !saving && styles.pressed,
+                  ]}
+                  onPress={handleSave}
+                  disabled={saving}
+                >
+                  {saving ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.primaryBtnText}>{t(locale, "profile.save")}</Text>
+                  )}
+                </Pressable>
+              </StickyFormFooter>
+            </KeyboardStickyView>
           </View>
         )}
-      </KeyboardAvoidingView>
+      </View>
       </View>
     </SafeAreaView>
   );

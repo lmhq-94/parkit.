@@ -181,7 +181,8 @@ type DetailRow<T> = { __detail: true; __parent: T };
  * Altura inicial antes de medir: debe ser >0 para que el contenido no quede recortado.
  * Tras el primer layout, ResizeObserver + medición “ajustada” fijan la altura real por fila/grid.
  */
-const DETAIL_ROW_FALLBACK_HEIGHT = 120;
+const DETAIL_ROW_FALLBACK_HEIGHT = 160;
+const DETAIL_ROW_MEASURE_BUFFER_PX = 10;
 
 /**
  * Altura visual desde la parte superior del root hasta el borde inferior más bajo del contenido
@@ -235,7 +236,11 @@ function DetailRowMeasureWrapper({
         el.scrollHeight,
         measureTightDetailHeight(el)
       );
-      const trimmed = Math.max(1, Math.floor(layoutH) - trimRef.current);
+      // Add a small safety buffer to avoid clipping descenders/bottom spacing due to sub-pixel rounding.
+      const trimmed = Math.max(
+        1,
+        Math.ceil(layoutH) + DETAIL_ROW_MEASURE_BUFFER_PX - trimRef.current
+      );
       onMeasuredRef.current(trimmed);
     };
 

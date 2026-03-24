@@ -24,6 +24,7 @@ import * as Linking from "expo-linking";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { formatPlate } from "@parkit/shared";
+import { VEHICLE_COLORS } from "@parkit/shared/src/vehicleColors";
 import { useAuthStore, useLocaleStore, useCompanyStore } from "@/lib/store";
 import { t, type Locale } from "@/lib/i18n";
 import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
@@ -60,6 +61,7 @@ interface VehicleLookup {
   plate: string;
   brand: string;
   model: string;
+  color?: string | null;
   year?: number | null;
   countryCode: string;
   companyId: string;
@@ -119,6 +121,7 @@ interface BookingLookup {
     plate?: string | null;
     brand?: string | null;
     model?: string | null;
+    color?: string | null;
     year?: number | null;
   };
   parking?: {
@@ -203,6 +206,7 @@ export default function ReceiveScreen() {
   const [driverPhone, setDriverPhone] = useState("");
   const [vehBrand, setVehBrand] = useState("");
   const [vehModel, setVehModel] = useState("");
+  const [vehColor, setVehColor] = useState("");
   const [vehYear, setVehYear] = useState("");
   const [catalogMakes, setCatalogMakes] = useState<CatalogMake[]>([]);
   const [catalogModels, setCatalogModels] = useState<CatalogModel[]>([]);
@@ -219,6 +223,7 @@ export default function ReceiveScreen() {
   const [loadedVehicleSnapshot, setLoadedVehicleSnapshot] = useState<{
     brand: string;
     model: string;
+    color: string;
     year: string;
   } | null>(null);
 
@@ -256,6 +261,7 @@ export default function ReceiveScreen() {
   const [receiveParkingModalOpen, setReceiveParkingModalOpen] = useState(false);
   const [vehicleBrandModalOpen, setVehicleBrandModalOpen] = useState(false);
   const [vehicleModelModalOpen, setVehicleModelModalOpen] = useState(false);
+  const [vehicleColorModalOpen, setVehicleColorModalOpen] = useState(false);
   const [manualBrandMode, setManualBrandMode] = useState(false);
   const [manualModelMode, setManualModelMode] = useState(false);
   /** null = usar parqueo más cercano según GPS; si no, id elegido manualmente. */
@@ -566,10 +572,12 @@ export default function ReceiveScreen() {
         }
         setVehBrand(v.brand);
         setVehModel(v.model);
+        setVehColor(v.color?.trim() ?? "");
         setVehYear(v.year != null ? String(v.year) : "");
         setLoadedVehicleSnapshot({
           brand: v.brand?.trim() ?? "",
           model: v.model?.trim() ?? "",
+          color: v.color?.trim() ?? "",
           year: v.year != null ? String(v.year) : "",
         });
       } else {
@@ -583,6 +591,7 @@ export default function ReceiveScreen() {
         setDriverPhone("");
         setVehBrand("");
         setVehModel("");
+        setVehColor("");
         setVehYear("");
       }
     } catch {
@@ -596,6 +605,7 @@ export default function ReceiveScreen() {
       setDriverPhone("");
       setVehBrand("");
       setVehModel("");
+      setVehColor("");
       setVehYear("");
     } finally {
       setLookupLoading(false);
@@ -726,16 +736,19 @@ export default function ReceiveScreen() {
         const nextVehicle = {
           brand: vehBrand.trim(),
           model: vehModel.trim(),
+          color: vehColor.trim(),
           year: vehYear.trim(),
         };
         const changedVehicle =
           nextVehicle.brand !== loadedVehicleSnapshot.brand ||
           nextVehicle.model !== loadedVehicleSnapshot.model ||
+          nextVehicle.color !== loadedVehicleSnapshot.color ||
           nextVehicle.year !== loadedVehicleSnapshot.year;
         if (changedVehicle) {
           await api.patch(`/vehicles/${vehicle.id}`, {
             brand: nextVehicle.brand,
             model: nextVehicle.model,
+            color: nextVehicle.color || undefined,
             ...(nextVehicle.year ? { year: parseInt(nextVehicle.year, 10) } : {}),
             ...(catalogDimensions ? { dimensions: catalogDimensions } : {}),
           });
@@ -789,6 +802,7 @@ export default function ReceiveScreen() {
     const em = driverEmail.trim();
     const br = vehBrand.trim() || "—";
     const md = vehModel.trim() || "—";
+    const color = vehColor.trim();
     if (!fn || !ln || !em) {
       feedback.error(t(locale, "receive.errorDriver"));
       return null;
@@ -810,6 +824,7 @@ export default function ReceiveScreen() {
       countryCode: COUNTRY_CR,
       brand: br,
       model: md,
+      color: color || undefined,
       year: vehYear.trim() ? parseInt(vehYear, 10) : undefined,
       dimensions: dims,
     });
@@ -881,12 +896,14 @@ export default function ReceiveScreen() {
       setDriverPhone(formatPhoneInternational(phone));
       setVehBrand(b.vehicle?.brand?.trim() ?? "");
       setVehModel(b.vehicle?.model?.trim() ?? "");
+      setVehColor(b.vehicle?.color?.trim() ?? "");
       setVehYear(b.vehicle?.year != null ? String(b.vehicle.year) : "");
       setVehicle({
         id: b.vehicleId,
         plate: plateStr,
         brand: b.vehicle?.brand ?? "",
         model: b.vehicle?.model ?? "",
+        color: b.vehicle?.color ?? "",
         year: b.vehicle?.year ?? null,
         countryCode: COUNTRY_CR,
         companyId: "",
@@ -1953,6 +1970,23 @@ export default function ReceiveScreen() {
               {loadingCatalogModels && (
                 <ActivityIndicator color={C.primary} style={{ marginBottom: theme.space.sm }} />
               )}
+              <Pressable
+                style={({ pressed }) => [styles.input, styles.selectorInput, pressed && styles.pressed]}
+                onPress={() => setVehicleColorModalOpen(true)}
+                accessibilityRole="button"
+                accessibilityLabel={t(locale, "receive.placeholderColor")}
+              >
+                <Text
+                  style={[styles.selectorInputText, !vehColor && styles.selectorInputPlaceholder]}
+                  numberOfLines={1}
+                  maxFontSizeMultiplier={2}
+                >
+                  {VEHICLE_COLORS.find((c) => c.value === vehColor)?.label ||
+                    vehColor ||
+                    t(locale, "receive.placeholderColor")}
+                </Text>
+                <Ionicons name="list-outline" size={18} color={C.textMuted} />
+              </Pressable>
               <TextInput
                 style={styles.input}
                 value={vehYear}
@@ -2531,6 +2565,69 @@ export default function ReceiveScreen() {
                 ListEmptyComponent={
                   <Text style={{ color: C.textMuted, padding: theme.space.md }}>
                     {t(locale, "receive.modelPickerEmpty")}
+                  </Text>
+                }
+              />
+            </View>
+          </View>
+        </Modal>
+
+        <Modal
+          visible={vehicleColorModalOpen}
+          animationType="slide"
+          transparent
+          onRequestClose={() => setVehicleColorModalOpen(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <Pressable
+              style={styles.modalBackdropPress}
+              onPress={() => setVehicleColorModalOpen(false)}
+              accessibilityLabel={t(locale, "common.cancel")}
+            />
+            <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
+              <Text style={[styles.modalTitle, { color: C.text }]}>{t(locale, "receive.placeholderColor")}</Text>
+              <FlatList
+                data={VEHICLE_COLORS}
+                keyExtractor={(item) => item.value}
+                style={styles.modalList}
+                keyboardShouldPersistTaps="handled"
+                ListHeaderComponent={
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.parkingRow,
+                      { borderBottomColor: C.border },
+                      pressed && styles.pressed,
+                    ]}
+                    onPress={() => {
+                      setVehColor("");
+                      setVehicleColorModalOpen(false);
+                    }}
+                  >
+                    <Text style={[styles.parkingRowName, { color: C.primary }]}>
+                      {t(locale, "receive.noColorOption")}
+                    </Text>
+                  </Pressable>
+                }
+                renderItem={({ item }) => (
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.parkingRow,
+                      { borderBottomColor: C.border },
+                      pressed && styles.pressed,
+                    ]}
+                    onPress={() => {
+                      setVehColor(item.value);
+                      setVehicleColorModalOpen(false);
+                    }}
+                  >
+                    <Text style={[styles.parkingRowName, { color: C.text }]} numberOfLines={2}>
+                      {item.label}
+                    </Text>
+                  </Pressable>
+                )}
+                ListEmptyComponent={
+                  <Text style={{ color: C.textMuted, padding: theme.space.md }}>
+                    {t(locale, "receive.colorPickerEmpty")}
                   </Text>
                 }
               />
