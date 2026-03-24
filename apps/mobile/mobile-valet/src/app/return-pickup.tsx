@@ -70,7 +70,7 @@ export default function ReturnPickupScreen() {
     setLoading(true);
     try {
       const [tRes, vRes] = await Promise.all([
-        api.get<{ data: TicketRow[] }>("/tickets", { params: { status: "PARKED" } }),
+        api.get<{ data: TicketRow[] }>("/tickets", { params: { status: "PARKED,REQUEST_DELIVERY" } }),
         api.get<{ data: ValetOpt[] }>("/valets/for-company"),
       ]);
       setTickets(Array.isArray(tRes.data?.data) ? tRes.data.data : []);
@@ -93,21 +93,33 @@ export default function ReturnPickupScreen() {
     return tickets.filter((x) => (x.ticketCode || "").toUpperCase().includes(q));
   }, [tickets, ticketCodeFilter]);
 
+  const selectedTicket = useMemo(
+    () => filtered.find((tk) => tk.id === selectedTicketId) ?? null,
+    [filtered, selectedTicketId]
+  );
+
   const handleRequest = async () => {
-    if (!selectedTicketId || !companyId) {
+    if (!selectedTicket || !companyId) {
       feedback.error(t(locale, "returnPickup.selectTicket"));
       return;
     }
     setSubmitting(true);
     try {
-      const body: { status: string; delivererValetId?: string | null } = {
-        status: "REQUESTED",
-      };
-      if (delivererId) body.delivererValetId = delivererId;
-      await api.patch(`/tickets/${selectedTicketId}`, body);
-      feedback.success(t(locale, "returnPickup.success"), {
-        onPress: () => router.replace("/tickets"),
-      });
+      if (selectedTicket.status === "REQUEST_DELIVERY") {
+        await api.patch(`/tickets/${selectedTicket.id}`, { status: "DELIVERED" });
+        feedback.success(t(locale, "returnPickup.successDelivered"), {
+          onPress: () => router.replace("/tickets"),
+        });
+      } else {
+        const body: { status: string; delivererValetId?: string | null } = {
+          status: "REQUEST_DELIVERY",
+        };
+        if (delivererId) body.delivererValetId = delivererId;
+        await api.patch(`/tickets/${selectedTicket.id}`, body);
+        feedback.success(t(locale, "returnPickup.successRequested"), {
+          onPress: () => router.replace("/tickets"),
+        });
+      }
     } catch (e) {
       feedback.error(messageFromAxios(e) || t(locale, "tickets.errorUpdate"));
     } finally {
@@ -199,7 +211,7 @@ export default function ReturnPickupScreen() {
             })
           )}
 
-          {selectedTicketId ? (
+          {selectedTicket?.status === "PARKED" ? (
             <>
               <Text style={styles.sectionLabel}>{t(locale, "returnPickup.assignDriver")}</Text>
               <Text style={styles.help}>{t(locale, "returnPickup.assignHelp")}</Text>
@@ -256,7 +268,11 @@ export default function ReturnPickupScreen() {
               ) : (
                 <>
                   <Ionicons name="arrow-undo-circle-outline" size={24} color="#fff" />
-                  <Text style={styles.primaryBtnText}>{t(locale, "returnPickup.cta")}</Text>
+                  <Text style={styles.primaryBtnText}>
+                    {selectedTicket?.status === "REQUEST_DELIVERY"
+                      ? t(locale, "returnPickup.ctaMarkDelivered")
+                      : t(locale, "returnPickup.ctaRequestDelivery")}
+                  </Text>
                 </>
               )}
             </Pressable>

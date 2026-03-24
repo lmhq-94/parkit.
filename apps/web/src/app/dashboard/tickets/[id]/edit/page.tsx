@@ -18,7 +18,7 @@ type ClientOption = { id: string; user?: { firstName?: string; lastName?: string
 type VehicleOption = { id: string; plate?: string; brand?: string; model?: string };
 type ParkingOption = { id: string; name?: string };
 type ValetOption = { id: string; user?: { firstName?: string; lastName?: string; email?: string } };
-type Assignment = { role?: string; valetId?: string; valet?: { id: string } };
+type Assignment = { valetId?: string; valet?: { id: string; staffRole?: string | null } };
 
 const defaultForm = {
   clientId: "",
@@ -58,16 +58,20 @@ export default function EditTicketPage() {
         ]);
         if (ticket) {
           const assignments = (ticket.assignments ?? []) as Assignment[];
-          const byRole = Object.fromEntries(
-            assignments.map((a) => [a.role, a.valetId ?? a.valet?.id ?? ""])
-          );
+          const byStaffRole = assignments.reduce<Record<string, string>>((acc, a) => {
+            const staffRole = a.valet?.staffRole ?? "UNKNOWN";
+            if (!acc[staffRole]) {
+              acc[staffRole] = a.valetId ?? a.valet?.id ?? "";
+            }
+            return acc;
+          }, {});
           const loaded = {
             clientId: String(ticket.clientId ?? ""),
             vehicleId: String(ticket.vehicleId ?? ""),
             parkingId: String(ticket.parkingId ?? ""),
-            receptorValetId: String(byRole.RECEPTOR ?? ""),
-            driverValetId: String(byRole.DRIVER ?? ""),
-            delivererValetId: String(byRole.DELIVERER ?? ""),
+            receptorValetId: String(byStaffRole.RECEPTIONIST ?? ""),
+            driverValetId: String(byStaffRole.DRIVER ?? ""),
+            delivererValetId: String(byStaffRole.DRIVER ?? ""),
           };
           setForm(loaded);
           setInitialForm(loaded);

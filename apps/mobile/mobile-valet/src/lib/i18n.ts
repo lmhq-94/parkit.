@@ -112,25 +112,37 @@ const translations: Record<Locale, Record<string, string>> = {
     "tickets.errorUpdate":
       "No se pudo actualizar. Comprueba la conexión e inténtalo de nuevo.",
     "tickets.titleDriver": "Mis asignaciones",
+    "tickets.titleParkingQueue": "Cola de ingresos",
+    "tickets.titleDeliveryQueue": "Cola de devoluciones",
     "tickets.subtitleDriver":
       "Vehículos que te asignan para conducir o entregar. Desliza hacia abajo para actualizar.",
+    "tickets.subtitleDriverParking":
+      "Ingresos pendientes de parqueo en tu cola de trabajo.",
+    "tickets.subtitleDriverDelivery":
+      "Devoluciones solicitadas que debes entregar.",
     "tickets.emptyDriver": "Nada asignado aún",
     "tickets.emptyHintDriver":
       "Cuando un recepcionista te asigne un vehículo, lo verás aquí.",
     "tickets.titleReception": "Recepción",
     "tickets.subtitleReception":
-      "Recibe y valida vehículos. Solicita la devolución cuando el cliente pida su coche.",
+      "Recibe y valida vehículos. Marca como parqueado cuando finalices el ingreso.",
     "tickets.emptyReception": "No hay vehículos en tu cola",
     "tickets.emptyHintReception":
       "Los vehículos que te asignen como recepcionista aparecerán aquí.",
+    "tickets.ticketStatusRequestedToPark": "Solicitud de parqueo",
     "tickets.ticketStatusParked": "En parqueo",
-    "tickets.ticketStatusRequested": "Devolución solicitada",
+    "tickets.ticketStatusRequestedToDeliver": "Devolución solicitada",
     "tickets.ticketStatusOther": "En proceso",
-    "tickets.actionRequestReturn": "Solicitar devolución al cliente",
-    "tickets.confirmRequestReturnTitle": "¿Solicitar devolución?",
-    "tickets.confirmRequestReturnMessage":
-      "El cliente podrá pedir que le lleven el vehículo. Solo pulsa «Sí» si es el momento adecuado.",
-    "tickets.successRequested": "Listo. Quedó solicitada la devolución.",
+    "tickets.actionMarkParked": "Marcar como parqueado",
+    "tickets.confirmMarkParkedTitle": "¿Confirmar parqueo?",
+    "tickets.confirmMarkParkedMessage":
+      "Confirma que el vehículo ya está en parqueo para moverlo a ese estado.",
+    "tickets.successMarkedParked": "Listo. El vehículo quedó en parqueo.",
+    "tickets.actionMarkDelivered": "Marcar como entregado",
+    "tickets.confirmMarkDeliveredTitle": "¿Confirmar entrega?",
+    "tickets.confirmMarkDeliveredMessage":
+      "Confirma que el cliente ya recibió el vehículo.",
+    "tickets.successMarkedDelivered": "Listo. El servicio quedó entregado.",
     "tickets.roleHintDriver": "Solo ves lo que te asignan para manejar.",
     "tickets.roleHintReception":
       "Modo recepción: valida y coordina la devolución.",
@@ -154,10 +166,12 @@ const translations: Record<Locale, Record<string, string>> = {
     "home.actionReceiveSub": "Matrícula e ingreso",
     "home.actionReturn": "Solicitar devolución",
     "home.actionReturnSub": "Salida al cliente",
-    "home.actionQueue": "Cola de trabajo",
-    "home.actionQueueSub": "Tus asignaciones",
+    "home.actionParkingQueue": "Ingresos",
+    "home.actionParkingQueueSub": "Vehículos por parquear",
+    "home.actionDeliveryQueue": "Devoluciones",
+    "home.actionDeliveryQueueSub": "Vehículos por entregar",
     "home.queueAlertTitle": "Nueva asignación",
-    "home.queueAlertBody": "Tienes un nuevo servicio en la cola de trabajo.",
+    "home.queueAlertBody": "Tienes nuevas solicitudes en tu cola.",
     "home.actionReservation": "Cliente con reserva",
     "home.actionReservationSub": "Con código de reserva",
     "home.actionSettingsSub": "Tema e idioma",
@@ -464,12 +478,14 @@ const translations: Record<Locale, Record<string, string>> = {
     "returnPickup.subtitle":
       "Busca el vehículo por código de ticket y solicita la devolución. Puedes asignar un conductor valet.",
     "returnPickup.filterPlaceholder": "Buscar por código de ticket",
-    "returnPickup.empty": "No hay vehículos en estado «en parqueo».",
+    "returnPickup.empty": "No hay vehículos en parqueo o con devolución solicitada.",
     "returnPickup.assignDriver": "Conductor para la devolución",
     "returnPickup.assignHelp":
       "Opcional: asigna quién devolverá el vehículo al cliente.",
-    "returnPickup.cta": "Solicitar devolución",
-    "returnPickup.success": "Devolución solicitada.",
+    "returnPickup.ctaRequestDelivery": "Solicitar devolución",
+    "returnPickup.ctaMarkDelivered": "Marcar como entregado",
+    "returnPickup.successRequested": "Devolución solicitada.",
+    "returnPickup.successDelivered": "Entrega confirmada.",
     "returnPickup.selectTicket": "Selecciona un ticket de la lista.",
   },
   en: {
@@ -581,25 +597,37 @@ const translations: Record<Locale, Record<string, string>> = {
     "tickets.errorUpdate":
       "Could not update. Check your connection and try again.",
     "tickets.titleDriver": "My assignments",
+    "tickets.titleParkingQueue": "Parking queue",
+    "tickets.titleDeliveryQueue": "Delivery queue",
     "tickets.subtitleDriver":
       "Vehicles assigned to you to drive or hand over. Pull down to refresh.",
+    "tickets.subtitleDriverParking":
+      "Parking requests waiting in your work queue.",
+    "tickets.subtitleDriverDelivery":
+      "Delivery requests you need to complete.",
     "tickets.emptyDriver": "Nothing assigned yet",
     "tickets.emptyHintDriver":
       "When a receptionist assigns you a vehicle, it will appear here.",
     "tickets.titleReception": "Reception",
     "tickets.subtitleReception":
-      "Receive and verify vehicles. Request customer pickup when they ask for their car.",
+      "Receive and verify vehicles. Mark them as parked once intake is done.",
     "tickets.emptyReception": "No vehicles in your queue",
     "tickets.emptyHintReception":
       "Vehicles assigned to you as reception will show up here.",
+    "tickets.ticketStatusRequestedToPark": "Park request",
     "tickets.ticketStatusParked": "Parked",
-    "tickets.ticketStatusRequested": "Return requested",
+    "tickets.ticketStatusRequestedToDeliver": "Return requested",
     "tickets.ticketStatusOther": "In progress",
-    "tickets.actionRequestReturn": "Request return for customer",
-    "tickets.confirmRequestReturnTitle": "Request return?",
-    "tickets.confirmRequestReturnMessage":
-      "The customer can then ask for their vehicle. Tap Yes only when it is appropriate.",
-    "tickets.successRequested": "Done. Return has been requested.",
+    "tickets.actionMarkParked": "Mark as parked",
+    "tickets.confirmMarkParkedTitle": "Confirm parking?",
+    "tickets.confirmMarkParkedMessage":
+      "Confirm the vehicle is parked to move it to that status.",
+    "tickets.successMarkedParked": "Done. Vehicle is now parked.",
+    "tickets.actionMarkDelivered": "Mark as delivered",
+    "tickets.confirmMarkDeliveredTitle": "Confirm delivery?",
+    "tickets.confirmMarkDeliveredMessage":
+      "Confirm the customer has received the vehicle.",
+    "tickets.successMarkedDelivered": "Done. Service marked delivered.",
     "tickets.roleHintDriver": "You only see what you are assigned to drive.",
     "tickets.roleHintReception":
       "Reception mode: verify and coordinate vehicle return.",
@@ -623,10 +651,12 @@ const translations: Record<Locale, Record<string, string>> = {
     "home.actionReceiveSub": "Plate & check-in",
     "home.actionReturn": "Request return",
     "home.actionReturnSub": "Customer pickup",
-    "home.actionQueue": "Work queue",
-    "home.actionQueueSub": "Your assignments",
+    "home.actionParkingQueue": "Pending check-ins",
+    "home.actionParkingQueueSub": "Vehicles to receive",
+    "home.actionDeliveryQueue": "Pending returns",
+    "home.actionDeliveryQueueSub": "Vehicles to deliver",
     "home.queueAlertTitle": "New assignment",
-    "home.queueAlertBody": "You have a new job in your work queue.",
+    "home.queueAlertBody": "You have new requests in your queue.",
     "home.actionReservation": "Guest with booking",
     "home.actionReservationSub": "Booking code",
     "home.actionSettingsSub": "Theme & language",
@@ -928,12 +958,14 @@ const translations: Record<Locale, Record<string, string>> = {
     "returnPickup.subtitle":
       "Search the vehicle by ticket code and request return. You can assign a valet driver.",
     "returnPickup.filterPlaceholder": "Search by ticket code",
-    "returnPickup.empty": "No vehicles currently parked.",
+    "returnPickup.empty": "No parked vehicles or delivery requests.",
     "returnPickup.assignDriver": "Driver for return",
     "returnPickup.assignHelp":
       "Optional: assign who will return the vehicle to the customer.",
-    "returnPickup.cta": "Request return",
-    "returnPickup.success": "Return requested.",
+    "returnPickup.ctaRequestDelivery": "Request return",
+    "returnPickup.ctaMarkDelivered": "Mark as delivered",
+    "returnPickup.successRequested": "Return requested.",
+    "returnPickup.successDelivered": "Delivery confirmed.",
     "returnPickup.selectTicket": "Select a ticket from the list.",
   },
 };

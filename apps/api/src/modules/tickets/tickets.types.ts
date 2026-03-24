@@ -30,7 +30,6 @@ export interface UpdateTicketDTO {
 
 export interface AssignValetDTO {
   valetId: string;
-  role: "RECEPTOR" | "DRIVER" | "DELIVERER";
 }
 
 export interface ReportDamageDTO {

@@ -30,8 +30,7 @@ type TicketRow = {
   parkingId?: string;
   parking?: { name?: string };
   assignments?: Array<{
-    role?: string;
-    valet?: { user?: { firstName?: string; lastName?: string } };
+    valet?: { staffRole?: string | null; user?: { firstName?: string; lastName?: string } };
   }>;
   entryTime?: string;
   exitTime?: string;
@@ -42,8 +41,9 @@ type VehicleOption = { id: string; plate?: string; brand?: string; model?: strin
 type ParkingOption = { id: string; name?: string };
 
 const TICKET_STATUS_OPTIONS = [
+  { value: "REQUEST_PARKING", key: "REQUEST_PARKING" },
   { value: "PARKED", key: "PARKED" },
-  { value: "REQUESTED", key: "REQUESTED" },
+  { value: "REQUEST_DELIVERY", key: "REQUEST_DELIVERY" },
   { value: "DELIVERED", key: "DELIVERED" },
   { value: "CANCELLED", key: "CANCELLED" },
 ] as const;
@@ -173,8 +173,8 @@ export default function TicketsPage() {
         editable: canManage,
         statusBadge: "ticket" as const,
         statusField: "status" as const,
-        cellEditorValues: ["PARKED", "REQUESTED", "DELIVERED", "CANCELLED"],
-        cellEditorLabels: ["PARKED", "REQUESTED", "DELIVERED", "CANCELLED"].map((v) => tEnum("ticketStatus", v)),
+        cellEditorValues: ["REQUEST_PARKING", "PARKED", "REQUEST_DELIVERY", "DELIVERED", "CANCELLED"],
+        cellEditorLabels: ["REQUEST_PARKING", "PARKED", "REQUEST_DELIVERY", "DELIVERED", "CANCELLED"].map((v) => tEnum("ticketStatus", v)),
       },
       {
         header: t("tables.tickets.entry"),
@@ -224,15 +224,19 @@ export default function TicketsPage() {
           const ownerName = ticket.client?.user
             ? [ticket.client.user.firstName, ticket.client.user.lastName].filter(Boolean).join(" ").trim()
             : null;
-          const byRole = (ticket.assignments ?? []).reduce<Record<string, string>>((acc, a) => {
+          const byStaffRole = (ticket.assignments ?? []).reduce<Record<string, string[]>>((acc, a) => {
             const u = a.valet?.user;
             const name = u ? [u.firstName, u.lastName].filter(Boolean).join(" ").trim() : "";
-            if (a.role && name) acc[a.role] = name;
+            const staffRole = a.valet?.staffRole ?? "UNKNOWN";
+            if (name) {
+              if (!acc[staffRole]) acc[staffRole] = [];
+              acc[staffRole].push(name);
+            }
             return acc;
           }, {});
-          const receptor = byRole.RECEPTOR;
-          const driver = byRole.DRIVER;
-          const deliverer = byRole.DELIVERER;
+          const receptor = byStaffRole.RECEPTIONIST?.[0] ?? "—";
+          const driver = (byStaffRole.DRIVER ?? []).join(", ") || "—";
+          const deliverer = driver;
           return (
             <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
               <DetailSectionLabel text={t("common.additionalInfo")} />

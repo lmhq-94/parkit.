@@ -17,6 +17,7 @@ import { apiClient } from "@/lib/api";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 import { formatPlate, toTitleCase } from "@/lib/inputMasks";
+import { formatVehicleColorLabel } from "@parkit/shared/src/vehicleColors";
 
 type OwnerRef = {
   client?: { id: string; user?: { firstName?: string; lastName?: string; email?: string } };
@@ -42,7 +43,7 @@ function getOwnerDisplay(owners: OwnerRef[] | undefined): string {
 }
 
 export default function VehiclesPage() {
-  const { t, tWithCompany } = useTranslation();
+  const { t, tWithCompany, locale } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const superAdmin = isSuperAdmin(user);
@@ -144,7 +145,7 @@ export default function VehiclesPage() {
           return (
             <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
               <DetailSectionLabel text={t("common.additionalInfo")} />
-              <DetailField label={t("vehicles.color")} value={vehicle.color} />
+              <DetailField label={t("vehicles.color")} value={formatVehicleColorLabel(vehicle.color, locale)} />
               {lengthM != null && <DetailField label={t("vehicles.lengthM")} value={`${lengthM} m`} />}
               {widthM != null && <DetailField label={t("vehicles.widthM")} value={`${widthM} m`} />}
               {heightM != null && <DetailField label={t("vehicles.heightM")} value={`${heightM} m`} />}

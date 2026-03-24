@@ -1,0 +1,29 @@
+-- Fix legacy TicketStatus values (REQUESTED_TO_PARK/REQUESTED_TO_DELIVER) and normalize to
+-- REQUEST_PARKING / REQUEST_DELIVERY.
+
+ALTER TABLE "Ticket" ALTER COLUMN "status" DROP DEFAULT;
+
+CREATE TYPE "TicketStatus_new" AS ENUM (
+  'REQUEST_PARKING',
+  'PARKED',
+  'REQUEST_DELIVERY',
+  'DELIVERED',
+  'CANCELLED'
+);
+
+ALTER TABLE "Ticket"
+ALTER COLUMN "status" TYPE "TicketStatus_new"
+USING (
+  CASE "status"::text
+    WHEN 'REQUESTED_TO_PARK' THEN 'REQUEST_PARKING'
+    WHEN 'REQUESTED_TO_DELIVER' THEN 'REQUEST_DELIVERY'
+    WHEN 'REQUESTED' THEN 'REQUEST_PARKING'
+    ELSE "status"::text
+  END
+)::"TicketStatus_new";
+
+DROP TYPE "TicketStatus";
+
+ALTER TYPE "TicketStatus_new" RENAME TO "TicketStatus";
+
+ALTER TABLE "Ticket" ALTER COLUMN "status" SET DEFAULT 'REQUEST_PARKING';

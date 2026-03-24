@@ -317,14 +317,25 @@ export default function HomeScreen() {
               <View style={styles.gridRowFill}>
                 <GridTile
                   variant="queue"
-                  icon="list-outline"
-                  title={t(locale, "home.actionQueue")}
-                  sub={t(locale, "home.actionQueueSub")}
-                  badgeCount={queueAlertCount}
-                  onPress={() => router.push("/tickets")}
+                  lucideIcon={SquareParking}
+                  title={t(locale, "home.actionParkingQueue")}
+                  sub={t(locale, "home.actionParkingQueueSub")}
+                  onPress={() => router.push({ pathname: "/tickets", params: { queue: "parking" } })}
                   styles={styles}
                   isDark={theme.isDark}
                 />
+                <GridTile
+                  variant="queue"
+                  icon="arrow-undo-outline"
+                  title={t(locale, "home.actionDeliveryQueue")}
+                  sub={t(locale, "home.actionDeliveryQueueSub")}
+                  badgeCount={queueAlertCount}
+                  onPress={() => router.push({ pathname: "/tickets", params: { queue: "delivery" } })}
+                  styles={styles}
+                  isDark={theme.isDark}
+                />
+              </View>
+              <View style={styles.gridRowFill}>
                 <GridTile
                   variant="workflow"
                   icon="git-branch-outline"
@@ -334,8 +345,6 @@ export default function HomeScreen() {
                   styles={styles}
                   isDark={theme.isDark}
                 />
-              </View>
-              <View style={styles.gridRowFill}>
                 <GridTile
                   variant="profile"
                   icon="person-circle-outline"
@@ -345,6 +354,8 @@ export default function HomeScreen() {
                   styles={styles}
                   isDark={theme.isDark}
                 />
+              </View>
+              <View style={styles.gridRowFill}>
                 <GridTile
                   variant="settings"
                   icon="settings-outline"
@@ -354,6 +365,7 @@ export default function HomeScreen() {
                   styles={styles}
                   isDark={theme.isDark}
                 />
+                <View style={styles.tileSpacer} />
               </View>
             </>
           ) : (
@@ -880,6 +892,10 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       flexDirection: "row",
       alignItems: "stretch",
       gap: S.sm,
+    },
+    tileSpacer: {
+      flex: 1,
+      minWidth: 0,
     },
     helpLogoutRow: {
       flexDirection: "row",

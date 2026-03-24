@@ -48,7 +48,13 @@ export class ValetsService {
       where: {
         valetId,
         ticket: {
-          status: { in: [TicketStatus.PARKED, TicketStatus.REQUESTED] },
+          status: {
+            in: [
+              TicketStatus.PARKED,
+              TicketStatus.REQUEST_PARKING,
+              TicketStatus.REQUEST_DELIVERY,
+            ],
+          },
         },
       },
     });
@@ -299,7 +305,7 @@ export class ValetsService {
           }
         : {
             assignments: {
-              select: { id: true, ticketId: true, role: true, assignedAt: true },
+              select: { id: true, ticketId: true, assignedAt: true },
               orderBy: { assignedAt: "desc" as const },
               take: 5,
             },
@@ -351,7 +357,6 @@ export class ValetsService {
         const assignments = v.assignments?.map((a) => ({
           id: a.id,
           ticketId: a.ticketId,
-          role: a.role,
           assignedAt: a.assignedAt,
         }));
         const { assignments: _a, ...rest } = v;
@@ -372,7 +377,7 @@ export class ValetsService {
           include: {
             user: { select: userSelectWithoutInvitation },
             assignments: {
-              select: { id: true, ticketId: true, role: true, assignedAt: true },
+              select: { id: true, ticketId: true, assignedAt: true },
               orderBy: { assignedAt: "desc" },
               take: 5,
             },

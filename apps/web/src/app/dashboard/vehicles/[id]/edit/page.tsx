@@ -15,7 +15,7 @@ import { BrandModelComboField } from "@/components/BrandModelComboField";
 import { COUNTRIES } from "@/lib/companyOptions";
 import { formatPlate, toTitleCase } from "@/lib/inputMasks";
 import { required, selectRequired } from "@/lib/validation";
-import { VEHICLE_COLORS } from "@parkit/shared/src/vehicleColors";
+import { getVehicleColorOptions, normalizeVehicleColorValue } from "@parkit/shared/src/vehicleColors";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -26,16 +26,6 @@ type CatalogModel = { id: number; name: string };
 /** Customers (users with CUSTOMER role) - same list as dashboard Customers page */
 type CustomerOption = { id: string; firstName?: string; lastName?: string; email?: string };
 type OwnerRef = { client?: { id: string; userId?: string; user?: { id?: string } } };
-
-function normalizeVehicleColorValue(raw: string): string {
-  const input = raw.trim();
-  if (!input) return "";
-  const byValue = VEHICLE_COLORS.find((c) => c.value.toLowerCase() === input.toLowerCase());
-  if (byValue) return byValue.value;
-  const byLabel = VEHICLE_COLORS.find((c) => c.label.toLowerCase() === input.toLowerCase());
-  if (byLabel) return byLabel.value;
-  return input.toUpperCase();
-}
 
 const defaultForm = {
   plate: "",
@@ -51,7 +41,7 @@ const defaultForm = {
 };
 
 export default function EditVehiclePage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
   const params = useParams();
@@ -328,7 +318,7 @@ export default function EditVehiclePage() {
               <label className={LABEL}>{t("vehicles.color")}</label>
               <SelectField value={form.color} onChange={set("color")} icon={Car}>
                 <option value="">{t("common.selectPlaceholder")}</option>
-                {VEHICLE_COLORS.map((c) => (
+                {getVehicleColorOptions(locale).map((c) => (
                   <option key={c.value} value={c.value}>
                     {c.label}
                   </option>

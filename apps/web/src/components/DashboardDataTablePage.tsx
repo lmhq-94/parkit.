@@ -119,7 +119,7 @@ function getStatusBadgeVariant(
       if (v === "CANCELLED" || v === "NO_SHOW") return "error";
       return "muted";
     case "ticket":
-      if (v === "PARKED" || v === "REQUESTED") return "info";
+      if (v === "PARKED" || v === "REQUEST_PARKING" || v === "REQUEST_DELIVERY") return "info";
       if (v === "DELIVERED") return "success";
       if (v === "CANCELLED") return "error";
       return "muted";

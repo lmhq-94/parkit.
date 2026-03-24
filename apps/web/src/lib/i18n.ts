@@ -601,8 +601,9 @@ export const translations = {
         NO_SHOW: "No presentado",
       },
       ticketStatus: {
+        REQUEST_PARKING: "Solicitud de parqueo",
         PARKED: "Estacionado",
-        REQUESTED: "Solicitado",
+        REQUEST_DELIVERY: "Solicitud de devolución",
         DELIVERED: "Entregado",
         CANCELLED: "Cancelado",
       },
@@ -1356,8 +1357,9 @@ export const translations = {
         NO_SHOW: "No show",
       },
       ticketStatus: {
+        REQUEST_PARKING: "Park request",
         PARKED: "Parked",
-        REQUESTED: "Requested",
+        REQUEST_DELIVERY: "Delivery request",
         DELIVERED: "Delivered",
         CANCELLED: "Cancelled",
       },
@@ -1566,4 +1568,3 @@ export function translateEnum(
   const out = t(locale, key);
   return out === key ? value : out;
 }
-

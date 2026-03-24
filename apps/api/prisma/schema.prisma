@@ -55,8 +55,9 @@ enum BookingStatus {
 }
 
 enum TicketStatus {
+  REQUEST_PARKING
   PARKED
-  REQUESTED
+  REQUEST_DELIVERY
   DELIVERED
   CANCELLED
 }
@@ -66,12 +67,6 @@ enum SlotType {
   PREMIUM
   ELECTRIC
   HANDICAPPED
-}
-
-enum AssignmentRole {
-  RECEPTOR
-  DRIVER
-  DELIVERER
 }
 
 enum NotificationType {
@@ -331,7 +326,7 @@ model Ticket {
   keyCode   String?      @unique
   /** Código legible para el cliente (ticket / QR). */
   ticketCode String?     @unique
-  status    TicketStatus @default(REQUESTED)
+  status    TicketStatus @default(REQUEST_PARKING)
   entryTime DateTime     @default(now())
   exitTime  DateTime?
 
@@ -358,7 +353,7 @@ model TicketAssignment {
   id         String         @id @default(uuid())
   ticketId   String
   valetId    String
-  role       AssignmentRole
+  role       ValetStaffRole
   assignedAt DateTime       @default(now())
 
   ticket Ticket @relation(fields: [ticketId], references: [id])

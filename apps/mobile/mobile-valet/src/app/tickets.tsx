@@ -8,11 +8,12 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Redirect, useRouter } from "expo-router";
+import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
+import { formatVehicleColorLabel } from "@parkit/shared/src/vehicleColors";
 import api, { clearAuthToken } from "@/lib/api";
 import { ValetBackButton } from "@/components/ValetBackButton";
 import { SquareParkingOff } from "lucide-react-native";
@@ -31,7 +32,6 @@ interface ApiAssignment {
   id: string;
   ticketId: string;
   valetId: string;
-  role: string;
   assignedAt: string;
   ticket: {
     id: string;
@@ -57,8 +57,6 @@ interface TicketAssignment {
   assignmentId: string;
   ticketId: string;
   valetId: string;
-  /** Rol en esta asignación (RECEPTOR, DRIVER, DELIVERER). */
-  assignmentRole: string;
   /** Estado real del ticket en backend. */
   ticketStatus: string;
   status: "assigned" | "in-transit" | "completed";
@@ -74,14 +72,11 @@ interface TicketAssignment {
   companyId: string;
 }
 
-const DRIVER_UI_ROLES = new Set(["DRIVER", "DELIVERER"]);
-const RECEPTION_UI_ROLES = new Set(["RECEPTOR"]);
-
 function mapApiAssignmentToDisplay(a: ApiAssignment): TicketAssignment {
   const status =
     a.ticket.status === "DELIVERED"
       ? "completed"
-      : a.ticket.status === "REQUESTED"
+      : a.ticket.status === "REQUEST_DELIVERY"
         ? "assigned"
         : "assigned";
   const location =
@@ -99,7 +94,6 @@ function mapApiAssignmentToDisplay(a: ApiAssignment): TicketAssignment {
     assignmentId: a.id,
     ticketId: a.ticket.id,
     valetId: a.valetId,
-    assignmentRole: a.role,
     ticketStatus: a.ticket.status,
     status,
     ticketCode: a.ticket.ticketCode ?? null,
@@ -401,13 +395,24 @@ export default function TicketsScreen() {
   const [loading, setLoading] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
 
-  /** Conductor: solo entregas; recepcionista (o rol no definido): cola de recepción. */
+  /** Conductor: puede alternar entre ingresos y devoluciones. */
   const isDriverUi = user?.valetStaffRole === "DRIVER";
+  const { queue } = useLocalSearchParams<{ queue?: string }>();
+  const queueMode =
+    queue === "parking"
+      ? "parking"
+      : queue === "delivery"
+        ? "delivery"
+        : isDriverUi
+          ? "delivery"
+          : "parking";
+  const showReceptionUi = queueMode === "parking";
 
   const filteredTickets = useMemo(() => {
-    const list = isDriverUi
-      ? tickets.filter((x) => DRIVER_UI_ROLES.has(x.assignmentRole))
-      : tickets.filter((x) => RECEPTION_UI_ROLES.has(x.assignmentRole));
+    const list =
+      queueMode === "parking"
+        ? tickets.filter((x) => x.ticketStatus === "REQUEST_PARKING")
+        : tickets.filter((x) => x.ticketStatus === "REQUEST_DELIVERY");
 
     // Sort ascending by createdAt (oldest first = FIFO queue)
     return list.sort((a, b) => {
@@ -468,30 +473,56 @@ export default function TicketsScreen() {
   };
 
   const receptionTicketStatusLabel = (ticketStatus: string) => {
+    if (ticketStatus === "REQUEST_PARKING") return t(locale, "tickets.ticketStatusRequestedToPark");
     if (ticketStatus === "PARKED") return t(locale, "tickets.ticketStatusParked");
-    if (ticketStatus === "REQUESTED") return t(locale, "tickets.ticketStatusRequested");
+    if (ticketStatus === "REQUEST_DELIVERY") return t(locale, "tickets.ticketStatusRequestedToDeliver");
     return t(locale, "tickets.ticketStatusOther");
   };
 
   const mapReceptionVisualStatus = (ticketStatus: string): "assigned" | "in-transit" | "completed" => {
     if (ticketStatus === "DELIVERED") return "completed";
-    if (ticketStatus === "REQUESTED") return "in-transit";
+    if (ticketStatus === "REQUEST_DELIVERY") return "in-transit";
     return "assigned";
   };
 
-  const handleRequestReturn = (item: TicketAssignment) => {
+  const handleMarkParked = (item: TicketAssignment) => {
     feedback.confirm({
-      title: t(locale, "tickets.confirmRequestReturnTitle"),
-      message: t(locale, "tickets.confirmRequestReturnMessage"),
+      title: t(locale, "tickets.confirmMarkParkedTitle"),
+      message: t(locale, "tickets.confirmMarkParkedMessage"),
       confirmText: t(locale, "tickets.yesContinue"),
       onConfirm: async () => {
         try {
           await api.patch(
             `/tickets/${item.ticketId}`,
-            { status: "REQUESTED" },
+            { status: "PARKED" },
             { headers: { "x-company-id": item.companyId } }
           );
-          feedback.success(t(locale, "tickets.successRequested"));
+          feedback.success(t(locale, "tickets.successMarkedParked"));
+          await loadTickets();
+        } catch (e: unknown) {
+          const msg =
+            e && typeof e === "object" && "response" in e
+              ? (e as { response?: { data?: { message?: string } } }).response?.data?.message
+              : null;
+          feedback.error(msg || t(locale, "tickets.errorUpdate"));
+        }
+      },
+    });
+  };
+
+  const handleMarkDelivered = (item: TicketAssignment) => {
+    feedback.confirm({
+      title: t(locale, "tickets.confirmMarkDeliveredTitle"),
+      message: t(locale, "tickets.confirmMarkDeliveredMessage"),
+      confirmText: t(locale, "tickets.yesContinue"),
+      onConfirm: async () => {
+        try {
+          await api.patch(
+            `/tickets/${item.ticketId}`,
+            { status: "DELIVERED" },
+            { headers: { "x-company-id": item.companyId } }
+          );
+          feedback.success(t(locale, "tickets.successMarkedDelivered"));
           await loadTickets();
         } catch (e: unknown) {
           const msg =
@@ -564,7 +595,7 @@ export default function TicketsScreen() {
     const ticketCode = item.ticketCode?.trim() || "—";
     const keyCode = item.keyCode?.trim() || null;
     const showDifferentKeyCode = !!keyCode && keyCode !== ticketCode;
-    if (!isDriverUi) {
+    if (showReceptionUi) {
       const rVis = statusVisualsForTheme(mapReceptionVisualStatus(item.ticketStatus), theme.isDark);
       return (
         <View
@@ -611,21 +642,34 @@ export default function TicketsScreen() {
             {item.vehicleColor ? (
               <View style={styles.metaLine}>
                 <Text style={styles.metaKey}>{t(locale, "tickets.colorLabel")}</Text>
-                <Text style={styles.metaValue}>{item.vehicleColor}</Text>
+                <Text style={styles.metaValue}>{formatVehicleColorLabel(item.vehicleColor, locale)}</Text>
               </View>
             ) : null}
           </View>
           <View style={styles.actions}>
-            {item.ticketStatus === "PARKED" && (
+            {item.ticketStatus === "REQUEST_PARKING" && (
               <TouchableOpacity
                 style={[styles.btn, styles.btnWarning]}
-                onPress={() => handleRequestReturn(item)}
+                onPress={() => handleMarkParked(item)}
                 accessibilityRole="button"
-                accessibilityHint={t(locale, "tickets.confirmRequestReturnMessage")}
+                accessibilityHint={t(locale, "tickets.confirmMarkParkedMessage")}
               >
                 <Ionicons name="arrow-undo-outline" size={28} color={C.white} style={styles.btnIcon} />
                 <Text style={styles.btnText} maxFontSizeMultiplier={2}>
-                  {t(locale, "tickets.actionRequestReturn")}
+                  {t(locale, "tickets.actionMarkParked")}
+                </Text>
+              </TouchableOpacity>
+            )}
+            {item.ticketStatus === "REQUEST_DELIVERY" && (
+              <TouchableOpacity
+                style={[styles.btn, styles.btnSuccess]}
+                onPress={() => handleMarkDelivered(item)}
+                accessibilityRole="button"
+                accessibilityHint={t(locale, "tickets.confirmMarkDeliveredMessage")}
+              >
+                <Ionicons name="checkmark-circle-outline" size={30} color={C.white} style={styles.btnIcon} />
+                <Text style={styles.btnText} maxFontSizeMultiplier={2}>
+                  {t(locale, "tickets.actionMarkDelivered")}
                 </Text>
               </TouchableOpacity>
             )}
@@ -689,7 +733,7 @@ export default function TicketsScreen() {
           {item.vehicleColor ? (
             <View style={styles.metaLine}>
               <Text style={styles.metaKey}>{t(locale, "tickets.colorLabel")}</Text>
-              <Text style={styles.metaValue}>{item.vehicleColor}</Text>
+              <Text style={styles.metaValue}>{formatVehicleColorLabel(item.vehicleColor, locale)}</Text>
             </View>
           ) : null}
         </View>
@@ -750,10 +794,10 @@ export default function TicketsScreen() {
       <View style={[styles.centerBox, styles.centerBoxEmpty]}>
         <SquareParkingOff size={72} color={C.textSubtle} strokeWidth={2} />
         <Text style={styles.emptyTitle}>
-          {isDriverUi ? t(locale, "tickets.emptyDriver") : t(locale, "tickets.emptyReception")}
+          {showReceptionUi ? t(locale, "tickets.emptyReception") : t(locale, "tickets.emptyDriver")}
         </Text>
         <Text style={styles.emptyHint}>
-          {isDriverUi ? t(locale, "tickets.emptyHintDriver") : t(locale, "tickets.emptyHintReception")}
+          {showReceptionUi ? t(locale, "tickets.emptyHintReception") : t(locale, "tickets.emptyHintDriver")}
         </Text>
       </View>
     );
@@ -769,7 +813,13 @@ export default function TicketsScreen() {
               onPress={() => router.replace("/home")}
               accessibilityLabel={t(locale, "common.back")}
             />
-            <Text style={styles.screenTitle}>{isDriverUi ? t(locale, "tickets.titleDriver") : t(locale, "tickets.titleReception")}</Text>
+            <Text style={styles.screenTitle}>
+              {isDriverUi
+                ? queueMode === "parking"
+                  ? t(locale, "tickets.titleParkingQueue")
+                  : t(locale, "tickets.titleDeliveryQueue")
+                : t(locale, "tickets.titleReception")}
+            </Text>
             <View style={{ width: 44 }} />
           </View>
         </View>
@@ -781,7 +831,11 @@ export default function TicketsScreen() {
           ListHeaderComponent={
             <View style={styles.introBlock}>
               <Text style={styles.intro} maxFontSizeMultiplier={2}>
-                {isDriverUi ? t(locale, "tickets.subtitleDriver") : t(locale, "tickets.subtitleReception")}
+                {isDriverUi
+                  ? queueMode === "parking"
+                    ? t(locale, "tickets.subtitleDriverParking")
+                    : t(locale, "tickets.subtitleDriverDelivery")
+                  : t(locale, "tickets.subtitleReception")}
               </Text>
             </View>
           }

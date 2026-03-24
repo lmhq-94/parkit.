@@ -13,7 +13,7 @@ import { useDashboardStore } from "@/lib/store";
 import { COUNTRIES } from "@/lib/companyOptions";
 import { formatPlate, toTitleCase } from "@/lib/inputMasks";
 import { required, plate as validatePlate, selectRequired } from "@/lib/validation";
-import { VEHICLE_COLORS } from "@parkit/shared/src/vehicleColors";
+import { getVehicleColorOptions } from "@parkit/shared/src/vehicleColors";
 
 /** Customers (users with CUSTOMER role) for the company - same list as dashboard Customers page */
 type CustomerOption = { id: string; firstName?: string; lastName?: string; email?: string };
@@ -40,7 +40,7 @@ const defaultForm = {
 };
 
 export default function NewVehiclePage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
   const selectedCompanyId = useDashboardStore((s: { selectedCompanyId: string | null }) => s.selectedCompanyId);
@@ -323,7 +323,7 @@ export default function NewVehiclePage() {
             <label className={LABEL}>{t("vehicles.color")}</label>
             <SelectField value={form.color} onChange={set("color")} icon={Car}>
               <option value="">{t("common.selectPlaceholder")}</option>
-              {VEHICLE_COLORS.map((c) => (
+              {getVehicleColorOptions(locale).map((c) => (
                 <option key={c.value} value={c.value}>
                   {c.label}
                 </option>

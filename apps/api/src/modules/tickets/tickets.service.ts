@@ -3,7 +3,6 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../../shared/prisma";
 import {
   TicketStatus,
-  AssignmentRole,
   ValetStatus,
   ValetStaffRole,
   NotificationType,
@@ -102,7 +101,6 @@ interface UpdateTicketDTO {
 
 interface AssignValet {
   valetId: string;
-  role: AssignmentRole;
 }
 
 interface ReportDamageDTO {
@@ -191,11 +189,14 @@ export class TicketsService {
                     currentStatus: ValetStatus.BUSY,
                     assignments: {
                       some: {
-                        role: AssignmentRole.DRIVER,
                         ticket: {
                           parkingId: data.parkingId,
                           status: {
-                            in: [TicketStatus.PARKED, TicketStatus.REQUESTED],
+                            in: [
+                              TicketStatus.PARKED,
+                              TicketStatus.REQUEST_PARKING,
+                              TicketStatus.REQUEST_DELIVERY,
+                            ],
                           },
                         },
                       },
@@ -226,7 +227,7 @@ export class TicketsService {
           slotId: data.slotId,
           keyCode,
           ticketCode,
-          status: TicketStatus.REQUESTED,
+          status: TicketStatus.REQUEST_PARKING,
         },
       });
 
@@ -261,7 +262,7 @@ export class TicketsService {
           data: {
             ticketId: ticket.id,
             valetId: data.receptorValetId,
-            role: "RECEPTOR",
+            role: ValetStaffRole.RECEPTIONIST,
           },
         }),
       ];
@@ -271,7 +272,7 @@ export class TicketsService {
             data: {
               ticketId: ticket.id,
               valetId: data.driverValetId,
-              role: "DRIVER",
+              role: ValetStaffRole.DRIVER,
             },
           })
         );
@@ -282,7 +283,7 @@ export class TicketsService {
             data: {
               ticketId: ticket.id,
               valetId: data.delivererValetId,
-              role: "DELIVERER",
+              role: ValetStaffRole.DRIVER,
             },
           })
         );
@@ -376,6 +377,7 @@ export class TicketsService {
             valet: {
               select: {
                 id: true,
+                staffRole: true,
                 user: {
                   select: {
                     firstName: true,
@@ -414,7 +416,8 @@ export class TicketsService {
         assignments: {
           include: {
             valet: {
-              include: {
+              select: {
+                staffRole: true,
                 user: {
                   select: {
                     firstName: true,
@@ -475,19 +478,46 @@ export class TicketsService {
         },
       });
 
-      const roleUpdates: Array<{ role: AssignmentRole; valetId: string | null }> = [];
-      if (data.receptorValetId !== undefined) roleUpdates.push({ role: "RECEPTOR", valetId: data.receptorValetId ?? null });
-      if (data.driverValetId !== undefined) roleUpdates.push({ role: "DRIVER", valetId: data.driverValetId ?? null });
-      if (data.delivererValetId !== undefined) roleUpdates.push({ role: "DELIVERER", valetId: data.delivererValetId ?? null });
+      const shouldSyncAssignments =
+        data.receptorValetId !== undefined ||
+        data.driverValetId !== undefined ||
+        data.delivererValetId !== undefined;
+      if (shouldSyncAssignments) {
+        const nextIds = [
+          data.receptorValetId ?? null,
+          data.driverValetId ?? null,
+          data.delivererValetId ?? null,
+        ].filter((id): id is string => typeof id === "string" && id.trim() !== "");
 
-      for (const { role, valetId } of roleUpdates) {
-        await tx.ticketAssignment.deleteMany({
-          where: { ticketId, role },
-        });
-        if (valetId) {
-          await tx.ticketAssignment.create({
-            data: { ticketId, valetId, role },
-          });
+        if (nextIds.length > 0) {
+          const [existing, valets] = await Promise.all([
+            tx.ticketAssignment.findMany({
+              where: { ticketId },
+              select: { valetId: true },
+            }),
+            tx.valet.findMany({
+              where: { id: { in: nextIds } },
+              select: { id: true, staffRole: true },
+            }),
+          ]);
+          const existingSet = new Set(existing.map((a) => a.valetId));
+          const roleByValetId = new Map<string, ValetStaffRole>();
+          for (const v of valets) {
+            if (v.staffRole) roleByValetId.set(v.id, v.staffRole);
+          }
+          for (const valetId of nextIds) {
+            const role = roleByValetId.get(valetId) ?? ValetStaffRole.DRIVER;
+            if (!existingSet.has(valetId)) {
+              await tx.ticketAssignment.create({
+                data: { ticketId, valetId, role },
+              });
+            } else {
+              await tx.ticketAssignment.updateMany({
+                where: { ticketId, valetId },
+                data: { role },
+              });
+            }
+          }
         }
       }
 
@@ -537,11 +567,16 @@ export class TicketsService {
     }
 
     return prisma.$transaction(async (tx) => {
+      const valet = await tx.valet.findUnique({
+        where: { id: data.valetId },
+        select: { staffRole: true },
+      });
+      const role = valet?.staffRole ?? ValetStaffRole.DRIVER;
       const created = await tx.ticketAssignment.create({
         data: {
           ticketId,
           valetId: data.valetId,
-          role: data.role,
+          role,
         },
         include: {
           valet: {

@@ -24,7 +24,7 @@ import * as Linking from "expo-linking";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { formatPlate } from "@parkit/shared";
-import { VEHICLE_COLORS } from "@parkit/shared/src/vehicleColors";
+import { formatVehicleColorLabel, getVehicleColorOptions, normalizeVehicleColorValue } from "@parkit/shared/src/vehicleColors";
 import { useAuthStore, useLocaleStore, useCompanyStore } from "@/lib/store";
 import { t, type Locale } from "@/lib/i18n";
 import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
@@ -576,7 +576,7 @@ export default function ReceiveScreen() {
         }
         setVehBrand(v.brand);
         setVehModel(v.model);
-        setVehColor(v.color?.trim() ?? "");
+        setVehColor(normalizeVehicleColorValue(v.color?.trim() ?? ""));
         setVehYear(v.year != null ? String(v.year) : "");
         setLoadedVehicleSnapshot({
           brand: v.brand?.trim() ?? "",
@@ -900,7 +900,7 @@ export default function ReceiveScreen() {
       setDriverPhone(formatPhoneInternational(phone));
       setVehBrand(b.vehicle?.brand?.trim() ?? "");
       setVehModel(b.vehicle?.model?.trim() ?? "");
-      setVehColor(b.vehicle?.color?.trim() ?? "");
+        setVehColor(normalizeVehicleColorValue(b.vehicle?.color?.trim() ?? ""));
       setVehYear(b.vehicle?.year != null ? String(b.vehicle.year) : "");
       setVehicle({
         id: b.vehicleId,
@@ -1989,9 +1989,7 @@ export default function ReceiveScreen() {
                   numberOfLines={1}
                   maxFontSizeMultiplier={2}
                 >
-                  {VEHICLE_COLORS.find((c) => c.value === vehColor)?.label ||
-                    vehColor ||
-                    t(locale, "receive.placeholderColor")}
+                  {formatVehicleColorLabel(vehColor, locale) || t(locale, "receive.placeholderColor")}
                 </Text>
                 <Ionicons name="list-outline" size={18} color={C.textMuted} />
               </Pressable>
@@ -2562,7 +2560,7 @@ export default function ReceiveScreen() {
             <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
               <Text style={[styles.modalTitle, { color: C.text }]}>{t(locale, "receive.placeholderColor")}</Text>
               <FlatList
-                data={VEHICLE_COLORS}
+                data={getVehicleColorOptions(locale)}
                 keyExtractor={(item) => item.value}
                 style={styles.modalList}
                 keyboardShouldPersistTaps="handled"

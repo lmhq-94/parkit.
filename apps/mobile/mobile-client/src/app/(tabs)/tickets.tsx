@@ -15,16 +15,18 @@ const MOCK_TICKETS = [
     vehicle: "ABC-456",
     parking: "Airport Parking",
     entryTime: "2026-02-08 14:30",
-    status: "REQUESTED",
+    status: "REQUEST_DELIVERY",
     slot: "B-05",
   },
 ];
 
 const getStatusColor = (status: string) => {
   switch (status) {
+    case "REQUEST_PARKING":
+      return "#FF9500";
     case "PARKED":
       return "#34C759";
-    case "REQUESTED":
+    case "REQUEST_DELIVERY":
       return "#FF9500";
     case "DELIVERED":
       return "#0066FF";
@@ -77,7 +79,7 @@ export default function TicketsScreen() {
               </Pressable>
             )}
 
-            {item.status === "REQUESTED" && (
+            {item.status === "REQUEST_DELIVERY" && (
               <Pressable style={[styles.actionButton, styles.actionButtonSecond]}>
                 <Text style={styles.actionTextSecond}>Valet Arriving...</Text>
               </Pressable>
