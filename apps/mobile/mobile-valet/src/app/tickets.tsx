@@ -14,6 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import api, { clearAuthToken } from "@/lib/api";
+import { ValetBackButton } from "@/components/ValetBackButton";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useOnAppForeground } from "@/lib/useOnAppForeground";
 import { TICKETS_POLL_MS } from "@/lib/syncConstants";
@@ -112,67 +113,43 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
       maxWidth: contentMaxWidth,
     },
     header: {
+      backgroundColor: C.card,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: C.border,
+    },
+    screenHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
       paddingHorizontal: sectionPadding,
       paddingTop: S.sm,
       paddingBottom: S.md,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: C.border,
-      backgroundColor: C.card,
     },
-    headerTextBlock: {
-      gap: S.xs,
-    },
-    title: {
-      fontSize: F.title,
+    screenTitle: {
+      fontSize: F.title - 2,
       fontWeight: "800",
       color: C.text,
-      letterSpacing: -0.5,
+      flex: 1,
+      textAlign: "center",
     },
-    subtitle: {
-      fontSize: F.subtitle,
-      color: C.textMuted,
-      lineHeight: 28,
-      fontWeight: "500",
-    },
-    roleHint: {
-      marginTop: S.sm,
+    intro: {
       fontSize: F.secondary,
-      color: C.textSubtle,
+      color: C.textMuted,
       lineHeight: 24,
       fontWeight: "600",
+      textAlign: "left",
     },
-    toolbar: {
-      flexDirection: "row",
-      justifyContent: "space-around",
-      alignItems: "stretch",
-      paddingVertical: S.md,
-      paddingHorizontal: sectionPadding,
-      gap: S.md,
-      backgroundColor: C.card,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: C.border,
+    introSecondary: {
+      marginTop: S.xs,
+      fontSize: F.secondary - 1,
+      color: C.textSubtle,
+      lineHeight: 20,
+      fontWeight: "600",
+      textAlign: "left",
     },
-    toolbarBtn: {
-      flex: 1,
-      minHeight: M,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: S.sm,
-      paddingVertical: S.sm,
-      paddingHorizontal: S.md,
-      backgroundColor: C.bg,
-      borderRadius: R.button,
-      borderWidth: 2,
-      borderColor: C.border,
-    },
-    toolbarBtnLabel: {
-      fontSize: F.body,
-      fontWeight: "700",
-      color: C.text,
-    },
-    toolbarLogoutLabel: {
-      color: C.logout,
+    introBlock: {
+      marginBottom: S.lg,
+      gap: 2,
     },
     list: {
       padding: sectionPadding,
@@ -351,7 +328,6 @@ export default function TicketsScreen() {
     }
     return tickets.filter((x) => RECEPTION_UI_ROLES.has(x.assignmentRole));
   }, [tickets, isDriverUi]);
-
   const feedback = useMemo(() => createFeedback(locale), [locale]);
 
   const loadTickets = useCallback(async (opts?: { silent?: boolean }) => {
@@ -373,6 +349,11 @@ export default function TicketsScreen() {
   useEffect(() => {
     if (user) void loadTickets();
   }, [user, loadTickets]);
+
+  useEffect(() => {
+    if (!user?.id || !isDriverUi) return;
+    void api.patch(`/notifications/user/${encodeURIComponent(user.id)}/read-all`).catch(() => {});
+  }, [user?.id, isDriverUi]);
 
   useEffect(() => {
     if (!user) return;
@@ -642,53 +623,30 @@ export default function TicketsScreen() {
       <View style={styles.container}>
         <View style={styles.contentFrame}>
         <View style={styles.header}>
-          <View style={styles.headerTextBlock}>
-            <Text style={styles.title} maxFontSizeMultiplier={1.8}>
-              {isDriverUi ? t(locale, "tickets.titleDriver") : t(locale, "tickets.titleReception")}
-            </Text>
-            <Text style={styles.subtitle} maxFontSizeMultiplier={2}>
-              {isDriverUi ? t(locale, "tickets.subtitleDriver") : t(locale, "tickets.subtitleReception")}
-            </Text>
-            <Text style={styles.roleHint} maxFontSizeMultiplier={2}>
-              {isDriverUi ? t(locale, "tickets.roleHintDriver") : t(locale, "tickets.roleHintReception")}
-            </Text>
+          <View style={styles.screenHeader}>
+            <ValetBackButton
+              onPress={() => router.replace("/home")}
+              accessibilityLabel={t(locale, "common.back")}
+            />
+            <Text style={styles.screenTitle}>{isDriverUi ? t(locale, "tickets.titleDriver") : t(locale, "tickets.titleReception")}</Text>
+            <View style={{ width: 44 }} />
           </View>
-        </View>
-
-        <View style={styles.toolbar}>
-          <TouchableOpacity
-            style={styles.toolbarBtn}
-            onPress={() => router.replace("/home")}
-            accessibilityRole="button"
-            accessibilityLabel={t(locale, "tickets.home")}
-          >
-            <Ionicons name="home-outline" size={28} color={C.text} />
-            <Text style={styles.toolbarBtnLabel}>{t(locale, "tickets.home")}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.toolbarBtn}
-            onPress={() => router.push("/settings")}
-            accessibilityRole="button"
-            accessibilityLabel={t(locale, "tickets.settings")}
-          >
-            <Ionicons name="settings-outline" size={28} color={C.text} />
-            <Text style={styles.toolbarBtnLabel}>{t(locale, "tickets.settings")}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.toolbarBtn}
-            onPress={handleLogout}
-            accessibilityRole="button"
-            accessibilityLabel={t(locale, "tickets.logout")}
-          >
-            <Ionicons name="log-out-outline" size={28} color={C.logout} />
-            <Text style={[styles.toolbarBtnLabel, styles.toolbarLogoutLabel]}>{t(locale, "tickets.logout")}</Text>
-          </TouchableOpacity>
         </View>
 
         <FlatList
           data={filteredTickets}
           keyExtractor={(item) => item.assignmentId}
           renderItem={renderTicket}
+          ListHeaderComponent={
+            <View style={styles.introBlock}>
+              <Text style={styles.intro} maxFontSizeMultiplier={2}>
+                {isDriverUi ? t(locale, "tickets.subtitleDriver") : t(locale, "tickets.subtitleReception")}
+              </Text>
+              <Text style={styles.introSecondary} maxFontSizeMultiplier={2}>
+                {isDriverUi ? t(locale, "tickets.roleHintDriver") : t(locale, "tickets.roleHintReception")}
+              </Text>
+            </View>
+          }
           refreshing={loading && !initialLoad}
           onRefresh={() => void loadTickets()}
           contentContainerStyle={filteredTickets.length === 0 ? styles.listEmptyGrow : styles.list}

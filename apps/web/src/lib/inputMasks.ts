@@ -33,6 +33,43 @@ export const COUNTRY_DIAL_CODES: Record<string, string> = {
   VU: "678", VE: "58", VN: "84", YE: "967", DJ: "253", ZM: "260", ZW: "263",
 };
 
+const DEFAULT_PHONE_COUNTRY_CODE = "CR";
+
+function extractCountryCodeFromLocale(locale: string): string | null {
+  const normalized = locale.replace("_", "-");
+  const parts = normalized.split("-");
+  if (parts.length < 2) return null;
+  const region = parts[parts.length - 1]?.toUpperCase();
+  return /^[A-Z]{2}$/.test(region) ? region : null;
+}
+
+export function getDeviceCountryCode(): string {
+  const localeCandidates: string[] = [];
+
+  try {
+    const intlLocale = Intl.DateTimeFormat().resolvedOptions().locale;
+    if (intlLocale) localeCandidates.push(intlLocale);
+  } catch {
+    // no-op
+  }
+
+  if (typeof navigator !== "undefined") {
+    if (navigator.language) localeCandidates.push(navigator.language);
+    if (Array.isArray(navigator.languages)) {
+      for (const l of navigator.languages) {
+        if (l) localeCandidates.push(l);
+      }
+    }
+  }
+
+  for (const locale of localeCandidates) {
+    const cc = extractCountryCodeFromLocale(locale);
+    if (cc) return cc;
+  }
+
+  return DEFAULT_PHONE_COUNTRY_CODE;
+}
+
 /** Phone: digits, optional leading +. Max 15 digits (E.164). */
 export function formatPhone(value: string): string {
   const trimmed = value.trimStart();
@@ -61,18 +98,31 @@ export function formatPhoneInternational(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 15);
   if (digits.length === 0) return "";
 
+  const deviceCountryCode = getDeviceCountryCode();
+  const defaultDial = COUNTRY_DIAL_CODES[deviceCountryCode] ?? COUNTRY_DIAL_CODES[DEFAULT_PHONE_COUNTRY_CODE];
+  const hasExplicitPlus = value.trimStart().startsWith("+");
+
   let dial = "";
   let localDigits = digits;
-  for (const d of DIAL_CODES_SORTED) {
-    if (digits.startsWith(d)) {
-      dial = d;
-      localDigits = digits.slice(d.length);
-      break;
+
+  if (hasExplicitPlus) {
+    for (const d of DIAL_CODES_SORTED) {
+      if (digits.startsWith(d)) {
+        dial = d;
+        localDigits = digits.slice(d.length);
+        break;
+      }
     }
   }
+
   if (!dial) {
-    dial = digits;
-    localDigits = "";
+    dial = defaultDial;
+    const maxLocalLength = Math.max(0, 15 - dial.length);
+    if (digits.startsWith(defaultDial)) {
+      localDigits = digits.slice(defaultDial.length, defaultDial.length + maxLocalLength);
+    } else {
+      localDigits = digits.slice(0, maxLocalLength);
+    }
   }
 
   const prefix = `+${dial}`;

@@ -596,6 +596,52 @@ export class ValetsService {
     });
   }
 
+  /**
+   * Conductores del parqueo para asignación en recepción:
+   * - available: se puede mover de inmediato
+   * - busy: se puede asignar en cola (tomará más tiempo)
+   */
+  static async listDispatchDriversAtParking(parkingId: string, companyId: string) {
+    const p = await prisma.parking.findFirst({
+      where: { id: parkingId, companyId },
+      select: { id: true },
+    });
+    if (!p) {
+      throw new Error("Parking not found or not in your company context");
+    }
+
+    const presenceSince = new Date(Date.now() - VALET_PRESENCE_MAX_AGE_MS);
+
+    const rows = await prisma.valet.findMany({
+      where: {
+        currentParkingId: parkingId,
+        currentStatus: { in: [ValetStatus.AVAILABLE, ValetStatus.BUSY] },
+        lastPresenceAt: { gte: presenceSince },
+        OR: [{ staffRole: ValetStaffRole.DRIVER }, { staffRole: null }],
+        user: { isActive: true },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: [
+        { currentStatus: "asc" }, // AVAILABLE first
+        { user: { firstName: "asc" } },
+        { user: { lastName: "asc" } },
+      ],
+    });
+
+    const available = rows.filter((v) => v.currentStatus === ValetStatus.AVAILABLE);
+    const busy = rows.filter((v) => v.currentStatus === ValetStatus.BUSY);
+    return { available, busy };
+  }
+
   /** Actualiza perfil y/o contexto operativo del valet actual (app móvil). */
   static async patchMe(userId: string, dto: PatchValetMeDTO) {
     const existing = await prisma.valet.findUnique({

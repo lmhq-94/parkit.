@@ -32,6 +32,13 @@ router.get(
   requireRole("ADMIN", "STAFF"),
   ValetsController.listAvailableDriversAtParking
 );
+router.get(
+  "/dispatch-drivers/:parkingId",
+  requireAuth,
+  requireCompany,
+  requireRole("ADMIN", "STAFF"),
+  ValetsController.listDispatchDriversAtParking
+);
 
 router.get("/for-company", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ValetsController.listForCompany);
 

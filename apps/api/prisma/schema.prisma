@@ -330,7 +330,7 @@ model Ticket {
   keyCode   String?      @unique
   /** Código legible para el cliente (ticket / QR). */
   ticketCode String?     @unique
-  status    TicketStatus @default(PARKED)
+  status    TicketStatus @default(REQUESTED)
   entryTime DateTime     @default(now())
   exitTime  DateTime?
 

@@ -3,6 +3,7 @@ import {
   formatPhone,
   formatPhoneInternational,
   formatPhoneWithCountryCode,
+  getDeviceCountryCode,
   formatTaxId,
   formatPlate,
   toTitleCase,
@@ -30,11 +31,55 @@ describe("inputMasks", () => {
   });
 
   describe("formatPhoneInternational", () => {
+    const originalIntl = Intl.DateTimeFormat;
+
+    afterEach(() => {
+      Intl.DateTimeFormat = originalIntl;
+    });
+
     it("formatea Costa Rica +506 XXXX-XXXX", () => {
+      Intl.DateTimeFormat = (() =>
+        ({
+          resolvedOptions: () => ({ locale: "es-CR" }),
+        }) as Intl.DateTimeFormat) as typeof Intl.DateTimeFormat;
       expect(formatPhoneInternational("50662164040")).toBe("+506 6216-4040");
     });
     it("formatea US +1 (XXX) XXX-XXXX", () => {
+      Intl.DateTimeFormat = (() =>
+        ({
+          resolvedOptions: () => ({ locale: "en-US" }),
+        }) as Intl.DateTimeFormat) as typeof Intl.DateTimeFormat;
       expect(formatPhoneInternational("15551234567")).toBe("+1 (555) 123-4567");
+    });
+    it("si no hay prefijo usa el del pais del dispositivo", () => {
+      Intl.DateTimeFormat = (() =>
+        ({
+          resolvedOptions: () => ({ locale: "en-US" }),
+        }) as Intl.DateTimeFormat) as typeof Intl.DateTimeFormat;
+      expect(formatPhoneInternational("5551234567")).toBe("+1 (555) 123-4567");
+    });
+  });
+
+  describe("getDeviceCountryCode", () => {
+    const originalIntl = Intl.DateTimeFormat;
+
+    afterEach(() => {
+      Intl.DateTimeFormat = originalIntl;
+    });
+
+    it("extrae region del locale del dispositivo", () => {
+      Intl.DateTimeFormat = (() =>
+        ({
+          resolvedOptions: () => ({ locale: "es-CR" }),
+        }) as Intl.DateTimeFormat) as typeof Intl.DateTimeFormat;
+      expect(getDeviceCountryCode()).toBe("CR");
+    });
+    it("si locale no trae region, usa fallback del entorno (navigator)", () => {
+      Intl.DateTimeFormat = (() =>
+        ({
+          resolvedOptions: () => ({ locale: "es" }),
+        }) as Intl.DateTimeFormat) as typeof Intl.DateTimeFormat;
+      expect(getDeviceCountryCode()).toBe("US");
     });
   });
 

@@ -1,7 +1,13 @@
 import { randomBytes } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../../shared/prisma";
-import { TicketStatus, AssignmentRole, ValetStatus } from "@prisma/client";
+import {
+  TicketStatus,
+  AssignmentRole,
+  ValetStatus,
+  ValetStaffRole,
+  NotificationType,
+} from "@prisma/client";
 import type { CreateTicketDTO } from "./tickets.types";
 
 const MANUAL_CODE_MIN_LEN = 2;
@@ -169,7 +175,7 @@ export class TicketsService {
           where: {
             id: data.driverValetId,
             currentParkingId: data.parkingId,
-            currentStatus: ValetStatus.AVAILABLE,
+            currentStatus: { in: [ValetStatus.AVAILABLE, ValetStatus.BUSY] },
             AND: [
               { OR: [{ companyId }, { companyId: null }] },
               { OR: [{ staffRole: ValetStaffRole.DRIVER }, { staffRole: null }] },
@@ -179,7 +185,7 @@ export class TicketsService {
           select: { id: true },
         });
         if (!driver) {
-          throw new Error("Selected driver is not available for this parking");
+          throw new Error("Selected driver is not valid for this parking");
         }
       }
 
@@ -197,6 +203,7 @@ export class TicketsService {
           slotId: data.slotId,
           keyCode,
           ticketCode,
+          status: TicketStatus.REQUESTED,
         },
       });
 
@@ -258,6 +265,33 @@ export class TicketsService {
         );
       }
       await Promise.all(assignmentCreates);
+
+      if (data.driverValetId) {
+        const [driver, vehicle] = await Promise.all([
+          tx.valet.findUnique({
+            where: { id: data.driverValetId },
+            select: {
+              userId: true,
+              user: { select: { firstName: true } },
+            },
+          }),
+          tx.vehicle.findUnique({
+            where: { id: data.vehicleId },
+            select: { plate: true },
+          }),
+        ]);
+        if (driver?.userId) {
+          const plate = vehicle?.plate?.trim() || "vehiculo";
+          await tx.notificationLog.create({
+            data: {
+              userId: driver.userId,
+              type: NotificationType.PUSH,
+              title: `Nuevo servicio asignado`,
+              body: `Te asignaron el vehiculo ${plate}. Revisa tu cola de trabajo.`,
+            },
+          });
+        }
+      }
 
       return tx.ticket.findUniqueOrThrow({
         where: { id: ticket.id },

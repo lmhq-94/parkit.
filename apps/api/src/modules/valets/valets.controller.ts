@@ -136,6 +136,28 @@ export class ValetsController {
     }
   }
 
+  static async listDispatchDriversAtParking(req: Request, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      if (!companyId) {
+        return fail(res, 400, "Company context required");
+      }
+      const raw = req.params.parkingId;
+      const parkingId = Array.isArray(raw) ? raw[0] : raw;
+      if (!parkingId || typeof parkingId !== "string") {
+        return fail(res, 400, "parkingId required");
+      }
+      const valets = await ValetsService.listDispatchDriversAtParking(parkingId, companyId);
+      return ok(res, valets);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      if (msg === "Parking not found or not in your company context") {
+        return fail(res, 404, msg);
+      }
+      return fail(res, 400, msg);
+    }
+  }
+
   static async create(req: Request, res: Response) {
     try {
       const valet = await ValetsService.create(

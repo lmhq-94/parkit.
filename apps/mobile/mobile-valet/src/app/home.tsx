@@ -14,7 +14,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useMemo, useEffect, useState, type ComponentType } from "react";
+import { useMemo, useEffect, useState, useCallback, useRef, type ComponentType } from "react";
 import { SquareParking } from "lucide-react-native";
 import { Logo } from "@parkit/shared";
 import type { ValetOperationalStatus } from "@parkit/shared";
@@ -25,6 +25,8 @@ import { useValetTheme, ticketsA11y } from "@/theme/valetTheme";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useNearestParking, haversineKm } from "@/lib/useNearestParking";
 import { createFeedback } from "@/lib/feedback";
+import { useOnAppForeground } from "@/lib/useOnAppForeground";
+import { TICKETS_POLL_MS } from "@/lib/syncConstants";
 import { LinearGradient } from "expo-linear-gradient";
 
 /** Tonos por tile: modo claro (más profundos) vs oscuro (más vivos sobre fondo oscuro). */
@@ -78,10 +80,57 @@ export default function HomeScreen() {
   const hydrateParkingPreference = useParkingPreferenceStore((s) => s.hydrateParkingPreference);
   const feedback = useMemo(() => createFeedback(locale), [locale]);
   const [parkingModalOpen, setParkingModalOpen] = useState(false);
+  const [queueAlertCount, setQueueAlertCount] = useState(0);
+  const isDriverUi = user?.valetStaffRole === "DRIVER";
+  const prevQueueAlertCountRef = useRef(0);
 
   useEffect(() => {
     void hydrateParkingPreference();
   }, [hydrateParkingPreference]);
+
+  const loadQueueAlerts = useCallback(async (opts?: { silent?: boolean }) => {
+    if (!user?.id || !isDriverUi) {
+      setQueueAlertCount(0);
+      return;
+    }
+    try {
+      const res = await api.get<{ data?: { count?: number } }>(
+        `/notifications/user/${encodeURIComponent(user.id)}/unread-count`
+      );
+      const count = Number(res.data?.data?.count ?? 0);
+      setQueueAlertCount(Number.isFinite(count) && count > 0 ? Math.floor(count) : 0);
+    } catch {
+      if (!opts?.silent) setQueueAlertCount(0);
+    }
+  }, [user?.id, isDriverUi]);
+
+  useEffect(() => {
+    void loadQueueAlerts();
+  }, [loadQueueAlerts]);
+
+  useEffect(() => {
+    if (!isDriverUi || !user?.id) return;
+    const id = setInterval(() => {
+      void loadQueueAlerts({ silent: true });
+    }, TICKETS_POLL_MS);
+    return () => clearInterval(id);
+  }, [isDriverUi, user?.id, loadQueueAlerts]);
+
+  useOnAppForeground(() => {
+    void loadQueueAlerts({ silent: true });
+  });
+
+  useEffect(() => {
+    if (!isDriverUi) return;
+    const prev = prevQueueAlertCountRef.current;
+    if (queueAlertCount > prev && queueAlertCount > 0) {
+      feedback.alert(
+        t(locale, "home.queueAlertTitle"),
+        t(locale, "home.queueAlertBody")
+      );
+    }
+    prevQueueAlertCountRef.current = queueAlertCount;
+  }, [queueAlertCount, isDriverUi, feedback, locale]);
 
   const displayedParking = useMemo(() => {
     if (!user) return null;
@@ -115,8 +164,6 @@ export default function HomeScreen() {
     }, 350);
     return () => clearTimeout(timer);
   }, [user, displayedParking?.parking?.id, displayedParking?.parking?.companyId]);
-
-  const isDriverUi = user?.valetStaffRole === "DRIVER";
 
   const styles = useMemo(
     () => createStyles(theme, shortestSide, isTablet, isLandscape),
@@ -273,6 +320,7 @@ export default function HomeScreen() {
                   icon="list-outline"
                   title={t(locale, "home.actionQueue")}
                   sub={t(locale, "home.actionQueueSub")}
+                  badgeCount={queueAlertCount}
                   onPress={() => router.push("/tickets")}
                   styles={styles}
                   isDark={theme.isDark}
@@ -619,6 +667,7 @@ function GridTile(props: {
   iconSize?: number;
   title: string;
   sub: string;
+  badgeCount?: number;
   onPress: () => void;
   styles: ReturnType<typeof createStyles>;
   isDark: boolean;
@@ -630,6 +679,7 @@ function GridTile(props: {
     iconSize = TILE_ICON_SIZE,
     title,
     sub,
+    badgeCount = 0,
     onPress,
     styles,
     isDark,
@@ -654,6 +704,13 @@ function GridTile(props: {
       onPress={onPress}
       accessibilityRole="button"
     >
+      {badgeCount > 0 ? (
+        <View style={styles.tileBadge}>
+          <Text style={styles.tileBadgeText}>
+            {badgeCount > 99 ? "99+" : String(badgeCount)}
+          </Text>
+        </View>
+      ) : null}
       <View style={[styles.tileIconWrap, { backgroundColor: iconBubbleBg }]}>
         {LucideCmp ? (
           <LucideCmp size={iconSize} color={iconColor} strokeWidth={2.25} />
@@ -865,6 +922,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       flex: 1,
       minWidth: 0,
       minHeight: 0,
+      position: "relative",
       borderRadius: R.card + 4,
       borderWidth: 2,
       paddingVertical: isTablet ? S.lg : S.md + 2,
@@ -896,6 +954,35 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       justifyContent: "center",
       marginBottom: S.sm + 2,
       alignSelf: "center",
+    },
+    tileBadge: {
+      position: "absolute",
+      top: 10,
+      right: 10,
+      minWidth: 24,
+      height: 24,
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 6,
+      backgroundColor: theme.isDark ? "#EF4444" : "#DC2626",
+      borderWidth: 1,
+      borderColor: theme.isDark ? "rgba(254, 202, 202, 0.45)" : "rgba(255,255,255,0.7)",
+      ...Platform.select({
+        ios: {
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.2,
+          shadowRadius: 2,
+        },
+        android: { elevation: 2 },
+      }),
+    },
+    tileBadgeText: {
+      color: "#fff",
+      fontSize: 11,
+      fontWeight: "900",
+      letterSpacing: 0.2,
     },
     tileTitle: {
       fontSize: compact ? F.secondary + 2 : isTablet ? F.body + 1 : F.body,
