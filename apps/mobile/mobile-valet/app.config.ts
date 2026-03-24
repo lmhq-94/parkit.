@@ -7,12 +7,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: 'parkit-valet',
   version: '1.0.0',
   orientation: 'portrait',
-  icon: './assets/icon.png',
+  icon: './assets/icon-1024.png',
   userInterfaceStyle: 'automatic',
   scheme: 'parkit-valet',
   backgroundColor: '#020617',
   splash: {
-    image: './assets/icon.png',
+    image: './assets/icon-1024.png',
     resizeMode: 'contain',
     backgroundColor: '#020617',
   },
@@ -30,9 +30,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
   },
   android: {
-    icon: './assets/icon.png',
+    icon: './assets/icon-1024.png',
     adaptiveIcon: {
-      foregroundImage: './assets/icon.png',
+      foregroundImage: './assets/icon-1024.png',
       backgroundColor: '#020617',
     },
     package: 'com.parkit.valet',
@@ -42,7 +42,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   web: {
     bundler: 'metro',
-    favicon: './assets/favicon.png',
+    favicon: './assets/icon-48.png',
   },
   plugins: [
     'expo-router',

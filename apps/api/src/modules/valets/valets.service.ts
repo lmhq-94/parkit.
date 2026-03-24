@@ -530,7 +530,7 @@ export class ValetsService {
     if (!valet) return null;
 
     const assignments = await prisma.ticketAssignment.findMany({
-      where: { valetId: valet.id },
+      where: { valetId: valet.id, role: ValetStaffRole.DRIVER },
       orderBy: { assignedAt: "desc" },
       include: {
         ticket: {

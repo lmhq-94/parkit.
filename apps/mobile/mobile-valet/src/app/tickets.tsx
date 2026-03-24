@@ -161,6 +161,55 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
       fontWeight: "600",
       textAlign: "left",
     },
+    queueBanner: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: S.md,
+      padding: S.md,
+      borderRadius: R.card,
+      borderWidth: 1,
+      borderColor: theme.isDark ? "rgba(59, 130, 246, 0.35)" : "#BFDBFE",
+      backgroundColor: theme.isDark ? "rgba(59, 130, 246, 0.14)" : "#EFF6FF",
+      marginBottom: S.md,
+    },
+    queueBannerIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 14,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: theme.isDark ? "rgba(59, 130, 246, 0.25)" : "#DBEAFE",
+    },
+    queueBannerText: {
+      flex: 1,
+      minWidth: 0,
+      gap: 2,
+    },
+    queueBannerTitle: {
+      fontSize: F.secondary,
+      fontWeight: "800",
+      color: C.text,
+    },
+    queueBannerBody: {
+      fontSize: F.secondary - 1,
+      color: C.textMuted,
+      lineHeight: 20,
+      fontWeight: "600",
+    },
+    queueBannerBadge: {
+      minWidth: 28,
+      height: 28,
+      borderRadius: 14,
+      paddingHorizontal: 6,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: theme.isDark ? "#3B82F6" : "#2563EB",
+    },
+    queueBannerBadgeText: {
+      color: "#fff",
+      fontSize: 12,
+      fontWeight: "800",
+    },
     introSecondary: {
       marginTop: S.xs,
       fontSize: F.secondary - 1,
@@ -399,6 +448,7 @@ export default function TicketsScreen() {
   const [loading, setLoading] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const [valetId, setValetId] = useState<string | null>(null);
+  const [queueAlertCount, setQueueAlertCount] = useState(0);
 
   /** Conductor: puede alternar entre ingresos y devoluciones. */
   const isDriverUi = user?.valetStaffRole === "DRIVER";
@@ -445,9 +495,29 @@ export default function TicketsScreen() {
     }
   }, [user, valetId]);
 
+  const loadQueueAlerts = useCallback(async () => {
+    if (!user?.id || !isDriverUi) {
+      setQueueAlertCount(0);
+      return;
+    }
+    try {
+      const res = await api.get<{ data?: { count?: number } }>(
+        `/notifications/user/${encodeURIComponent(user.id)}/unread-count`
+      );
+      const count = Number(res.data?.data?.count ?? 0);
+      setQueueAlertCount(Number.isFinite(count) && count > 0 ? Math.floor(count) : 0);
+    } catch {
+      setQueueAlertCount(0);
+    }
+  }, [user?.id, isDriverUi]);
+
   useEffect(() => {
     if (user) void loadTickets();
   }, [user, loadTickets]);
+
+  useEffect(() => {
+    void loadQueueAlerts();
+  }, [loadQueueAlerts]);
 
   useEffect(() => {
     if (!user) return;
@@ -481,6 +551,7 @@ export default function TicketsScreen() {
 
   useOnAppForeground(() => {
     if (user) void loadTickets({ silent: true });
+    void loadQueueAlerts();
   });
 
   if (!user) {
@@ -847,10 +918,10 @@ export default function TicketsScreen() {
       <View style={[styles.centerBox, styles.centerBoxEmpty]}>
         <SquareParkingOff size={72} color={C.textSubtle} strokeWidth={2} />
         <Text style={styles.emptyTitle}>
-          {showReceptionUi ? t(locale, "tickets.emptyReception") : t(locale, "tickets.emptyDriver")}
+          {isDriverUi ? t(locale, "tickets.emptyDriver") : t(locale, "tickets.emptyReception")}
         </Text>
         <Text style={styles.emptyHint}>
-          {showReceptionUi ? t(locale, "tickets.emptyHintReception") : t(locale, "tickets.emptyHintDriver")}
+          {isDriverUi ? t(locale, "tickets.emptyHintDriver") : t(locale, "tickets.emptyHintReception")}
         </Text>
       </View>
     );
@@ -888,6 +959,26 @@ export default function TicketsScreen() {
           renderItem={renderTicket}
           ListHeaderComponent={
             <View style={styles.introBlock}>
+              {isDriverUi && queueAlertCount > 0 ? (
+                <View style={styles.queueBanner}>
+                  <View style={styles.queueBannerIcon}>
+                    <Ionicons name="notifications-outline" size={22} color={C.primary} />
+                  </View>
+                  <View style={styles.queueBannerText}>
+                    <Text style={styles.queueBannerTitle} maxFontSizeMultiplier={2}>
+                      {t(locale, "home.queueAlertTitle")}
+                    </Text>
+                    <Text style={styles.queueBannerBody} maxFontSizeMultiplier={2}>
+                      {t(locale, "home.queueAlertBody")}
+                    </Text>
+                  </View>
+                  <View style={styles.queueBannerBadge}>
+                    <Text style={styles.queueBannerBadgeText}>
+                      {queueAlertCount > 99 ? "99+" : String(queueAlertCount)}
+                    </Text>
+                  </View>
+                </View>
+              ) : null}
               <Text style={styles.intro} maxFontSizeMultiplier={2}>
                 {isDriverUi
                   ? queueMode === "parking"

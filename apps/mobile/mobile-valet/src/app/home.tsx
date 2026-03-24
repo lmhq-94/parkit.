@@ -1037,6 +1037,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       borderWidth: 1,
       borderColor: C.border,
       padding: S.md,
+      minHeight: 152,
       ...Platform.select({
         ios: {
           shadowColor: "#000",

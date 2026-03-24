@@ -7,7 +7,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: "parkit-customer",
   version: "1.0.0",
   orientation: "portrait",
-  icon: "./assets/icon.png",
+  icon: "./assets/icon-1024.png",
   scheme: "parkit",
   userInterfaceStyle: "automatic",
   backgroundColor: "#020617",
@@ -23,13 +23,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: "./assets/adaptive-icon.png",
+      foregroundImage: "./assets/icon-1024.png",
       backgroundColor: "#ffffff",
     },
     package: "com.paradoxialabs.parkit.customer",
   },
   web: {
-    favicon: "./assets/favicon.png",
+    favicon: "./assets/icon-48.png",
   },
   plugins: [
     [
