@@ -89,7 +89,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "tickets.statusAssigned": "Esperando recogida",
     "tickets.statusInTransit": "Vas camino al vehículo",
     "tickets.statusCompleted": "Entregado",
-    "tickets.actionStart": "Voy a recoger el coche",
+    "tickets.actionStart": "Recoger vehículo",
     "tickets.actionComplete": "Ya entregué el coche",
     "tickets.completedLine": "Este servicio está terminado.",
     "tickets.confirmStartTitle": "¿Confirmas que vas a recoger el coche?",

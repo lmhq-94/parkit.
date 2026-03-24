@@ -98,7 +98,12 @@ interface ValetOpt {
   id: string;
   staffRole?: string | null;
   currentStatus?: "AVAILABLE" | "BUSY" | "AWAY" | null;
-  user: { firstName: string; lastName: string; email?: string | null };
+  user: {
+    firstName: string;
+    lastName: string;
+    email?: string | null;
+    avatarUrl?: string | null;
+  };
 }
 
 interface BookingLookup {
@@ -3470,6 +3475,12 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       alignItems: "center",
       justifyContent: "center",
       borderWidth: 2,
+      overflow: "hidden",
+    },
+    valetAvatarImage: {
+      width: "100%",
+      height: "100%",
+      borderRadius: 24,
     },
     valetAvatarText: {
       fontSize: 16,
@@ -3705,6 +3716,12 @@ function ValetDispatchRow(props: {
 
   const av = valetAvatarColors(v.id, theme.isDark);
   const initials = valetInitials(v.user.firstName, v.user.lastName);
+  const avatarUrl = v.user.avatarUrl?.trim() || "";
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
+
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [avatarUrl]);
 
   return (
     <Pressable onPress={onPress} accessibilityRole="radio" accessibilityState={{ selected }}>
@@ -3722,7 +3739,16 @@ function ValetDispatchRow(props: {
           ]}
         >
           <View style={[styles.valetAvatar, { backgroundColor: av.bg, borderColor: av.border }]}>
-            <Text style={[styles.valetAvatarText, { color: av.fg }]}>{initials}</Text>
+            {avatarUrl && !avatarLoadFailed ? (
+              <Image
+                source={{ uri: avatarUrl }}
+                style={styles.valetAvatarImage}
+                resizeMode="cover"
+                onError={() => setAvatarLoadFailed(true)}
+              />
+            ) : (
+              <Text style={[styles.valetAvatarText, { color: av.fg }]}>{initials}</Text>
+            )}
           </View>
           <View style={styles.valetDriverRowTextCol}>
             <Text

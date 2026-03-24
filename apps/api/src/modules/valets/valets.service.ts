@@ -496,6 +496,7 @@ export class ValetsService {
           firstName: true,
           lastName: true,
           email: true,
+          avatarUrl: true,
         },
       },
     } as const;
@@ -600,6 +601,7 @@ export class ValetsService {
             firstName: true,
             lastName: true,
             email: true,
+            avatarUrl: true,
           },
         },
       },
@@ -638,6 +640,7 @@ export class ValetsService {
             firstName: true,
             lastName: true,
             email: true,
+            avatarUrl: true,
           },
         },
       },

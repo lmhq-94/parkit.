@@ -115,17 +115,6 @@ function mapApiAssignmentToDisplay(a: ApiAssignment): TicketAssignment {
   };
 }
 
-function formatTicketDateTime(iso: string, locale: "es" | "en"): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
-  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "es-CR", {
-    day: "2-digit",
-    month: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(d);
-}
-
 type Theme = ReturnType<typeof useValetTheme>;
 
 function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPadding: number) {
@@ -200,36 +189,44 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
       paddingBottom: S.xxl,
     },
     ticketCard: {
+      position: "relative",
+      overflow: "hidden",
       backgroundColor: C.card,
       borderRadius: R.card,
-      borderLeftWidth: 8,
       borderWidth: 1,
       borderColor: C.border,
-      padding: S.md,
-      marginBottom: S.lg,
+      padding: S.lg,
+      marginBottom: S.md,
       ...Platform.select({
         ios: {
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: theme.isDark ? 0.35 : 0.08,
-          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 10 },
+          shadowOpacity: theme.isDark ? 0.28 : 0.07,
+          shadowRadius: 18,
         },
-        android: { elevation: theme.isDark ? 5 : 3 },
+        android: { elevation: theme.isDark ? 5 : 2 },
       }),
+    },
+    ticketCardAccent: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 3,
     },
     plateLabel: {
       fontSize: F.secondary - 2,
-      fontWeight: "800",
+      fontWeight: "700",
       color: C.textSubtle,
       textTransform: "uppercase",
-      letterSpacing: 0.6,
-      marginBottom: 2,
+      letterSpacing: 1.1,
+      marginBottom: 4,
     },
     vehiclePlate: {
-      fontSize: F.title + 4,
+      fontSize: F.title + 2,
       fontWeight: "800",
       color: C.text,
-      letterSpacing: 1.2,
+      letterSpacing: 0.8,
       fontVariant: ["tabular-nums"],
     },
     ticketTopRow: {
@@ -237,7 +234,7 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
       alignItems: "center",
       justifyContent: "space-between",
       gap: S.md,
-      marginBottom: S.md,
+      marginBottom: S.sm,
     },
     plateBlock: {
       flex: 1,
@@ -245,38 +242,34 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
     },
     statusPill: {
       alignSelf: "flex-start",
-      paddingVertical: 7,
-      paddingHorizontal: S.sm,
+      paddingVertical: 6,
+      paddingHorizontal: 10,
       borderRadius: 12,
     },
     statusPillText: {
       fontSize: F.secondary - 1,
-      fontWeight: "800",
+      fontWeight: "700",
     },
     locationLabel: {
-      fontSize: F.secondary,
+      fontSize: F.secondary - 1,
       fontWeight: "700",
       color: C.textMuted,
-      marginBottom: 6,
+      marginBottom: 4,
     },
     locationRow: {
       flexDirection: "row",
-      alignItems: "flex-start",
+      alignItems: "center",
       gap: S.sm,
       marginBottom: S.md,
-      borderWidth: 1,
-      borderColor: C.border,
-      borderRadius: R.button,
-      padding: S.sm,
-      backgroundColor: theme.isDark ? "rgba(15, 23, 42, 0.35)" : "rgba(248, 250, 252, 0.8)",
+      paddingVertical: 2,
     },
     locationIcon: {
-      marginTop: 2,
+      marginTop: 0,
     },
     location: {
       flex: 1,
-      fontSize: F.body,
-      lineHeight: 26,
+      fontSize: F.body - 1,
+      lineHeight: 24,
       color: C.text,
       fontWeight: "600",
     },
@@ -284,47 +277,33 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
       marginTop: S.xs,
     },
     metaGrid: {
-      gap: 6,
+      gap: 8,
       marginBottom: S.sm,
+      borderRadius: R.button,
+      borderWidth: 1,
+      borderColor: C.border,
+      backgroundColor: theme.isDark ? "rgba(15, 23, 42, 0.45)" : "rgba(248, 250, 252, 0.9)",
+      paddingVertical: S.sm,
+      paddingHorizontal: S.sm,
     },
     metaLine: {
       flexDirection: "row",
-      alignItems: "center",
-      gap: 8,
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      gap: S.sm,
     },
     metaKey: {
-      minWidth: 88,
+      minWidth: 84,
       fontSize: F.secondary - 2,
       color: C.textMuted,
-      fontWeight: "700",
+      fontWeight: "600",
     },
     metaValue: {
       flex: 1,
       fontSize: F.secondary,
       color: C.text,
       fontWeight: "700",
-    },
-    tagRow: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 8,
-      marginBottom: S.sm,
-    },
-    infoTag: {
-      borderRadius: 999,
-      borderWidth: 1,
-      borderColor: C.border,
-      backgroundColor: theme.isDark ? "rgba(15,23,42,0.42)" : "rgba(248,250,252,0.95)",
-      paddingVertical: 4,
-      paddingHorizontal: 10,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 6,
-    },
-    infoTagText: {
-      fontSize: 12,
-      color: C.textSubtle,
-      fontWeight: "700",
+      textAlign: "right",
     },
     btn: {
       minHeight: M + 8,
@@ -579,19 +558,19 @@ export default function TicketsScreen() {
     const ticketCode = item.ticketCode?.trim() || "—";
     const keyCode = item.keyCode?.trim() || null;
     const showDifferentKeyCode = !!keyCode && keyCode !== ticketCode;
-    const createdAtLabel = formatTicketDateTime(item.createdAt, locale);
     if (!isDriverUi) {
       const rVis = statusVisualsForTheme(mapReceptionVisualStatus(item.ticketStatus), theme.isDark);
       return (
         <View
-          style={[styles.ticketCard, { borderLeftColor: rVis.bar }]}
+          style={styles.ticketCard}
           accessibilityLabel={`${t(locale, "tickets.plateLabel")}: ${item.vehiclePlate}. ${receptionTicketStatusLabel(item.ticketStatus)}. ${t(locale, "tickets.locationLabel")}: ${item.location}`}
         >
+          <View style={[styles.ticketCardAccent, { backgroundColor: rVis.bar }]} />
           <View style={styles.ticketTopRow}>
             <View style={styles.plateBlock}>
-              <Text style={styles.plateLabel}>{t(locale, "tickets.plateLabel")}</Text>
+              <Text style={styles.plateLabel}>{t(locale, "tickets.ticketCodeLabel")}</Text>
               <Text style={styles.vehiclePlate} accessibilityRole="header" maxFontSizeMultiplier={2.2}>
-                {item.vehiclePlate}
+                {ticketCode}
               </Text>
             </View>
             <View style={[styles.statusPill, { backgroundColor: rVis.softBg }]}>
@@ -603,15 +582,15 @@ export default function TicketsScreen() {
 
           <Text style={styles.locationLabel}>{t(locale, "tickets.locationLabel")}</Text>
           <View style={styles.locationRow}>
-            <Ionicons name="location-sharp" size={28} color={C.primary} style={styles.locationIcon} />
+            <Ionicons name="location-sharp" size={24} color={C.primary} style={styles.locationIcon} />
             <Text style={styles.location} maxFontSizeMultiplier={2}>
-              {item.location}
+              {item.parkingName}
             </Text>
           </View>
           <View style={styles.metaGrid}>
             <View style={styles.metaLine}>
-              <Text style={styles.metaKey}>{t(locale, "tickets.ticketCodeLabel")}</Text>
-              <Text style={styles.metaValue}>{ticketCode}</Text>
+              <Text style={styles.metaKey}>{t(locale, "tickets.plateLabel")}</Text>
+              <Text style={styles.metaValue}>{item.vehiclePlate}</Text>
             </View>
             {showDifferentKeyCode ? (
               <View style={styles.metaLine}>
@@ -630,21 +609,6 @@ export default function TicketsScreen() {
               </View>
             ) : null}
           </View>
-          <View style={styles.tagRow}>
-            <View style={styles.infoTag}>
-              <Ionicons name="time-outline" size={14} color={C.textSubtle} />
-              <Text style={styles.infoTagText}>
-                {t(locale, "tickets.createdAtLabel", { value: createdAtLabel })}
-              </Text>
-            </View>
-            <View style={styles.infoTag}>
-              <Ionicons name="business-outline" size={14} color={C.textSubtle} />
-              <Text style={styles.infoTagText}>
-                {t(locale, "tickets.parkingNameLabel", { value: item.parkingName })}
-              </Text>
-            </View>
-          </View>
-
           <View style={styles.actions}>
             {item.ticketStatus === "PARKED" && (
               <TouchableOpacity
@@ -676,14 +640,15 @@ export default function TicketsScreen() {
 
     return (
       <View
-        style={[styles.ticketCard, { borderLeftColor: vis.bar }]}
+        style={styles.ticketCard}
         accessibilityLabel={`${t(locale, "tickets.plateLabel")}: ${item.vehiclePlate}. ${statusLabel(item.status)}. ${t(locale, "tickets.locationLabel")}: ${item.location}`}
       >
+        <View style={[styles.ticketCardAccent, { backgroundColor: vis.bar }]} />
         <View style={styles.ticketTopRow}>
           <View style={styles.plateBlock}>
-            <Text style={styles.plateLabel}>{t(locale, "tickets.plateLabel")}</Text>
+            <Text style={styles.plateLabel}>{t(locale, "tickets.ticketCodeLabel")}</Text>
             <Text style={styles.vehiclePlate} accessibilityRole="header" maxFontSizeMultiplier={2.2}>
-              {item.vehiclePlate}
+              {ticketCode}
             </Text>
           </View>
           <View style={[styles.statusPill, { backgroundColor: vis.softBg }]}>
@@ -695,15 +660,15 @@ export default function TicketsScreen() {
 
         <Text style={styles.locationLabel}>{t(locale, "tickets.locationLabel")}</Text>
         <View style={styles.locationRow}>
-          <Ionicons name="location-sharp" size={28} color={C.primary} style={styles.locationIcon} />
+          <Ionicons name="location-sharp" size={24} color={C.primary} style={styles.locationIcon} />
           <Text style={styles.location} maxFontSizeMultiplier={2}>
-            {item.location}
+            {item.parkingName}
           </Text>
         </View>
         <View style={styles.metaGrid}>
           <View style={styles.metaLine}>
-            <Text style={styles.metaKey}>{t(locale, "tickets.ticketCodeLabel")}</Text>
-            <Text style={styles.metaValue}>{ticketCode}</Text>
+            <Text style={styles.metaKey}>{t(locale, "tickets.plateLabel")}</Text>
+            <Text style={styles.metaValue}>{item.vehiclePlate}</Text>
           </View>
           {showDifferentKeyCode ? (
             <View style={styles.metaLine}>
@@ -722,21 +687,6 @@ export default function TicketsScreen() {
             </View>
           ) : null}
         </View>
-        <View style={styles.tagRow}>
-          <View style={styles.infoTag}>
-            <Ionicons name="time-outline" size={14} color={C.textSubtle} />
-            <Text style={styles.infoTagText}>
-              {t(locale, "tickets.createdAtLabel", { value: createdAtLabel })}
-            </Text>
-          </View>
-          <View style={styles.infoTag}>
-            <Ionicons name="business-outline" size={14} color={C.textSubtle} />
-            <Text style={styles.infoTagText}>
-              {t(locale, "tickets.parkingNameLabel", { value: item.parkingName })}
-            </Text>
-          </View>
-        </View>
-
         <View style={styles.actions}>
           {item.status === "assigned" && (
             <TouchableOpacity

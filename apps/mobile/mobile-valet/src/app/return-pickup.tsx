@@ -6,6 +6,7 @@ import {
   Pressable,
   Platform,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Redirect, useRouter } from "expo-router";
@@ -36,7 +37,7 @@ interface TicketRow {
 
 interface ValetOpt {
   id: string;
-  user: { firstName: string; lastName: string };
+  user: { firstName: string; lastName: string; avatarUrl?: string | null };
 }
 
 export default function ReturnPickupScreen() {
@@ -217,9 +218,19 @@ export default function ReturnPickupScreen() {
                     onPress={() => setDelivererId(v.id)}
                     style={[styles.chip, delivererId === v.id && styles.chipOn]}
                   >
-                    <Text style={[styles.chipText, delivererId === v.id && styles.chipTextOn]}>
-                      {v.user.firstName} {v.user.lastName}
-                    </Text>
+                    <View style={styles.chipRow}>
+                      <ValetChipAvatar
+                        id={v.id}
+                        firstName={v.user.firstName}
+                        lastName={v.user.lastName}
+                        avatarUrl={v.user.avatarUrl}
+                        isDark={theme.isDark}
+                        styles={styles}
+                      />
+                      <Text style={[styles.chipText, delivererId === v.id && styles.chipTextOn]}>
+                        {v.user.firstName} {v.user.lastName}
+                      </Text>
+                    </View>
                   </Pressable>
                 ))}
               </View>
@@ -353,6 +364,30 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     chipText: { fontSize: F.secondary, fontWeight: "700", color: C.text },
     chipTextOn: { color: C.primary },
+    chipRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: S.xs,
+    },
+    chipAvatar: {
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      overflow: "hidden",
+    },
+    chipAvatarImage: {
+      width: "100%",
+      height: "100%",
+      borderRadius: 11,
+    },
+    chipAvatarText: {
+      fontSize: 10,
+      fontWeight: "800",
+      letterSpacing: -0.2,
+    },
     primaryBtn: {
       flexDirection: "row",
       alignItems: "center",
@@ -395,4 +430,67 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     backBtnText: { color: "#fff", fontWeight: "800" },
   });
+}
+
+function valetHash(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (Math.imul(31, h) + id.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+function valetInitials(firstName: string, lastName: string): string {
+  const f = (firstName ?? "").trim();
+  const l = (lastName ?? "").trim();
+  const a = f.charAt(0);
+  const b = l.charAt(0);
+  const u = (c: string) => c.toLocaleUpperCase();
+  if (a && b) return u(a) + u(b);
+  if (f.length >= 2) return u(f.charAt(0)) + u(f.charAt(1));
+  if (a) return u(a);
+  return "?";
+}
+
+function valetAvatarColors(id: string, isDark: boolean): { bg: string; fg: string; border: string } {
+  const hue = valetHash(id) % 360;
+  if (isDark) {
+    return {
+      bg: `hsla(${hue}, 42%, 30%, 1)`,
+      fg: `hsla(${hue}, 40%, 97%, 1)`,
+      border: `hsla(${hue}, 55%, 48%, 0.5)`,
+    };
+  }
+  return {
+    bg: `hsla(${hue}, 52%, 93%, 1)`,
+    fg: `hsla(${hue}, 48%, 28%, 1)`,
+    border: `hsla(${hue}, 45%, 78%, 0.9)`,
+  };
+}
+
+function ValetChipAvatar({
+  id,
+  firstName,
+  lastName,
+  avatarUrl,
+  isDark,
+  styles,
+}: {
+  id: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl?: string | null;
+  isDark: boolean;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  const av = valetAvatarColors(id, isDark);
+  const initials = valetInitials(firstName, lastName);
+  const src = avatarUrl?.trim() || "";
+  return (
+    <View style={[styles.chipAvatar, { backgroundColor: av.bg, borderColor: av.border }]}>
+      {src ? (
+        <Image source={{ uri: src }} style={styles.chipAvatarImage} resizeMode="cover" />
+      ) : (
+        <Text style={[styles.chipAvatarText, { color: av.fg }]}>{initials}</Text>
+      )}
+    </View>
+  );
 }
