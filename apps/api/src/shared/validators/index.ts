@@ -275,6 +275,11 @@ export type CreateBookingInput = z.infer<typeof CreateBookingSchema>;
 export type UpdateBookingInput = z.infer<typeof UpdateBookingSchema>;
 
 // Tickets
+const IntakeDamagePhotoSchema = z.object({
+  url: z.string().min(1, "Photo URL required"),
+  label: z.string().optional(),
+});
+
 export const CreateTicketSchema = z.object({
   bookingId: z.string().optional(),
   clientId: z.string().min(1, "Client ID required"),
@@ -284,6 +289,14 @@ export const CreateTicketSchema = z.object({
   receptorValetId: z.string().min(1, "Receptor valet required"),
   driverValetId: z.string().optional(),
   delivererValetId: z.string().optional(),
+  keyCode: z.string().optional(),
+  ticketCode: z.string().optional(),
+  intakeDamageReport: z
+    .object({
+      description: z.string().optional(),
+      photos: z.array(IntakeDamagePhotoSchema).max(8).optional(),
+    })
+    .optional(),
 });
 
 export const UpdateTicketSchema = z.object({

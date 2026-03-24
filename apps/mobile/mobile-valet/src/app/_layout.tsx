@@ -1,3 +1,4 @@
+import "@/lib/androidTextDefaults";
 import { Stack, SplashScreen } from 'expo-router';
 import { useEffect } from 'react';
 import { KeyboardProvider } from 'react-native-keyboard-controller';

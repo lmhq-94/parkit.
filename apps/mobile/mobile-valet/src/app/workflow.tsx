@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Redirect } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import { useMemo } from "react";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
@@ -8,6 +8,7 @@ import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTh
 import { ValetBackButton } from "@/components/ValetBackButton";
 
 export default function WorkflowScreen() {
+  const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const locale = useLocaleStore((s) => s.locale);
   const theme = useValetTheme();
@@ -112,7 +113,10 @@ export default function WorkflowScreen() {
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       <View style={styles.frame}>
       <View style={styles.header}>
-        <ValetBackButton />
+        <ValetBackButton
+          onPress={() => router.back()}
+          accessibilityLabel={t(locale, "common.back")}
+        />
         <Text style={styles.title} numberOfLines={1}>
           {t(locale, "workflow.title")}
         </Text>
@@ -133,8 +137,9 @@ export default function WorkflowScreen() {
             <Text style={styles.sectionTitle}>{t(locale, "workflow.receptionTitle")}</Text>
             <Step n={1} text={t(locale, "workflow.reception1")} color={accent} />
             <Step n={2} text={t(locale, "workflow.reception2")} color="#7C3AED" />
-            <Step n={3} text={t(locale, "workflow.reception3")} color="#0D9488" />
-            <Step n={4} text={t(locale, "workflow.reception4")} color="#EA580C" />
+            <Step n={3} text={t(locale, "workflow.receptionCondition")} color="#6366F1" />
+            <Step n={4} text={t(locale, "workflow.reception3")} color="#0D9488" />
+            <Step n={5} text={t(locale, "workflow.reception4")} color="#EA580C" />
           </>
         )}
       </ScrollView>

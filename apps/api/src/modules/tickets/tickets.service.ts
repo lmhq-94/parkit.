@@ -2,6 +2,12 @@ import { randomBytes } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../../shared/prisma";
 import { TicketStatus, AssignmentRole, ValetStatus } from "@prisma/client";
+import type { CreateTicketDTO } from "./tickets.types";
+
+const MANUAL_CODE_MIN_LEN = 2;
+const MANUAL_CODE_MAX_LEN = 64;
+/** Letras, números, guion y guion bajo (etiquetas físicas / PKT-…). */
+const MANUAL_CODE_PATTERN = /^[A-Za-z0-9\-_]+$/;
 
 async function allocateTicketCodes(tx: Prisma.TransactionClient): Promise<{
   keyCode: string;
@@ -20,15 +26,59 @@ async function allocateTicketCodes(tx: Prisma.TransactionClient): Promise<{
   throw new Error("Could not allocate unique ticket codes");
 }
 
-interface CreateTicketDTO {
-  bookingId?: string;
-  parkingId: string;
-  vehicleId: string;
-  clientId: string;
-  slotId?: string;
-  receptorValetId: string;
-  driverValetId?: string;
-  delivererValetId?: string;
+function normalizeOptionalCode(raw: unknown): string | undefined {
+  if (raw == null) return undefined;
+  if (typeof raw !== "string") return undefined;
+  const t = raw.trim();
+  return t.length === 0 ? undefined : t;
+}
+
+function assertValidManualCode(value: string, fieldLabel: string): string {
+  if (value.length < MANUAL_CODE_MIN_LEN || value.length > MANUAL_CODE_MAX_LEN) {
+    throw new Error(
+      `${fieldLabel} must be between ${MANUAL_CODE_MIN_LEN} and ${MANUAL_CODE_MAX_LEN} characters`
+    );
+  }
+  if (!MANUAL_CODE_PATTERN.test(value)) {
+    throw new Error(
+      `${fieldLabel} may only contain letters, numbers, hyphens and underscores`
+    );
+  }
+  return value;
+}
+
+async function resolveTicketCodes(
+  tx: Prisma.TransactionClient,
+  body: { keyCode?: string; ticketCode?: string }
+): Promise<{ keyCode: string; ticketCode: string }> {
+  const tIn = normalizeOptionalCode(body.ticketCode);
+  const kIn = normalizeOptionalCode(body.keyCode);
+
+  if (!tIn && !kIn) {
+    return allocateTicketCodes(tx);
+  }
+
+  let ticketCode: string;
+  let keyCode: string;
+  if (tIn && kIn) {
+    ticketCode = assertValidManualCode(tIn, "Ticket code");
+    keyCode = assertValidManualCode(kIn, "Key code");
+  } else if (tIn) {
+    ticketCode = assertValidManualCode(tIn, "Ticket code");
+    keyCode = ticketCode;
+  } else {
+    keyCode = assertValidManualCode(kIn!, "Key code");
+    ticketCode = keyCode;
+  }
+
+  const clash = await tx.ticket.count({
+    where: { OR: [{ keyCode }, { ticketCode }] },
+  });
+  if (clash > 0) {
+    throw new Error("Ticket code or key code is already in use");
+  }
+
+  return { keyCode, ticketCode };
 }
 
 interface UpdateTicketDTO {
@@ -114,7 +164,10 @@ export class TicketsService {
     } as const;
 
     return prisma.$transaction(async (tx) => {
-      const { keyCode, ticketCode } = await allocateTicketCodes(tx);
+      const { keyCode, ticketCode } = await resolveTicketCodes(tx, {
+        keyCode: data.keyCode,
+        ticketCode: data.ticketCode,
+      });
       const ticket = await tx.ticket.create({
         data: {
           companyId,
@@ -127,6 +180,32 @@ export class TicketsService {
           ticketCode,
         },
       });
+
+      const intake = data.intakeDamageReport;
+      if (intake) {
+        const desc = (intake.description ?? "").trim();
+        const photos = (intake.photos ?? []).filter(
+          (p) => typeof p.url === "string" && p.url.length > 0
+        );
+        if (photos.length > 0 || desc.length > 0) {
+          const damageReport = await tx.damageReport.create({
+            data: {
+              ticketId: ticket.id,
+              valetId: data.receptorValetId,
+              description: desc.length > 0 ? desc : "",
+            },
+          });
+          for (const photo of photos) {
+            await tx.damagePhoto.create({
+              data: {
+                damageReportId: damageReport.id,
+                url: photo.url,
+                label: photo.label,
+              },
+            });
+          }
+        }
+      }
 
       const assignmentCreates: Promise<unknown>[] = [
         tx.ticketAssignment.create({

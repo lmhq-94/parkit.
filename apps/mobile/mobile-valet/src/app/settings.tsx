@@ -4,7 +4,6 @@ import {
   ScrollView,
   Pressable,
   StyleSheet,
-  Platform,
   useColorScheme,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -113,7 +112,7 @@ function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadd
       backgroundColor: theme.isDark ? "rgba(59, 130, 246, 0.15)" : "#EFF6FF",
     },
     localeRowPressed: {
-      opacity: Platform.OS === "ios" ? 0.85 : 1,
+      opacity: 0.85,
       backgroundColor: theme.isDark ? "rgba(148, 163, 184, 0.12)" : "#E2E8F0",
     },
     localeLabel: {

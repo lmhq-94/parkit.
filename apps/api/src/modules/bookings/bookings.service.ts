@@ -126,6 +126,7 @@ export class BookingsService {
                 firstName: true,
                 lastName: true,
                 email: true,
+                phone: true,
               },
             },
           },

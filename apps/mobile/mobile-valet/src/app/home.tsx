@@ -263,7 +263,7 @@ export default function HomeScreen() {
                   sub={t(locale, "home.actionQueueSub")}
                   onPress={() => router.push("/tickets")}
                   styles={styles}
-                  C={C}
+                  isDark={theme.isDark}
                 />
                 <GridTile
                   variant="workflow"
@@ -272,7 +272,7 @@ export default function HomeScreen() {
                   sub={t(locale, "home.actionWorkflowSub")}
                   onPress={() => router.push("/workflow")}
                   styles={styles}
-                  C={C}
+                  isDark={theme.isDark}
                 />
               </View>
               <View style={styles.gridRowFill}>
@@ -283,7 +283,7 @@ export default function HomeScreen() {
                   sub={t(locale, "home.actionProfileSub")}
                   onPress={() => router.push("/profile")}
                   styles={styles}
-                  C={C}
+                  isDark={theme.isDark}
                 />
                 <GridTile
                   variant="settings"
@@ -292,7 +292,7 @@ export default function HomeScreen() {
                   sub={t(locale, "home.actionSettingsSub")}
                   onPress={() => router.push("/settings")}
                   styles={styles}
-                  C={C}
+                  isDark={theme.isDark}
                 />
               </View>
             </>
@@ -306,7 +306,7 @@ export default function HomeScreen() {
                   sub={t(locale, "home.actionReceiveSub")}
                   onPress={() => router.push("/receive")}
                   styles={styles}
-                  C={C}
+                  isDark={theme.isDark}
                 />
                 <GridTile
                   variant="warm"
@@ -315,7 +315,7 @@ export default function HomeScreen() {
                   sub={t(locale, "home.actionReturnSub")}
                   onPress={() => router.push("/return-pickup")}
                   styles={styles}
-                  C={C}
+                  isDark={theme.isDark}
                 />
               </View>
               <View style={styles.gridRowFill}>
@@ -326,7 +326,7 @@ export default function HomeScreen() {
                   sub={t(locale, "home.actionReservationSub")}
                   onPress={() => router.push("/receive?flow=reservation")}
                   styles={styles}
-                  C={C}
+                  isDark={theme.isDark}
                 />
                 <GridTile
                   variant="workflow"
@@ -335,7 +335,7 @@ export default function HomeScreen() {
                   sub={t(locale, "home.actionWorkflowSub")}
                   onPress={() => router.push("/workflow")}
                   styles={styles}
-                  C={C}
+                  isDark={theme.isDark}
                 />
               </View>
               <View style={styles.gridRowFill}>
@@ -346,7 +346,7 @@ export default function HomeScreen() {
                   sub={t(locale, "home.actionProfileSub")}
                   onPress={() => router.push("/profile")}
                   styles={styles}
-                  C={C}
+                  isDark={theme.isDark}
                 />
                 <GridTile
                   variant="settings"
@@ -355,7 +355,7 @@ export default function HomeScreen() {
                   sub={t(locale, "home.actionSettingsSub")}
                   onPress={() => router.push("/settings")}
                   styles={styles}
-                  C={C}
+                  isDark={theme.isDark}
                 />
               </View>
             </>
@@ -532,6 +532,47 @@ function avatarPresenceRingColor(
 
 type GridVariant = "accent" | "warm" | "queue" | "booking" | "profile" | "settings" | "workflow";
 
+/** Fondo suave del círculo de icono (modo claro; hex de `parkitTilePalette(false)`). */
+const TILE_ICON_BG_LIGHT: Record<GridVariant, string> = {
+  accent: "rgba(29, 78, 216, 0.12)",
+  warm: "rgba(194, 65, 12, 0.12)",
+  queue: "rgba(67, 56, 202, 0.12)",
+  booking: "rgba(13, 148, 136, 0.12)",
+  profile: "rgba(124, 58, 237, 0.12)",
+  settings: "rgba(51, 65, 85, 0.12)",
+  workflow: "rgba(14, 116, 144, 0.12)",
+};
+
+/** Fondo suave del círculo de icono en modo oscuro (hex de `parkitTilePalette(true)` sobre `C.card`). */
+const TILE_ICON_BG_DARK: Record<GridVariant, string> = {
+  accent: "rgba(37, 99, 235, 0.22)",
+  warm: "rgba(249, 115, 22, 0.2)",
+  queue: "rgba(129, 140, 248, 0.22)",
+  booking: "rgba(45, 212, 191, 0.18)",
+  profile: "rgba(192, 132, 252, 0.22)",
+  settings: "rgba(148, 163, 184, 0.18)",
+  workflow: "rgba(6, 182, 212, 0.2)",
+};
+
+function tileIconHex(variant: GridVariant, P: ReturnType<typeof parkitTilePalette>): string {
+  switch (variant) {
+    case "accent":
+      return P.receive;
+    case "warm":
+      return P.return;
+    case "queue":
+      return P.queue;
+    case "booking":
+      return P.reservation;
+    case "profile":
+      return P.profile;
+    case "settings":
+      return P.settings;
+    case "workflow":
+      return P.workflow;
+  }
+}
+
 const TILE_ICON_SIZE = 30;
 
 type TileLucideIcon = ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
@@ -543,14 +584,27 @@ function GridTile(props: {
   /** Icono Lucide (p. ej. SquareParking para recibir vehículo). */
   lucideIcon?: TileLucideIcon;
   iconSize?: number;
-  iconColor?: string;
   title: string;
   sub: string;
   onPress: () => void;
   styles: ReturnType<typeof createStyles>;
-  C: { primary: string; text: string };
+  isDark: boolean;
 }) {
-  const { variant, icon, lucideIcon: LucideCmp, iconSize = TILE_ICON_SIZE, title, sub, onPress, styles } = props;
+  const {
+    variant,
+    icon,
+    lucideIcon: LucideCmp,
+    iconSize = TILE_ICON_SIZE,
+    title,
+    sub,
+    onPress,
+    styles,
+    isDark,
+  } = props;
+  const P = parkitTilePalette(isDark);
+  const iconColor = tileIconHex(variant, P);
+  const iconBubbleBg = isDark ? TILE_ICON_BG_DARK[variant] : TILE_ICON_BG_LIGHT[variant];
+
   return (
     <Pressable
       style={({ pressed }) => [
@@ -567,26 +621,16 @@ function GridTile(props: {
       onPress={onPress}
       accessibilityRole="button"
     >
-      <View
-        style={[
-          styles.tileIconWrap,
-          variant === "queue" && styles.tileIconQueue,
-          variant === "booking" && styles.tileIconBooking,
-          variant === "profile" && styles.tileIconProfile,
-          variant === "settings" && styles.tileIconSettings,
-          variant === "workflow" && styles.tileIconWorkflow,
-        ]}
-      >
+      <View style={[styles.tileIconWrap, { backgroundColor: iconBubbleBg }]}>
         {LucideCmp ? (
-          <LucideCmp size={iconSize} color="#fff" strokeWidth={2.25} />
+          <LucideCmp size={iconSize} color={iconColor} strokeWidth={2.25} />
         ) : (
-          <Ionicons name={icon ?? "ellipse-outline"} size={iconSize} color="#fff" />
+          <Ionicons name={icon ?? "ellipse-outline"} size={iconSize} color={iconColor} />
         )}
       </View>
       <Text
         style={[
           styles.tileTitle,
-          styles.tileTitleLight,
           {
             fontFamily: "CalSans",
           },
@@ -596,7 +640,7 @@ function GridTile(props: {
       >
         {title}
       </Text>
-      <Text style={[styles.tileSub, styles.tileSubLight]} numberOfLines={2} maxFontSizeMultiplier={1.65}>
+      <Text style={[styles.tileSub]} numberOfLines={2} maxFontSizeMultiplier={1.65}>
         {sub}
       </Text>
     </Pressable>
@@ -780,58 +824,21 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
         android: { elevation: theme.isDark ? 5 : 4 },
       }),
     },
-    tileAccent: {
-      backgroundColor: P.receive,
-      borderColor: P.receive,
-    },
-    tileWarm: {
-      backgroundColor: P.return,
-      borderColor: P.return,
-    },
-    tileQueue: {
-      backgroundColor: P.queue,
-      borderColor: P.queue,
-    },
-    tileBooking: {
-      backgroundColor: P.reservation,
-      borderColor: P.reservation,
-    },
-    tileProfile: {
-      backgroundColor: P.profile,
-      borderColor: P.profile,
-    },
-    tileSettings: {
-      backgroundColor: P.settings,
-      borderColor: P.settings,
-    },
-    tileWorkflow: {
-      backgroundColor: P.workflow,
-      borderColor: P.workflow,
-    },
+    tileAccent: { backgroundColor: C.card, borderColor: P.receive },
+    tileWarm: { backgroundColor: C.card, borderColor: P.return },
+    tileQueue: { backgroundColor: C.card, borderColor: P.queue },
+    tileBooking: { backgroundColor: C.card, borderColor: P.reservation },
+    tileProfile: { backgroundColor: C.card, borderColor: P.profile },
+    tileSettings: { backgroundColor: C.card, borderColor: P.settings },
+    tileWorkflow: { backgroundColor: C.card, borderColor: P.workflow },
     tileIconWrap: {
       width: 52,
       height: 52,
       borderRadius: 16,
-      backgroundColor: "rgba(255,255,255,0.2)",
       alignItems: "center",
       justifyContent: "center",
       marginBottom: S.sm + 2,
       alignSelf: "center",
-    },
-    tileIconQueue: {
-      backgroundColor: "rgba(255,255,255,0.22)",
-    },
-    tileIconBooking: {
-      backgroundColor: "rgba(255,255,255,0.22)",
-    },
-    tileIconProfile: {
-      backgroundColor: "rgba(255,255,255,0.22)",
-    },
-    tileIconSettings: {
-      backgroundColor: "rgba(255,255,255,0.2)",
-    },
-    tileIconWorkflow: {
-      backgroundColor: "rgba(255,255,255,0.22)",
     },
     tileTitle: {
       fontSize: compact ? F.secondary + 2 : isTablet ? F.body + 1 : F.body,
@@ -841,9 +848,6 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       textAlign: "center",
       width: "100%",
     },
-    tileTitleLight: {
-      color: "#fff",
-    },
     tileSub: {
       fontSize: compact ? 12 : isTablet ? 14 : 13,
       fontWeight: "600",
@@ -851,9 +855,6 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       lineHeight: compact ? 16 : isTablet ? 20 : 18,
       textAlign: "center",
       width: "100%",
-    },
-    tileSubLight: {
-      color: "rgba(255,255,255,0.9)",
     },
     pressed: {
       opacity: 0.93,

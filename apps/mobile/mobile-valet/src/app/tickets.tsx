@@ -126,7 +126,7 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
       fontSize: F.title,
       fontWeight: "800",
       color: C.text,
-      letterSpacing: Platform.OS === "ios" ? -0.5 : 0,
+      letterSpacing: -0.5,
     },
     subtitle: {
       fontSize: F.subtitle,
