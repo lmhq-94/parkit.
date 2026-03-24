@@ -13,6 +13,7 @@ import {
   useWindowDimensions,
   Animated,
   RefreshControl,
+  StatusBar,
 } from "react-native";
 import {
   KeyboardAwareScrollView,
@@ -1208,9 +1209,14 @@ export default function ReceiveScreen() {
   if (!user) return <Redirect href="/login" />;
   if (!isReception) {
     return (
-      <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+      <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
+        <StatusBar
+          barStyle={theme.isDark ? "light-content" : "dark-content"}
+          backgroundColor={C.card}
+          translucent={Platform.OS === "android"}
+        />
         <View style={styles.frame}>
-        <View style={styles.screenHeader}>
+        <View style={[styles.screenHeader, { paddingTop: safeInsets.top + theme.space.md }]}>
           <ValetBackButton
             onPress={() => router.back()}
             accessibilityLabel={t(locale, "common.back")}
@@ -1520,9 +1526,14 @@ export default function ReceiveScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+    <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
+      <StatusBar
+        barStyle={theme.isDark ? "light-content" : "dark-content"}
+        backgroundColor={C.card}
+        translucent={Platform.OS === "android"}
+      />
       <View style={styles.frame}>
-      <View style={styles.screenHeader}>
+      <View style={[styles.screenHeader, { paddingTop: safeInsets.top + theme.space.md }]}>
         <ValetBackButton
           onPress={() => router.back()}
           accessibilityLabel={t(locale, "common.back")}

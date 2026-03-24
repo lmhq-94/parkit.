@@ -7,8 +7,9 @@ import {
   Platform,
   ActivityIndicator,
   Image,
+  StatusBar,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -48,6 +49,7 @@ export default function ReturnPickupScreen() {
   const { companyId, loading: companyLoading } = useCompanyContext(user);
   const theme = useValetTheme();
   const responsive = useResponsiveLayout();
+  const insets = useSafeAreaInsets();
   const styles = useMemo(
     () => createStyles(theme, responsive.contentMaxWidth, responsive.sectionPadding),
     [theme, responsive.contentMaxWidth, responsive.sectionPadding]
@@ -131,9 +133,14 @@ export default function ReturnPickupScreen() {
 
   if (!isReception) {
     return (
-      <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+      <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
+        <StatusBar
+          barStyle={theme.isDark ? "light-content" : "dark-content"}
+          backgroundColor={theme.colors.card}
+          translucent={Platform.OS === "android"}
+        />
         <View style={styles.frame}>
-        <View style={styles.screenHeader}>
+        <View style={[styles.screenHeader, { paddingTop: insets.top + theme.space.md }]}>
           <ValetBackButton
             onPress={() => router.back()}
             accessibilityLabel={t(locale, "common.back")}
@@ -152,9 +159,14 @@ export default function ReturnPickupScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+    <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
+      <StatusBar
+        barStyle={theme.isDark ? "light-content" : "dark-content"}
+        backgroundColor={theme.colors.card}
+        translucent={Platform.OS === "android"}
+      />
       <View style={styles.frame}>
-      <View style={styles.screenHeader}>
+      <View style={[styles.screenHeader, { paddingTop: insets.top + theme.space.md }]}>
         <ValetBackButton
           onPress={() => router.back()}
           accessibilityLabel={t(locale, "common.back")}
@@ -311,7 +323,11 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderBottomColor: C.border,
       backgroundColor: C.card,
     },
-    scroll: { padding: sectionPadding, paddingBottom: S.xl },
+    scroll: {
+      paddingHorizontal: sectionPadding,
+      paddingTop: S.sm,
+      paddingBottom: S.xl,
+    },
     screenTitle: {
       fontSize: F.title - 2,
       fontWeight: "800",
@@ -322,7 +338,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     sub: {
       fontSize: F.secondary,
       color: C.textMuted,
-      marginBottom: S.lg,
+      marginBottom: S.md,
       lineHeight: 22,
     },
     input: {

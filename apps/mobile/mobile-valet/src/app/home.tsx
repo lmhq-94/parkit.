@@ -236,7 +236,7 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
       <StatusBar
         barStyle={theme.isDark ? "light-content" : "dark-content"}
-        backgroundColor={statusBarBg}
+        backgroundColor="transparent"
         translucent={Platform.OS === "android"}
       />
       <View style={styles.mainColumn}>
@@ -365,7 +365,7 @@ export default function HomeScreen() {
                   styles={styles}
                   isDark={theme.isDark}
                 />
-                <View style={styles.tileSpacer} />
+                <View style={[styles.tile, styles.tileGhost]} pointerEvents="none" />
               </View>
             </>
           ) : (
@@ -896,6 +896,9 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     tileSpacer: {
       flex: 1,
       minWidth: 0,
+    },
+    tileGhost: {
+      opacity: 0,
     },
     helpLogoutRow: {
       flexDirection: "row",

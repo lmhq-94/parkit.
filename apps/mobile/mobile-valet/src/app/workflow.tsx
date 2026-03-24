@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { View, Text, StyleSheet, StatusBar, Platform } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useRouter } from "expo-router";
 import { useMemo } from "react";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
@@ -13,6 +13,7 @@ export default function WorkflowScreen() {
   const locale = useLocaleStore((s) => s.locale);
   const theme = useValetTheme();
   const responsive = useResponsiveLayout();
+  const insets = useSafeAreaInsets();
   const C = theme.colors;
   const S = theme.space;
   const Fa = ticketsA11y.font;
@@ -64,9 +65,14 @@ export default function WorkflowScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+    <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
+      <StatusBar
+        barStyle={theme.isDark ? "light-content" : "dark-content"}
+        backgroundColor={theme.colors.card}
+        translucent={Platform.OS === "android"}
+      />
       <View style={styles.frame}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top + theme.space.md }]}>
           <ValetBackButton
             onPress={() => router.back()}
             accessibilityLabel={t(locale, "common.back")}

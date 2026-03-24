@@ -3,7 +3,7 @@
  * Si es `dark`, `null` o indeterminado → tema oscuro (fondo #020617, etc.).
  */
 import type { ViewStyle } from "react-native";
-import { useColorScheme, useWindowDimensions } from "react-native";
+import { Platform, useColorScheme, useWindowDimensions } from "react-native";
 import { useMemo } from "react";
 import { useThemeStore } from "@/lib/themeStore";
 
@@ -136,18 +136,21 @@ function homeColors(isDark: boolean): HomeThemeColors {
   };
 }
 
+const ANDROID_FONT_DELTA = Platform.OS === "android" ? -4 : 0;
+const fontSize = (value: number) => Math.max(10, value + ANDROID_FONT_DELTA);
+
 export const valetStaticTokens = {
   minTouch: 56,
   radius: { card: 16, button: 14 },
   space: { xs: 8, sm: 12, md: 16, lg: 20, xl: 24, xxl: 32 },
   font: {
-    title: 26,
-    subtitle: 17,
-    hero: 28,
-    body: 18,
-    secondary: 16,
-    button: 19,
-    status: 16,
+    title: fontSize(26),
+    subtitle: fontSize(17),
+    hero: fontSize(28),
+    body: fontSize(18),
+    secondary: fontSize(16),
+    button: fontSize(19),
+    status: fontSize(16),
   },
 } as const;
 
@@ -158,13 +161,13 @@ export const valetStaticTokens = {
 export const ticketsA11y = {
   minTouch: 60,
   font: {
-    title: 30,
-    subtitle: 20,
-    hero: 34,
-    body: 20,
-    secondary: 18,
-    button: 22,
-    status: 18,
+    title: fontSize(30),
+    subtitle: fontSize(20),
+    hero: fontSize(34),
+    body: fontSize(20),
+    secondary: fontSize(18),
+    button: fontSize(22),
+    status: fontSize(18),
   },
 } as const;
 

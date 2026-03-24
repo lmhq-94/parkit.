@@ -9,6 +9,7 @@ import {
   Image,
   Modal,
   FlatList,
+  StatusBar,
 } from "react-native";
 import { KeyboardAwareScrollView, KeyboardStickyView } from "react-native-keyboard-controller";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -400,10 +401,15 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+    <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
+      <StatusBar
+        barStyle={theme.isDark ? "light-content" : "dark-content"}
+        backgroundColor={theme.colors.card}
+        translucent={Platform.OS === "android"}
+      />
       <View style={styles.frame}>
       <View style={styles.flex}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top + theme.space.md }]}>
           <ValetBackButton
             onPress={() => router.back()}
             accessibilityLabel={t(locale, "common.back")}
@@ -897,12 +903,16 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     loadingText: { fontSize: F.secondary, color: C.textMuted },
     scroll: { flex: 1 },
-    scrollContent: { padding: sectionPadding, paddingBottom: S.xl },
+    scrollContent: {
+      paddingHorizontal: sectionPadding,
+      paddingTop: S.sm,
+      paddingBottom: S.xl,
+    },
     intro: {
       fontSize: F.secondary,
       color: C.textMuted,
       lineHeight: 24,
-      marginBottom: S.lg,
+      marginBottom: S.md,
       fontWeight: "600",
     },
     avatarBlock: { alignItems: "center", marginBottom: S.lg },

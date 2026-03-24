@@ -7,7 +7,8 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { StatusBar } from "react-native";
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -16,7 +17,7 @@ import { t } from "@/lib/i18n";
 import { formatVehicleColorLabel } from "@parkit/shared/src/vehicleColors";
 import api, { clearAuthToken } from "@/lib/api";
 import { ValetBackButton } from "@/components/ValetBackButton";
-import { SquareParkingOff } from "lucide-react-native";
+import { SquareParkingOff, TrafficCone } from "lucide-react-native";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useOnAppForeground } from "@/lib/useOnAppForeground";
 import { TICKETS_POLL_MS } from "@/lib/syncConstants";
@@ -169,17 +170,19 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
       textAlign: "left",
     },
     introBlock: {
-      marginTop: S.md,
-      marginBottom: S.lg,
+      marginTop: 0,
+      marginBottom: S.md,
       gap: 2,
     },
     list: {
-      padding: sectionPadding,
+      paddingHorizontal: sectionPadding,
+      paddingTop: S.sm,
       paddingBottom: S.xxl,
     },
     listEmptyGrow: {
       flexGrow: 1,
       paddingHorizontal: sectionPadding,
+      paddingTop: S.sm,
       paddingBottom: S.xxl,
     },
     ticketCard: {
@@ -386,6 +389,7 @@ export default function TicketsScreen() {
   const locale = useLocaleStore((s) => s.locale);
   const theme = useValetTheme();
   const responsive = useResponsiveLayout();
+  const insets = useSafeAreaInsets();
   const styles = useMemo(
     () => createTicketStyles(theme, responsive.contentMaxWidth, responsive.sectionPadding),
     [theme, responsive.contentMaxWidth, responsive.sectionPadding]
@@ -485,19 +489,34 @@ export default function TicketsScreen() {
     return "assigned";
   };
 
-  const handleMarkParked = (item: TicketAssignment) => {
+  const handleGoPark = (item: TicketAssignment) => {
     feedback.confirm({
-      title: t(locale, "tickets.confirmMarkParkedTitle"),
-      message: t(locale, "tickets.confirmMarkParkedMessage"),
+      title: t(locale, "tickets.confirmGoParkTitle"),
+      message: t(locale, "tickets.confirmGoParkMessage"),
+      confirmText: t(locale, "tickets.yesContinue"),
+      onConfirm: async () => {
+        router.push(
+          `/park?ticketId=${encodeURIComponent(item.ticketId)}&companyId=${encodeURIComponent(
+            item.companyId
+          )}`
+        );
+      },
+    });
+  };
+
+  const handleRequestReturn = (item: TicketAssignment) => {
+    feedback.confirm({
+      title: t(locale, "tickets.confirmRequestReturnTitle"),
+      message: t(locale, "tickets.confirmRequestReturnMessage"),
       confirmText: t(locale, "tickets.yesContinue"),
       onConfirm: async () => {
         try {
           await api.patch(
             `/tickets/${item.ticketId}`,
-            { status: "PARKED" },
+            { status: "REQUEST_DELIVERY" },
             { headers: { "x-company-id": item.companyId } }
           );
-          feedback.success(t(locale, "tickets.successMarkedParked"));
+          feedback.success(t(locale, "tickets.successRequested"));
           await loadTickets();
         } catch (e: unknown) {
           const msg =
@@ -649,14 +668,29 @@ export default function TicketsScreen() {
           <View style={styles.actions}>
             {item.ticketStatus === "REQUEST_PARKING" && (
               <TouchableOpacity
-                style={[styles.btn, styles.btnWarning]}
-                onPress={() => handleMarkParked(item)}
+                style={[styles.btn, styles.btnPrimary]}
+                onPress={() => handleGoPark(item)}
                 accessibilityRole="button"
-                accessibilityHint={t(locale, "tickets.confirmMarkParkedMessage")}
+                accessibilityHint={t(locale, "tickets.confirmGoParkMessage")}
+              >
+                <View style={styles.btnIcon}>
+                  <TrafficCone size={26} color={C.white} strokeWidth={2.2} />
+                </View>
+                <Text style={styles.btnText} maxFontSizeMultiplier={2}>
+                  {t(locale, "tickets.actionGoPark")}
+                </Text>
+              </TouchableOpacity>
+            )}
+            {item.ticketStatus === "PARKED" && (
+              <TouchableOpacity
+                style={[styles.btn, styles.btnWarning]}
+                onPress={() => handleRequestReturn(item)}
+                accessibilityRole="button"
+                accessibilityHint={t(locale, "tickets.confirmRequestReturnMessage")}
               >
                 <Ionicons name="arrow-undo-outline" size={28} color={C.white} style={styles.btnIcon} />
                 <Text style={styles.btnText} maxFontSizeMultiplier={2}>
-                  {t(locale, "tickets.actionMarkParked")}
+                  {t(locale, "tickets.actionRequestReturn")}
                 </Text>
               </TouchableOpacity>
             )}
@@ -804,11 +838,16 @@ export default function TicketsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+    <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
+      <StatusBar
+        barStyle={theme.isDark ? "light-content" : "dark-content"}
+        backgroundColor={theme.colors.card}
+        translucent={Platform.OS === "android"}
+      />
       <View style={styles.container}>
         <View style={styles.contentFrame}>
         <View style={styles.header}>
-          <View style={styles.screenHeader}>
+          <View style={[styles.screenHeader, { paddingTop: insets.top + theme.space.md }]}>
             <ValetBackButton
               onPress={() => router.replace("/home")}
               accessibilityLabel={t(locale, "common.back")}

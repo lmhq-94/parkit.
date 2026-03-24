@@ -5,8 +5,10 @@ import {
   Pressable,
   StyleSheet,
   useColorScheme,
+  StatusBar,
+  Platform,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocaleStore, useThemeStore } from "@/lib/store";
@@ -68,7 +70,8 @@ function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadd
       flex: 1,
     },
     scrollContent: {
-      padding: sectionPadding,
+      paddingHorizontal: sectionPadding,
+      paddingTop: S.sm,
       paddingBottom: 40,
     },
     /** Misma jerarquía visual que `receive` / tickets (legible en ES/EN). */
@@ -134,6 +137,7 @@ export default function SettingsScreen() {
   const { preference, setPreference } = useThemeStore();
   const theme = useValetTheme();
   const responsive = useResponsiveLayout();
+  const insets = useSafeAreaInsets();
   const systemScheme = useColorScheme();
   const styles = useMemo(
     () => createSettingsStyles(theme, responsive.contentMaxWidth, responsive.sectionPadding),
@@ -157,10 +161,15 @@ export default function SettingsScreen() {
   const isThemeActive = (pref: ThemePreference) => preference === pref;
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
+    <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
+      <StatusBar
+        barStyle={theme.isDark ? "light-content" : "dark-content"}
+        backgroundColor={theme.colors.card}
+        translucent={Platform.OS === "android"}
+      />
       <View style={styles.inner} key={locale}>
         <View style={styles.contentFrame}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top + theme.space.md }]}>
           <ValetBackButton
             onPress={() => router.back()}
             accessibilityLabel={t(locale, "common.back")}

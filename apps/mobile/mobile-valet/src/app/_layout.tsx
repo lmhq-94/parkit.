@@ -62,6 +62,7 @@ export default function RootLayout() {
           <Stack.Screen name="receive" />
           <Stack.Screen name="return-pickup" />
           <Stack.Screen name="tickets" />
+          <Stack.Screen name="park" />
           <Stack.Screen name="settings" />
           <Stack.Screen name="profile" />
           <Stack.Screen name="workflow" />
