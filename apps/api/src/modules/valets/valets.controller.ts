@@ -57,24 +57,80 @@ export class ValetsController {
     }
   }
 
-  /** Actualizar función y/o licencia del valet autenticado. */
+  /** Actualizar función, licencia y/o contexto operativo del valet autenticado. */
   static async patchMe(req: Request, res: Response) {
     try {
       const body = req.body as {
-        staffRole: ValetStaffRole;
+        staffRole?: ValetStaffRole;
         licenseNumber?: string | null;
         licenseExpiry?: string | null;
+        companyId?: string | null;
+        currentParkingId?: string | null;
       };
       const updated = await ValetsService.patchMe(req.user!.userId, {
         staffRole: body.staffRole,
         licenseNumber: body.licenseNumber,
         licenseExpiry: body.licenseExpiry,
+        companyId: body.companyId,
+        currentParkingId: body.currentParkingId,
       });
       return ok(res, updated);
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : "Unknown error";
       if (msg === "User is not a valet") {
         return fail(res, 403, msg);
+      }
+      return fail(res, 400, msg);
+    }
+  }
+
+  /** Latido de app: actualiza lastPresenceAt (no cambia AWAY). */
+  static async postMyPing(req: Request, res: Response) {
+    try {
+      const row = await ValetsService.pingMyPresence(req.user!.userId);
+      return ok(res, row);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      if (msg === "User is not a valet") {
+        return fail(res, 403, msg);
+      }
+      return fail(res, 400, msg);
+    }
+  }
+
+  /** Marcar ausencia (logout) o volver disponible sin tickets activos. */
+  static async postMyPresence(req: Request, res: Response) {
+    try {
+      const { status } = req.body as { status: "AWAY" | "AVAILABLE" };
+      const updated = await ValetsService.updateMyPresence(req.user!.userId, status);
+      return ok(res, updated);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      if (msg === "User is not a valet") {
+        return fail(res, 403, msg);
+      }
+      return fail(res, 400, msg);
+    }
+  }
+
+  /** Conductores AVAILABLE en el parqueo indicado (empresa = contexto actual). */
+  static async listAvailableDriversAtParking(req: Request, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      if (!companyId) {
+        return fail(res, 400, "Company context required");
+      }
+      const raw = req.params.parkingId;
+      const parkingId = Array.isArray(raw) ? raw[0] : raw;
+      if (!parkingId || typeof parkingId !== "string") {
+        return fail(res, 400, "parkingId required");
+      }
+      const valets = await ValetsService.listAvailableDriversAtParking(parkingId, companyId);
+      return ok(res, valets);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      if (msg === "Parking not found or not in your company context") {
+        return fail(res, 404, msg);
       }
       return fail(res, 400, msg);
     }

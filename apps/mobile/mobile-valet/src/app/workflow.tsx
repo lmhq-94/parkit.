@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Redirect, useRouter } from "expo-router";
 import { useMemo } from "react";
@@ -16,7 +16,6 @@ export default function WorkflowScreen() {
   const C = theme.colors;
   const S = theme.space;
   const Fa = ticketsA11y.font;
-  const isDriver = user?.valetStaffRole === "DRIVER";
 
   const styles = useMemo(
     () =>
@@ -45,46 +44,16 @@ export default function WorkflowScreen() {
           fontWeight: "800",
           color: C.text,
         },
-        scroll: { flex: 1 },
-        content: { padding: responsive.sectionPadding, paddingBottom: 48 },
-        subtitle: {
+        body: {
+          flex: 1,
+          padding: responsive.sectionPadding,
+          justifyContent: "center",
+        },
+        emptyText: {
           fontSize: Fa.secondary,
           color: C.textMuted,
-          marginBottom: S.lg,
+          textAlign: "center",
           lineHeight: 24,
-        },
-        sectionTitle: {
-          fontSize: Fa.secondary,
-          fontWeight: "800",
-          color: C.primary,
-          marginBottom: S.md,
-          fontFamily: "CalSans",
-        },
-        stepRow: {
-          flexDirection: "row",
-          alignItems: "flex-start",
-          gap: S.md,
-          marginBottom: S.md,
-        },
-        stepBadge: {
-          width: 28,
-          height: 28,
-          borderRadius: 14,
-          alignItems: "center",
-          justifyContent: "center",
-          marginTop: 2,
-        },
-        stepBadgeText: {
-          color: "#fff",
-          fontSize: 14,
-          fontWeight: "800",
-        },
-        stepText: {
-          flex: 1,
-          fontSize: Fa.secondary - 1,
-          color: C.text,
-          lineHeight: 22,
-          fontWeight: "600",
         },
       }),
     [C, S, Fa, responsive.contentMaxWidth, responsive.sectionPadding]
@@ -94,55 +63,24 @@ export default function WorkflowScreen() {
     return <Redirect href="/login" />;
   }
 
-  const accent = theme.colors.primary;
-
-  function Step({ n, text, color }: { n: number; text: string; color: string }) {
-    return (
-      <View style={styles.stepRow}>
-        <View style={[styles.stepBadge, { backgroundColor: color }]}>
-          <Text style={styles.stepBadgeText}>{n}</Text>
-        </View>
-        <Text style={styles.stepText} maxFontSizeMultiplier={1.75}>
-          {text}
-        </Text>
-      </View>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       <View style={styles.frame}>
-      <View style={styles.header}>
-        <ValetBackButton
-          onPress={() => router.back()}
-          accessibilityLabel={t(locale, "common.back")}
-        />
-        <Text style={styles.title} numberOfLines={1}>
-          {t(locale, "workflow.title")}
-        </Text>
-        <View style={styles.headerSpacer} />
-      </View>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <Text style={styles.subtitle}>{t(locale, "workflow.subtitle")}</Text>
-        {isDriver ? (
-          <>
-            <Text style={styles.sectionTitle}>{t(locale, "workflow.driverTitle")}</Text>
-            <Step n={1} text={t(locale, "workflow.driver1")} color={accent} />
-            <Step n={2} text={t(locale, "workflow.driver2")} color="#6366F1" />
-            <Step n={3} text={t(locale, "workflow.driver3")} color="#0D9488" />
-            <Step n={4} text={t(locale, "workflow.driver4")} color="#EA580C" />
-          </>
-        ) : (
-          <>
-            <Text style={styles.sectionTitle}>{t(locale, "workflow.receptionTitle")}</Text>
-            <Step n={1} text={t(locale, "workflow.reception1")} color={accent} />
-            <Step n={2} text={t(locale, "workflow.reception2")} color="#7C3AED" />
-            <Step n={3} text={t(locale, "workflow.receptionCondition")} color="#6366F1" />
-            <Step n={4} text={t(locale, "workflow.reception3")} color="#0D9488" />
-            <Step n={5} text={t(locale, "workflow.reception4")} color="#EA580C" />
-          </>
-        )}
-      </ScrollView>
+        <View style={styles.header}>
+          <ValetBackButton
+            onPress={() => router.back()}
+            accessibilityLabel={t(locale, "common.back")}
+          />
+          <Text style={styles.title} numberOfLines={1}>
+            {t(locale, "workflow.title")}
+          </Text>
+          <View style={styles.headerSpacer} />
+        </View>
+        <View style={styles.body}>
+          <Text style={styles.emptyText} maxFontSizeMultiplier={1.75}>
+            {t(locale, "workflow.empty")}
+          </Text>
+        </View>
       </View>
     </SafeAreaView>
   );

@@ -1,6 +1,7 @@
 import { prisma } from "../../shared/prisma";
-import { ValetStaffRole, ValetStatus } from "@prisma/client";
+import { ValetStaffRole, ValetStatus, TicketStatus } from "@prisma/client";
 import { UsersService } from "../users/users.service";
+import { VALET_PRESENCE_MAX_AGE_MS } from "./valetPresence.constants";
 
 interface CreateValetDTO {
   userId?: string;
@@ -33,12 +34,146 @@ interface UpdateValetDTO {
 
 /** DTO para PATCH /valets/me (app móvil). */
 export interface PatchValetMeDTO {
-  staffRole: ValetStaffRole;
+  staffRole?: ValetStaffRole;
   licenseNumber?: string | null;
   licenseExpiry?: string | null;
+  companyId?: string | null;
+  currentParkingId?: string | null;
 }
 
 export class ValetsService {
+  /** Tickets activos que mantienen al valet en BUSY. */
+  static async countActiveTicketAssignments(valetId: string): Promise<number> {
+    return prisma.ticketAssignment.count({
+      where: {
+        valetId,
+        ticket: {
+          status: { in: [TicketStatus.PARKED, TicketStatus.REQUESTED] },
+        },
+      },
+    });
+  }
+
+  /**
+   * Tras login u OTP: AVAILABLE si no tiene trabajo activo; si no, BUSY.
+   * No pisa AWAY hasta que el usuario vuelva a autenticarse (el login llama esto).
+   */
+  static async syncValetStatusAfterAuthSession(userId: string): Promise<void> {
+    const v = await prisma.valet.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    if (!v) return;
+    const active = await ValetsService.countActiveTicketAssignments(v.id);
+    await prisma.valet.update({
+      where: { id: v.id },
+      data: {
+        currentStatus: active > 0 ? ValetStatus.BUSY : ValetStatus.AVAILABLE,
+        lastPresenceAt: new Date(),
+      },
+    });
+  }
+
+  /** Latido desde la app: actualiza lastPresenceAt salvo si está AWAY (p. ej. cerró sesión). */
+  static async pingMyPresence(userId: string) {
+    const v = await prisma.valet.findUnique({
+      where: { userId },
+      select: { id: true, currentStatus: true },
+    });
+    if (!v) {
+      throw new Error("User is not a valet");
+    }
+    if (v.currentStatus === ValetStatus.AWAY) {
+      return prisma.valet.findUnique({
+        where: { id: v.id },
+        select: {
+          id: true,
+          staffRole: true,
+          companyId: true,
+          currentParkingId: true,
+          currentStatus: true,
+          lastPresenceAt: true,
+          licenseNumber: true,
+          licenseExpiry: true,
+        },
+      });
+    }
+    return prisma.valet.update({
+      where: { id: v.id },
+      data: { lastPresenceAt: new Date() },
+      select: {
+        id: true,
+        staffRole: true,
+        companyId: true,
+        currentParkingId: true,
+        currentStatus: true,
+        lastPresenceAt: true,
+        licenseNumber: true,
+        licenseExpiry: true,
+      },
+    });
+  }
+
+  /**
+   * AWAY: el valet indica ausencia (p. ej. cerró sesión).
+   * AVAILABLE: solo si no hay tickets activos (no bajar de BUSY con trabajo pendiente).
+   */
+  static async updateMyPresence(userId: string, status: "AWAY" | "AVAILABLE") {
+    const v = await prisma.valet.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    if (!v) {
+      throw new Error("User is not a valet");
+    }
+    if (status === "AWAY") {
+      return prisma.valet.update({
+        where: { id: v.id },
+        data: { currentStatus: ValetStatus.AWAY, lastPresenceAt: null },
+        select: {
+          id: true,
+          staffRole: true,
+          companyId: true,
+          currentParkingId: true,
+          currentStatus: true,
+          lastPresenceAt: true,
+          licenseNumber: true,
+          licenseExpiry: true,
+        },
+      });
+    }
+    const active = await ValetsService.countActiveTicketAssignments(v.id);
+    if (active > 0) {
+      return prisma.valet.findUnique({
+        where: { id: v.id },
+        select: {
+          id: true,
+          staffRole: true,
+          companyId: true,
+          currentParkingId: true,
+          currentStatus: true,
+          lastPresenceAt: true,
+          licenseNumber: true,
+          licenseExpiry: true,
+        },
+      });
+    }
+    return prisma.valet.update({
+      where: { id: v.id },
+      data: { currentStatus: ValetStatus.AVAILABLE, lastPresenceAt: new Date() },
+      select: {
+        id: true,
+        staffRole: true,
+        companyId: true,
+        currentParkingId: true,
+        currentStatus: true,
+        lastPresenceAt: true,
+        licenseNumber: true,
+        licenseExpiry: true,
+      },
+    });
+  }
+
   /**
    * Crea un valet. Para super-admin: companyId puede ser null (valet subcontratado).
    * Si viene userId usa ese usuario; si vienen firstName, lastName, email crea User (STAFF, companyId null) y Valet.
@@ -86,6 +221,7 @@ export class ValetsService {
         licenseExpiry: new Date(data.licenseExpiry),
         currentParkingId: data.currentParkingId,
         staffRole: data.staffRole,
+        lastPresenceAt: new Date(),
       },
       include: {
         user: {
@@ -414,28 +550,79 @@ export class ValetsService {
         id: true,
         staffRole: true,
         companyId: true,
+        currentParkingId: true,
         currentStatus: true,
+        lastPresenceAt: true,
         licenseNumber: true,
         licenseExpiry: true,
       },
     });
   }
 
-  /** Actualiza función y/o licencia del valet actual (app móvil). */
-  static async patchMe(userId: string, dto: PatchValetMeDTO) {
-    const row = await prisma.valet.findUnique({
-      where: { userId },
+  /**
+   * Conductores AVAILABLE en un parqueo concreto (misma empresa que el contexto).
+   * Incluye staffRole DRIVER o null (legado). Requiere ping reciente en la app.
+   */
+  static async listAvailableDriversAtParking(parkingId: string, companyId: string) {
+    const p = await prisma.parking.findFirst({
+      where: { id: parkingId, companyId },
       select: { id: true },
     });
-    if (!row) {
+    if (!p) {
+      throw new Error("Parking not found or not in your company context");
+    }
+
+    const presenceSince = new Date(Date.now() - VALET_PRESENCE_MAX_AGE_MS);
+
+    return prisma.valet.findMany({
+      where: {
+        companyId,
+        currentParkingId: parkingId,
+        currentStatus: ValetStatus.AVAILABLE,
+        lastPresenceAt: { gte: presenceSince },
+        OR: [{ staffRole: ValetStaffRole.DRIVER }, { staffRole: null }],
+        user: { isActive: true },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: [{ user: { firstName: "asc" } }, { user: { lastName: "asc" } }],
+    });
+  }
+
+  /** Actualiza perfil y/o contexto operativo del valet actual (app móvil). */
+  static async patchMe(userId: string, dto: PatchValetMeDTO) {
+    const existing = await prisma.valet.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        staffRole: true,
+        companyId: true,
+        currentParkingId: true,
+      },
+    });
+    if (!existing) {
       throw new Error("User is not a valet");
     }
 
     const data: {
-      staffRole: ValetStaffRole;
+      staffRole?: ValetStaffRole;
       licenseNumber?: string | null;
       licenseExpiry?: Date | null;
-    } = { staffRole: dto.staffRole };
+      companyId?: string | null;
+      currentParkingId?: string | null;
+    } = {};
+
+    if (dto.staffRole !== undefined) {
+      data.staffRole = dto.staffRole;
+    }
 
     if (dto.licenseNumber !== undefined) {
       const n = dto.licenseNumber;
@@ -449,14 +636,82 @@ export class ValetsService {
           : new Date(dto.licenseExpiry);
     }
 
+    let nextCompanyId = existing.companyId;
+
+    if (dto.companyId !== undefined) {
+      data.companyId = dto.companyId;
+      nextCompanyId = dto.companyId;
+    }
+    if (dto.currentParkingId !== undefined) {
+      data.currentParkingId = dto.currentParkingId;
+    }
+
+    if (dto.currentParkingId !== undefined && dto.currentParkingId !== null) {
+      const parkingRow = await prisma.parking.findUnique({
+        where: { id: dto.currentParkingId },
+        select: { companyId: true },
+      });
+      if (!parkingRow) {
+        throw new Error("Parking not found");
+      }
+      const coForParking =
+        dto.companyId !== undefined ? dto.companyId : existing.companyId;
+      if (coForParking != null && parkingRow.companyId !== coForParking) {
+        throw new Error("Parking does not belong to the given company");
+      }
+      if (coForParking == null) {
+        data.companyId = parkingRow.companyId;
+        nextCompanyId = parkingRow.companyId;
+      }
+    }
+
+    if (
+      dto.companyId !== undefined &&
+      dto.currentParkingId === undefined &&
+      existing.currentParkingId != null
+    ) {
+      const p = await prisma.parking.findUnique({
+        where: { id: existing.currentParkingId },
+        select: { companyId: true },
+      });
+      if (
+        p &&
+        nextCompanyId != null &&
+        p.companyId !== nextCompanyId
+      ) {
+        data.currentParkingId = null;
+      }
+    }
+
+    if (Object.keys(data).length === 0) {
+      return prisma.valet.findUnique({
+        where: { id: existing.id },
+        select: {
+          id: true,
+          staffRole: true,
+          companyId: true,
+          currentParkingId: true,
+          currentStatus: true,
+          lastPresenceAt: true,
+          licenseNumber: true,
+          licenseExpiry: true,
+        },
+      });
+    }
+
     return prisma.valet.update({
-      where: { id: row.id },
-      data,
+      where: { id: existing.id },
+      data: {
+        ...data,
+        lastPresenceAt: new Date(),
+      },
       select: {
         id: true,
         staffRole: true,
         companyId: true,
+        currentParkingId: true,
         currentStatus: true,
+        lastPresenceAt: true,
         licenseNumber: true,
         licenseExpiry: true,
       },

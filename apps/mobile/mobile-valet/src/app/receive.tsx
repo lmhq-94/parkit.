@@ -10,13 +10,14 @@ import {
   Modal,
   FlatList,
   Image,
+  ScrollView,
   useWindowDimensions,
 } from "react-native";
 import {
   KeyboardAwareScrollView,
   KeyboardStickyView,
 } from "react-native-keyboard-controller";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -91,7 +92,7 @@ const COUNTRY_CR = "CR";
 interface ValetOpt {
   id: string;
   staffRole?: string | null;
-  user: { firstName: string; lastName: string };
+  user: { firstName: string; lastName: string; email?: string | null };
 }
 
 interface BookingLookup {
@@ -175,12 +176,16 @@ export default function ReceiveScreen() {
   const storedCompanyId = useCompanyStore((s) => s.companyId);
   const theme = useValetTheme();
   const responsive = useResponsiveLayout();
-  const { width: windowWidth } = useWindowDimensions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const safeInsets = useSafeAreaInsets();
   const styles = useMemo(
     () => createStyles(theme, responsive.contentMaxWidth, responsive.sectionPadding),
     [theme, responsive.contentMaxWidth, responsive.sectionPadding]
   );
-  const qrStyles = useMemo(() => createQrStyles(theme), [theme]);
+  const qrStyles = useMemo(
+    () => createQrStyles(theme, windowHeight),
+    [theme, windowHeight]
+  );
 
   const [plate, setPlate] = useState("");
   const [lookupLoading, setLookupLoading] = useState(false);
@@ -225,6 +230,7 @@ export default function ReceiveScreen() {
 
   const [submitting, setSubmitting] = useState(false);
   const [metaLoading, setMetaLoading] = useState(true);
+  const [valetsLoading, setValetsLoading] = useState(false);
   /**
    * Walk-in: 1 tarjeta … 6 tiquete, 7 estado vehículo (fotos), 8 valet + enviar.
    * Reserva: 1 QR, 2 parqueo, 3 tiquete, 4 estado vehículo, 5 valet + enviar.
@@ -333,21 +339,58 @@ export default function ReceiveScreen() {
       return;
     }
     setCompanyId(effectiveCompanyId);
+  }, [effectiveCompanyId, setCompanyId]);
+
+  useEffect(() => {
+    if (!user || !effectiveCompanyId || !parkingId) {
+      setValets([]);
+      setValetsLoading(false);
+      return;
+    }
+    setCompanyId(effectiveCompanyId);
     let cancelled = false;
+    setValetsLoading(true);
     (async () => {
       try {
-        const vRes = await api.get<{ data: ValetOpt[] }>("/valets/for-company");
+        const vRes = await api.get<{ data: ValetOpt[] }>(
+          `/valets/available-drivers/${encodeURIComponent(parkingId)}`
+        );
         if (!cancelled) {
           setValets(Array.isArray(vRes.data?.data) ? vRes.data.data : []);
         }
       } catch {
         if (!cancelled) setValets([]);
+      } finally {
+        if (!cancelled) setValetsLoading(false);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [effectiveCompanyId, setCompanyId]);
+  }, [user, effectiveCompanyId, parkingId, setCompanyId]);
+
+  /** Persistir empresa y parqueo de trabajo del valet en servidor (otros ven la lista disponible). */
+  useEffect(() => {
+    if (!user || user.systemRole !== "STAFF") return;
+    const timer = setTimeout(() => {
+      void api
+        .patch("/valets/me", {
+          companyId: effectiveCompanyId,
+          currentParkingId: parkingId,
+        })
+        .catch(() => {
+          /* red o perfil no valet: no bloquear flujo */
+        });
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [user, effectiveCompanyId, parkingId]);
+
+  useEffect(() => {
+    if (driverValetId == null) return;
+    if (!valets.some((v) => v.id === driverValetId)) {
+      setDriverValetId(null);
+    }
+  }, [valets, driverValetId]);
 
   const loadReceiveMeta = useCallback(
     async (opts?: { silent?: boolean }) => {
@@ -1416,10 +1459,17 @@ export default function ReceiveScreen() {
               <View style={styles.reservationQrOverlay} pointerEvents="box-none">
                 <LinearGradient
                   colors={["rgba(2,6,23,0)", "rgba(2,6,23,0.72)", "rgba(2,6,23,0.96)"]}
-                  locations={[0, 0.42, 1]}
+                  locations={[0, 0.28, 1]}
                   style={[
                     styles.reservationQrOverlayGradient,
-                    { paddingHorizontal: responsive.sectionPadding },
+                    {
+                      paddingHorizontal: responsive.sectionPadding,
+                      paddingBottom: theme.space.lg + safeInsets.bottom,
+                    },
+                    Platform.OS !== "web" && {
+                      maxHeight: Math.min(Math.round(windowHeight * 0.44), 400),
+                      paddingTop: theme.space.md,
+                    },
                   ]}
                   pointerEvents="box-none"
                 >
@@ -1455,82 +1505,181 @@ export default function ReceiveScreen() {
                       </View>
                     </View>
                   )}
-                  {!companyIdForBooking && (
-                    <View
-                      style={styles.reservationQrCompanyCard}
-                      pointerEvents="none"
-                      accessibilityRole="text"
-                    >
-                      <Ionicons name="business-outline" size={22} color="#FBBF24" />
-                      <Text style={styles.reservationQrCompanyCardText}>
-                        {t(locale, "receive.wizardQrNoCompany")}
-                      </Text>
-                    </View>
-                  )}
-                  {bookingCheck && bookingCheck !== "invalid" && (
-                    <View style={styles.reservationQrSuccessCard} pointerEvents="none">
-                      <Ionicons name="checkmark-circle" size={24} color={C.success} />
-                      <Text style={styles.reservationQrSuccessText}>
-                        {t(locale, "receive.benefitOk", {
-                          hours: String(bookingCheck.parking?.freeBenefitHours ?? 0),
-                        })}
-                      </Text>
-                    </View>
-                  )}
-                  {bookingCheck === "invalid" && (
-                    <View
-                      style={styles.reservationBookingErrorShell}
-                      pointerEvents="none"
-                      accessibilityRole="alert"
-                    >
-                      <LinearGradient
-                        colors={[
-                          "rgba(251, 207, 232, 0.55)",
-                          "rgba(196, 181, 253, 0.4)",
-                          "rgba(125, 211, 252, 0.45)",
-                        ]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.reservationBookingErrorBorder}
-                      >
-                        <View style={styles.reservationBookingErrorInner}>
+                  {Platform.OS === "web" ? (
+                    <>
+                      {!companyIdForBooking && (
+                        <View
+                          style={styles.reservationQrCompanyCard}
+                          pointerEvents="none"
+                          accessibilityRole="text"
+                        >
+                          <Ionicons name="business-outline" size={22} color="#FBBF24" />
+                          <Text style={styles.reservationQrCompanyCardText}>
+                            {t(locale, "receive.wizardQrNoCompany")}
+                          </Text>
+                        </View>
+                      )}
+                      {bookingCheck && bookingCheck !== "invalid" && (
+                        <View style={styles.reservationQrSuccessCard} pointerEvents="none">
+                          <Ionicons name="checkmark-circle" size={24} color={C.success} />
+                          <Text style={styles.reservationQrSuccessText}>
+                            {t(locale, "receive.benefitOk", {
+                              hours: String(bookingCheck.parking?.freeBenefitHours ?? 0),
+                            })}
+                          </Text>
+                        </View>
+                      )}
+                      {bookingCheck === "invalid" && (
+                        <View
+                          style={styles.reservationBookingErrorShell}
+                          pointerEvents="none"
+                          accessibilityRole="alert"
+                        >
                           <LinearGradient
-                            colors={["rgba(15, 23, 42, 0.97)", "rgba(15, 23, 42, 0.92)"]}
-                            style={StyleSheet.absoluteFill}
-                            start={{ x: 0.5, y: 0 }}
-                            end={{ x: 0.5, y: 1 }}
-                          />
-                          <View style={styles.reservationBookingErrorContent}>
-                            <View style={styles.reservationBookingErrorHeaderRow}>
+                            colors={[
+                              "rgba(251, 207, 232, 0.55)",
+                              "rgba(196, 181, 253, 0.4)",
+                              "rgba(125, 211, 252, 0.45)",
+                            ]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.reservationBookingErrorBorder}
+                          >
+                            <View style={styles.reservationBookingErrorInner}>
                               <LinearGradient
-                                colors={["rgba(251, 207, 232, 0.35)", "rgba(147, 197, 253, 0.4)"]}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 1 }}
-                                style={styles.reservationBookingErrorIconRing}
-                              >
-                                <View style={styles.reservationBookingErrorIconCore}>
-                                  <Ionicons name="qr-code-outline" size={22} color="rgba(248,250,252,0.92)" />
+                                colors={["rgba(15, 23, 42, 0.97)", "rgba(15, 23, 42, 0.92)"]}
+                                style={StyleSheet.absoluteFill}
+                                start={{ x: 0.5, y: 0 }}
+                                end={{ x: 0.5, y: 1 }}
+                              />
+                              <View style={styles.reservationBookingErrorContent}>
+                                <View style={styles.reservationBookingErrorHeaderRow}>
+                                  <LinearGradient
+                                    colors={["rgba(251, 207, 232, 0.35)", "rgba(147, 197, 253, 0.4)"]}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                    style={styles.reservationBookingErrorIconRing}
+                                  >
+                                    <View style={styles.reservationBookingErrorIconCore}>
+                                      <Ionicons
+                                        name="qr-code-outline"
+                                        size={22}
+                                        color="rgba(248,250,252,0.92)"
+                                      />
+                                    </View>
+                                  </LinearGradient>
+                                  <View style={styles.reservationBookingErrorTitleBlock}>
+                                    <Text style={styles.reservationBookingErrorEyebrow}>
+                                      {t(locale, "receive.benefitInvalidEyebrow")}
+                                    </Text>
+                                    <Text style={styles.reservationBookingErrorTitle}>
+                                      {t(locale, "receive.benefitInvalidTitle")}
+                                    </Text>
+                                  </View>
                                 </View>
-                              </LinearGradient>
-                              <View style={styles.reservationBookingErrorTitleBlock}>
-                                <Text style={styles.reservationBookingErrorEyebrow}>
-                                  {t(locale, "receive.benefitInvalidEyebrow")}
+                                <Text style={styles.reservationBookingErrorBody} maxFontSizeMultiplier={2}>
+                                  {t(locale, "receive.benefitInvalid")}
                                 </Text>
-                                <Text style={styles.reservationBookingErrorTitle}>
-                                  {t(locale, "receive.benefitInvalidTitle")}
+                                <Text style={styles.reservationBookingErrorHint} maxFontSizeMultiplier={2}>
+                                  {t(locale, "receive.benefitInvalidHint")}
                                 </Text>
                               </View>
                             </View>
-                            <Text style={styles.reservationBookingErrorBody} maxFontSizeMultiplier={2}>
-                              {t(locale, "receive.benefitInvalid")}
-                            </Text>
-                            <Text style={styles.reservationBookingErrorHint} maxFontSizeMultiplier={2}>
-                              {t(locale, "receive.benefitInvalidHint")}
-                            </Text>
-                          </View>
+                          </LinearGradient>
                         </View>
-                      </LinearGradient>
-                    </View>
+                      )}
+                    </>
+                  ) : (
+                    <ScrollView
+                      keyboardShouldPersistTaps="handled"
+                      nestedScrollEnabled
+                      showsVerticalScrollIndicator={bookingCheck === "invalid"}
+                      bounces={false}
+                      style={styles.reservationQrOverlayScroll}
+                      contentContainerStyle={styles.reservationQrOverlayScrollContent}
+                    >
+                      {!companyIdForBooking && (
+                        <View
+                          style={styles.reservationQrCompanyCard}
+                          pointerEvents="none"
+                          accessibilityRole="text"
+                        >
+                          <Ionicons name="business-outline" size={22} color="#FBBF24" />
+                          <Text style={styles.reservationQrCompanyCardText}>
+                            {t(locale, "receive.wizardQrNoCompany")}
+                          </Text>
+                        </View>
+                      )}
+                      {bookingCheck && bookingCheck !== "invalid" && (
+                        <View style={styles.reservationQrSuccessCard} pointerEvents="none">
+                          <Ionicons name="checkmark-circle" size={24} color={C.success} />
+                          <Text style={styles.reservationQrSuccessText}>
+                            {t(locale, "receive.benefitOk", {
+                              hours: String(bookingCheck.parking?.freeBenefitHours ?? 0),
+                            })}
+                          </Text>
+                        </View>
+                      )}
+                      {bookingCheck === "invalid" && (
+                        <View
+                          style={styles.reservationBookingErrorShell}
+                          pointerEvents="none"
+                          accessibilityRole="alert"
+                        >
+                          <LinearGradient
+                            colors={[
+                              "rgba(251, 207, 232, 0.55)",
+                              "rgba(196, 181, 253, 0.4)",
+                              "rgba(125, 211, 252, 0.45)",
+                            ]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.reservationBookingErrorBorder}
+                          >
+                            <View style={styles.reservationBookingErrorInner}>
+                              <LinearGradient
+                                colors={["rgba(15, 23, 42, 0.97)", "rgba(15, 23, 42, 0.92)"]}
+                                style={StyleSheet.absoluteFill}
+                                start={{ x: 0.5, y: 0 }}
+                                end={{ x: 0.5, y: 1 }}
+                              />
+                              <View style={styles.reservationBookingErrorContent}>
+                                <View style={styles.reservationBookingErrorHeaderRow}>
+                                  <LinearGradient
+                                    colors={["rgba(251, 207, 232, 0.35)", "rgba(147, 197, 253, 0.4)"]}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                    style={styles.reservationBookingErrorIconRing}
+                                  >
+                                    <View style={styles.reservationBookingErrorIconCore}>
+                                      <Ionicons
+                                        name="qr-code-outline"
+                                        size={22}
+                                        color="rgba(248,250,252,0.92)"
+                                      />
+                                    </View>
+                                  </LinearGradient>
+                                  <View style={styles.reservationBookingErrorTitleBlock}>
+                                    <Text style={styles.reservationBookingErrorEyebrow}>
+                                      {t(locale, "receive.benefitInvalidEyebrow")}
+                                    </Text>
+                                    <Text style={styles.reservationBookingErrorTitle}>
+                                      {t(locale, "receive.benefitInvalidTitle")}
+                                    </Text>
+                                  </View>
+                                </View>
+                                <Text style={styles.reservationBookingErrorBody} maxFontSizeMultiplier={2}>
+                                  {t(locale, "receive.benefitInvalid")}
+                                </Text>
+                                <Text style={styles.reservationBookingErrorHint} maxFontSizeMultiplier={2}>
+                                  {t(locale, "receive.benefitInvalidHint")}
+                                </Text>
+                              </View>
+                            </View>
+                          </LinearGradient>
+                        </View>
+                      )}
+                    </ScrollView>
                   )}
                 </LinearGradient>
               </View>
@@ -1972,35 +2121,17 @@ export default function ReceiveScreen() {
 
           {wizardStep === damageStepNum && (
             <>
-              <LinearGradient
-                colors={
-                  theme.isDark
-                    ? ["#4F46E5", "#1e1b4b"]
-                    : [C.primary, "#312e81"]
-                }
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.damageHero}
-              >
-                <View style={styles.damageHeroTopRow}>
-                  <View style={styles.damageHeroBadge}>
-                    <Ionicons name="shield-checkmark" size={18} color="rgba(255,255,255,0.95)" />
-                    <Text style={styles.damageHeroBadgeText}>
-                      {t(locale, "receive.damageHeroBadge")}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={styles.damageHeroTitle}>{t(locale, "receive.damageHeroTitle")}</Text>
-                <Text style={styles.damageHeroSub}>{t(locale, "receive.damageHeroSub")}</Text>
-              </LinearGradient>
+              <Text style={styles.sectionLabel}>{t(locale, "receive.wizardDamageTitle")}</Text>
+              <Text style={styles.stepExplain}>{t(locale, "receive.damageHeroSub")}</Text>
 
-              <Text style={styles.sectionLabel}>{t(locale, "receive.damageSectionPhotos")}</Text>
-              <Text style={styles.stepExplain}>{t(locale, "receive.damagePhotosHelp")}</Text>
+              <Text style={styles.inputFieldLabel}>{t(locale, "receive.damageSectionPhotos")}</Text>
+              <Text style={styles.help}>{t(locale, "receive.damagePhotosHelp")}</Text>
 
               <View style={styles.damageActionsRow}>
                 <Pressable
                   style={({ pressed }) => [
-                    styles.damageActionBtn,
+                    styles.primaryBtn,
+                    styles.damageActionBtnFlex,
                     damagePhotoBusy && styles.btnDisabled,
                     pressed && styles.pressed,
                   ]}
@@ -2009,11 +2140,13 @@ export default function ReceiveScreen() {
                   accessibilityLabel={t(locale, "receive.damageCameraA11y")}
                 >
                   <Ionicons name="camera" size={22} color="#fff" />
-                  <Text style={styles.damageActionBtnText}>{t(locale, "receive.damageTakePhoto")}</Text>
+                  <Text style={styles.primaryBtnText}>{t(locale, "receive.damageTakePhoto")}</Text>
                 </Pressable>
                 <Pressable
                   style={({ pressed }) => [
-                    styles.damageActionBtnOutline,
+                    styles.footerSecondaryBtn,
+                    styles.damageActionBtnFlex,
+                    styles.damageGalleryBtn,
                     damagePhotoBusy && styles.btnDisabled,
                     pressed && styles.pressed,
                   ]}
@@ -2021,10 +2154,8 @@ export default function ReceiveScreen() {
                   disabled={damagePhotoBusy}
                   accessibilityLabel={t(locale, "receive.damageGalleryA11y")}
                 >
-                  <Ionicons name="images-outline" size={22} color={C.primary} />
-                  <Text style={[styles.damageActionBtnTextOutline, { color: C.primary }]}>
-                    {t(locale, "receive.damageFromGallery")}
-                  </Text>
+                  <Ionicons name="images-outline" size={22} color={C.textMuted} />
+                  <Text style={styles.footerSecondaryBtnText}>{t(locale, "receive.damageFromGallery")}</Text>
                 </Pressable>
               </View>
 
@@ -2096,35 +2227,81 @@ export default function ReceiveScreen() {
             <>
               <Text style={styles.sectionLabel}>{t(locale, "receive.wizardValetStepTitle")}</Text>
               <Text style={styles.stepExplain}>{t(locale, "receive.wizardValetStepHelp")}</Text>
-              {metaLoading ? (
-                <ActivityIndicator color={C.primary} />
+              <Text style={[styles.help, { marginTop: -8 }]}>{t(locale, "receive.valetDriversListHint")}</Text>
+              {metaLoading || valetsLoading ? (
+                <ActivityIndicator color={C.primary} style={{ marginVertical: theme.space.lg }} />
+              ) : !parkingId || !effectiveCompanyId ? (
+                <Text style={[styles.help, { marginBottom: theme.space.lg }]}>
+                  {t(locale, "receive.valetDriversNeedParking")}
+                </Text>
               ) : (
-                <View style={styles.chips}>
+                <View style={styles.valetDriverList}>
                   <Pressable
                     onPress={() => setDriverValetId(null)}
-                    style={[styles.chip, driverValetId === null && styles.chipOn]}
+                    style={({ pressed }) => [
+                      styles.valetDriverRow,
+                      driverValetId === null && styles.valetDriverRowSelected,
+                      pressed && styles.pressed,
+                    ]}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: driverValetId === null }}
                   >
+                    <Ionicons
+                      name="person-outline"
+                      size={22}
+                      color={driverValetId === null ? C.primary : C.textMuted}
+                    />
                     <Text
-                      style={[styles.chipText, driverValetId === null && styles.chipTextOn]}
+                      style={[
+                        styles.valetDriverRowText,
+                        driverValetId === null && { color: C.primary },
+                      ]}
                       maxFontSizeMultiplier={2}
                     >
                       {t(locale, "receive.noDriver")}
                     </Text>
                   </Pressable>
-                  {valets.map((v) => (
-                    <Pressable
-                      key={v.id}
-                      onPress={() => setDriverValetId(v.id)}
-                      style={[styles.chip, driverValetId === v.id && styles.chipOn]}
-                    >
-                      <Text
-                        style={[styles.chipText, driverValetId === v.id && styles.chipTextOn]}
-                        maxFontSizeMultiplier={2}
+                  {valets.length === 0 ? (
+                    <Text style={[styles.help, { marginTop: theme.space.sm }]}>
+                      {t(locale, "receive.valetDriversEmpty")}
+                    </Text>
+                  ) : (
+                    valets.map((v) => (
+                      <Pressable
+                        key={v.id}
+                        onPress={() => setDriverValetId(v.id)}
+                        style={({ pressed }) => [
+                          styles.valetDriverRow,
+                          driverValetId === v.id && styles.valetDriverRowSelected,
+                          pressed && styles.pressed,
+                        ]}
+                        accessibilityRole="radio"
+                        accessibilityState={{ selected: driverValetId === v.id }}
                       >
-                        {v.user.firstName} {v.user.lastName}
-                      </Text>
-                    </Pressable>
-                  ))}
+                        <Ionicons
+                          name="car-outline"
+                          size={22}
+                          color={driverValetId === v.id ? C.primary : C.textMuted}
+                        />
+                        <View style={styles.valetDriverRowTextCol}>
+                          <Text
+                            style={[
+                              styles.valetDriverRowText,
+                              driverValetId === v.id && { color: C.primary },
+                            ]}
+                            maxFontSizeMultiplier={2}
+                          >
+                            {v.user.firstName} {v.user.lastName}
+                          </Text>
+                          {v.user.email ? (
+                            <Text style={styles.valetDriverRowMeta} numberOfLines={1}>
+                              {v.user.email}
+                            </Text>
+                          ) : null}
+                        </View>
+                      </Pressable>
+                    ))
+                  )}
                 </View>
               )}
             </>
@@ -2565,6 +2742,13 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       paddingBottom: S.lg,
       gap: S.md,
     },
+    reservationQrOverlayScroll: {
+      flexShrink: 1,
+    },
+    reservationQrOverlayScrollContent: {
+      gap: S.md,
+      paddingBottom: S.xs,
+    },
     reservationQrCompanyCard: {
       flexDirection: "row",
       gap: S.md,
@@ -2910,92 +3094,63 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     chipText: { fontSize: F.secondary, fontWeight: "700", color: C.text },
     chipTextOn: { color: C.primary },
-    damageHero: {
-      borderRadius: R.card + 4,
-      padding: S.lg,
+    valetDriverList: {
       marginBottom: S.lg,
-      overflow: "hidden",
-      ...Platform.select({
-        ios: {
-          shadowColor: "#312e81",
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: 0.35,
-          shadowRadius: 16,
-        },
-        android: { elevation: 6 },
-      }),
+      gap: S.sm,
     },
-    damageHeroTopRow: {
-      flexDirection: "row",
-      justifyContent: "flex-start",
-      marginBottom: S.md,
-    },
-    damageHeroBadge: {
+    valetDriverRow: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 6,
-      backgroundColor: "rgba(255,255,255,0.18)",
-      paddingVertical: 6,
-      paddingHorizontal: S.sm,
-      borderRadius: 999,
+      gap: S.md,
+      backgroundColor: C.card,
+      borderRadius: R.card,
+      borderWidth: 1,
+      borderColor: C.border,
+      paddingVertical: S.md,
+      paddingHorizontal: S.md,
+      ...Platform.select({
+        ios: {
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.05,
+          shadowRadius: 4,
+        },
+        android: { elevation: 1 },
+      }),
     },
-    damageHeroBadgeText: {
-      color: "rgba(255,255,255,0.95)",
-      fontSize: 12,
-      fontWeight: "800",
-      letterSpacing: 0.4,
-      textTransform: "uppercase",
+    valetDriverRowSelected: {
+      borderColor: C.primary,
+      borderWidth: 2,
+      backgroundColor: theme.isDark ? "rgba(59, 130, 246, 0.12)" : "rgba(59, 130, 246, 0.08)",
     },
-    damageHeroTitle: {
-      color: "#fff",
-      fontSize: F.title,
-      fontWeight: "800",
-      lineHeight: 32,
-      marginBottom: S.sm,
+    valetDriverRowTextCol: {
+      flex: 1,
+      minWidth: 0,
     },
-    damageHeroSub: {
-      color: "rgba(255,255,255,0.88)",
-      fontSize: F.secondary,
-      lineHeight: 22,
-      fontWeight: "600",
+    valetDriverRowText: {
+      fontSize: F.body,
+      fontWeight: "700",
+      color: C.text,
+    },
+    valetDriverRowMeta: {
+      fontSize: F.secondary - 1,
+      color: C.textSubtle,
+      marginTop: 2,
     },
     damageActionsRow: {
       flexDirection: "row",
       gap: S.sm,
       marginBottom: S.sm,
     },
-    damageActionBtn: {
+    damageActionBtnFlex: {
       flex: 1,
+      marginBottom: 0,
+    },
+    damageGalleryBtn: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      gap: 8,
-      backgroundColor: C.primary,
-      borderRadius: R.button + 2,
-      paddingVertical: 14,
-      paddingHorizontal: S.sm,
-    },
-    damageActionBtnOutline: {
-      flex: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8,
-      backgroundColor: C.card,
-      borderRadius: R.button + 2,
-      paddingVertical: 14,
-      paddingHorizontal: S.sm,
-      borderWidth: 2,
-      borderColor: C.primary,
-    },
-    damageActionBtnText: {
-      color: "#fff",
-      fontWeight: "800",
-      fontSize: F.secondary,
-    },
-    damageActionBtnTextOutline: {
-      fontWeight: "800",
-      fontSize: F.secondary,
+      gap: S.sm,
     },
     damageCountMeta: {
       fontSize: 13,

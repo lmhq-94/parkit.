@@ -192,6 +192,8 @@ model Valet {
   licenseNumber    String?
   licenseExpiry    DateTime?
   currentStatus    ValetStatus @default(AVAILABLE)
+  /** Último ping desde la app; si queda obsoleto, no se lista como disponible en parqueo. */
+  lastPresenceAt   DateTime?
   /** Sub-rol operativo (recepcionista / conductor). */
   staffRole        ValetStaffRole?
   /** Media de valoraciones de clientes (app); null hasta que existan reseñas. */

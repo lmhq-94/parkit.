@@ -12,6 +12,7 @@ import {
 import { comparePassword, hashPassword, signToken } from "./auth.utils";
 import crypto from "crypto";
 import { UsersService } from "../users/users.service";
+import { ValetsService } from "../valets/valets.service";
 import { sendPasswordResetEmail } from "../../shared/email/passwordResetEmail";
 import { toAuthUserResponse } from "./authUserResponse";
 
@@ -71,6 +72,7 @@ export class AuthService {
         staffRole: data.staffRole,
         licenseNumber: data.licenseNumber?.trim() || null,
         licenseExpiry: data.licenseExpiry ? new Date(data.licenseExpiry) : null,
+        lastPresenceAt: new Date(),
       },
       include: {
         user: {
@@ -91,6 +93,7 @@ export class AuthService {
       role: user.systemRole,
       companyId: user.companyId ?? undefined,
     });
+    await ValetsService.syncValetStatusAfterAuthSession(user.id).catch(() => {});
     return {
       user: toAuthUserResponse(valet.user, valet.staffRole),
       token,
@@ -149,6 +152,10 @@ export class AuthService {
       companyId: user.companyId ?? undefined,
     });
 
+    await ValetsService.syncValetStatusAfterAuthSession(user.id).catch(() => {
+      /* no bloquear login */
+    });
+
     return { user: toAuthUserResponse(user, vr), token };
   }
 
@@ -186,6 +193,8 @@ export class AuthService {
       role: updated.systemRole,
       companyId: updated.companyId ?? undefined,
     });
+
+    await ValetsService.syncValetStatusAfterAuthSession(updated.id).catch(() => {});
 
     return { user: toAuthUserResponse(updated, vr), token };
   }
@@ -330,6 +339,8 @@ export class AuthService {
       role: user.systemRole,
       companyId: user.companyId ?? undefined,
     });
+
+    await ValetsService.syncValetStatusAfterAuthSession(user.id).catch(() => {});
 
     return { user: toAuthUserResponse(user, vr), token };
   }

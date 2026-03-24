@@ -362,18 +362,6 @@ export default function HomeScreen() {
           )}
         </View>
 
-        <Pressable
-          style={({ pressed }) => [styles.logoutRow, pressed && styles.pressed]}
-          onPress={handleLogout}
-          accessibilityRole="button"
-          accessibilityLabel={t(locale, "tickets.logout")}
-        >
-          <Ionicons name="log-out-outline" size={22} color={C.logout} />
-          <Text style={[styles.logoutText, { color: C.logout }]} maxFontSizeMultiplier={2}>
-            {t(locale, "tickets.logout")}
-          </Text>
-        </Pressable>
-
         <View style={styles.bottomCard}>
           <View style={styles.bottomCardInner}>
             <View style={styles.bottomIconWrap}>
@@ -457,6 +445,39 @@ export default function HomeScreen() {
               )}
             </View>
           </View>
+        </View>
+
+        <View style={styles.helpLogoutRow}>
+          <Pressable
+            style={({ pressed }) => [styles.helpLogoutBtn, pressed && styles.pressed]}
+            onPress={() => router.push("/help")}
+            accessibilityRole="button"
+            accessibilityLabel={t(locale, "home.help")}
+          >
+            <Ionicons name="help-circle-outline" size={22} color={C.primary} />
+            <Text
+              style={[styles.helpLogoutBtnText, { color: C.primary }]}
+              maxFontSizeMultiplier={2}
+              numberOfLines={2}
+            >
+              {t(locale, "home.help")}
+            </Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [styles.helpLogoutBtn, pressed && styles.pressed]}
+            onPress={handleLogout}
+            accessibilityRole="button"
+            accessibilityLabel={t(locale, "tickets.logout")}
+          >
+            <Ionicons name="log-out-outline" size={22} color={C.logout} />
+            <Text
+              style={[styles.helpLogoutBtnText, { color: C.logout }]}
+              maxFontSizeMultiplier={2}
+              numberOfLines={2}
+            >
+              {t(locale, "tickets.logout")}
+            </Text>
+          </Pressable>
         </View>
 
         <Modal
@@ -791,18 +812,42 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       alignItems: "stretch",
       gap: S.sm,
     },
-    logoutRow: {
+    helpLogoutRow: {
+      flexDirection: "row",
+      alignItems: "stretch",
+      paddingHorizontal: S.lg,
+      paddingTop: S.xs,
+      paddingBottom: S.md,
+      gap: S.sm,
+    },
+    helpLogoutBtn: {
+      flex: 1,
+      minWidth: 0,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
       gap: S.sm,
       paddingVertical: S.md,
-      paddingHorizontal: S.lg,
-      marginBottom: S.xs,
+      paddingHorizontal: S.sm,
+      borderRadius: R.card,
+      borderWidth: 1,
+      borderColor: C.border,
+      backgroundColor: C.card,
+      ...Platform.select({
+        ios: {
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: theme.isDark ? 0.25 : 0.06,
+          shadowRadius: 4,
+        },
+        android: { elevation: theme.isDark ? 2 : 1 },
+      }),
     },
-    logoutText: {
-      fontSize: F.secondary,
+    helpLogoutBtnText: {
+      fontSize: F.secondary - 1,
       fontWeight: "800",
+      textAlign: "center",
+      flexShrink: 1,
     },
     tile: {
       flex: 1,

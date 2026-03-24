@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import type { Locale } from "@/lib/i18n";
@@ -53,6 +54,7 @@ export function ReservationQrPanel({
   validating = false,
 }: Props) {
   const { width: winW, height: winH } = useWindowDimensions();
+  const safeInsets = useSafeAreaInsets();
   const [permission, requestPermission] = useCameraPermissions();
   const handledRef = useRef(false);
   /**
@@ -292,21 +294,31 @@ export function ReservationQrPanel({
           </View>
         </View>
 
-        {/* Texto superior */}
+        {/* Texto superior: compacto para no invadir el marco central del QR */}
         <View style={styles.premiumHeader} pointerEvents="none">
           <LinearGradient
             colors={["rgba(2,6,23,0.92)", "rgba(2,6,23,0)"]}
             style={StyleSheet.absoluteFill}
             pointerEvents="none"
           />
-          <Text style={styles.premiumTitle}>{t(locale, "receive.qrPremiumTitle")}</Text>
-          <Text style={styles.premiumSubtitle}>{t(locale, "receive.qrPremiumSubtitle")}</Text>
+          <Text style={styles.premiumTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>
+            {t(locale, "receive.qrPremiumTitle")}
+          </Text>
+          <Text style={styles.premiumSubtitle} numberOfLines={2}>
+            {t(locale, "receive.qrPremiumSubtitle")}
+          </Text>
         </View>
 
         {validating && (
-          <View style={styles.validatingOverlay} pointerEvents="none">
+          <View
+            style={[
+              styles.validatingBottomStrip,
+              { paddingBottom: Math.max(safeInsets.bottom, 12) },
+            ]}
+            pointerEvents="none"
+          >
             <View style={styles.validatingCard}>
-              <ActivityIndicator color={ACCENT_GLOW} size="large" />
+              <ActivityIndicator color={ACCENT_GLOW} size="small" />
               <Text style={styles.validatingText}>{t(locale, "receive.qrValidating")}</Text>
             </View>
           </View>
@@ -330,11 +342,12 @@ export function ReservationQrPanel({
   );
 }
 
-export function createQrStyles(theme: Theme) {
+export function createQrStyles(theme: Theme, layoutHeight?: number) {
   const C = theme.colors;
   const S = theme.space;
   const R = theme.radius;
   const F = 14;
+  const headerMaxH = layoutHeight ? Math.round(layoutHeight * 0.24) : 130;
 
   const cornerBase = {
     position: "absolute" as const,
@@ -416,9 +429,10 @@ export function createQrStyles(theme: Theme) {
       top: 0,
       left: 0,
       right: 0,
-      paddingTop: S.md,
-      paddingBottom: S.xl * 2,
+      paddingTop: S.sm,
+      paddingBottom: S.md,
       paddingHorizontal: S.lg,
+      maxHeight: headerMaxH,
     },
     premiumKicker: {
       fontSize: 11,
@@ -441,23 +455,30 @@ export function createQrStyles(theme: Theme) {
       color: "rgba(248, 250, 252, 0.72)",
       maxWidth: 320,
     },
-    validatingOverlay: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: "rgba(2, 6, 23, 0.45)",
+    validatingBottomStrip: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      bottom: 0,
+      paddingHorizontal: S.lg,
+      paddingTop: S.md,
       alignItems: "center",
-      justifyContent: "center",
+      justifyContent: "flex-end",
     },
     validatingCard: {
-      paddingVertical: S.lg,
-      paddingHorizontal: S.xl,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: S.md,
+      paddingVertical: S.md,
+      paddingHorizontal: S.lg,
       borderRadius: 16,
       backgroundColor: "rgba(15, 23, 42, 0.92)",
       borderWidth: 1,
       borderColor: "rgba(56, 189, 248, 0.35)",
-      alignItems: "center",
-      gap: S.md,
+      maxWidth: "100%",
     },
     validatingText: {
+      flexShrink: 1,
       fontSize: F,
       fontWeight: "600",
       color: "#E2E8F0",

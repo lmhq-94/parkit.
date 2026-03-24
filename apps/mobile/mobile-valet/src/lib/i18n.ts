@@ -132,7 +132,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "home.actionReservationSub": "Con código de reserva",
     "home.actionSettingsSub": "Tema e idioma",
     "home.actionWorkflow": "Flujo de trabajo",
-    "home.actionWorkflowSub": "Revisar el proceso",
+    "home.actionWorkflowSub": "Próximamente",
+    "home.help": "Ayuda",
     "home.profile": "Perfil",
     "home.actionProfileSub": "Foto y datos",
     "home.statusAvailable": "Disponible",
@@ -198,7 +199,9 @@ const translations: Record<Locale, Record<string, string>> = {
     "home.useNearestParking": "Usar el más cercano",
     "home.manualParkingHint": "Elegido manualmente",
     "home.parkingPickerEmpty": "No hay parqueos en la lista.",
+    "help.title": "Ayuda",
     "workflow.title": "Flujo de trabajo",
+    "workflow.empty": "Aquí aún no hay contenido.",
     "workflow.subtitle": "Resumen del proceso en Parkit Valet.",
     "workflow.receptionTitle": "Recepción",
     "workflow.reception1": "Recibe el vehículo: matrícula, datos y asignación de plaza.",
@@ -274,7 +277,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.ticketCodeFieldLabel": "Código (tiquete y llaves)",
     "receive.ticketCodeOnlyLabel": "Código del tiquete",
     "receive.keyCodeFieldLabel": "Código de llaves",
-    "receive.placeholderTicketKeyCode": "Ej. PKT-ABC123 o etiqueta física",
+    "receive.placeholderTicketKeyCode": "Ej. 12345 o etiqueta física",
     "receive.placeholderKeyCode": "Código de llaves / mostrador",
     "receive.ticketKeySeparateToggle": "Usar código distinto para las llaves",
     "receive.ticketKeySameToggle": "Mismo código para tiquete y llaves",
@@ -287,6 +290,13 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.wizardValetStepTitle": "Conductor valet",
     "receive.wizardValetStepHelp":
       "Asigna si un compañero conductor estacionará el vehículo o déjalo sin asignar (opcional). Después pulsa Crear tiquete.",
+    "receive.valetDriversListHint":
+      "Solo se listan conductores disponibles en este parqueo con la app abierta recientemente (latido cada ~30 s; si llevan más de 5 min sin usar la app, no aparecen).",
+    "receive.valetDriversEmpty":
+      "No hay conductores con app activa en este parqueo ahora. Puedes continuar sin asignar; si un compañero tiene la app cerrada hace varios minutos, no saldrá en la lista hasta que vuelva a usarla.",
+    "receive.valetDriversNeedParking":
+      "Selecciona primero el parqueo de ingreso para ver conductores disponibles.",
+    "receive.wizardDamageTitle": "Estado del vehículo",
     "receive.damageHeroBadge": "Respaldo",
     "receive.damageHeroTitle": "Estado del vehículo al ingreso",
     "receive.damageHeroSub":
@@ -490,7 +500,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "home.actionReservationSub": "Booking code",
     "home.actionSettingsSub": "Theme & language",
     "home.actionWorkflow": "Workflow",
-    "home.actionWorkflowSub": "Review the process",
+    "home.actionWorkflowSub": "Coming soon",
+    "home.help": "Help",
     "home.profile": "Profile",
     "home.actionProfileSub": "Photo & details",
     "home.statusAvailable": "Available",
@@ -556,7 +567,9 @@ const translations: Record<Locale, Record<string, string>> = {
     "home.useNearestParking": "Use nearest",
     "home.manualParkingHint": "Selected manually",
     "home.parkingPickerEmpty": "No parkings in the list.",
+    "help.title": "Help",
     "workflow.title": "Workflow",
+    "workflow.empty": "Nothing here yet.",
     "workflow.subtitle": "Overview of the Parkit Valet process.",
     "workflow.receptionTitle": "Reception",
     "workflow.reception1": "Check in the vehicle: plate, details, and slot assignment.",
@@ -632,7 +645,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.ticketCodeFieldLabel": "Code (ticket & keys)",
     "receive.ticketCodeOnlyLabel": "Ticket code",
     "receive.keyCodeFieldLabel": "Key code",
-    "receive.placeholderTicketKeyCode": "e.g. PKT-ABC123 or physical tag",
+    "receive.placeholderTicketKeyCode": "e.g. 12345 or physical tag",
     "receive.placeholderKeyCode": "Key / counter code",
     "receive.ticketKeySeparateToggle": "Use a different code for keys",
     "receive.ticketKeySameToggle": "Same code for ticket and keys",
@@ -645,6 +658,13 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.wizardValetStepTitle": "Valet driver",
     "receive.wizardValetStepHelp":
       "Assign a colleague to park the vehicle or leave unassigned (optional). Then create the check-in.",
+    "receive.valetDriversListHint":
+      "Only drivers available at this parking with a recently active app are listed (~30 s heartbeat; after about 5 minutes without the app, they drop off).",
+    "receive.valetDriversEmpty":
+      "No drivers with an active app at this parking right now. You can continue unassigned; if a colleague closed the app several minutes ago, they will not appear until they use it again.",
+    "receive.valetDriversNeedParking":
+      "Select the check-in parking first to see available drivers.",
+    "receive.wizardDamageTitle": "Vehicle condition",
     "receive.damageHeroBadge": "Backup",
     "receive.damageHeroTitle": "Vehicle condition at intake",
     "receive.damageHeroSub":

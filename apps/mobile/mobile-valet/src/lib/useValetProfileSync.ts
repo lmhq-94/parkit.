@@ -1,11 +1,20 @@
 import { useCallback, useEffect, useRef } from "react";
+import { AppState, type AppStateStatus } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useAuthStore } from "@/lib/store";
 import { saveUser } from "@/lib/auth";
 import api from "@/lib/api";
 import type { User } from "@/lib/auth";
 
-const POLL_MS = 25_000;
+const POLL_MS = 30_000;
+
+async function pingValetPresence() {
+  try {
+    await api.post("/valets/me/ping", {}, { timeout: 12_000 });
+  } catch {
+    /* sin red o no valet */
+  }
+}
 
 async function pullValetMe(user: User, mergeUser: (p: Partial<User>) => void) {
   try {
@@ -32,9 +41,13 @@ async function pullValetMe(user: User, mergeUser: (p: Partial<User>) => void) {
   }
 }
 
+async function syncValetProfile(user: User, mergeUser: (p: Partial<User>) => void) {
+  await Promise.all([pullValetMe(user, mergeUser), pingValetPresence()]);
+}
+
 /**
- * Mantiene `valetStaffRole` y `valetCurrentStatus` alineados con GET /valets/me.
- * Refresco al enfocar la pantalla, cada ~25s en segundo plano, y cuando cambia el usuario.
+ * Mantiene rol/estado con GET /valets/me y presencia con POST /valets/me/ping (latido).
+ * Al volver la app a primer plano también envía ping.
  */
 export function useValetProfileSync(user: User | null) {
   const mergeUser = useAuthStore((s) => s.mergeUser);
@@ -44,13 +57,13 @@ export function useValetProfileSync(user: User | null) {
   const sync = useCallback(() => {
     const u = userRef.current;
     if (!u || u.systemRole !== "STAFF") return;
-    void pullValetMe(u, mergeUser);
+    void syncValetProfile(u, mergeUser);
   }, [mergeUser]);
 
   useEffect(() => {
     if (!user || user.systemRole !== "STAFF") return;
     let cancelled = false;
-    void pullValetMe(user, mergeUser);
+    void syncValetProfile(user, mergeUser);
     const id = setInterval(() => {
       if (!cancelled) sync();
     }, POLL_MS);
@@ -59,6 +72,16 @@ export function useValetProfileSync(user: User | null) {
       clearInterval(id);
     };
   }, [user, mergeUser, sync]);
+
+  useEffect(() => {
+    if (!user || user.systemRole !== "STAFF") return;
+    const sub = AppState.addEventListener("change", (next: AppStateStatus) => {
+      if (next === "active") {
+        void pingValetPresence();
+      }
+    });
+    return () => sub.remove();
+  }, [user]);
 
   useFocusEffect(
     useCallback(() => {

@@ -153,17 +153,38 @@ export const UpdateValetSchema = z.object({
   staffRole: valetStaffRoleEnum.nullable().optional(),
 });
 
-/** Authenticated valet: role and optional license fields (drivers). */
-export const UpdateValetMeSchema = z.object({
-  staffRole: valetStaffRoleEnum,
-  /** Comma-separated license types, same as web panel (e.g. "A1, B1"). */
-  licenseNumber: z.union([z.string(), z.null()]).optional(),
-  licenseExpiry: z.union([z.string().datetime(), z.null()]).optional(),
-});
+/** Authenticated valet: role, optional license, and/or operating context (company + parking). */
+export const UpdateValetMeSchema = z
+  .object({
+    staffRole: valetStaffRoleEnum.optional(),
+    /** Comma-separated license types, same as web panel (e.g. "A1, B1"). */
+    licenseNumber: z.union([z.string(), z.null()]).optional(),
+    licenseExpiry: z.union([z.string().datetime(), z.null()]).optional(),
+    /** Empresa en la que opera el valet (p. ej. flujo recepción / X-Company-Id). */
+    companyId: z.union([z.string().uuid(), z.null()]).optional(),
+    /** Parqueo físico actual para listados de disponibilidad. */
+    currentParkingId: z.union([z.string().uuid(), z.null()]).optional(),
+  })
+  .refine(
+    (d) =>
+      d.staffRole !== undefined ||
+      d.licenseNumber !== undefined ||
+      d.licenseExpiry !== undefined ||
+      d.companyId !== undefined ||
+      d.currentParkingId !== undefined,
+    { message: "At least one field is required" }
+  );
 
 export type CreateValetInput = z.infer<typeof CreateValetSchema>;
 export type UpdateValetInput = z.infer<typeof UpdateValetSchema>;
 export type UpdateValetMeInput = z.infer<typeof UpdateValetMeSchema>;
+
+/** Presencia explícita del valet (p. ej. AWAY al cerrar sesión en la app). */
+export const ValetMePresenceSchema = z.object({
+  status: z.enum(["AWAY", "AVAILABLE"]),
+});
+
+export type ValetMePresenceInput = z.infer<typeof ValetMePresenceSchema>;
 
 // Clients
 export const CreateClientSchema = z.object({

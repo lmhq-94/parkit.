@@ -74,6 +74,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   experiments: {
     typedRoutes: true,
   },
+  /** Sin EAS Update: evita comprobar/descargar OTA al arranque (corrige IOException en Android). */
+  updates: {
+    enabled: false,
+    checkAutomatically: 'NEVER',
+  },
   eas: {
     projectId: 'parkit-valet-prod',
   },
