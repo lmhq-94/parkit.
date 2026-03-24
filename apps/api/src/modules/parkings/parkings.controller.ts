@@ -142,6 +142,25 @@ export class ParkingsController {
     }
   }
 
+  static async updateSlotAvailability(req: Request, res: Response) {
+    try {
+      const slotId = Array.isArray(req.params.slotId) ? req.params.slotId[0] : req.params.slotId;
+      const body = req.body as { isAvailable: boolean };
+      const updated = await ParkingsService.updateSlotAvailability(
+        req.user.companyId!,
+        slotId,
+        body.isAvailable
+      );
+      return ok(res, updated);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
   static async createSlots(req: Request, res: Response) {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;

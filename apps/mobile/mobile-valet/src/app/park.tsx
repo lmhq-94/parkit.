@@ -222,6 +222,9 @@ function createParkStyles(theme: ReturnType<typeof useValetTheme>, contentMaxWid
     disabled: {
       opacity: 0.6,
     },
+    slotFilterInput: {
+      marginBottom: S.md,
+    },
     slotGrid: {
       flexDirection: "row",
       flexWrap: "wrap",
@@ -284,6 +287,8 @@ export default function ParkFlowScreen() {
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [slotLoading, setSlotLoading] = useState(false);
+  const [slotUpdating, setSlotUpdating] = useState(false);
+  const [slotFilter, setSlotFilter] = useState("");
   const [step, setStep] = useState<FlowStep>("damage");
   const [damagePhotoDataUrls, setDamagePhotoDataUrls] = useState<string[]>([]);
   const [damagePhotoBusy, setDamagePhotoBusy] = useState(false);
@@ -439,7 +444,14 @@ export default function ParkFlowScreen() {
       feedback.error(t(locale, "park.photoRequiredError"));
       return;
     }
-    setStep("slot");
+    feedback.confirm({
+      title: t(locale, "park.confirmPromptTitle"),
+      message: t(locale, "park.confirmPromptMessage"),
+      confirmText: t(locale, "tickets.yesContinue"),
+      onConfirm: () => {
+        setStep("slot");
+      },
+    });
   };
 
   const handleConfirmParked = () => {
@@ -447,40 +459,70 @@ export default function ParkFlowScreen() {
       feedback.error(t(locale, "park.slotRequiredError"));
       return;
     }
-    feedback.confirm({
-      title: t(locale, "park.confirmTitle"),
-      message: t(locale, "park.confirmMessage"),
-      confirmText: t(locale, "tickets.yesContinue"),
-      onConfirm: async () => {
-        if (!ticketId || !companyId || !valetId) {
-          feedback.error(t(locale, "park.loadError"));
-          return;
-        }
-        setSubmitting(true);
-        try {
-          await api.post(
-            `/tickets/${ticketId}/damage-report`,
-            {
-              valetId,
-              description: damageNote.trim(),
-              photos: damagePhotoDataUrls.map((url) => ({ url })),
-            },
-            { headers: { "x-company-id": companyId } }
-          );
-          await api.patch(
-            `/tickets/${ticketId}`,
-            { status: "PARKED", slotId: selectedSlotId },
-            { headers: { "x-company-id": companyId } }
-          );
-          feedback.success(t(locale, "park.successParked"));
-          router.replace("/tickets?queue=parking");
-        } catch {
-          feedback.error(t(locale, "tickets.errorUpdate"));
-        } finally {
-          setSubmitting(false);
-        }
-      },
-    });
+    if (!ticketId || !companyId || !valetId) {
+      feedback.error(t(locale, "park.loadError"));
+      return;
+    }
+    setSubmitting(true);
+    (async () => {
+      try {
+        await api.post(
+          `/tickets/${ticketId}/damage-report`,
+          {
+            valetId,
+            description: damageNote.trim(),
+            photos: damagePhotoDataUrls.map((url) => ({ url })),
+          },
+          { headers: { "x-company-id": companyId } }
+        );
+        await api.patch(
+          `/tickets/${ticketId}`,
+          { status: "PARKED", slotId: selectedSlotId },
+          { headers: { "x-company-id": companyId } }
+        );
+        feedback.success(t(locale, "park.successParked"));
+        router.replace("/tickets?queue=parking");
+      } catch {
+        feedback.error(t(locale, "tickets.errorUpdate"));
+      } finally {
+        setSubmitting(false);
+      }
+    })();
+  };
+
+  const filteredSlots = useMemo(() => {
+    const q = slotFilter.trim().toLowerCase();
+    if (!q) return slots;
+    return slots.filter((s) => s.label.toLowerCase().includes(q));
+  }, [slots, slotFilter]);
+
+  const handleSelectSlot = async (slotId: string) => {
+    if (!companyId) return;
+    if (slotUpdating || selectedSlotId === slotId) {
+      setSelectedSlotId(slotId);
+      return;
+    }
+    const prev = selectedSlotId;
+    setSelectedSlotId(slotId);
+    setSlotUpdating(true);
+    try {
+      if (prev && prev !== slotId) {
+        await api.patch(
+          `/parkings/slots/${prev}`,
+          { isAvailable: true },
+          { headers: { "x-company-id": companyId } }
+        );
+      }
+      await api.patch(
+        `/parkings/slots/${slotId}`,
+        { isAvailable: false },
+        { headers: { "x-company-id": companyId } }
+      );
+    } catch {
+      feedback.error(t(locale, "tickets.errorUpdate"));
+    } finally {
+      setSlotUpdating(false);
+    }
   };
 
   if (!user) return <Redirect href="/login" />;
@@ -538,14 +580,14 @@ export default function ParkFlowScreen() {
               styles.primaryBtnSticky,
               styles.footerPrimaryBtn,
               { minHeight: M },
-              (submitting || slotLoading) && styles.btnDisabled,
+              (submitting || slotLoading || !selectedSlotId) && styles.btnDisabled,
               pressed && styles.pressed,
             ]}
             onPress={handleConfirmParked}
-            disabled={submitting || slotLoading}
-            accessibilityLabel={t(locale, "park.confirmCta")}
+            disabled={submitting || slotLoading || !selectedSlotId}
+            accessibilityLabel={t(locale, "park.next")}
           >
-            <Text style={styles.primaryBtnText}>{t(locale, "park.confirmCta")}</Text>
+            <Text style={styles.primaryBtnText}>{t(locale, "park.next")}</Text>
           </Pressable>
         </View>
       </StickyFormFooter>
@@ -668,23 +710,25 @@ export default function ParkFlowScreen() {
                 </>
               ) : (
                 <>
-                  <Text style={styles.sectionLabel}>{t(locale, "park.confirmTitle")}</Text>
-                  <Text style={styles.stepExplain}>{t(locale, "park.confirmMessage")}</Text>
+                  <Text style={styles.sectionLabel}>{t(locale, "park.parkedTitle")}</Text>
+                  <Text style={styles.stepExplain}>{t(locale, "park.parkedMessage")}</Text>
 
-                  <Text style={styles.sectionTitle}>{t(locale, "park.selectSlotTitle")}</Text>
-                  <Text style={styles.sectionHelp}>
-                    {ticket?.parking?.name
-                      ? t(locale, "park.selectSlotHelp", { parking: ticket.parking.name })
-                      : t(locale, "park.selectSlotHelpFallback")}
-                  </Text>
+                  <TextInput
+                    style={[styles.input, styles.slotFilterInput]}
+                    value={slotFilter}
+                    onChangeText={setSlotFilter}
+                    placeholder={t(locale, "park.slotFilterPlaceholder")}
+                    placeholderTextColor={theme.colors.textSubtle}
+                    maxFontSizeMultiplier={2}
+                  />
 
                   {slotLoading ? (
                     <ActivityIndicator color={theme.colors.primary} style={{ marginBottom: theme.space.md }} />
-                  ) : slots.length === 0 ? (
+                  ) : filteredSlots.length === 0 ? (
                     <Text style={styles.help}>{t(locale, "park.selectSlotEmpty")}</Text>
                   ) : (
                     <View style={[styles.slotGrid, { gap: slotTileGap }]}>
-                      {slots.map((slot) => (
+                      {filteredSlots.map((slot) => (
                         <Pressable
                           key={slot.id}
                           style={[
@@ -692,7 +736,7 @@ export default function ParkFlowScreen() {
                             selectedSlotId === slot.id && styles.slotCardSelected,
                             { width: slotTileWidth },
                           ]}
-                          onPress={() => setSelectedSlotId(slot.id)}
+                          onPress={() => void handleSelectSlot(slot.id)}
                           accessibilityLabel={`${t(locale, "park.selectSlotTitle")} ${slot.label}`}
                         >
                           <Text style={styles.slotLabel}>{slot.label}</Text>

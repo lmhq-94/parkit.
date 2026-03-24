@@ -4,7 +4,7 @@ import { requireAuth } from "../../shared/middleware/requireAuth";
 import { requireCompany } from "../../shared/middleware/requireCompany";
 import { requireRole } from "../../shared/middleware/requireRole";
 import { validateRequest } from "../../shared/middleware/validateRequest";
-import { CreateParkingSchema, UpdateParkingSchema } from "../../shared/validators";
+import { CreateParkingSchema, UpdateParkingSchema, UpdateParkingSlotSchema } from "../../shared/validators";
 
 const router = Router();
 
@@ -15,6 +15,14 @@ router.get(
   requireAuth,
   requireRole("STAFF"),
   ParkingsController.listAllLocationsForValet
+);
+router.patch(
+  "/slots/:slotId",
+  validateRequest(UpdateParkingSlotSchema),
+  requireAuth,
+  requireCompany,
+  requireRole("ADMIN", "STAFF"),
+  ParkingsController.updateSlotAvailability
 );
 router.post("/", validateRequest(CreateParkingSchema), requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ParkingsController.create);
 router.get("/", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ParkingsController.list);

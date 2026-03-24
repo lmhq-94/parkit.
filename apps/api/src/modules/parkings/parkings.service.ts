@@ -193,6 +193,24 @@ export class ParkingsService {
     });
   }
 
+  static async updateSlotAvailability(
+    companyId: string,
+    slotId: string,
+    isAvailable: boolean
+  ) {
+    const slot = await prisma.parkingSlot.findFirst({
+      where: { id: slotId, parking: { companyId } },
+      select: { id: true },
+    });
+    if (!slot) {
+      throw new Error("Slot not found");
+    }
+    return prisma.parkingSlot.update({
+      where: { id: slotId },
+      data: { isAvailable },
+    });
+  }
+
   static async delete(companyId: string, parkingId: string) {
     const parking = await prisma.parking.findFirst({
       where: { id: parkingId, companyId },

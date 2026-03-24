@@ -32,6 +32,7 @@ interface TicketRow {
   id: string;
   status: string;
   ticketCode?: string;
+  delivererValetId?: string | null;
   vehicle?: { plate?: string; brand?: string; model?: string };
   parking?: { name?: string };
 }
@@ -75,7 +76,8 @@ export default function ReturnPickupScreen() {
         api.get<{ data: TicketRow[] }>("/tickets", { params: { status: "PARKED,REQUEST_DELIVERY" } }),
         api.get<{ data: ValetOpt[] }>("/valets/for-company"),
       ]);
-      setTickets(Array.isArray(tRes.data?.data) ? tRes.data.data : []);
+      const rows = Array.isArray(tRes.data?.data) ? tRes.data.data : [];
+      setTickets(rows.filter((row) => !row.delivererValetId));
       setValets(Array.isArray(vRes.data?.data) ? vRes.data.data : []);
     } catch {
       setTickets([]);

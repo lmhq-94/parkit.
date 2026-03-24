@@ -388,6 +388,10 @@ export const UpdateTicketSchema = z.object({
   delivererValetId: z.string().optional().nullable(),
 });
 
+export const UpdateParkingSlotSchema = z.object({
+  isAvailable: z.boolean(),
+});
+
 export type CreateTicketInput = z.infer<typeof CreateTicketSchema>;
 export type UpdateTicketInput = z.infer<typeof UpdateTicketSchema>;
 

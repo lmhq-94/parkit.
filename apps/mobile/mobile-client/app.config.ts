@@ -23,8 +23,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: "./assets/icon-1024.png",
-      backgroundColor: "#ffffff",
+      foregroundImage: "./assets/adaptive-icon-foreground.png",
+      backgroundColor: "#FFFFFF",
     },
     package: "com.paradoxialabs.parkit.customer",
   },

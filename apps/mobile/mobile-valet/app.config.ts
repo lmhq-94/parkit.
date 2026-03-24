@@ -32,8 +32,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     icon: './assets/icon-1024.png',
     adaptiveIcon: {
-      foregroundImage: './assets/icon-1024.png',
-      backgroundColor: '#020617',
+      foregroundImage: './assets/adaptive-icon-foreground.png',
+      backgroundColor: '#FFFFFF',
     },
     package: 'com.parkit.valet',
     permissions: ['ACCESS_FINE_LOCATION', 'INTERNET', 'CAMERA'],
