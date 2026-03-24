@@ -401,7 +401,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
+    <SafeAreaView style={styles.safe} edges={["left", "right"]}>
       <StatusBar
         barStyle={theme.isDark ? "light-content" : "dark-content"}
         backgroundColor={theme.colors.card}
@@ -830,10 +830,7 @@ export default function ProfileScreen() {
             </KeyboardAwareScrollView>
 
             <KeyboardStickyView>
-              <StickyFormFooter
-                extraBottomPadding={Math.max(insets.bottom, theme.space.md) - theme.space.md}
-                keyboardPinned
-              >
+              <StickyFormFooter keyboardPinned>
                 <Pressable
                   style={({ pressed }) => [
                     styles.primaryBtnFooter,

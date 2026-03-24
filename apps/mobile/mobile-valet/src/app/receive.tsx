@@ -302,8 +302,8 @@ export default function ReceiveScreen() {
   const driverStepNum = 3;
   const vehicleStepNum = 4;
   const parkingStepNum = reservationFlow ? 2 : 5;
-  const ticketStepNum = reservationFlow ? 3 : 6;
-  const damageStepNum = reservationFlow ? 4 : 7;
+  const damageStepNum = reservationFlow ? 3 : 6;
+  const ticketStepNum = reservationFlow ? 4 : 7;
   const valetStepNum = reservationFlow ? 5 : 8;
   const availableValets = useMemo(
     () => valets.filter((v) => v.currentStatus === "AVAILABLE"),
@@ -1209,7 +1209,7 @@ export default function ReceiveScreen() {
   if (!user) return <Redirect href="/login" />;
   if (!isReception) {
     return (
-      <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
+      <SafeAreaView style={styles.safe} edges={["left", "right"]}>
         <StatusBar
           barStyle={theme.isDark ? "light-content" : "dark-content"}
           backgroundColor={C.card}
@@ -1398,7 +1398,7 @@ export default function ReceiveScreen() {
             ]}
             onPress={async () => {
               await syncValetWorkingContext();
-              setWizardStep(ticketStepNum);
+              setWizardStep(damageStepNum);
             }}
             disabled={!canContinueFromParking}
             accessibilityLabel={t(locale, "receive.next")}
@@ -1409,6 +1409,39 @@ export default function ReceiveScreen() {
       </StickyFormFooter>
     );
   } else if (wizardStep === ticketStepNum) {
+    footer = (
+      <StickyFormFooter keyboardPinned>
+        <View style={styles.footerRow}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.footerSecondaryBtn,
+              { minHeight: M },
+              pressed && styles.pressed,
+            ]}
+            onPress={() => setWizardStep(damageStepNum)}
+            accessibilityLabel={t(locale, "common.back")}
+          >
+            <Text style={styles.footerSecondaryBtnText}>{t(locale, "common.back")}</Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.primaryBtn,
+              styles.primaryBtnSticky,
+              styles.footerPrimaryBtn,
+              { minHeight: M },
+              (!ticketCodesAcknowledged || !ticketCodesFilled) && styles.btnDisabled,
+              pressed && styles.pressed,
+            ]}
+            onPress={() => setWizardStep(valetStepNum)}
+            disabled={!ticketCodesAcknowledged || !ticketCodesFilled}
+            accessibilityLabel={t(locale, "receive.next")}
+          >
+            <Text style={styles.primaryBtnText}>{t(locale, "receive.next")}</Text>
+          </Pressable>
+        </View>
+      </StickyFormFooter>
+    );
+  } else if (wizardStep === damageStepNum) {
     footer = (
       <StickyFormFooter keyboardPinned>
         <View style={styles.footerRow}>
@@ -1429,43 +1462,10 @@ export default function ReceiveScreen() {
               styles.primaryBtnSticky,
               styles.footerPrimaryBtn,
               { minHeight: M },
-              (!ticketCodesAcknowledged || !ticketCodesFilled) && styles.btnDisabled,
-              pressed && styles.pressed,
-            ]}
-            onPress={() => setWizardStep(damageStepNum)}
-            disabled={!ticketCodesAcknowledged || !ticketCodesFilled}
-            accessibilityLabel={t(locale, "receive.next")}
-          >
-            <Text style={styles.primaryBtnText}>{t(locale, "receive.next")}</Text>
-          </Pressable>
-        </View>
-      </StickyFormFooter>
-    );
-  } else if (wizardStep === damageStepNum) {
-    footer = (
-      <StickyFormFooter keyboardPinned>
-        <View style={styles.footerRow}>
-          <Pressable
-            style={({ pressed }) => [
-              styles.footerSecondaryBtn,
-              { minHeight: M },
-              pressed && styles.pressed,
-            ]}
-            onPress={() => setWizardStep(ticketStepNum)}
-            accessibilityLabel={t(locale, "common.back")}
-          >
-            <Text style={styles.footerSecondaryBtnText}>{t(locale, "common.back")}</Text>
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [
-              styles.primaryBtn,
-              styles.primaryBtnSticky,
-              styles.footerPrimaryBtn,
-              { minHeight: M },
               damagePhotoBusy && styles.btnDisabled,
               pressed && styles.pressed,
             ]}
-            onPress={() => setWizardStep(valetStepNum)}
+            onPress={() => setWizardStep(ticketStepNum)}
             disabled={damagePhotoBusy}
             accessibilityLabel={t(locale, "receive.damageContinueA11y")}
           >
@@ -1484,7 +1484,7 @@ export default function ReceiveScreen() {
               { minHeight: M },
               pressed && styles.pressed,
             ]}
-            onPress={() => setWizardStep(damageStepNum)}
+            onPress={() => setWizardStep(ticketStepNum)}
             accessibilityLabel={t(locale, "common.back")}
           >
             <Text style={styles.footerSecondaryBtnText}>{t(locale, "common.back")}</Text>
@@ -1526,7 +1526,7 @@ export default function ReceiveScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
+    <SafeAreaView style={styles.safe} edges={["left", "right"]}>
       <StatusBar
         barStyle={theme.isDark ? "light-content" : "dark-content"}
         backgroundColor={C.card}
@@ -2043,6 +2043,8 @@ export default function ReceiveScreen() {
                 placeholderTextColor={C.textSubtle}
                 autoCapitalize="characters"
                 autoCorrect={false}
+                keyboardType="number-pad"
+                inputMode="numeric"
                 maxLength={64}
                 maxFontSizeMultiplier={2}
               />
@@ -2086,6 +2088,8 @@ export default function ReceiveScreen() {
                     placeholderTextColor={C.textSubtle}
                     autoCapitalize="characters"
                     autoCorrect={false}
+                    keyboardType="number-pad"
+                    inputMode="numeric"
                     maxLength={64}
                     maxFontSizeMultiplier={2}
                   />

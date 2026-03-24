@@ -11,6 +11,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
+import { KeyboardAwareScrollView, KeyboardStickyView } from "react-native-keyboard-controller";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -506,11 +507,11 @@ export default function ParkFlowScreen() {
               styles.primaryBtnSticky,
               styles.footerPrimaryBtn,
               { minHeight: M },
-              damagePhotoBusy && styles.btnDisabled,
+              (damagePhotoBusy || damagePhotoDataUrls.length === 0) && styles.btnDisabled,
               pressed && styles.pressed,
             ]}
             onPress={handleNext}
-            disabled={damagePhotoBusy}
+            disabled={damagePhotoBusy || damagePhotoDataUrls.length === 0}
             accessibilityLabel={t(locale, "park.next")}
           >
             <Text style={styles.primaryBtnText}>{t(locale, "park.next")}</Text>
@@ -551,7 +552,7 @@ export default function ParkFlowScreen() {
     );
 
   return (
-    <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
+    <SafeAreaView style={styles.safe} edges={["left", "right"]}>
       <StatusBar
         barStyle={theme.isDark ? "light-content" : "dark-content"}
         backgroundColor={theme.colors.card}
@@ -570,7 +571,13 @@ export default function ParkFlowScreen() {
               <Text style={styles.help}>{t(locale, "park.loading")}</Text>
             </View>
           ) : (
-            <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+            <KeyboardAwareScrollView
+              style={{ flex: 1 }}
+              contentContainerStyle={styles.scroll}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              bottomOffset={96}
+            >
               {step === "damage" ? (
                 <>
                   <Text style={styles.sectionLabel}>{t(locale, "park.stepDamageTitle")}</Text>
@@ -701,10 +708,10 @@ export default function ParkFlowScreen() {
 
                 </>
               )}
-            </ScrollView>
+            </KeyboardAwareScrollView>
           )}
         </View>
-        {footer}
+        <KeyboardStickyView>{footer}</KeyboardStickyView>
       </View>
     </SafeAreaView>
   );

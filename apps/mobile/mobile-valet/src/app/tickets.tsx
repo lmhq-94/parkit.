@@ -398,6 +398,7 @@ export default function TicketsScreen() {
   const [tickets, setTickets] = useState<TicketAssignment[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
+  const [valetId, setValetId] = useState<string | null>(null);
 
   /** Conductor: puede alternar entre ingresos y devoluciones. */
   const isDriverUi = user?.valetStaffRole === "DRIVER";
@@ -434,18 +435,36 @@ export default function TicketsScreen() {
     try {
       const res = await api.get<{ data: ApiAssignment[] }>("/valets/me/assignments");
       const list = Array.isArray(res.data?.data) ? res.data.data : [];
-      setTickets(list.map(mapApiAssignmentToDisplay));
+      const filtered = valetId ? list.filter((x) => x.valetId === valetId) : list;
+      setTickets(filtered.map(mapApiAssignmentToDisplay));
     } catch {
       if (!silent) setTickets([]);
     } finally {
       if (!silent) setLoading(false);
       setInitialLoad(false);
     }
-  }, [user]);
+  }, [user, valetId]);
 
   useEffect(() => {
     if (user) void loadTickets();
   }, [user, loadTickets]);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await api.get<{ data: { id: string } }>("/valets/me");
+        const id = res.data?.data?.id ?? null;
+        if (!cancelled) setValetId(id);
+      } catch {
+        if (!cancelled) setValetId(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   useEffect(() => {
     if (!user?.id || !isDriverUi) return;

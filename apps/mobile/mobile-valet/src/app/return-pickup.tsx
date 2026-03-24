@@ -133,7 +133,7 @@ export default function ReturnPickupScreen() {
 
   if (!isReception) {
     return (
-      <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
+      <SafeAreaView style={styles.safe} edges={["left", "right"]}>
         <StatusBar
           barStyle={theme.isDark ? "light-content" : "dark-content"}
           backgroundColor={theme.colors.card}
@@ -159,7 +159,7 @@ export default function ReturnPickupScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
+    <SafeAreaView style={styles.safe} edges={["left", "right"]}>
       <StatusBar
         barStyle={theme.isDark ? "light-content" : "dark-content"}
         backgroundColor={theme.colors.card}
