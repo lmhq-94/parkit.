@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { ZodSchema } from "zod";
+import { ZodSchema, ZodError } from "zod";
 
 // Middleware factory: validates request body against provided Zod schema
 export function validateRequest(schema: ZodSchema) {
@@ -9,6 +9,13 @@ export function validateRequest(schema: ZodSchema) {
       req.body = validated;
       next();
     } catch (error: unknown) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors: error.flatten(),
+        });
+      }
       if (error instanceof Error) {
         return res.status(400).json({
           success: false,

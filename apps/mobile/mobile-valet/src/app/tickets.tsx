@@ -405,10 +405,16 @@ export default function TicketsScreen() {
   const isDriverUi = user?.valetStaffRole === "DRIVER";
 
   const filteredTickets = useMemo(() => {
-    if (isDriverUi) {
-      return tickets.filter((x) => DRIVER_UI_ROLES.has(x.assignmentRole));
-    }
-    return tickets.filter((x) => RECEPTION_UI_ROLES.has(x.assignmentRole));
+    const list = isDriverUi
+      ? tickets.filter((x) => DRIVER_UI_ROLES.has(x.assignmentRole))
+      : tickets.filter((x) => RECEPTION_UI_ROLES.has(x.assignmentRole));
+
+    // Sort ascending by createdAt (oldest first = FIFO queue)
+    return list.sort((a, b) => {
+      const timeA = new Date(a.createdAt || 0).getTime();
+      const timeB = new Date(b.createdAt || 0).getTime();
+      return timeA - timeB;
+    });
   }, [tickets, isDriverUi]);
   const feedback = useMemo(() => createFeedback(locale), [locale]);
 

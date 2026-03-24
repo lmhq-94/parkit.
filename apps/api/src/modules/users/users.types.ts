@@ -5,6 +5,9 @@ export interface CreateUserDTO {
   /** If omitted, user is created as "invited" and an email is sent to set password via link */
   password?: string;
   systemRole?: "SUPER_ADMIN" | "ADMIN" | "STAFF" | "CUSTOMER";
+  phone?: string;
+  timezone?: string;
+  walkInCustomer?: boolean;
 }
   
   export interface UpdateUserDTO {

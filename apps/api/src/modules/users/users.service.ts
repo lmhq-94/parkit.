@@ -58,6 +58,24 @@ export class UsersService {
     const isInvitation = data.password == null || data.password === "";
 
     if (isInvitation) {
+      if (data.walkInCustomer) {
+        const user = await prisma.user.create({
+          data: {
+            companyId,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            passwordHash: null,
+            systemRole: data.systemRole ?? SystemRole.STAFF,
+            ...(data.phone != null ? { phone: data.phone } : {}),
+            ...(data.timezone != null ? { timezone: data.timezone } : {}),
+          },
+        });
+        await activateCompanyIfFirstUser(companyId);
+        await ensureClientForCustomer(companyId, user);
+        return user;
+      }
+
       const invitationToken = crypto.randomBytes(32).toString("hex");
       const invitationTokenExpiresAt = new Date();
       invitationTokenExpiresAt.setHours(
@@ -74,6 +92,8 @@ export class UsersService {
           systemRole: data.systemRole ?? SystemRole.STAFF,
           invitationToken,
           invitationTokenExpiresAt,
+          ...(data.phone != null ? { phone: data.phone } : {}),
+          ...(data.timezone != null ? { timezone: data.timezone } : {}),
         },
       });
 
@@ -101,6 +121,8 @@ export class UsersService {
         email: data.email,
         passwordHash,
         systemRole: data.systemRole ?? SystemRole.STAFF,
+        ...(data.phone != null ? { phone: data.phone } : {}),
+        ...(data.timezone != null ? { timezone: data.timezone } : {}),
       },
     });
     await activateCompanyIfFirstUser(companyId);

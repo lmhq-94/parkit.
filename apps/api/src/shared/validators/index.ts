@@ -53,35 +53,57 @@ const PASSWORD_MIN_LENGTH = 8;
 const hasUppercase = (s: string) => /[A-Z]/.test(s);
 const hasLowercase = (s: string) => /[a-z]/.test(s);
 const hasNumber = (s: string) => /\d/.test(s);
-const hasSpecialChar = (s: string) => /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(s);
 
 export const securePasswordSchema = z
   .string()
   .min(PASSWORD_MIN_LENGTH, "Password must be at least 8 characters")
   .refine(hasUppercase, "Password must contain at least one uppercase letter")
   .refine(hasLowercase, "Password must contain at least one lowercase letter")
-  .refine(hasNumber, "Password must contain at least one number")
-  .refine(hasSpecialChar, "Password must contain at least one special character (!@#$%^&* etc.)");
+  .refine(hasNumber, "Password must contain at least one number");
 
 export const PASSWORD_SECURITY = {
   minLength: PASSWORD_MIN_LENGTH,
   requireUppercase: true,
   requireLowercase: true,
   requireNumber: true,
-  requireSpecialChar: true,
 } as const;
 
+const optionalTrimmedNonEmpty = z.preprocess(
+  (v) => {
+    if (v === null || v === undefined) return undefined;
+    if (typeof v !== "string") return v;
+    const t = v.trim();
+    return t === "" ? undefined : t;
+  },
+  z.string().optional()
+);
+
 // Users (optional password: when provided must meet secure password rules)
-export const CreateUserSchema = z.object({
-  email: z.string().email("Invalid email"),
-  firstName: z.string().min(1, "First name required"),
-  lastName: z.string().min(1, "Last name required"),
-  password: z
-    .union([securePasswordSchema, z.literal(""), z.null()])
-    .optional()
-    .transform((v) => (v === "" || v === null ? undefined : v)),
-  systemRole: z.enum(["SUPER_ADMIN", "ADMIN", "STAFF", "CUSTOMER"]).optional(),
-});
+export const CreateUserSchema = z
+  .object({
+    email: z.string().email("Invalid email"),
+    firstName: z.string().min(1, "First name required"),
+    lastName: z.string().min(1, "Last name required"),
+    password: z
+      .union([securePasswordSchema, z.literal(""), z.null()])
+      .optional()
+      .transform((v) => (v === "" || v === null ? undefined : v)),
+    systemRole: z.enum(["SUPER_ADMIN", "ADMIN", "STAFF", "CUSTOMER"]).optional(),
+    phone: optionalTrimmedNonEmpty,
+    timezone: optionalTrimmedNonEmpty,
+    /** Recepción walk-in: obliga a contraseña inmediata (no solo invitación por email). */
+    walkInCustomer: z.boolean().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.walkInCustomer !== true) return;
+    if (data.systemRole !== "CUSTOMER") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Walk-in vehicle intake must use CUSTOMER role",
+        path: ["systemRole"],
+      });
+    }
+  });
 
 export const CreateSuperAdminSchema = z.object({
   email: z.string().email("Invalid email"),
@@ -300,26 +322,57 @@ export type UpdateBookingInput = z.infer<typeof UpdateBookingSchema>;
 // Tickets
 const IntakeDamagePhotoSchema = z.object({
   url: z.string().min(1, "Photo URL required"),
-  label: z.string().optional(),
+  label: z.preprocess(
+    (v) => (v === null || v === undefined ? undefined : v),
+    z.string().optional()
+  ),
 });
 
+/** IDs opcionales: clientes/envíos a veces mandan `null` explícito; Zod `.optional()` no acepta null. */
+function optionalNonEmptyStringId() {
+  return z.preprocess((v) => {
+    if (v === null || v === undefined) return undefined;
+    if (typeof v !== "string") return v;
+    const t = v.trim();
+    return t === "" ? undefined : t;
+  }, z.string().min(1).optional());
+}
+
+function optionalTrimmedCode() {
+  return z.preprocess((v) => {
+    if (v === null || v === undefined) return undefined;
+    if (typeof v !== "string") return v;
+    const t = v.trim();
+    return t === "" ? undefined : t;
+  }, z.string().optional());
+}
+
 export const CreateTicketSchema = z.object({
-  bookingId: z.string().optional(),
+  bookingId: optionalNonEmptyStringId(),
   clientId: z.string().min(1, "Client ID required"),
   parkingId: z.string().min(1, "Parking ID required"),
   vehicleId: z.string().min(1, "Vehicle ID required"),
-  slotId: z.string().optional(),
+  slotId: optionalNonEmptyStringId(),
   receptorValetId: z.string().min(1, "Receptor valet required"),
-  driverValetId: z.string().optional(),
-  delivererValetId: z.string().optional(),
-  keyCode: z.string().optional(),
-  ticketCode: z.string().optional(),
-  intakeDamageReport: z
-    .object({
-      description: z.string().optional(),
-      photos: z.array(IntakeDamagePhotoSchema).max(8).optional(),
-    })
-    .optional(),
+  driverValetId: optionalNonEmptyStringId(),
+  delivererValetId: optionalNonEmptyStringId(),
+  keyCode: optionalTrimmedCode(),
+  ticketCode: optionalTrimmedCode(),
+  intakeDamageReport: z.preprocess(
+    (v) => (v === null ? undefined : v),
+    z
+      .object({
+        description: z.preprocess(
+          (v) => (v === null || v === undefined ? undefined : v),
+          z.string().optional()
+        ),
+        photos: z.preprocess(
+          (v) => (v === null || v === undefined ? undefined : v),
+          z.array(IntakeDamagePhotoSchema).max(8).optional()
+        ),
+      })
+      .optional()
+  ),
 });
 
 export const UpdateTicketSchema = z.object({

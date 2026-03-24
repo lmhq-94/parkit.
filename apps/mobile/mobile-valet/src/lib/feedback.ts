@@ -1,5 +1,6 @@
-import { Alert, type AlertButton, type AlertOptions } from "react-native";
+import { type AlertButton, type AlertOptions } from "react-native";
 import { t, type Locale } from "@/lib/i18n";
+import { useFeedbackStore } from "./feedbackStore";
 
 type ConfirmOptions = {
   title: string;
@@ -36,23 +37,36 @@ export function createFeedback(locale: Locale) {
     successTitle: t(locale, "common.successTitle"),
   };
 
+  const open = useFeedbackStore.getState().open;
+
   return {
     alert(title: string, message?: string, buttons?: AlertButton[], options?: AlertOptions) {
-      Alert.alert(title, message, withDefaultText(buttons, tx.ok), options);
+      open({
+        title,
+        message,
+        buttons: withDefaultText(buttons, tx.ok) as any,
+        cancelable: options?.cancelable,
+      });
     },
     error(message: string, title = tx.errorTitle) {
-      Alert.alert(title, message, [{ text: tx.ok }]);
+      open({
+        title,
+        message,
+        buttons: [{ text: tx.ok }],
+      });
     },
     success(message: string, options?: SuccessOptions) {
-      Alert.alert(options?.title ?? tx.successTitle, message, [
-        { text: options?.okText ?? tx.ok, onPress: options?.onPress },
-      ]);
+      open({
+        title: options?.title ?? tx.successTitle,
+        message,
+        buttons: [{ text: options?.okText ?? tx.ok, onPress: options?.onPress }],
+      });
     },
     confirm(options: ConfirmOptions) {
-      Alert.alert(
-        options.title,
-        options.message,
-        [
+      open({
+        title: options.title,
+        message: options.message,
+        buttons: [
           { text: options.cancelText ?? tx.cancel, style: "cancel" },
           {
             text: options.confirmText ?? tx.ok,
@@ -60,8 +74,8 @@ export function createFeedback(locale: Locale) {
             onPress: options.onConfirm,
           },
         ],
-        { cancelable: options.cancelable ?? true }
-      );
+        cancelable: options.cancelable ?? true,
+      });
     },
   };
 }

@@ -243,7 +243,6 @@ export default function ReceiveScreen() {
   const [receptorValetId, setReceptorValetId] = useState<string | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
-  const [receiveDoneOpen, setReceiveDoneOpen] = useState(false);
   const [metaLoading, setMetaLoading] = useState(true);
   const [valetsLoading, setValetsLoading] = useState(false);
   const [valetsRefreshing, setValetsRefreshing] = useState(false);
@@ -781,14 +780,13 @@ export default function ReceiveScreen() {
         feedback.error(t(locale, "receive.errorDriver"));
         return null;
       }
-      const pwd = randomWalkInPassword();
       const uRes = await api.post<{ data: { id: string } }>("/users", {
         firstName: fn,
         lastName: ln,
         email: em,
         phone: phoneDigitsForApi(driverPhone),
-        password: pwd,
         systemRole: "CUSTOMER",
+        walkInCustomer: true,
       });
       const userId = uRes.data?.data?.id;
       if (!userId) throw new Error("User create failed");
@@ -820,6 +818,7 @@ export default function ReceiveScreen() {
       phone: phoneDigitsForApi(driverPhone),
       password: pwd,
       systemRole: "CUSTOMER",
+      walkInCustomer: true,
     });
     const userId = uRes.data?.data?.id;
     if (!userId) throw new Error("User create failed");
@@ -1088,7 +1087,11 @@ export default function ReceiveScreen() {
       }
 
       await api.post("/tickets", payload);
-      setReceiveDoneOpen(true);
+      feedback.success(t(locale, "receive.success"), {
+        title: t(locale, "receive.successTitle"),
+        okText: t(locale, "common.close"),
+        onPress: () => router.replace("/home"),
+      });
     } catch (e) {
       feedback.error(messageFromAxios(e) || t(locale, "receive.errorSubmit"));
     } finally {
@@ -2412,39 +2415,6 @@ export default function ReceiveScreen() {
         )}
 
         {footer ? <KeyboardStickyView>{footer}</KeyboardStickyView> : null}
-
-        <Modal
-          visible={receiveDoneOpen}
-          animationType="fade"
-          transparent
-          onRequestClose={() => {
-            setReceiveDoneOpen(false);
-            router.replace("/home");
-          }}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
-              <Text style={[styles.modalTitle, { color: C.text }]}>{t(locale, "receive.successTitle")}</Text>
-              <Text style={[styles.help, { marginBottom: theme.space.lg }]}>
-                {t(locale, "receive.success")}
-              </Text>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.primaryBtn,
-                  { minHeight: M },
-                  pressed && styles.pressed,
-                ]}
-                onPress={() => {
-                  setReceiveDoneOpen(false);
-                  router.replace("/home");
-                }}
-                accessibilityLabel={t(locale, "common.close")}
-              >
-                <Text style={styles.primaryBtnText}>{t(locale, "common.close")}</Text>
-              </Pressable>
-            </View>
-          </View>
-        </Modal>
 
         <Modal
           visible={vehicleBrandModalOpen}

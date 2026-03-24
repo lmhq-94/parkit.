@@ -3,6 +3,7 @@ import { UsersService } from "./users.service";
 import { ClientsService } from "../clients/clients.service";
 import { parseQueryParamArray } from "../../shared/utils/queryParser";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
+import type { CreateUserInput } from "../../shared/validators";
 
 export class UsersController {
   static async getProfile(req: Request, res: Response) {
@@ -78,10 +79,8 @@ export class UsersController {
   static async create(req: Request, res: Response) {
     try {
       const companyId = req.user.companyId!;
-      const user = await UsersService.create(
-        companyId,
-        req.body
-      );
+      const body = req.body as CreateUserInput;
+      const user = await UsersService.create(companyId, body);
 
       // Don't expose invitation token or password hash in API response
       const {

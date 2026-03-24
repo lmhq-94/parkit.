@@ -213,10 +213,6 @@ function AcceptInviteForm() {
                 {req.hasNumber ? <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> : <Circle className="w-3.5 h-3.5 text-text-muted/60 shrink-0" />}
                 {t("auth.passwordReqNumber")}
               </li>
-              <li className="flex items-center gap-2">
-                {req.hasSpecialChar ? <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> : <Circle className="w-3.5 h-3.5 text-text-muted/60 shrink-0" />}
-                {t("auth.passwordReqSpecial")}
-              </li>
             </ul>
           </div>
 

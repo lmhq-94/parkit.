@@ -21,10 +21,13 @@ const translations: Record<Locale, Record<string, string>> = {
     "login.submit": "INICIAR SESIÓN",
     "login.footer": "Acceso restringido. Solo personal. ",
     "login.contactSupport": "Contactar soporte",
-    "login.accountInactive": "Tu cuenta está desactivada. Contacta al administrador.",
+    "login.accountInactive":
+      "Tu cuenta está desactivada. Contacta al administrador.",
     "forgot.headline": "¿Olvidaste tu contraseña?",
-    "forgot.description": "Ingresa tu correo y te enviaremos un enlace para restablecerla (revisa también spam). Abre el enlace en el navegador para elegir una nueva contraseña.",
-    "forgot.sent": "Si existe una cuenta para {{email}}, recibirás un correo con el enlace.",
+    "forgot.description":
+      "Ingresa tu correo y te enviaremos un enlace para restablecerla (revisa también spam). Abre el enlace en el navegador para elegir una nueva contraseña.",
+    "forgot.sent":
+      "Si existe una cuenta para {{email}}, recibirás un correo con el enlace.",
     "forgot.placeholderEmail": "ejemplo@correo.com",
     "forgot.sendLink": "Enviar enlace",
     "forgot.backToLogin": "Volver a iniciar sesión",
@@ -49,7 +52,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "signup.placeholderLicenseExpiry": "YYYY-MM-DD",
     "signup.submit": "REGISTRARSE",
     "settings.title": "Ajustes",
-    "settings.intro": "Personaliza la apariencia y el idioma. Los cambios se guardan en este dispositivo.",
+    "settings.intro":
+      "Personaliza la apariencia y el idioma. Los cambios se guardan en este dispositivo.",
     "settings.themeSection": "Tema",
     "settings.themeSystem": "Según el sistema",
     "settings.themeLight": "Claro",
@@ -58,8 +62,10 @@ const translations: Record<Locale, Record<string, string>> = {
     "settings.themeSystemHintDark": "Ahora el sistema está en modo oscuro.",
     "settings.languageSection": "Idioma",
     "settings.language": "Idioma",
-    "settings.helpHint": "Elige el idioma de la aplicación. Los cambios se guardan solos.",
+    "settings.helpHint":
+      "Elige el idioma de la aplicación. Los cambios se guardan solos.",
     "common.back": "Volver",
+    "common.close": "Cerrar",
     "settings.spanish": "Español",
     "settings.english": "English",
     "common.loading": "Cargando…",
@@ -75,10 +81,12 @@ const translations: Record<Locale, Record<string, string>> = {
     "tickets.settings": "Ajustes",
     "tickets.logout": "Cerrar sesión",
     "tickets.logoutConfirmTitle": "¿Salir de la aplicación?",
-    "tickets.logoutConfirmMessage": "Tendrás que volver a iniciar sesión con tu correo y contraseña.",
+    "tickets.logoutConfirmMessage":
+      "Tendrás que volver a iniciar sesión con tu correo y contraseña.",
     "tickets.loading": "Cargando la lista…",
     "tickets.emptyTitle": "No hay vehículos en este momento",
-    "tickets.emptyHint": "Cuando te asignen uno, aparecerá aquí. Puedes deslizar hacia abajo para comprobar si hay novedades.",
+    "tickets.emptyHint":
+      "Cuando te asignen uno, aparecerá aquí. Puedes deslizar hacia abajo para comprobar si hay novedades.",
     "tickets.locationLabel": "Ubicación",
     "tickets.ticketCodeLabel": "Tiquete",
     "tickets.keyCodeLabel": "Llaves",
@@ -93,30 +101,39 @@ const translations: Record<Locale, Record<string, string>> = {
     "tickets.actionComplete": "Ya entregué el coche",
     "tickets.completedLine": "Este servicio está terminado.",
     "tickets.confirmStartTitle": "¿Confirmas que vas a recoger el coche?",
-    "tickets.confirmStartMessage": "Pulsa «Sí» cuando empieces a ir hacia el vehículo.",
+    "tickets.confirmStartMessage":
+      "Pulsa «Sí» cuando empieces a ir hacia el vehículo.",
     "tickets.confirmCompleteTitle": "¿Confirmas que ya entregaste el coche?",
-    "tickets.confirmCompleteMessage": "Solo pulsa «Sí» cuando el cliente ya tenga el vehículo.",
+    "tickets.confirmCompleteMessage":
+      "Solo pulsa «Sí» cuando el cliente ya tenga el vehículo.",
     "tickets.yesContinue": "Sí, continuar",
     "tickets.successInTransit": "Listo. Indica que vas en camino.",
     "tickets.successDelivered": "Perfecto. Quedó marcado como entregado.",
-    "tickets.errorUpdate": "No se pudo actualizar. Comprueba la conexión e inténtalo de nuevo.",
+    "tickets.errorUpdate":
+      "No se pudo actualizar. Comprueba la conexión e inténtalo de nuevo.",
     "tickets.titleDriver": "Mis asignaciones",
-    "tickets.subtitleDriver": "Vehículos que te asignan para conducir o entregar. Desliza hacia abajo para actualizar.",
+    "tickets.subtitleDriver":
+      "Vehículos que te asignan para conducir o entregar. Desliza hacia abajo para actualizar.",
     "tickets.emptyDriver": "Nada asignado aún",
-    "tickets.emptyHintDriver": "Cuando un recepcionista te asigne un vehículo, lo verás aquí.",
+    "tickets.emptyHintDriver":
+      "Cuando un recepcionista te asigne un vehículo, lo verás aquí.",
     "tickets.titleReception": "Recepción",
-    "tickets.subtitleReception": "Recibe y valida vehículos. Solicita la devolución cuando el cliente pida su coche.",
+    "tickets.subtitleReception":
+      "Recibe y valida vehículos. Solicita la devolución cuando el cliente pida su coche.",
     "tickets.emptyReception": "No hay vehículos en tu cola",
-    "tickets.emptyHintReception": "Los vehículos que te asignen como recepcionista aparecerán aquí.",
+    "tickets.emptyHintReception":
+      "Los vehículos que te asignen como recepcionista aparecerán aquí.",
     "tickets.ticketStatusParked": "En parqueo",
     "tickets.ticketStatusRequested": "Devolución solicitada",
     "tickets.ticketStatusOther": "En proceso",
     "tickets.actionRequestReturn": "Solicitar devolución al cliente",
     "tickets.confirmRequestReturnTitle": "¿Solicitar devolución?",
-    "tickets.confirmRequestReturnMessage": "El cliente podrá pedir que le lleven el vehículo. Solo pulsa «Sí» si es el momento adecuado.",
+    "tickets.confirmRequestReturnMessage":
+      "El cliente podrá pedir que le lleven el vehículo. Solo pulsa «Sí» si es el momento adecuado.",
     "tickets.successRequested": "Listo. Quedó solicitada la devolución.",
     "tickets.roleHintDriver": "Solo ves lo que te asignan para manejar.",
-    "tickets.roleHintReception": "Modo recepción: valida y coordina la devolución.",
+    "tickets.roleHintReception":
+      "Modo recepción: valida y coordina la devolución.",
     "tickets.summaryTotal": "En cola",
     "tickets.summaryRequested": "Solicitados",
     "tickets.summaryParked": "Parqueados",
@@ -124,8 +141,10 @@ const translations: Record<Locale, Record<string, string>> = {
     "home.greeting": "Hola, {{name}}",
     "home.titleDriver": "Conductor",
     "home.titleReception": "Recepción",
-    "home.bodyDriver": "Aquí empieza tu jornada. El siguiente paso es abrir la lista de vehículos que te asignan para conducir o entregar al cliente.",
-    "home.bodyReception": "Aquí empieza tu jornada. El siguiente paso es abrir la lista de vehículos que debes recibir en el parqueo y gestionar la devolución.",
+    "home.bodyDriver":
+      "Aquí empieza tu jornada. El siguiente paso es abrir la lista de vehículos que te asignan para conducir o entregar al cliente.",
+    "home.bodyReception":
+      "Aquí empieza tu jornada. El siguiente paso es abrir la lista de vehículos que debes recibir en el parqueo y gestionar la devolución.",
     "home.primaryCta": "Abrir mi lista de trabajo",
     "home.settings": "Ajustes",
     "home.roleBadgeDriver": "Tu función: conductor",
@@ -152,14 +171,17 @@ const translations: Record<Locale, Record<string, string>> = {
     "home.statusAway": "Ausente",
     "home.statusSyncing": "Estado",
     "profile.title": "Mi perfil",
-    "profile.intro": "Actualiza tu nombre, contacto, función (recepción o conducción) y foto. La imagen se muestra en el inicio si la guardas.",
+    "profile.intro":
+      "Actualiza tu nombre, contacto, función (recepción o conducción) y foto. La imagen se muestra en el inicio si la guardas.",
     "profile.changePhoto": "Cambiar foto",
     "profile.photoFromLibrary": "Galería",
     "profile.photoFromCamera": "Cámara",
-    "profile.photoCameraDenied": "Necesitamos acceso a la cámara para tomar la foto. Actívalo en ajustes.",
+    "profile.photoCameraDenied":
+      "Necesitamos acceso a la cámara para tomar la foto. Actívalo en ajustes.",
     "profile.removePhoto": "Quitar foto",
     "profile.avatarHintNative": "Toca el avatar o elige galería o cámara.",
-    "profile.avatarHintWeb": "Toca el avatar o «Galería» para elegir una imagen.",
+    "profile.avatarHintWeb":
+      "Toca el avatar o «Galería» para elegir una imagen.",
     "profile.firstName": "Nombre",
     "profile.lastName": "Apellido",
     "profile.email": "Correo",
@@ -167,21 +189,26 @@ const translations: Record<Locale, Record<string, string>> = {
     "profile.save": "Guardar cambios",
     "profile.loadError": "No se pudo cargar el perfil.",
     "profile.saveSuccess": "Perfil actualizado.",
-    "profile.saveError": "No se pudo guardar. Revisa los datos e inténtalo de nuevo.",
+    "profile.saveError":
+      "No se pudo guardar. Revisa los datos e inténtalo de nuevo.",
     "profile.errorRequired": "Nombre, apellido y correo son obligatorios.",
     "profile.errorFirstNameRequired": "El nombre es obligatorio.",
     "profile.errorLastNameRequired": "El apellido es obligatorio.",
     "profile.errorEmailRequired": "El correo es obligatorio.",
     "profile.errorEmailInvalid": "Introduce un correo electrónico válido.",
-    "profile.errorPhoneInvalid": "Formato de teléfono no válido. Usa entre 10 y 15 dígitos (código de país incluido).",
-    "profile.errorNameLength": "Nombre y apellido deben tener al menos 2 caracteres.",
+    "profile.errorPhoneInvalid":
+      "Formato de teléfono no válido. Usa entre 10 y 15 dígitos (código de país incluido).",
+    "profile.errorNameLength":
+      "Nombre y apellido deben tener al menos 2 caracteres.",
     "profile.staffRoleLabel": "Función",
     "profile.staffRolePickerTitle": "Elegir función",
-    "profile.staffRoleSubReceptionist": "Recibir vehículos y coordinar devoluciones",
+    "profile.staffRoleSubReceptionist":
+      "Recibir vehículos y coordinar devoluciones",
     "profile.staffRoleSubDriver": "Conducir y entregar vehículos a clientes",
     "profile.licenseSectionDriver": "Licencia de conducir (opcional)",
     "profile.licenseTypesLabel": "Tipos de licencia",
-    "profile.licenseTypesHint": "Puedes elegir varios, igual que en el panel web.",
+    "profile.licenseTypesHint":
+      "Puedes elegir varios, igual que en el panel web.",
     "profile.licenseTypesPlaceholder": "Toca para elegir tipos",
     "profile.licenseTypesSummary": "{{count}} tipo(s) seleccionado(s)",
     "profile.licensePickerTitle": "Tipos de licencia",
@@ -189,19 +216,23 @@ const translations: Record<Locale, Record<string, string>> = {
     "profile.licenseExpiryHint": "Opcional. Elige la fecha de vencimiento.",
     "profile.licenseExpiryPlaceholder": "Sin fecha",
     "profile.licenseClearExpiry": "Quitar fecha",
-    "profile.photoPermissionDenied": "Sin permiso no podemos abrir la galería. Actívalo en ajustes del dispositivo.",
-    "profile.photoProcessError": "No se pudo procesar la imagen. Prueba con otra foto.",
+    "profile.photoPermissionDenied":
+      "Sin permiso no podemos abrir la galería. Actívalo en ajustes del dispositivo.",
+    "profile.photoProcessError":
+      "No se pudo procesar la imagen. Prueba con otra foto.",
     "profile.placeholderFirstName": "Tu nombre",
     "profile.placeholderLastName": "Tu apellido",
     "profile.placeholderEmail": "correo@ejemplo.com",
     "profile.placeholderPhone": "Opcional",
     "profile.placeholderPhoneIntl": "+1 234 567 8900",
-    "profile.phoneMaskHint": "Mismo formato que en la web: código de país y número (ej. +506 6216-4040).",
+    "profile.phoneMaskHint":
+      "Mismo formato que en la web: código de país y número (ej. +506 6216-4040).",
     "home.hello": "Hola,",
     "home.nearestTitle": "Parqueo más cercano",
     "home.nearestKm": "A ~{{km}} km de ti",
     "home.nearestDenied": "Activa la ubicación para ver distancias.",
-    "home.nearestNoCoords": "No hay parqueos con coordenadas para calcular distancia.",
+    "home.nearestNoCoords":
+      "No hay parqueos con coordenadas para calcular distancia.",
     "home.nearestLoading": "Calculando…",
     "home.nearestNoCompany": "Sin empresa vinculada aún.",
     "home.nearestCompany": "Empresa: {{name}}",
@@ -215,17 +246,25 @@ const translations: Record<Locale, Record<string, string>> = {
     "workflow.empty": "Aquí aún no hay contenido.",
     "workflow.subtitle": "Resumen del proceso en Parkit Valet.",
     "workflow.receptionTitle": "Recepción",
-    "workflow.reception1": "Recibe el vehículo: matrícula, datos y asignación de plaza.",
-    "workflow.reception2": "Gestiona reservas con el código que trae el cliente.",
+    "workflow.reception1":
+      "Recibe el vehículo: matrícula, datos y asignación de plaza.",
+    "workflow.reception2":
+      "Gestiona reservas con el código que trae el cliente.",
     "workflow.receptionCondition":
       "Antes de asignar al conductor valet, registra el estado del vehículo con fotos y una nota opcional (queda guardado en el ticket).",
-    "workflow.reception3": "Cuando el cliente pide el coche, abre «Solicitar devolución» y coordina con conductor o entrega.",
-    "workflow.reception4": "Cierra el ticket cuando el vehículo haya salido o la operación se cancele según protocolo.",
+    "workflow.reception3":
+      "Cuando el cliente pide el coche, abre «Solicitar devolución» y coordina con conductor o entrega.",
+    "workflow.reception4":
+      "Cierra el ticket cuando el vehículo haya salido o la operación se cancele según protocolo.",
     "workflow.driverTitle": "Conductor",
-    "workflow.driver1": "Abre la cola de trabajo y revisa las asignaciones que te correspondan.",
-    "workflow.driver2": "Actualiza el estado del servicio (traslado, en entrega, etc.) según lo vayas completando.",
-    "workflow.driver3": "Coordina con recepción si hay dudas de plaza o cliente.",
-    "workflow.driver4": "Marca el trabajo como completado cuando el cliente reciba el vehículo.",
+    "workflow.driver1":
+      "Abre la cola de trabajo y revisa las asignaciones que te correspondan.",
+    "workflow.driver2":
+      "Actualiza el estado del servicio (traslado, en entrega, etc.) según lo vayas completando.",
+    "workflow.driver3":
+      "Coordina con recepción si hay dudas de plaza o cliente.",
+    "workflow.driver4":
+      "Marca el trabajo como completado cuando el cliente reciba el vehículo.",
     "receive.title": "Recepción de vehículo",
     "receive.titleReservation": "Reservación",
     "receive.reservationIntro":
@@ -243,8 +282,10 @@ const translations: Record<Locale, Record<string, string>> = {
       "Escanea el QR de la reserva; los datos del cliente y el vehículo se cargan solos.",
     "receive.reservationQrManual": "ID de reserva (manual)",
     "receive.qrNext": "Siguiente",
-    "receive.qrWebHint": "En web no hay cámara para QR: usa el campo de ID manual y Validar.",
-    "receive.qrPermissionExplain": "Necesitamos acceso a la cámara para leer el código QR de la reserva.",
+    "receive.qrWebHint":
+      "En web no hay cámara para QR: usa el campo de ID manual y Validar.",
+    "receive.qrPermissionExplain":
+      "Necesitamos acceso a la cámara para leer el código QR de la reserva.",
     "receive.qrPermissionTitle": "Permiso de cámara",
     "receive.qrPremiumKicker": "Cliente con reserva",
     "receive.qrPremiumTitle": "Escanear QR de reserva",
@@ -256,7 +297,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.parkingSectionStep3": "2. Parqueo",
     "receive.stepPlateReservation": "(Reserva) datos desde QR",
     "receive.stepPlateWalkIn": "2. Matrícula",
-    "receive.errorParkingFirst": "Selecciona primero el parqueo para validar la reserva.",
+    "receive.errorParkingFirst":
+      "Selecciona primero el parqueo para validar la reserva.",
     "receive.stepPlate": "1. Matrícula",
     "receive.placeholderPlate": "Ej. ABC-123",
     "receive.lookup": "Buscar placa",
@@ -269,13 +311,15 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.wizardCardTitle": "Verificación de Tarjeta",
     "receive.wizardCardHelp":
       "Ofrece una experiencia más profesional iniciando la verificación de tarjeta con Stripe. Este paso es opcional por ahora.",
-    "receive.wizardCardAck": "Confirmo que seguimos con el proceso de tarjeta acordado con el cliente",
+    "receive.wizardCardAck":
+      "Confirmo que seguimos con el proceso de tarjeta acordado con el cliente",
     "receive.cardVerifyStart": "Verificar tarjeta con Stripe",
     "receive.cardVerifyOptionalHint":
       "Sugerido para una recepción premium. Si lo prefieres, puedes continuar sin verificar tarjeta.",
     "receive.cardVerifyStartedHint":
       "Stripe ya está abierto para completar la verificación de forma segura. Cuando termines, regresa para seguir con el check-in.",
-    "receive.cardVerifyStarted": "Se abrió Stripe para verificación de tarjeta.",
+    "receive.cardVerifyStarted":
+      "Se abrió Stripe para verificación de tarjeta.",
     "receive.cardVerifyError": "No se pudo iniciar la verificación de tarjeta.",
     "receive.wizardQrTitle": "Reserva",
     "receive.wizardQrHelp":
@@ -286,12 +330,12 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.wizardDriverHelp":
       "Nombre, apellidos y correo son obligatorios. El teléfono es opcional.",
     "receive.wizardVehicleTitle": "Datos del vehículo",
-    "receive.wizardVehicleHelp":
-      "Marca, modelo y año son obligatorios.",
+    "receive.wizardVehicleHelp": "Marca, modelo y año son obligatorios.",
     "receive.wizardTicketTitle": "Código del tiquete",
     "receive.wizardTicketHelp":
       "Escribe el código del tiquete y el de las llaves. Suele ser el mismo: un solo campo rellena ambos; si no, puedes editar el de llaves aparte.",
-    "receive.wizardTicketAck": "He entregado o explicado los códigos del tiquete al cliente",
+    "receive.wizardTicketAck":
+      "He entregado o explicado los códigos del tiquete al cliente",
     "receive.ticketCodeFieldLabel": "Código (tiquete y llaves)",
     "receive.ticketCodeOnlyLabel": "Código del tiquete",
     "receive.keyCodeFieldLabel": "Código de llaves",
@@ -299,7 +343,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.placeholderKeyCode": "Código de llaves / mostrador",
     "receive.ticketKeySeparateToggle": "Usar código distinto para las llaves",
     "receive.ticketKeySameToggle": "Mismo código para tiquete y llaves",
-    "receive.errorTicketCodesRequired": "Escribe al menos 2 caracteres en cada código requerido.",
+    "receive.errorTicketCodesRequired":
+      "Escribe al menos 2 caracteres en cada código requerido.",
     "receive.errorTicketCodesFormat":
       "Solo se permiten letras, números, guiones y guiones bajos (sin espacios).",
     "receive.wizardParkingTitle": "Parqueo",
@@ -344,16 +389,20 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.damageGalleryA11y": "Elegir foto de la galería",
     "receive.damageRemovePhotoA11y": "Eliminar esta foto",
     "receive.damageNoteLabel": "Descripción u observaciones",
-    "receive.damageNoteOptional": "Opcional. Ej. rayones, abolladuras o detalles que el cliente deba conocer.",
-    "receive.damageNotePlaceholder": "Ej. roce leve en parachoques trasero derecho…",
+    "receive.damageNoteOptional":
+      "Opcional. Ej. rayones, abolladuras o detalles que el cliente deba conocer.",
+    "receive.damageNotePlaceholder":
+      "Ej. roce leve en parachoques trasero derecho…",
     "receive.damageContinueA11y": "Siguiente: asignar conductor valet",
     "receive.wizardParkingEmpty": "No hay parqueos disponibles en la lista.",
     "receive.foundVehicle": "Vehículo en sistema",
     "receive.foundOwner": "Conductor registrado",
     "receive.foundOwnerEmail": "Correo",
-    "receive.noOwnerHint": "Hay placa pero sin titular vinculado: completa los datos del conductor.",
+    "receive.noOwnerHint":
+      "Hay placa pero sin titular vinculado: completa los datos del conductor.",
     "receive.newVehicleTitle": "Vehículo nuevo",
-    "receive.newVehicleHint": "No encontramos esta placa. Registra conductor y datos del auto.",
+    "receive.newVehicleHint":
+      "No encontramos esta placa. Registra conductor y datos del auto.",
     "receive.driverSection": "Conductor",
     "receive.vehicleSection": "Vehículo",
     "receive.placeholderFirst": "Nombre",
@@ -366,15 +415,19 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.placeholderYear": "Año",
     "receive.manualEntry": "Ingresar manualmente",
     "receive.brandPickerEmpty": "No hay marcas disponibles en la lista.",
-    "receive.modelPickerEmpty": "No hay modelos disponibles para la marca seleccionada.",
+    "receive.modelPickerEmpty":
+      "No hay modelos disponibles para la marca seleccionada.",
     "receive.colorPickerEmpty": "No hay colores disponibles en la lista.",
     "receive.noColorOption": "Sin color",
-    "receive.vehicleDimensionsAuto": "Las dimensiones del vehículo son cargadas automáticamente desde catálogo.",
+    "receive.vehicleDimensionsAuto":
+      "Las dimensiones del vehículo son cargadas automáticamente desde catálogo.",
     "receive.benefitSection": "Reserva / beneficio valet",
-    "receive.benefitHelp": "Opcional: pega el ID de la reserva para validar horas de cortesía en el parqueo.",
+    "receive.benefitHelp":
+      "Opcional: pega el ID de la reserva para validar horas de cortesía en el parqueo.",
     "receive.placeholderBooking": "ID de reserva",
     "receive.validate": "Validar",
-    "receive.benefitOk": "Reserva válida. Cortesía aprox.: {{hours}} h (según parqueo).",
+    "receive.benefitOk":
+      "Reserva válida. Cortesía aprox.: {{hours}} h (según parqueo).",
     "receive.benefitInvalidEyebrow": "Validación",
     "receive.benefitInvalidTitle": "Sin reserva activa",
     "receive.benefitInvalid":
@@ -383,27 +436,38 @@ const translations: Record<Locale, Record<string, string>> = {
       "Pide al huésped el QR actualizado, mejora la luz o acerca el código y vuelve a escanear.",
     "receive.parkingSection": "Parqueo",
     "receive.driverValetSection": "Conductor valet",
-    "receive.driverValetHelp": "Asigna quién estacionará el vehículo (opcional).",
+    "receive.driverValetHelp":
+      "Asigna quién estacionará el vehículo (opcional).",
     "receive.noDriver": "Sin asignar aún",
     "receive.submit": "Crear tiquete",
-    "receive.success": "Ticket creado con éxito.",
+    "receive.success":
+      "Tiquete creado con éxito. El conductor recibirá una notificación y continuará con el proceso.",
     "receive.successTitle": "Recepción completada",
     "receive.errorPlate": "Indica una matrícula válida.",
-    "receive.errorDriver": "Nombre, apellido y correo del conductor son obligatorios.",
-    "receive.errorContext": "Falta empresa, parqueo o perfil valet. Comprueba tu sesión.",
-    "receive.errorDriverValetRequired": "Debes asignar un conductor valet para crear el tiquete.",
-    "receive.errorBookingPlate": "La reserva no coincide con la matrícula indicada.",
-    "receive.errorBookingCompany": "No pudimos validar la reserva con el parqueo seleccionado. Revisa el ID o el parqueo.",
+    "receive.errorDriver":
+      "Nombre, apellido y correo del conductor son obligatorios.",
+    "receive.errorContext":
+      "Falta empresa, parqueo o perfil valet. Comprueba tu sesión.",
+    "receive.errorDriverValetRequired":
+      "Debes asignar un conductor valet para crear el tiquete.",
+    "receive.errorBookingPlate":
+      "La reserva no coincide con la matrícula indicada.",
+    "receive.errorBookingCompany":
+      "No pudimos validar la reserva con el parqueo seleccionado. Revisa el ID o el parqueo.",
     "receive.errorSubmit": "No se pudo crear el ticket.",
-    "receive.warnNoCompany": "No tenemos una empresa asociada aún. Trabaja en una ubicación donde ya tengas asignaciones o pide a un administrador que vincule tu cuenta.",
+    "receive.warnNoCompany":
+      "No tenemos una empresa asociada aún. Trabaja en una ubicación donde ya tengas asignaciones o pide a un administrador que vincule tu cuenta.",
     "receive.driverBlockedTitle": "Modo conductor",
-    "receive.driverBlockedBody": "La recepción de vehículos la gestiona personal de recepción. Usa la cola de trabajo para tus entregas.",
+    "receive.driverBlockedBody":
+      "La recepción de vehículos la gestiona personal de recepción. Usa la cola de trabajo para tus entregas.",
     "returnPickup.title": "Devolución del vehículo",
-    "returnPickup.subtitle": "Busca el vehículo por código de ticket y solicita la devolución. Puedes asignar un conductor valet.",
+    "returnPickup.subtitle":
+      "Busca el vehículo por código de ticket y solicita la devolución. Puedes asignar un conductor valet.",
     "returnPickup.filterPlaceholder": "Buscar por código de ticket",
     "returnPickup.empty": "No hay vehículos en estado «en parqueo».",
     "returnPickup.assignDriver": "Conductor para la devolución",
-    "returnPickup.assignHelp": "Opcional: asigna quién devolverá el vehículo al cliente.",
+    "returnPickup.assignHelp":
+      "Opcional: asigna quién devolverá el vehículo al cliente.",
     "returnPickup.cta": "Solicitar devolución",
     "returnPickup.success": "Devolución solicitada.",
     "returnPickup.selectTicket": "Selecciona un ticket de la lista.",
@@ -426,10 +490,13 @@ const translations: Record<Locale, Record<string, string>> = {
     "login.submit": "LOGIN",
     "login.footer": "Restricted access. Staff only. ",
     "login.contactSupport": "Contact support",
-    "login.accountInactive": "Your account is inactive. Contact your administrator.",
+    "login.accountInactive":
+      "Your account is inactive. Contact your administrator.",
     "forgot.headline": "Forgot your password?",
-    "forgot.description": "Enter your email and we'll send you a reset link (check spam too). Open the link in your browser to choose a new password.",
-    "forgot.sent": "If an account exists for {{email}}, you'll receive an email with the link.",
+    "forgot.description":
+      "Enter your email and we'll send you a reset link (check spam too). Open the link in your browser to choose a new password.",
+    "forgot.sent":
+      "If an account exists for {{email}}, you'll receive an email with the link.",
     "forgot.placeholderEmail": "example@email.com",
     "forgot.sendLink": "Send reset link",
     "forgot.backToLogin": "Back to sign in",
@@ -454,7 +521,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "signup.placeholderLicenseExpiry": "YYYY-MM-DD",
     "signup.submit": "SIGN UP",
     "settings.title": "Settings",
-    "settings.intro": "Customize appearance and language. Changes are saved on this device.",
+    "settings.intro":
+      "Customize appearance and language. Changes are saved on this device.",
     "settings.themeSection": "Theme",
     "settings.themeSystem": "System default",
     "settings.themeLight": "Light",
@@ -463,8 +531,10 @@ const translations: Record<Locale, Record<string, string>> = {
     "settings.themeSystemHintDark": "The system is currently in dark mode.",
     "settings.languageSection": "Language",
     "settings.language": "Language",
-    "settings.helpHint": "Choose the app language. Changes are saved automatically.",
+    "settings.helpHint":
+      "Choose the app language. Changes are saved automatically.",
     "common.back": "Back",
+    "common.close": "Close",
     "settings.spanish": "Español",
     "settings.english": "English",
     "common.loading": "Loading…",
@@ -480,10 +550,12 @@ const translations: Record<Locale, Record<string, string>> = {
     "tickets.settings": "Settings",
     "tickets.logout": "Log out",
     "tickets.logoutConfirmTitle": "Leave the app?",
-    "tickets.logoutConfirmMessage": "You will need to sign in again with your email and password.",
+    "tickets.logoutConfirmMessage":
+      "You will need to sign in again with your email and password.",
     "tickets.loading": "Loading your list…",
     "tickets.emptyTitle": "No vehicles right now",
-    "tickets.emptyHint": "When one is assigned to you, it will show up here. Pull down to check for updates.",
+    "tickets.emptyHint":
+      "When one is assigned to you, it will show up here. Pull down to check for updates.",
     "tickets.locationLabel": "Location",
     "tickets.ticketCodeLabel": "Ticket",
     "tickets.keyCodeLabel": "Keys",
@@ -498,30 +570,39 @@ const translations: Record<Locale, Record<string, string>> = {
     "tickets.actionComplete": "I handed over the car",
     "tickets.completedLine": "This job is finished.",
     "tickets.confirmStartTitle": "Confirm you're going to pick up the car?",
-    "tickets.confirmStartMessage": "Tap Yes when you start heading to the vehicle.",
+    "tickets.confirmStartMessage":
+      "Tap Yes when you start heading to the vehicle.",
     "tickets.confirmCompleteTitle": "Confirm you already delivered the car?",
-    "tickets.confirmCompleteMessage": "Only tap Yes when the customer has the vehicle.",
+    "tickets.confirmCompleteMessage":
+      "Only tap Yes when the customer has the vehicle.",
     "tickets.yesContinue": "Yes, continue",
     "tickets.successInTransit": "Done. You're marked as on the way.",
     "tickets.successDelivered": "Great. Marked as delivered.",
-    "tickets.errorUpdate": "Could not update. Check your connection and try again.",
+    "tickets.errorUpdate":
+      "Could not update. Check your connection and try again.",
     "tickets.titleDriver": "My assignments",
-    "tickets.subtitleDriver": "Vehicles assigned to you to drive or hand over. Pull down to refresh.",
+    "tickets.subtitleDriver":
+      "Vehicles assigned to you to drive or hand over. Pull down to refresh.",
     "tickets.emptyDriver": "Nothing assigned yet",
-    "tickets.emptyHintDriver": "When a receptionist assigns you a vehicle, it will appear here.",
+    "tickets.emptyHintDriver":
+      "When a receptionist assigns you a vehicle, it will appear here.",
     "tickets.titleReception": "Reception",
-    "tickets.subtitleReception": "Receive and verify vehicles. Request customer pickup when they ask for their car.",
+    "tickets.subtitleReception":
+      "Receive and verify vehicles. Request customer pickup when they ask for their car.",
     "tickets.emptyReception": "No vehicles in your queue",
-    "tickets.emptyHintReception": "Vehicles assigned to you as reception will show up here.",
+    "tickets.emptyHintReception":
+      "Vehicles assigned to you as reception will show up here.",
     "tickets.ticketStatusParked": "Parked",
     "tickets.ticketStatusRequested": "Return requested",
     "tickets.ticketStatusOther": "In progress",
     "tickets.actionRequestReturn": "Request return for customer",
     "tickets.confirmRequestReturnTitle": "Request return?",
-    "tickets.confirmRequestReturnMessage": "The customer can then ask for their vehicle. Tap Yes only when it is appropriate.",
+    "tickets.confirmRequestReturnMessage":
+      "The customer can then ask for their vehicle. Tap Yes only when it is appropriate.",
     "tickets.successRequested": "Done. Return has been requested.",
     "tickets.roleHintDriver": "You only see what you are assigned to drive.",
-    "tickets.roleHintReception": "Reception mode: verify and coordinate vehicle return.",
+    "tickets.roleHintReception":
+      "Reception mode: verify and coordinate vehicle return.",
     "tickets.summaryTotal": "In queue",
     "tickets.summaryRequested": "Requested",
     "tickets.summaryParked": "Parked",
@@ -529,8 +610,10 @@ const translations: Record<Locale, Record<string, string>> = {
     "home.greeting": "Hello, {{name}}",
     "home.titleDriver": "Driver",
     "home.titleReception": "Reception",
-    "home.bodyDriver": "Start here. Next, open the list of vehicles assigned to you to drive or hand over to the customer.",
-    "home.bodyReception": "Start here. Next, open the list of vehicles you receive at the parking area and manage returns.",
+    "home.bodyDriver":
+      "Start here. Next, open the list of vehicles assigned to you to drive or hand over to the customer.",
+    "home.bodyReception":
+      "Start here. Next, open the list of vehicles you receive at the parking area and manage returns.",
     "home.primaryCta": "Open my work list",
     "home.settings": "Settings",
     "home.roleBadgeDriver": "Your role: driver",
@@ -557,14 +640,17 @@ const translations: Record<Locale, Record<string, string>> = {
     "home.statusAway": "Away",
     "home.statusSyncing": "Status",
     "profile.title": "My profile",
-    "profile.intro": "Update your name, contact, role (reception or driving) and photo. The picture shows on home after you save.",
+    "profile.intro":
+      "Update your name, contact, role (reception or driving) and photo. The picture shows on home after you save.",
     "profile.changePhoto": "Change photo",
     "profile.photoFromLibrary": "Photo library",
     "profile.photoFromCamera": "Camera",
-    "profile.photoCameraDenied": "Camera access is needed to take a photo. Enable it in settings.",
+    "profile.photoCameraDenied":
+      "Camera access is needed to take a photo. Enable it in settings.",
     "profile.removePhoto": "Remove photo",
     "profile.avatarHintNative": "Tap the avatar or choose gallery or camera.",
-    "profile.avatarHintWeb": "Tap the avatar or “Photo library” to pick an image.",
+    "profile.avatarHintWeb":
+      "Tap the avatar or “Photo library” to pick an image.",
     "profile.firstName": "First name",
     "profile.lastName": "Last name",
     "profile.email": "Email",
@@ -578,15 +664,19 @@ const translations: Record<Locale, Record<string, string>> = {
     "profile.errorLastNameRequired": "Last name is required.",
     "profile.errorEmailRequired": "Email is required.",
     "profile.errorEmailInvalid": "Enter a valid email address.",
-    "profile.errorPhoneInvalid": "Invalid phone format. Use 10–15 digits including country code.",
-    "profile.errorNameLength": "First and last name must be at least 2 characters.",
+    "profile.errorPhoneInvalid":
+      "Invalid phone format. Use 10–15 digits including country code.",
+    "profile.errorNameLength":
+      "First and last name must be at least 2 characters.",
     "profile.staffRoleLabel": "Role",
     "profile.staffRolePickerTitle": "Choose role",
-    "profile.staffRoleSubReceptionist": "Receive vehicles and coordinate returns",
+    "profile.staffRoleSubReceptionist":
+      "Receive vehicles and coordinate returns",
     "profile.staffRoleSubDriver": "Drive and deliver vehicles to customers",
     "profile.licenseSectionDriver": "Driver license (optional)",
     "profile.licenseTypesLabel": "License types",
-    "profile.licenseTypesHint": "You can select multiple, same as the web dashboard.",
+    "profile.licenseTypesHint":
+      "You can select multiple, same as the web dashboard.",
     "profile.licenseTypesPlaceholder": "Tap to choose types",
     "profile.licenseTypesSummary": "{{count}} type(s) selected",
     "profile.licensePickerTitle": "License types",
@@ -594,14 +684,17 @@ const translations: Record<Locale, Record<string, string>> = {
     "profile.licenseExpiryHint": "Optional. Pick the expiry date.",
     "profile.licenseExpiryPlaceholder": "No date",
     "profile.licenseClearExpiry": "Clear date",
-    "profile.photoPermissionDenied": "We need gallery access to pick a photo. Enable it in device settings.",
-    "profile.photoProcessError": "Could not process the image. Try another photo.",
+    "profile.photoPermissionDenied":
+      "We need gallery access to pick a photo. Enable it in device settings.",
+    "profile.photoProcessError":
+      "Could not process the image. Try another photo.",
     "profile.placeholderFirstName": "Your first name",
     "profile.placeholderLastName": "Your last name",
     "profile.placeholderEmail": "you@example.com",
     "profile.placeholderPhone": "Optional",
     "profile.placeholderPhoneIntl": "+1 234 567 8900",
-    "profile.phoneMaskHint": "Same format as the web: country code and number (e.g. +506 6216-4040).",
+    "profile.phoneMaskHint":
+      "Same format as the web: country code and number (e.g. +506 6216-4040).",
     "home.hello": "Hi,",
     "home.nearestTitle": "Nearest parking",
     "home.nearestKm": "~{{km}} km away",
@@ -620,17 +713,25 @@ const translations: Record<Locale, Record<string, string>> = {
     "workflow.empty": "Nothing here yet.",
     "workflow.subtitle": "Overview of the Parkit Valet process.",
     "workflow.receptionTitle": "Reception",
-    "workflow.reception1": "Check in the vehicle: plate, details, and slot assignment.",
-    "workflow.reception2": "Handle bookings using the guest’s reservation code.",
+    "workflow.reception1":
+      "Check in the vehicle: plate, details, and slot assignment.",
+    "workflow.reception2":
+      "Handle bookings using the guest’s reservation code.",
     "workflow.receptionCondition":
       "Before assigning the valet driver, capture the vehicle’s condition with photos and an optional note (stored on the ticket).",
-    "workflow.reception3": "When the guest requests the car, use «Request return» and coordinate with the driver or handover.",
-    "workflow.reception4": "Close the ticket once the vehicle has left or the operation is cancelled per protocol.",
+    "workflow.reception3":
+      "When the guest requests the car, use «Request return» and coordinate with the driver or handover.",
+    "workflow.reception4":
+      "Close the ticket once the vehicle has left or the operation is cancelled per protocol.",
     "workflow.driverTitle": "Driver",
-    "workflow.driver1": "Open the work queue and review assignments addressed to you.",
-    "workflow.driver2": "Update service status (in transit, handover, etc.) as you progress.",
-    "workflow.driver3": "Coordinate with reception if there are questions about the slot or guest.",
-    "workflow.driver4": "Mark the job complete when the guest has received the vehicle.",
+    "workflow.driver1":
+      "Open the work queue and review assignments addressed to you.",
+    "workflow.driver2":
+      "Update service status (in transit, handover, etc.) as you progress.",
+    "workflow.driver3":
+      "Coordinate with reception if there are questions about the slot or guest.",
+    "workflow.driver4":
+      "Mark the job complete when the guest has received the vehicle.",
     "receive.title": "Vehicle check-in",
     "receive.titleReservation": "Booking",
     "receive.reservationIntro":
@@ -648,8 +749,10 @@ const translations: Record<Locale, Record<string, string>> = {
       "Scan the booking QR; guest and vehicle details load automatically.",
     "receive.reservationQrManual": "Booking ID (manual)",
     "receive.qrNext": "Next",
-    "receive.qrWebHint": "QR scanning isn’t available on web: use the manual ID field and Validate.",
-    "receive.qrPermissionExplain": "We need camera access to read the booking QR code.",
+    "receive.qrWebHint":
+      "QR scanning isn’t available on web: use the manual ID field and Validate.",
+    "receive.qrPermissionExplain":
+      "We need camera access to read the booking QR code.",
     "receive.qrPermissionTitle": "Camera permission",
     "receive.qrPremiumKicker": "Guest with booking",
     "receive.qrPremiumTitle": "Scan booking QR",
@@ -661,7 +764,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.parkingSectionStep3": "2. Parking",
     "receive.stepPlateReservation": "(Booking) data from QR",
     "receive.stepPlateWalkIn": "2. License plate",
-    "receive.errorParkingFirst": "Select a parking first to validate the booking.",
+    "receive.errorParkingFirst":
+      "Select a parking first to validate the booking.",
     "receive.stepPlate": "1. License plate",
     "receive.placeholderPlate": "e.g. ABC-123",
     "receive.lookup": "Look up plate",
@@ -674,7 +778,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.wizardCardTitle": "Card Verification",
     "receive.wizardCardHelp":
       "Deliver a more premium experience by starting Stripe card verification here. This step is optional for now.",
-    "receive.wizardCardAck": "I confirm we are proceeding with the agreed card step with the customer",
+    "receive.wizardCardAck":
+      "I confirm we are proceeding with the agreed card step with the customer",
     "receive.cardVerifyStart": "Verify card with Stripe",
     "receive.cardVerifyOptionalHint":
       "Recommended for a premium check-in flow. You can still tap Next without card verification.",
@@ -691,12 +796,12 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.wizardDriverHelp":
       "First name, last name and email are required. Phone is optional.",
     "receive.wizardVehicleTitle": "Vehicle details",
-    "receive.wizardVehicleHelp":
-      "Make, model and year are required.",
+    "receive.wizardVehicleHelp": "Make, model and year are required.",
     "receive.wizardTicketTitle": "Ticket codes",
     "receive.wizardTicketHelp":
       "Enter the ticket code and the key code. They are often the same: one field fills both; if not, you can enter a different key code.",
-    "receive.wizardTicketAck": "I have given or explained the ticket codes to the customer",
+    "receive.wizardTicketAck":
+      "I have given or explained the ticket codes to the customer",
     "receive.ticketCodeFieldLabel": "Code (ticket & keys)",
     "receive.ticketCodeOnlyLabel": "Ticket code",
     "receive.keyCodeFieldLabel": "Key code",
@@ -704,7 +809,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.placeholderKeyCode": "Key / counter code",
     "receive.ticketKeySeparateToggle": "Use a different code for keys",
     "receive.ticketKeySameToggle": "Same code for ticket and keys",
-    "receive.errorTicketCodesRequired": "Enter at least 2 characters for each required code.",
+    "receive.errorTicketCodesRequired":
+      "Enter at least 2 characters for each required code.",
     "receive.errorTicketCodesFormat":
       "Only letters, numbers, hyphens and underscores are allowed (no spaces).",
     "receive.wizardParkingTitle": "Parking",
@@ -744,21 +850,25 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.damageTakePhoto": "Camera",
     "receive.damageFromGallery": "Gallery",
     "receive.damagePhotoCount": "{{current}} / {{max}} photos",
-    "receive.damagePhotoLimit": "You can add up to {{max}} photos in this report.",
+    "receive.damagePhotoLimit":
+      "You can add up to {{max}} photos in this report.",
     "receive.damageCameraA11y": "Take vehicle photo",
     "receive.damageGalleryA11y": "Pick photo from gallery",
     "receive.damageRemovePhotoA11y": "Remove this photo",
     "receive.damageNoteLabel": "Description or notes",
-    "receive.damageNoteOptional": "Optional. E.g. scratches, dents, or details the guest should know.",
+    "receive.damageNoteOptional":
+      "Optional. E.g. scratches, dents, or details the guest should know.",
     "receive.damageNotePlaceholder": "E.g. light scuff on rear bumper…",
     "receive.damageContinueA11y": "Next: assign valet driver",
     "receive.wizardParkingEmpty": "No parkings are available in the list.",
     "receive.foundVehicle": "Vehicle on file",
     "receive.foundOwner": "Registered driver",
     "receive.foundOwnerEmail": "Email",
-    "receive.noOwnerHint": "Plate exists but no linked owner: complete driver details.",
+    "receive.noOwnerHint":
+      "Plate exists but no linked owner: complete driver details.",
     "receive.newVehicleTitle": "New vehicle",
-    "receive.newVehicleHint": "We could not find this plate. Register driver and vehicle details.",
+    "receive.newVehicleHint":
+      "We could not find this plate. Register driver and vehicle details.",
     "receive.driverSection": "Driver",
     "receive.vehicleSection": "Vehicle",
     "receive.placeholderFirst": "First name",
@@ -774,12 +884,15 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.modelPickerEmpty": "No models available for the selected brand.",
     "receive.colorPickerEmpty": "No colors available in the list.",
     "receive.noColorOption": "No color",
-    "receive.vehicleDimensionsAuto": "Vehicle dimensions loaded automatically from catalog.",
+    "receive.vehicleDimensionsAuto":
+      "Vehicle dimensions loaded automatically from catalog.",
     "receive.benefitSection": "Booking / valet benefit",
-    "receive.benefitHelp": "Optional: paste booking ID to validate complimentary hours at the parking.",
+    "receive.benefitHelp":
+      "Optional: paste booking ID to validate complimentary hours at the parking.",
     "receive.placeholderBooking": "Booking ID",
     "receive.validate": "Validate",
-    "receive.benefitOk": "Valid booking. Approx. courtesy: {{hours}} h (per parking rules).",
+    "receive.benefitOk":
+      "Valid booking. Approx. courtesy: {{hours}} h (per parking rules).",
     "receive.benefitInvalidEyebrow": "Verification",
     "receive.benefitInvalidTitle": "No active booking",
     "receive.benefitInvalid":
@@ -791,34 +904,51 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.driverValetHelp": "Assign who will park the vehicle (optional).",
     "receive.noDriver": "Unassigned for now",
     "receive.submit": "Create ticket",
-    "receive.success": "Ticket created successfully.",
+    "receive.success":
+      "Ticket created successfully. The driver will receive a notification and continue with the process.",
     "receive.successTitle": "Check-in completed",
     "receive.errorPlate": "Enter a valid plate.",
-    "receive.errorDriver": "Driver first name, last name and email are required.",
-    "receive.errorContext": "Missing company, parking or valet profile. Check your session.",
-    "receive.errorDriverValetRequired": "You must assign a valet driver before creating the ticket.",
-    "receive.errorBookingPlate": "The booking does not match the plate entered.",
-    "receive.errorBookingCompany": "We couldn't validate the booking with the selected parking. Check the ID or parking.",
+    "receive.errorDriver":
+      "Driver first name, last name and email are required.",
+    "receive.errorContext":
+      "Missing company, parking or valet profile. Check your session.",
+    "receive.errorDriverValetRequired":
+      "You must assign a valet driver before creating the ticket.",
+    "receive.errorBookingPlate":
+      "The booking does not match the plate entered.",
+    "receive.errorBookingCompany":
+      "We couldn't validate the booking with the selected parking. Check the ID or parking.",
     "receive.errorSubmit": "Could not create the ticket.",
-    "receive.warnNoCompany": "No company is linked yet. Work at a site where you already have assignments, or ask an admin to link your account.",
+    "receive.warnNoCompany":
+      "No company is linked yet. Work at a site where you already have assignments, or ask an admin to link your account.",
     "receive.driverBlockedTitle": "Driver mode",
-    "receive.driverBlockedBody": "Vehicle intake is handled by reception staff. Use the work queue for your deliveries.",
+    "receive.driverBlockedBody":
+      "Vehicle intake is handled by reception staff. Use the work queue for your deliveries.",
     "returnPickup.title": "Vehicle return",
-    "returnPickup.subtitle": "Search the vehicle by ticket code and request return. You can assign a valet driver.",
+    "returnPickup.subtitle":
+      "Search the vehicle by ticket code and request return. You can assign a valet driver.",
     "returnPickup.filterPlaceholder": "Search by ticket code",
     "returnPickup.empty": "No vehicles currently parked.",
     "returnPickup.assignDriver": "Driver for return",
-    "returnPickup.assignHelp": "Optional: assign who will return the vehicle to the customer.",
+    "returnPickup.assignHelp":
+      "Optional: assign who will return the vehicle to the customer.",
     "returnPickup.cta": "Request return",
     "returnPickup.success": "Return requested.",
     "returnPickup.selectTicket": "Select a ticket from the list.",
   },
 };
 
-export function t(locale: Locale, key: string, vars?: Record<string, string>): string {
+export function t(
+  locale: Locale,
+  key: string,
+  vars?: Record<string, string>,
+): string {
   const value = translations[locale]?.[key] ?? translations.en[key] ?? key;
   if (vars) {
-    return Object.entries(vars).reduce((acc, [k, v]) => acc.replace(`{{${k}}}`, v), value);
+    return Object.entries(vars).reduce(
+      (acc, [k, v]) => acc.replace(`{{${k}}}`, v),
+      value,
+    );
   }
   return value;
 }

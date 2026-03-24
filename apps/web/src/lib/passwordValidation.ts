@@ -10,17 +10,10 @@ export function checkPasswordRequirements(password: string) {
     hasUppercase: /[A-Z]/.test(password),
     hasLowercase: /[a-z]/.test(password),
     hasNumber: /\d/.test(password),
-    hasSpecialChar: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password),
   };
 }
 
 export function isPasswordSecure(password: string): boolean {
   const r = checkPasswordRequirements(password);
-  return (
-    r.minLength &&
-    r.hasUppercase &&
-    r.hasLowercase &&
-    r.hasNumber &&
-    r.hasSpecialChar
-  );
+  return r.minLength && r.hasUppercase && r.hasLowercase && r.hasNumber;
 }

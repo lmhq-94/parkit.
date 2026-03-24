@@ -171,16 +171,39 @@ export class TicketsService {
 
     return prisma.$transaction(async (tx) => {
       if (data.driverValetId) {
+        /**
+         * Conductor debe poder recibir otro tiquete en cola aunque esté BUSY.
+         * Además, si currentParkingId está desincronizado pero ya conduce en este
+         * parqueo (tiquete activo como DRIVER), no rechazar el alta.
+         */
         const driver = await tx.valet.findFirst({
           where: {
             id: data.driverValetId,
-            currentParkingId: data.parkingId,
             currentStatus: { in: [ValetStatus.AVAILABLE, ValetStatus.BUSY] },
             AND: [
               { OR: [{ companyId }, { companyId: null }] },
               { OR: [{ staffRole: ValetStaffRole.DRIVER }, { staffRole: null }] },
+              { user: { isActive: true } },
+              {
+                OR: [
+                  { currentParkingId: data.parkingId },
+                  {
+                    currentStatus: ValetStatus.BUSY,
+                    assignments: {
+                      some: {
+                        role: AssignmentRole.DRIVER,
+                        ticket: {
+                          parkingId: data.parkingId,
+                          status: {
+                            in: [TicketStatus.PARKED, TicketStatus.REQUESTED],
+                          },
+                        },
+                      },
+                    },
+                  },
+                ],
+              },
             ],
-            user: { isActive: true },
           },
           select: { id: true },
         });
@@ -267,6 +290,14 @@ export class TicketsService {
       await Promise.all(assignmentCreates);
 
       if (data.driverValetId) {
+        await tx.valet.update({
+          where: { id: data.driverValetId },
+          data: {
+            currentParkingId: data.parkingId,
+            currentStatus: ValetStatus.BUSY,
+          },
+        });
+
         const [driver, vehicle] = await Promise.all([
           tx.valet.findUnique({
             where: { id: data.driverValetId },
