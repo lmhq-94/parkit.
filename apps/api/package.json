@@ -10,14 +10,14 @@
     "prisma": "prisma",
     "env:dev": "node scripts/use-env.js dev",
     "env:prod": "node scripts/use-env.js prod",
-    "db:push": "prisma db push", 
+    "db:push": "prisma db push",
     "db:reset": "npm run env:dev && npx prisma db push --force-reset",
     "db:seed": "prisma db seed",
     "db:prepare:dev": "npm run db:reset && npm run db:seed",
     "db:prepare:prod": "npm run env:prod && npx prisma migrate deploy && npm run db:seed",
     "db:deploy": "prisma migrate deploy",
-  "db:migrate:dev": "dotenv -e .env.development -- npx prisma migrate dev",
-  "db:deploy:prod": "dotenv -e .env.production -- npx prisma migrate deploy",
+    "db:migrate:dev": "dotenv -e .env.development -- npx prisma migrate dev",
+    "db:deploy:prod": "dotenv -e .env.production -- npx prisma migrate deploy",
     "lint": "eslint \"src/**/*.ts\" --ext .ts --fix",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -60,6 +60,6 @@
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.6",
     "ts-node-dev": "^2.0.0",
-    "typescript": "~5.3.3"
+    "typescript": "^6.0.2"
   }
 }
