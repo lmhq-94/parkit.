@@ -1,3 +1,4 @@
+import "@/lib/textDefaults";
 import { useEffect, useState } from "react";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { Stack, SplashScreen } from "expo-router";

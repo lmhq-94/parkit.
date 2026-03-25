@@ -3209,7 +3209,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     modalTitle: {
       fontSize: F.secondary,
-      fontWeight: "800",
+      fontWeight: Platform.OS === "android" ? "normal" : "800",
       textAlign: "center",
       marginBottom: S.sm,
       fontFamily: "CalSans",

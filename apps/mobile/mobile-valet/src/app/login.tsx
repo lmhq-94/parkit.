@@ -5,6 +5,7 @@ import {
   TextInput,
   Pressable,
   ScrollView,
+  Modal,
   Keyboard,
   BackHandler,
   Platform,
@@ -228,30 +229,48 @@ export default function LoginScreen() {
         },
         footerText: { fontSize: 12, color: a.textMuted },
         footerLink: { fontSize: 13, fontWeight: "600", color: a.linkAccent },
-        roleDropdown: {
-          marginTop: 8,
-          backgroundColor: a.modalSheet,
-          borderRadius: 20,
-          paddingVertical: 12,
-          paddingHorizontal: 8,
+        modalOverlay: {
+          flex: 1,
+          justifyContent: "flex-end",
+          backgroundColor: "rgba(15, 23, 42, 0.45)",
         },
-        modalOption: {
+        modalBackdropPress: {
+          flex: 1,
+        },
+        modalSheet: {
+          maxHeight: 360,
+          borderTopLeftRadius: 18,
+          borderTopRightRadius: 18,
+          borderWidth: StyleSheet.hairlineWidth,
+          paddingHorizontal: 16,
+          paddingTop: 16,
+          paddingBottom: 12,
+        },
+        modalTitle: {
+          fontSize: 16,
+          fontWeight: "800",
+          textAlign: "center",
+          marginBottom: 10,
+        },
+        modalList: {
+          maxHeight: 300,
+        },
+        optionRow: {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
-          paddingVertical: 16,
-          paddingHorizontal: 16,
-          borderRadius: 12,
-        },
-        modalOptionActive: { backgroundColor: a.modalOptionActive },
-        modalOptionText: { fontSize: 16, color: a.text, fontWeight: "500" },
-        modalOptionTextActive: { fontWeight: "700", color: a.linkAccent },
-        modalCloseBtn: {
-          marginTop: 4,
           paddingVertical: 14,
-          alignItems: "center",
+          paddingHorizontal: 12,
+          borderBottomWidth: StyleSheet.hairlineWidth,
         },
-        modalCloseBtnText: { fontSize: 15, fontWeight: "600", color: a.textMuted },
+        optionText: {
+          fontSize: 16,
+          color: a.text,
+          fontWeight: "600",
+        },
+        pressed: {
+          opacity: 0.92,
+        },
       }),
     [a, heroMinHeight, horizontalPadding, sheetMaxWidth]
   );
@@ -554,41 +573,64 @@ export default function LoginScreen() {
                         </Text>
                         <Ionicons name="chevron-down" size={22} color={ph} style={styles.inputIconRight} />
                       </TouchableOpacity>
-                      {staffRolePickerOpen ? (
-                        <View style={styles.roleDropdown}>
-                            {STAFF_ROLES.map((r) => (
-                              <TouchableOpacity
-                                key={r}
-                                style={[styles.modalOption, staffRole === r && styles.modalOptionActive]}
-                                onPress={() => {
-                                  setStaffRole(r);
-                                  setStaffRolePickerOpen(false);
-                                  setError(null);
-                                }}
-                              >
-                                <Text
-                                  style={[
-                                    styles.modalOptionText,
-                                    staffRole === r && styles.modalOptionTextActive,
-                                  ]}
-                                >
-                                  {r === "RECEPTIONIST"
-                                    ? t(locale, "signup.staffRoleReceptionist")
-                                    : t(locale, "signup.staffRoleDriver")}
-                                </Text>
-                                {staffRole === r ? (
-                                  <Ionicons name="checkmark-circle" size={22} color={a.linkAccent} />
-                                ) : null}
-                              </TouchableOpacity>
-                            ))}
-                            <TouchableOpacity
-                              style={styles.modalCloseBtn}
-                              onPress={() => setStaffRolePickerOpen(false)}
-                            >
-                              <Text style={styles.modalCloseBtnText}>{t(locale, "common.cancel")}</Text>
-                            </TouchableOpacity>
+                      <Modal
+                        visible={staffRolePickerOpen}
+                        animationType="slide"
+                        transparent
+                        onRequestClose={() => setStaffRolePickerOpen(false)}
+                      >
+                        <View style={styles.modalOverlay}>
+                          <Pressable
+                            style={styles.modalBackdropPress}
+                            onPress={() => setStaffRolePickerOpen(false)}
+                            accessibilityLabel={t(locale, "common.cancel")}
+                          />
+                          <View
+                            style={[
+                              styles.modalSheet,
+                              { backgroundColor: a.modalSheet, borderColor: a.border },
+                            ]}
+                          >
+                            <Text style={[styles.modalTitle, { color: a.text }]}>
+                              {t(locale, "signup.staffRoleLabel")}
+                            </Text>
+                            <View style={styles.modalList}>
+                              {STAFF_ROLES.map((r, idx) => {
+                                const active = staffRole === r;
+                                return (
+                                  <Pressable
+                                    key={r}
+                                    style={({ pressed }) => [
+                                      styles.optionRow,
+                                      { borderBottomColor: a.border },
+                                      pressed && styles.pressed,
+                                    ]}
+                                    onPress={() => {
+                                      setStaffRole(r);
+                                      setStaffRolePickerOpen(false);
+                                      setError(null);
+                                    }}
+                                  >
+                                    <Text
+                                      style={[
+                                        styles.optionText,
+                                        active && { color: a.linkAccent, fontWeight: "700" },
+                                      ]}
+                                    >
+                                      {r === "RECEPTIONIST"
+                                        ? t(locale, "signup.staffRoleReceptionist")
+                                        : t(locale, "signup.staffRoleDriver")}
+                                    </Text>
+                                    {active ? (
+                                      <Ionicons name="checkmark-circle" size={22} color={a.linkAccent} />
+                                    ) : null}
+                                  </Pressable>
+                                );
+                              })}
+                            </View>
+                          </View>
                         </View>
-                      ) : null}
+                      </Modal>
                     </View>
                   </>
                 ) : null}

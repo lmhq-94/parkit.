@@ -831,7 +831,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     },
     headerRoleBelow: {
       fontSize: compact ? 13 : 14,
-      fontWeight: "800",
+      fontWeight: Platform.OS === "android" ? "normal" : "800",
       fontFamily: "CalSans",
       textAlign: "right",
     },
@@ -873,7 +873,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     },
     headerDisplayName: {
       fontSize: compact ? 16 : 18,
-      fontWeight: "800",
+      fontWeight: Platform.OS === "android" ? "normal" : "800",
       fontFamily: "CalSans",
       textAlign: "right",
       lineHeight: compact ? 21 : 24,
@@ -1005,7 +1005,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     },
     tileTitle: {
       fontSize: compact ? F.secondary + 2 : isTablet ? F.body + 1 : F.body,
-      fontWeight: "800",
+      fontWeight: Platform.OS === "android" ? "normal" : "800",
       color: C.text,
       marginBottom: 4,
       textAlign: "center",
@@ -1145,7 +1145,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     },
     modalTitle: {
       fontSize: F.secondary,
-      fontWeight: "800",
+      fontWeight: Platform.OS === "android" ? "normal" : "800",
       textAlign: "center",
       marginBottom: S.sm,
       fontFamily: "CalSans",

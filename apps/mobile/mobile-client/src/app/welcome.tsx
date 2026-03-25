@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, StatusBar } from "react-native";
+import { View, Text, StyleSheet, Pressable, StatusBar, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Logo } from "@parkit/shared";
@@ -19,7 +19,6 @@ export default function WelcomeScreen() {
       <SafeAreaView style={styles.safe} edges={["top"]}>
         <View style={styles.hero}>
           <Logo size={56} style={styles.logo} darkBackground />
-          <Text style={styles.brandName}>Parkit</Text>
         </View>
       </SafeAreaView>
 
@@ -65,7 +64,7 @@ const styles = StyleSheet.create({
   brandName: {
     fontFamily: "CalSans",
     fontSize: 32,
-    fontWeight: "700",
+    fontWeight: Platform.OS === "android" ? "normal" : "700",
     color: ACCENT,
     letterSpacing: -0.5,
   },

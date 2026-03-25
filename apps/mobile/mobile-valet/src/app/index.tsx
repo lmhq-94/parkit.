@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { View, StyleSheet, Animated, StatusBar } from "react-native";
+import { View, StyleSheet, Animated, StatusBar, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/lib/store";
 import { WelcomeContent } from "./welcome";
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   logoPart: {
     fontFamily: "CalSans",
     fontSize: LOGO_SIZE,
-    fontWeight: "700",
+    fontWeight: Platform.OS === "android" ? "normal" : "700",
     letterSpacing: -1.5,
   },
   valetLabel: {

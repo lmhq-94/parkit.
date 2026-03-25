@@ -60,7 +60,7 @@ export default function HelpScreen() {
         },
         sectionTitle: {
           fontSize: Fa.secondary,
-          fontWeight: "800",
+          fontWeight: Platform.OS === "android" ? "normal" : "800",
           color: C.primary,
           marginBottom: S.md,
           fontFamily: "CalSans",

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, Modal } from "react-native";
+import { View, Text, StyleSheet, Pressable, Modal, Platform } from "react-native";
 import { useFeedbackStore, type FeedbackButton } from "@/lib/feedbackStore";
 import { useValetTheme, ticketsA11y } from "@/theme/valetTheme";
 import { useMemo } from "react";
@@ -31,7 +31,7 @@ export function FeedbackModal() {
         },
         modalTitle: {
           fontSize: F.title - 6,
-          fontWeight: "800",
+          fontWeight: Platform.OS === "android" ? "normal" : "800",
           textAlign: "center",
           marginBottom: S.sm,
           fontFamily: "CalSans",

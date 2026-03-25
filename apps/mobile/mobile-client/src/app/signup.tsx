@@ -100,7 +100,6 @@ export default function SignupScreen() {
 
       <View style={styles.hero}>
         <Logo size={48} style={styles.heroLogo} darkBackground />
-        <Text style={styles.heroBrand}>Parkit</Text>
       </View>
 
       <SafeAreaView style={styles.bottomSection} edges={["bottom"]}>
@@ -247,7 +246,7 @@ const styles = StyleSheet.create({
   heroBrand: {
     fontFamily: "CalSans",
     fontSize: 28,
-    fontWeight: "700",
+    fontWeight: Platform.OS === "android" ? "normal" : "700",
     color: PRIMARY,
     letterSpacing: -0.5,
   },

@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, useColorScheme } from "react-native";
+import { Text, View, StyleSheet, useColorScheme, Platform } from "react-native";
 
 import {
   LOGO_FONT_FAMILY_MOBILE,
@@ -74,6 +74,8 @@ export function Logo({
     : {};
 
   const letterSpacing = logoLetterSpacingPx(size);
+  const mobileFontWeight =
+    Platform.OS === "android" ? "normal" : LOGO_FONT_WEIGHT_MOBILE;
 
   return (
     <View style={[styles.container, style]}>
@@ -82,7 +84,7 @@ export function Logo({
           styles.text,
           {
             fontSize: size,
-            fontWeight: LOGO_FONT_WEIGHT_MOBILE,
+            fontWeight: mobileFontWeight,
             letterSpacing,
             color: parkColor,
           },
@@ -96,7 +98,7 @@ export function Logo({
           styles.text,
           {
             fontSize: size,
-            fontWeight: LOGO_FONT_WEIGHT_MOBILE,
+            fontWeight: mobileFontWeight,
             letterSpacing,
             color: itColor,
           },
