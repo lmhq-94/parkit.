@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
-import { checkPasswordRequirements, isPasswordSecure } from "@/lib/passwordValidation";
+import { checkPasswordRequirements, isPasswordSecure } from "@parkit/shared";
 import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Lock, Eye, EyeOff, ArrowRight, CheckCircle, Check, Circle } from "lucide-react";

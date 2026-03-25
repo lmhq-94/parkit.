@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { User } from './auth';
-import type { Locale } from './i18n';
+import type { Locale } from '@parkit/shared';
 import { getStoredLocale, setStoredLocale } from './i18n';
 
 interface AuthStore {

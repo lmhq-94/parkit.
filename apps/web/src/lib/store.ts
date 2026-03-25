@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { Locale } from "@parkit/shared";
 import { User, getStoredUser, setStoredUser, clearStoredUser } from "./auth";
 
 interface AuthStore {
@@ -54,7 +55,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
 // Locale (i18n)
 const LOCALE_KEY = "parkit_locale";
-export type Locale = "es" | "en";
 
 interface LocaleStore {
   locale: Locale;

@@ -1,4 +1,4 @@
-export type Locale = "es" | "en";
+import type { Locale } from "@parkit/shared";
 
 const translations: Record<Locale, Record<string, string>> = {
   es: {

@@ -3,7 +3,7 @@ import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { clearUser } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { router } from "expo-router";
-import type { Locale } from "@/lib/i18n";
+import type { Locale } from "@parkit/shared";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function ProfileScreen() {

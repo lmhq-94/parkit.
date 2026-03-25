@@ -15,7 +15,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import type { Locale } from "@/lib/i18n";
+import type { Locale } from "@parkit/shared";
 import { t } from "@/lib/i18n";
 import type { useValetTheme } from "@/theme/valetTheme";
 

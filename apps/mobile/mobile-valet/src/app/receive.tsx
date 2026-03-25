@@ -27,7 +27,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { formatPlate } from "@parkit/shared";
 import { formatVehicleColorLabel, getVehicleColorOptions, normalizeVehicleColorValue } from "@parkit/shared/src/vehicleColors";
 import { useAuthStore, useLocaleStore, useCompanyStore } from "@/lib/store";
-import { t, type Locale } from "@/lib/i18n";
+import { t } from "@/lib/i18n";
+import type { Locale } from "@parkit/shared";
 import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import api from "@/lib/api";

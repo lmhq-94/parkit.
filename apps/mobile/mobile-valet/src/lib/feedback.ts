@@ -1,5 +1,6 @@
 import { type AlertButton, type AlertOptions } from "react-native";
-import { t, type Locale } from "@/lib/i18n";
+import { t } from "@/lib/i18n";
+import type { Locale } from "@parkit/shared";
 import { useFeedbackStore } from "./feedbackStore";
 
 type ConfirmOptions = {
