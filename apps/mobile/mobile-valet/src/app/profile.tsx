@@ -31,7 +31,8 @@ import { createFeedback } from "@/lib/feedback";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { LICENSE_TYPE_OPTIONS, LICENSE_TYPE_VALUES, labelForLicenseType } from "@/lib/licenseTypes";
 import {
-  formatPhoneInternational,
+  formatPhoneWithCountryCode,
+  getDeviceCountryCode,
   isValidPhoneOptional,
   phoneDigitsForApi,
 } from "@/lib/phoneInternational";
@@ -125,7 +126,7 @@ export default function ProfileScreen() {
         setFirstName(String(d.firstName ?? ""));
         setLastName(String(d.lastName ?? ""));
         setEmail(String(d.email ?? ""));
-        setPhone(formatPhoneInternational(d.phone != null ? String(d.phone) : ""));
+        setPhone(formatPhoneWithCountryCode(d.phone != null ? String(d.phone) : "", getDeviceCountryCode()));
         setLocalAvatar(undefined);
         setAvatarRemoved(false);
       }
@@ -337,7 +338,7 @@ export default function ProfileScreen() {
         setLocalAvatar(undefined);
         setAvatarRemoved(false);
         if (d.phone != null) {
-          setPhone(formatPhoneInternational(String(d.phone)));
+          setPhone(formatPhoneWithCountryCode(String(d.phone), getDeviceCountryCode()));
         } else {
           setPhone("");
         }
@@ -651,7 +652,7 @@ export default function ProfileScreen() {
               ]}
               value={phone}
               onChangeText={(v) => {
-                setPhone(formatPhoneInternational(v));
+                setPhone(formatPhoneWithCountryCode(v, getDeviceCountryCode()));
                 if (fieldErrors.phone) setFieldErrors((e) => ({ ...e, phone: undefined }));
               }}
               placeholder={t(locale, "profile.placeholderPhoneIntl")}

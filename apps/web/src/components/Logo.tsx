@@ -1,6 +1,6 @@
 "use client";
 
-import { LOGO_LETTER_SPACING_EM } from "@parkit/shared/logoTokens";
+import { LOGO_LETTER_SPACING_EM } from "@parkit/shared";
 import localFont from "next/font/local";
 
 const calSans = localFont({

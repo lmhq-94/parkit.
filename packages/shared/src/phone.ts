@@ -96,11 +96,15 @@ function countryCodeFromDialCode(dialCode: string): string | undefined {
  */
 export function formatPhoneInternational(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 15);
-  if (digits.length === 0) return "";
+  const hasExplicitPlus = value.trimStart().startsWith("+");
+
+  if (digits.length === 0) {
+    if (hasExplicitPlus) return "+";
+    return "";
+  }
 
   const deviceCountryCode = getDeviceCountryCode();
   const defaultDial = COUNTRY_DIAL_CODES[deviceCountryCode] ?? COUNTRY_DIAL_CODES[DEFAULT_PHONE_COUNTRY_CODE];
-  const hasExplicitPlus = value.trimStart().startsWith("+");
 
   let dial = "";
   let localDigits = digits;
@@ -112,6 +116,11 @@ export function formatPhoneInternational(value: string): string {
         localDigits = digits.slice(d.length);
         break;
       }
+    }
+
+    if (!dial) {
+      // Partial or unknown explicit country code: preserve input so user can erase/adjust
+      return `+${digits}`;
     }
   }
 
@@ -161,6 +170,13 @@ export function formatPhoneInternational(value: string): string {
  * @param countryCode - Country ISO code (e.g. "CR"). Defaults to "CR".
  */
 export function formatPhoneWithCountryCode(value: string, countryCode: string = "CR"): string {
+  const raw = value.trim();
+
+  // If user types explicit national prefix +, respect it and allow country re-selection.
+  if (raw.startsWith("+")) {
+    return formatPhoneInternational(raw);
+  }
+
   const dial = COUNTRY_DIAL_CODES[countryCode] ?? "506";
   const digits = value.replace(/\D/g, "");
   if (digits.length === 0) return "";

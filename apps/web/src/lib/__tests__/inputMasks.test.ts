@@ -83,12 +83,26 @@ describe("inputMasks", () => {
     });
   });
 
+  describe("formatPhoneInternational (edición explícita)", () => {
+    it("permite borrar el prefijo + parcialmente", () => {
+      expect(formatPhoneInternational("+")).toBe("+");
+      expect(formatPhoneInternational("+50")).toBe("+50");
+      expect(formatPhoneInternational("+506")).toBe("+506");
+    });
+    it("mantiene formato para código conocido +506", () => {
+      expect(formatPhoneInternational("+50662164040")).toBe("+506 6216-4040");
+    });
+  });
+
   describe("formatPhoneWithCountryCode", () => {
     it("formatea CR por defecto", () => {
       expect(formatPhoneWithCountryCode("62164040")).toBe("+506 6216-4040");
     });
     it("acepta countryCode explícito", () => {
       expect(formatPhoneWithCountryCode("5551234567", "US")).toContain("+1");
+    });
+    it("responde prefijo + manual sin reemplazar país", () => {
+      expect(formatPhoneWithCountryCode("+50", "CR")).toBe("+50");
     });
   });
 

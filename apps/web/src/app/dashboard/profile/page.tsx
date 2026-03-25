@@ -13,7 +13,7 @@ import { ImageCropField } from "@/components/ImageCropField";
 import { SelectField } from "@/components/SelectField";
 import { useToast } from "@/lib/toastStore";
 import { TIMEZONES } from "@/lib/companyOptions";
-import { formatPhoneInternational } from "@/lib/inputMasks";
+import { formatPhoneWithCountryCode, COUNTRY_DIAL_CODES } from "@/lib/inputMasks";
 import { required, email as validateEmail, phone as validatePhone } from "@/lib/validation";
 import { isSuperAdmin } from "@/lib/auth";
 
@@ -54,7 +54,9 @@ export default function ProfilePage() {
   const [submitting, setSubmitting] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [prefsMounted, setPrefsMounted] = useState(false);
-  useEffect(() => setPrefsMounted(true), []);
+  useEffect(() => {
+    setPrefsMounted(true);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -271,7 +273,7 @@ export default function ProfilePage() {
                   <label className={LABEL}>{t("users.phone")}</label>
                   <div className="relative group">
                     <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                    <input type="tel" value={form.phone} onChange={(e) => { setForm((p) => ({ ...p, phone: formatPhoneInternational(e.target.value) })); setErrors((prev) => ({ ...prev, phone: undefined })); }} placeholder="+1 234 567 8900" className={IL} aria-invalid={!!errors.phone} />
+                    <input type="tel" value={form.phone} onChange={(e) => { setForm((p) => ({ ...p, phone: formatPhoneWithCountryCode(e.target.value, "CR") })); setErrors((prev) => ({ ...prev, phone: undefined })); }} placeholder={`+${COUNTRY_DIAL_CODES["CR"]} 6216-4040`} className={IL} aria-invalid={!!errors.phone} />
                   </div>
                   <div className="min-h-[1.25rem] mt-1">{errors.phone && <p className="text-sm text-red-500" role="alert">{errors.phone}</p>}</div>
                 </div>

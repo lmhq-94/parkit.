@@ -36,7 +36,7 @@ import { messageFromAxios } from "@/lib/apiErrors";
 import { useOnAppForeground } from "@/lib/useOnAppForeground";
 import { RECEIVE_META_POLL_MS } from "@/lib/syncConstants";
 import { useNearestParking, haversineKm } from "@/lib/useNearestParking";
-import { formatPhoneInternational, phoneDigitsForApi } from "@/lib/phoneInternational";
+import { formatPhoneWithCountryCode, getDeviceCountryCode, phoneDigitsForApi } from "@/lib/phoneInternational";
 import { createFeedback } from "@/lib/feedback";
 import { ValetBackButton } from "@/components/ValetBackButton";
 import { StickyFormFooter } from "@/components/StickyFormFooter";
@@ -550,7 +550,7 @@ export default function ReceiveScreen() {
           const ownerPhone = o.client.user.phone?.trim() ?? "";
           if (ownerEmail || ownerPhone) {
             setDriverEmail(ownerEmail);
-            setDriverPhone(formatPhoneInternational(ownerPhone));
+            setDriverPhone(formatPhoneWithCountryCode(ownerPhone, getDeviceCountryCode()));
             setLoadedDriverSnapshot({
               firstName: o.client.user.firstName,
               lastName: o.client.user.lastName,
@@ -565,7 +565,7 @@ export default function ReceiveScreen() {
               firstName: o.client.user.firstName,
               lastName: o.client.user.lastName,
               email: fallbackContact.email ?? "",
-              phone: formatPhoneInternational(fallbackContact.phone ?? ""),
+              phone: formatPhoneWithCountryCode(fallbackContact.phone ?? "", getDeviceCountryCode()),
             });
           }
         } else {
@@ -899,7 +899,7 @@ export default function ReceiveScreen() {
       setDriverFirst(u?.firstName?.trim() ?? "");
       setDriverLast(u?.lastName?.trim() ?? "");
       setDriverEmail(u?.email?.trim() ?? "");
-      setDriverPhone(formatPhoneInternational(phone));
+      setDriverPhone(formatPhoneWithCountryCode(phone, getDeviceCountryCode()));
       setVehBrand(b.vehicle?.brand?.trim() ?? "");
       setVehModel(b.vehicle?.model?.trim() ?? "");
         setVehColor(normalizeVehicleColorValue(b.vehicle?.color?.trim() ?? ""));
@@ -1909,7 +1909,7 @@ export default function ReceiveScreen() {
               <TextInput
                 style={styles.input}
                 value={driverPhone}
-                onChangeText={(v) => setDriverPhone(formatPhoneInternational(v))}
+                onChangeText={(v) => setDriverPhone(formatPhoneWithCountryCode(v, getDeviceCountryCode()))}
                 placeholder={t(locale, "receive.placeholderPhone")}
                 placeholderTextColor={C.textSubtle}
                 keyboardType="phone-pad"
