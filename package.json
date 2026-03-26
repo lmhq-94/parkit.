@@ -1,19 +1,16 @@
 {
   "name": "parkit",
   "private": true,
-  "scripts": {
-    "build:web": "npm run build --prefix apps/web",
-    "test": "npm run test --prefix apps/web",
-    "test:web": "npm run test --prefix apps/web",
-    "test:integration": "npm run test:integration --prefix apps/web",
-    "test:e2e": "npm run test:e2e --prefix apps/web"
-  },
   "workspaces": [
-    "packages/*",
-    "apps/web", 
-    "apps/mobile/mobile-client",
-    "apps/mobile/mobile-valet"
+    "apps/web",
+    "apps/api",
+    "apps/mobile/*",
+    "packages/*"
   ],
+  "scripts": {
+    "build:web": "npm run build --workspace=web",
+    "test:web": "npm run test -w web"
+  },
   "dependencies": {
     "next": "^15.1.3",
     "react": "19.1.0",
