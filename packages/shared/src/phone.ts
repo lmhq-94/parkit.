@@ -95,13 +95,18 @@ function countryCodeFromDialCode(dialCode: string): string | undefined {
  * @param value - Current value (can be "+506 6216-4040", "50662164040", "+1 555 1234567", etc.).
  */
 export function formatPhoneInternational(value: string): string {
+  const trimmed = value.trim();
+
+  // Fully empty — clear the field
+  if (trimmed === "") return "";
+
+  // Just "+" — preserve it: user is typing a custom country code or erasing step by step
+  if (trimmed === "+") return "+";
+
   const digits = value.replace(/\D/g, "").slice(0, 15);
   const hasExplicitPlus = value.trimStart().startsWith("+");
 
-  if (digits.length === 0) {
-    if (hasExplicitPlus) return "+";
-    return "";
-  }
+  if (digits.length === 0) return "";
 
   const deviceCountryCode = getDeviceCountryCode();
   const defaultDial = COUNTRY_DIAL_CODES[deviceCountryCode] ?? COUNTRY_DIAL_CODES[DEFAULT_PHONE_COUNTRY_CODE];
@@ -119,7 +124,7 @@ export function formatPhoneInternational(value: string): string {
     }
 
     if (!dial) {
-      // Partial or unknown explicit country code: preserve input so user can erase/adjust
+      // Partial/unknown country code while user is typing or erasing — preserve as-is
       return `+${digits}`;
     }
   }
@@ -135,7 +140,9 @@ export function formatPhoneInternational(value: string): string {
   }
 
   const prefix = `+${dial}`;
-  if (localDigits.length === 0) return prefix + (dial === digits ? "" : " ");
+
+  // No local digits yet — show the prefix so deletion continues step-by-step
+  if (localDigits.length === 0) return prefix;
 
   const countryCode = countryCodeFromDialCode(dial);
 
@@ -148,11 +155,12 @@ export function formatPhoneInternational(value: string): string {
   }
 
   // US/CA (code 1): +1 (XXX) XXX-XXXX
+  // Only add parens once user has typed 4+ local digits, so backspace can clear freely.
   if (dial === "1" && localDigits.length <= 10) {
     const a = localDigits.slice(0, 3);
     const b = localDigits.slice(3, 6);
     const c = localDigits.slice(6, 10);
-    if (c.length === 0 && b.length === 0) return `${prefix} ${a.length ? `(${a})` : ""}`.trim();
+    if (b.length === 0) return `${prefix} ${a}`;
     if (c.length === 0) return `${prefix} (${a}) ${b}`;
     return `${prefix} (${a}) ${b}-${c}`;
   }
@@ -172,11 +180,18 @@ export function formatPhoneInternational(value: string): string {
 export function formatPhoneWithCountryCode(value: string, countryCode: string = "CR"): string {
   const raw = value.trim();
 
-  // If user types explicit national prefix +, respect it and allow country re-selection.
+  // Fully empty — clear the field
+  if (raw === "") return "";
+
+  // "+" alone — preserve it so user can type a custom country code or erase it
+  if (raw === "+") return "+";
+
+  // Explicit international format — delegate entirely to formatPhoneInternational
   if (raw.startsWith("+")) {
     return formatPhoneInternational(raw);
   }
 
+  // No "+": auto-prepend the company's country code
   const dial = COUNTRY_DIAL_CODES[countryCode] ?? "506";
   const digits = value.replace(/\D/g, "");
   if (digits.length === 0) return "";
@@ -190,7 +205,7 @@ export function formatPhoneWithCountryCode(value: string, countryCode: string = 
   localDigits = localDigits.slice(0, 15);
 
   const prefix = `+${dial}`;
-  if (localDigits.length === 0) return prefix + " ";
+  if (localDigits.length === 0) return prefix;
 
   if (countryCode === "CR" && dial === "506") {
     const a = localDigits.slice(0, 4);
@@ -199,11 +214,12 @@ export function formatPhoneWithCountryCode(value: string, countryCode: string = 
     return `${prefix} ${a}-${b}`;
   }
 
+  // Only add parens once user has typed 4+ local digits, so backspace can clear freely.
   if (dial === "1" && localDigits.length <= 10) {
     const a = localDigits.slice(0, 3);
     const b = localDigits.slice(3, 6);
     const c = localDigits.slice(6, 10);
-    if (c.length === 0 && b.length === 0) return `${prefix} ${a.length ? `(${a})` : ""}`;
+    if (b.length === 0) return `${prefix} ${a}`;
     if (c.length === 0) return `${prefix} (${a}) ${b}`;
     return `${prefix} (${a}) ${b}-${c}`;
   }

@@ -25,6 +25,7 @@ import { useToast } from "@/lib/toastStore";
 import { TIMEZONES } from "@/lib/companyOptions";
 import {
   formatPhoneWithCountryCode,
+  formatPhoneInternational,
   COUNTRY_DIAL_CODES,
 } from "@/lib/inputMasks";
 import {
@@ -377,10 +378,10 @@ export default function ProfilePage() {
                   <div className="relative group">
                     <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                     <input
-                      type="text"
+                      type="tel"
                       value={form.phone}
                       onChange={(e) => {
-                        setForm((p) => ({ ...p, phone: e.target.value }));
+                        setForm((p) => ({ ...p, phone: formatPhoneWithCountryCode(e.target.value, "CR") }));
                         setErrors((prev) => ({ ...prev, phone: undefined }));
                       }}
                       placeholder={`+${COUNTRY_DIAL_CODES["CR"]} 6216-4040`}

@@ -17,6 +17,7 @@ import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 import { apiClient } from "@/lib/api";
 import { formatPhoneInternational } from "@/lib/inputMasks";
+import { makeTzLabel } from "@/lib/companyOptions";
 import { StatusFilterToolbar } from "@/components/StatusFilterToolbar";
 
 interface Company {
@@ -223,7 +224,7 @@ export default function CompaniesPage() {
               />
               <DetailField label={t("companies.countryCode")} value={company.countryCode} />
               <DetailField label={t("companies.currency")} value={company.currency} />
-              <DetailField label={t("companies.timezone")} value={company.timezone} />
+              <DetailField label={t("companies.timezone")} value={company.timezone ? makeTzLabel(company.timezone) : undefined} />
             </dl>
           </div>
         )}

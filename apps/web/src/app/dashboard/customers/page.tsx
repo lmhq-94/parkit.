@@ -13,6 +13,7 @@ import { useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import { formatPhoneInternational } from "@/lib/inputMasks";
 import { formatDateTimeDisplay } from "@/lib/dateFormat";
+import { makeTzLabel } from "@/lib/companyOptions";
 import { useRouter } from "next/navigation";
 
 const DashboardDataTablePage = dynamic(
@@ -224,7 +225,7 @@ export default function CustomersPage() {
               value={user.phone ? formatPhoneInternational(user.phone) : undefined}
               linkType="phone"
             />
-            <DetailField label={t("tables.employees.timezone")} value={user.timezone} />
+            <DetailField label={t("tables.employees.timezone")} value={user.timezone ? makeTzLabel(user.timezone) : undefined} />
             <DetailField
               label={t("tables.employees.lastLogin")}
               value={user.lastLogin ? formatDateTimeDisplay(new Date(user.lastLogin), t) : undefined}

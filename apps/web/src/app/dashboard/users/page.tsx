@@ -19,6 +19,7 @@ import { useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import { formatPhoneInternational } from "@/lib/inputMasks";
 import { formatDateTimeDisplay } from "@/lib/dateFormat";
+import { makeTzLabel } from "@/lib/companyOptions";
 
 const EMPLOYEE_STATUS_OPTIONS = [
   { value: "ACTIVE", labelKey: "tables.employees.active" },
@@ -196,7 +197,7 @@ export default function UsersPage() {
             <DetailSectionLabel text={t("common.additionalInfo")} />
             <DetailField label={t("tables.employees.role")} value={tEnum("systemRole", user.systemRole)} />
             <DetailField label={t("tables.employees.phone")} value={user.phone ? formatPhoneInternational(user.phone) : undefined} linkType="phone" />
-            <DetailField label={t("tables.employees.timezone")} value={user.timezone} />
+            <DetailField label={t("tables.employees.timezone")} value={user.timezone ? makeTzLabel(user.timezone) : undefined} />
             <DetailField label={t("tables.employees.lastLogin")} value={user.lastLogin ? formatDateTimeDisplay(new Date(user.lastLogin), t) : undefined} />
           </dl>
         )}

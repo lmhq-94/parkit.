@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Building2, Receipt, Mail, Phone, Globe,
-  DollarSign, Clock, MapPin, ArrowRight, Smartphone,
+  DollarSign, Clock, MapPin, ArrowRight,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
@@ -16,7 +16,7 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { COUNTRIES, CURRENCIES, TIMEZONES, INDUSTRIES } from "@/lib/companyOptions";
-import { formatTaxId, formatPhoneWithCountryCode, COUNTRY_DIAL_CODES } from "@/lib/inputMasks";
+import { formatTaxId, formatPhoneWithCountryCode, formatPhoneInternational, COUNTRY_DIAL_CODES } from "@/lib/inputMasks";
 import { required, email as validateEmail, phone as validatePhone } from "@/lib/validation";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
@@ -78,10 +78,11 @@ export default function EditCompanyPage() {
             email: String(data.email ?? ""),
             contactPhone: formatPhoneInternational(String(data.contactPhone ?? "")),
             legalAddress: String(data.legalAddress ?? ""),
-            requiresCustomerApp:
+            requiresCustomerApp: (
               data.requiresCustomerApp === true ? "true" :
               data.requiresCustomerApp === false ? "false" :
-              "",
+              ""
+            ) as "" | "true" | "false",
           };
           setForm(loaded);
           setInitialForm(loaded);
@@ -107,7 +108,7 @@ export default function EditCompanyPage() {
     const em = required(t, form.email?.trim()); if (em) next.email = em;
     else if (form.email.trim()) { const ee = validateEmail(t, form.email); if (ee) next.email = ee; }
     if (!form.requiresCustomerApp) {
-      next.requiresCustomerApp = required(t, form.requiresCustomerApp);
+      next.requiresCustomerApp = required(t, form.requiresCustomerApp) ?? undefined;
     }
     if (form.contactPhone.trim()) { const ep = validatePhone(t, form.contactPhone); if (ep) next.contactPhone = ep; }
     setErrors(next);
