@@ -18,24 +18,29 @@ export const app = express();
 
 app.use(compression());
 
-const allowedOrigins = new Set(
-  [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3001",
-    process.env.FRONTEND_URL, // URL Vercel Prod
-    process.env.FRONTEND_DEV_URL, // URL Vercel Preview/Dev
-  ].filter(Boolean) as string[],
-); 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "http://localhost:3001",
+  "http://127.0.0.1:3001",
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_DEV_URL,
+].filter(Boolean) as string[];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  if (origin && allowedOrigins.has(origin)) {
+
+  // Exact match or Vercel subdomain
+  const isAllowed =
+    origin &&
+    (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app"));
+
+  if (isAllowed) {
     res.header("Access-Control-Allow-Origin", origin);
     res.header("Access-Control-Allow-Credentials", "true");
     res.header("Vary", "Origin");
   }
+
   res.header(
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization, x-company-id",
