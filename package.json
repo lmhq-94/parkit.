@@ -2,6 +2,7 @@
   "name": "parkit",
   "private": true,
   "scripts": {
+    "build:web": "npm run build --prefix apps/web",
     "test": "npm run test --prefix apps/web",
     "test:web": "npm run test --prefix apps/web",
     "test:integration": "npm run test:integration --prefix apps/web",
@@ -9,19 +10,19 @@
   },
   "workspaces": [
     "packages/*",
+    "apps/web", 
     "apps/mobile/mobile-client",
     "apps/mobile/mobile-valet"
   ],
   "dependencies": {
+    "next": "^15.1.3",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
     "bcryptjs": "^3.0.3",
     "jsonwebtoken": "^9.0.3"
   },
   "devDependencies": {
     "babel-preset-expo": "~54.0.0",
-    "typescript": "^5.9.3"
-  },
-  "overrides": {
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "typescript": "^5.3.3"
   }
 }
