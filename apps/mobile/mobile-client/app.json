@@ -10,21 +10,26 @@
       "**/*"
     ],
     "ios": {
-      "bundleIdentifier": "com.lherrera.parkitclient",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.parkit.client",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
-      "package": "com.lherrera.parkitclient",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.lmhq94.parkitclient"
     },
     "extra": {
       "eas": {
-        "projectId": "REPLACE_WITH_EAS_PROJECT_ID"
+        "projectId": "4b8f3d34-4520-4029-aad8-b3760cbe7b2f"
       },
-      "apiUrl": "https://parkit-api-dev.onrender.com"
-    }
+      "apiUrl": "https://parkit-api-dev.onrender.com",
+      "router": {}
+    },
+    "owner": "lmhq94"
   }
 }
