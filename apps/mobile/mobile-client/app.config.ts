@@ -4,29 +4,29 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   newArchEnabled: true,
   name: "Parkit Client",
-  slug: "parkit-customer",
+  slug: "parkit-client",
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/icon-1024.png",
-  scheme: "parkit",
   userInterfaceStyle: "automatic",
+  scheme: "parkit-client",
   backgroundColor: "#020617",
   splash: {
     image: "./assets/splash.png",
     resizeMode: "contain",
     backgroundColor: "#020617",
   },
-  assetBundlePatterns: ["**/*"],
+  platforms: ['ios', 'android', 'web'],
   ios: {
-    supportsTabletMode: true,
-    bundleIdentifier: "com.paradoxialabs.parkit.customer",
+    supportsTablet: true,
+    bundleIdentifier: "com.parkit.client",
   },
   android: {
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-icon-foreground.png",
       backgroundColor: "#FFFFFF",
     },
-    package: "com.paradoxialabs.parkit.customer",
+    package: "com.parkit.client",
   },
   web: {
     favicon: "./assets/icon-48.png",
@@ -45,12 +45,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
   ],
-  extra: {
-    eas: {
-      projectId: "parkit-customer",
-    },
-  },
   experiments: {
     typedRoutes: true,
+  },
+  updates: {
+    enabled: false,
+    checkAutomatically: 'NEVER',
+  },
+  extra: {
+    eas: {
+      projectId: "4b8f3d34-4520-4029-aad8-b3760cbe7b2f",
+    },
+    apiUrl: process.env.EXPO_PUBLIC_API_URL || "https://parkit-valet-dev.onrender.com",
   },
 });

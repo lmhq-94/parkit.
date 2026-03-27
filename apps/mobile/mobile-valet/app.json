@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Parkit Valet",
+    "slug": "parkit-valet",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lmhq94.parkitvalet"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.lmhq94.parkitvalet"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2fa28315-fa61-46dc-add1-9f8d82c7d6d5"
+      },
+      "apiUrl": "https://parkit-api-dev.onrender.com",
+      "router": {}
+    }
+  }
+}

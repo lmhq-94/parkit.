@@ -37,7 +37,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: 'com.parkit.valet',
     permissions: ['ACCESS_FINE_LOCATION', 'INTERNET', 'CAMERA'],
-    /** Permite redimensionar la ventana con el teclado (junto con adjustResize en el manifest). */
     softwareKeyboardLayoutMode: 'resize',
   },
   web: {
@@ -74,15 +73,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   experiments: {
     typedRoutes: true,
   },
-  /** Sin EAS Update: evita comprobar/descargar OTA al arranque (corrige IOException en Android). */
   updates: {
     enabled: false,
     checkAutomatically: 'NEVER',
   },
-  eas: {
-    projectId: 'parkit-valet-prod',
-  },
   extra: {
-    apiUrl: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000',
+    eas: {
+      projectId: '2fa28315-fa61-46dc-add1-9f8d82c7d6d5',
+    },
+    apiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://parkit-valet-dev.onrender.com',
   },
 });
