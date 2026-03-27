@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "Parkit Client",
+    "slug": "parkit-client",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "bundleIdentifier": "com.lherrera.parkitclient",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.lherrera.parkitclient",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "REPLACE_WITH_EAS_PROJECT_ID"
+      },
+      "apiUrl": "https://parkit-api-dev.onrender.com"
+    }
+  }
+}

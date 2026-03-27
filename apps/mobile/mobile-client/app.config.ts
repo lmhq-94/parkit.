@@ -18,7 +18,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   assetBundlePatterns: ["**/*"],
   ios: {
-    supportsTabletMode: true,
+    supportsTablet: true,
     bundleIdentifier: "com.paradoxialabs.parkit.customer",
   },
   android: {
@@ -47,8 +47,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ],
   extra: {
     eas: {
-      projectId: "parkit-customer",
+      projectId: "REPLACE_WITH_EAS_PROJECT_ID",
     },
+    apiUrl: process.env.EXPO_PUBLIC_API_URL || "https://parkit-valet-dev.onrender.com",
   },
   experiments: {
     typedRoutes: true,

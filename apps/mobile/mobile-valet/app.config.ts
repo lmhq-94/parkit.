@@ -79,10 +79,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     enabled: false,
     checkAutomatically: 'NEVER',
   },
-  eas: {
-    projectId: 'parkit-valet-prod',
-  },
   extra: {
-    apiUrl: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000',
+    eas: {
+      projectId: '2fa28315-fa61-46dc-add1-9f8d82c7d6d5',
+    },
+    apiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://parkit-valet-dev.onrender.com',
   },
 });
