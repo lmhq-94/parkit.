@@ -25,7 +25,7 @@ import * as Linking from "expo-linking";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { formatPlate } from "@parkit/shared";
-import { formatVehicleColorLabel, getVehicleColorOptions, normalizeVehicleColorValue } from "@parkit/shared/src/vehicleColors";
+import { formatVehicleColorLabel, getVehicleColorOptions, normalizeVehicleColorValue } from "@parkit/shared";
 import { useAuthStore, useLocaleStore, useCompanyStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import type { Locale } from "@parkit/shared";

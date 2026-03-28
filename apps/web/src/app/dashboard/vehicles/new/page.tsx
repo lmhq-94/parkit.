@@ -13,7 +13,7 @@ import { useDashboardStore } from "@/lib/store";
 import { COUNTRIES } from "@/lib/companyOptions";
 import { formatPlate, toTitleCase } from "@/lib/inputMasks";
 import { required, plate as validatePlate, selectRequired } from "@/lib/validation";
-import { getVehicleColorOptions } from "@parkit/shared/src/vehicleColors";
+import { getVehicleColorOptions } from "@parkit/shared/vehicleColors";
 
 /** Customers (users with CUSTOMER role) for the company - same list as dashboard Customers page */
 type CustomerOption = { id: string; firstName?: string; lastName?: string; email?: string };

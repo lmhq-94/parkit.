@@ -17,7 +17,7 @@ import { apiClient } from "@/lib/api";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 import { formatPlate, toTitleCase } from "@/lib/inputMasks";
-import { formatVehicleColorLabel } from "@parkit/shared/src/vehicleColors";
+import { formatVehicleColorLabel } from "@parkit/shared/vehicleColors";
 
 type OwnerRef = {
   client?: { id: string; user?: { firstName?: string; lastName?: string; email?: string } };

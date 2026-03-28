@@ -3,6 +3,7 @@ const path = require('path');
 const { version: packageVersion } = require("./package.json");
 
 const nextConfig = {
+  transpilePackages: ['@parkit/shared'],
   reactStrictMode: true,
 
   /**
