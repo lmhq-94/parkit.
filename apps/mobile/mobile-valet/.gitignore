@@ -3,6 +3,11 @@
 expo-env.d.ts
 # @end expo-cli
 
+# Env files
+.env
+.env.local
+.env.production
+
 # Expo cache and build artifacts (root has dist/; this covers .expo in this app)
 .expo/
 web-build/
