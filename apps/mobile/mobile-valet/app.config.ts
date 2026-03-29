@@ -81,6 +81,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     eas: {
       projectId: '2fa28315-fa61-46dc-add1-9f8d82c7d6d5',
     },
-    apiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://parkit-valet-dev.onrender.com',
+    apiUrl: process.env.EXPO_PUBLIC_API_URL || "https://parkit-api-dev.onrender.com",
   },
 });
