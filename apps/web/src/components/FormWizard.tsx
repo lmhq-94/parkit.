@@ -30,17 +30,6 @@ interface FormWizardProps {
   onValidateBeforeAction?: (stepIndex: number) => boolean | Promise<boolean>;
 }
 
-const ACCENT: Record<string, { bar: string; dot: string; text: string; bg: string }> = {
-  sky:     { bar: "bg-company-primary",     dot: "text-company-primary",     text: "text-company-primary",     bg: "bg-company-primary-subtle" },
-  emerald: { bar: "bg-emerald-500", dot: "text-emerald-500", text: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/8" },
-  indigo:  { bar: "bg-indigo-500",  dot: "text-indigo-500",  text: "text-indigo-600 dark:text-indigo-400",  bg: "bg-indigo-500/8" },
-  orange:  { bar: "bg-orange-500",  dot: "text-orange-500",  text: "text-orange-600 dark:text-orange-400",  bg: "bg-orange-500/8" },
-  teal:    { bar: "bg-teal-500",    dot: "text-teal-500",    text: "text-teal-600 dark:text-teal-400",    bg: "bg-teal-500/8" },
-  blue:    { bar: "bg-blue-500",    dot: "text-blue-500",    text: "text-blue-600 dark:text-blue-400",    bg: "bg-blue-500/8" },
-  rose:    { bar: "bg-rose-500",    dot: "text-rose-500",    text: "text-rose-600 dark:text-rose-400",    bg: "bg-rose-500/8" },
-  violet:  { bar: "bg-violet-500",  dot: "text-violet-500",  text: "text-violet-600 dark:text-violet-400",  bg: "bg-violet-500/8" },
-};
-
 export function FormWizard({
   steps,
   onSubmit,
@@ -61,7 +50,6 @@ export function FormWizard({
   const step = steps[current];
   const isLast = current === steps.length - 1;
   const canAdvance = step.badge === "optional" ? true : step.isValid();
-  const accent = ACCENT[step.accentColor ?? "sky"] ?? ACCENT.sky;
 
   const goTo = (next: number, dir: "forward" | "back") => {
     if (animating) return;
@@ -150,7 +138,7 @@ export function FormWizard({
 
       {/* ── Stepper (above separator line) ─ */}
       {steps.length > 1 && (
-        <div className="select-none flex items-center justify-center gap-2 flex-wrap pt-2 pb-1">
+        <div className="select-none flex items-center justify-center gap-2 pt-2 pb-1">
           {steps.map((s, i) => {
             const done = i < current;
             const active = i === current;
@@ -171,7 +159,7 @@ export function FormWizard({
                   </span>
                   <span
                     className={[
-                      "text-[11px] font-medium whitespace-nowrap transition-colors duration-200",
+                      "text-[11px] font-medium whitespace-nowrap transition-colors duration-200 hidden md:block",
                       active ? "text-text-primary" : done ? "text-company-primary" : "text-text-muted/50",
                     ].join(" ")}
                   >
@@ -179,7 +167,7 @@ export function FormWizard({
                   </span>
                 </div>
                 {i < steps.length - 1 && (
-                  <div className="flex-1 min-w-[64px] max-w-[120px] h-[1px] rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600/60 shrink-0">
+                  <div className="flex-1 min-w-[32px] md:min-w-[64px] max-w-[120px] h-[1px] rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600/60 shrink-0">
                     <div
                       className="h-full rounded-full bg-company-primary transition-all duration-500 ease-out"
                       style={{ width: i < current ? "100%" : "0%" }}

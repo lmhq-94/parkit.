@@ -87,7 +87,7 @@ export default function BookingsPage() {
   }, [selectedCompanyId]);
 
   const fetchData = useCallback(
-    async (_userId: string) => {
+    async () => {
       const params =
         statusFilters.length > 0
           ? statusFilters.map((s) => `status=${encodeURIComponent(s)}`).join("&")

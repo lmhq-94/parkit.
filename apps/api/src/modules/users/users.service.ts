@@ -301,11 +301,11 @@ export class UsersService {
       });
       if (!user) return null;
       const {
-        passwordHash,
-        invitationToken,
+        passwordHash: _passwordHash,
+        invitationToken: _invitationToken,
         invitationTokenExpiresAt,
-        passwordResetToken,
-        passwordResetExpiresAt,
+        passwordResetToken: _passwordResetToken,
+        passwordResetExpiresAt: _passwordResetExpiresAt,
         ...rest
       } = user;
       const pendingInvitation =

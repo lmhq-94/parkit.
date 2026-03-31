@@ -68,7 +68,7 @@ interface LocaleStore {
   hydrateLocale: () => Promise<void>;
 }
 
-export const useLocaleStore = create<LocaleStore>((set, get) => ({
+export const useLocaleStore = create<LocaleStore>((set) => ({
   locale: "es",
   isHydrated: false,
   setLocale: async (locale: Locale) => {

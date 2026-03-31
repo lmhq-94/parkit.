@@ -153,7 +153,7 @@ export default function CustomersPage() {
   }, []);
 
   const fetchData = useCallback(
-    async (_userId: string) => {
+    async () => {
       const params = new URLSearchParams();
       params.set("excludeValets", "true");
       params.append("systemRole", "CUSTOMER");

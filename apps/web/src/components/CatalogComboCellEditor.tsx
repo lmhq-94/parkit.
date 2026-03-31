@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 import { toTitleCase } from "@/lib/inputMasks";
@@ -44,6 +44,12 @@ export function CatalogComboCellEditor({
           o.label.toLowerCase().includes(inputValue.trim().toLowerCase())
         );
 
+  const commitValue = useCallback((val: string) => {
+    const trimmed = val.trim();
+    const final = trimmed ? toTitleCase(trimmed) : null;
+    onValueChange(final);
+  }, [onValueChange]);
+
   useEffect(() => {
     const opt = options.find((o) => o.value === value);
     setInputValue(opt ? opt.label : value ?? "");
@@ -83,7 +89,7 @@ export function CatalogComboCellEditor({
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
-  }, [open, inputValue, stopEditing]);
+  }, [open, inputValue, stopEditing, commitValue]);
 
   useEffect(() => {
     if (!open) return;
@@ -97,12 +103,6 @@ export function CatalogComboCellEditor({
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open, value, stopEditing]);
-
-  const commitValue = (val: string) => {
-    const trimmed = val.trim();
-    const final = trimmed ? toTitleCase(trimmed) : null;
-    onValueChange(final);
-  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") {

@@ -1,10 +1,13 @@
 import React from "react";
+// eslint-disable @typescript-eslint/no-var-requires
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FormattedInputCellEditor } from "../FormattedInputCellEditor";
 
+const mockUseToast = jest.fn(() => ({ showError: jest.fn() }));
+
 jest.mock("@/lib/toastStore", () => ({
-  useToast: () => ({ showError: jest.fn() }),
+  useToast: mockUseToast,
 }));
 
 describe("FormattedInputCellEditor", () => {
@@ -78,7 +81,7 @@ describe("FormattedInputCellEditor", () => {
 
   it("muestra toast y no cierra cuando el validador devuelve error", async () => {
     const showError = jest.fn();
-    jest.spyOn(require("@/lib/toastStore"), "useToast").mockReturnValue({ showError });
+    mockUseToast.mockReturnValue({ showError });
     const stopEditing = jest.fn();
     render(
       <FormattedInputCellEditor

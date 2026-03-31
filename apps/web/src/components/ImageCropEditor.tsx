@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import Image from "next/image";
 
 type Props = {
   sourceDataUrl: string;
@@ -24,7 +25,7 @@ type Props = {
 
 export function ImageCropEditor({
   sourceDataUrl,
-  aspectRatio: [aspectW, aspectH],
+  aspectRatio: _aspectRatio,
   cropBoxWidth,
   cropBoxHeight,
   outputWidth,
@@ -147,6 +148,7 @@ export function ImageCropEditor({
                 top: position.y,
               }}
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={sourceDataUrl}
                 alt=""

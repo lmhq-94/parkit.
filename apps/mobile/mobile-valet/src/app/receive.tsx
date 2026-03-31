@@ -9,7 +9,6 @@ import {
   Modal,
   FlatList,
   Image,
-  ScrollView,
   useWindowDimensions,
   Animated,
   RefreshControl,
@@ -635,6 +634,7 @@ export default function ReceiveScreen() {
       void handleLookup({ advanceStep: false, plateValue: formatted });
     }, 350);
     return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wizardStep, plate, lookupLoading, lookupReadyForPlate]);
 
   const validateBooking = async (overrideCode?: string) => {
@@ -983,7 +983,7 @@ export default function ReceiveScreen() {
         setDamagePhotoBusy(false);
       }
     },
-    [locale, t]
+    [feedback, locale]
   );
 
   const pickDamageFromLibrary = useCallback(async () => {
@@ -1003,7 +1003,7 @@ export default function ReceiveScreen() {
     });
     if (result.canceled || !result.assets?.[0]?.uri) return;
     await processAndAddDamagePhoto(result.assets[0].uri);
-  }, [locale, t, processAndAddDamagePhoto]);
+  }, [feedback, locale, processAndAddDamagePhoto]);
 
   const takeDamagePhoto = useCallback(async () => {
     if (damagePhotosRef.current.length >= MAX_DAMAGE_PHOTOS) {
@@ -1021,7 +1021,7 @@ export default function ReceiveScreen() {
     });
     if (result.canceled || !result.assets?.[0]?.uri) return;
     await processAndAddDamagePhoto(result.assets[0].uri);
-  }, [locale, t, processAndAddDamagePhoto]);
+  }, [feedback, locale, processAndAddDamagePhoto]);
 
   const removeDamagePhotoAt = useCallback((index: number) => {
     setDamagePhotoDataUrls((prev) => prev.filter((_, i) => i !== index));
@@ -1100,9 +1100,6 @@ export default function ReceiveScreen() {
       setSubmitting(false);
     }
   };
-
-  const showNewDriverFields =
-    vehicleResolved && (vehicle === null || !vehicle?.owners?.length);
 
   const plateFormatted = formatPlate(plate).trim();
   const plateLooksValid = isValidCrPlate(plateFormatted);

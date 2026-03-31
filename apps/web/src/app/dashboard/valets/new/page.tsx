@@ -8,7 +8,7 @@ import { MultiSelectField } from "@/components/MultiSelectField";
 import { SelectField } from "@/components/SelectField";
 import { DatePickerField } from "@/components/DatePickerField";
 import { useTranslation } from "@/hooks/useTranslation";
-import { apiClient, getApiErrorMessage } from "@/lib/api";
+import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { LICENSE_TYPES } from "@/lib/companyOptions";
 import { required, email as validateEmail } from "@/lib/validation";

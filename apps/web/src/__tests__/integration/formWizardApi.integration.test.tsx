@@ -2,6 +2,7 @@
  * Test de integración: formulario tipo wizard con validación, API y toast.
  * Verifica que FormWizard + validación + apiClient + useToast trabajen juntos.
  */
+// eslint-disable @typescript-eslint/no-var-requires
 import React, { useState } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -22,7 +23,6 @@ jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush, replace: jest.fn() }),
 }));
 jest.mock("next/link", () => {
-  const React = require("react");
   return {
     __esModule: true,
     default: function MockLink({ children, href }: { children: React.ReactNode; href: string }) {

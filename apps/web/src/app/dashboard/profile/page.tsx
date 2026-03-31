@@ -108,7 +108,7 @@ export default function ProfilePage() {
     return () => {
       cancelled = true;
     };
-  }, [selectedCompanyId]);
+  }, [selectedCompanyId, showError, t]);
 
   const set =
     (k: keyof typeof defaultForm) =>

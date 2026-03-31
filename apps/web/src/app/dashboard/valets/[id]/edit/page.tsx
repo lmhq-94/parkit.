@@ -72,7 +72,7 @@ export default function EditValetPage() {
       })
       .catch(() => { setError(t("common.loadingData")); showError(t("common.loadError")); })
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, showError, t]);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>

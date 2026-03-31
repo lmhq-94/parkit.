@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Building2, Receipt, Mail, Phone, Globe,
-  DollarSign, Clock, MapPin, ArrowRight, Smartphone,
+  DollarSign, Clock, MapPin, ArrowRight,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
@@ -93,7 +93,7 @@ export default function EditCompanyPage() {
         setLoading(false);
       }
     })();
-  }, [id]);
+  }, [id, showError, t]);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>

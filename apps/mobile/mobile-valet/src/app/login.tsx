@@ -595,7 +595,7 @@ export default function LoginScreen() {
                               {t(locale, "signup.staffRoleLabel")}
                             </Text>
                             <View style={styles.modalList}>
-                              {STAFF_ROLES.map((r, idx) => {
+                              {STAFF_ROLES.map((r) => {
                                 const active = staffRole === r;
                                 return (
                                   <Pressable

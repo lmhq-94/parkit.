@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 /**
  * Banner estilo Microsoft/Google: avatar/logo en círculo a la izquierda
  * y nombre de empresa a la derecha. Misma estructura con o sin imagen de fondo.
@@ -37,9 +39,11 @@ export function DefaultBanner({
     >
       {hasBackgroundImage && (
         <>
-          <img
+          <Image
             src={backgroundImageUrl!}
             alt=""
+            width={1000}
+            height={200}
             className="absolute inset-0 w-full h-full object-cover object-center"
             style={{ transform: "scaleX(-1)" }}
           />
@@ -78,9 +82,11 @@ export function DefaultBanner({
           }}
         >
           {logoImageUrl?.trim() ? (
-            <img
+            <Image
               src={logoImageUrl}
               alt=""
+              width={48}
+              height={48}
               className="w-full h-full object-cover object-center"
             />
           ) : (

@@ -8,14 +8,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LocaleToggle } from "@/components/LocaleToggle";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import type { CompanyBranding } from "@/lib/store";
 import { getAvatarColor, getFullName, getInitials, getShortName, isSuperAdmin } from "@/lib/auth";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { LocaleToggle } from "@/components/LocaleToggle";
+import { useTheme } from "next-themes";
+import { useLocaleStore } from "@/lib/store";
+import { Sun, Moon, Globe } from "lucide-react";
 import { apiClient } from "@/lib/api";
-import { ArrowLeft, ChevronDown, Menu } from "lucide-react";
+import { ArrowLeft, ChevronDown, Menu, UserRound, LogOut } from "lucide-react";
 
 const HeaderActionContext = createContext<((node: React.ReactNode) => void) | null>(null);
 export function useHeaderAction() {
@@ -180,10 +183,12 @@ function DashboardLayoutInner({
   const setCompanyBranding = useDashboardStore((s: any) => s.setCompanyBranding);
   const getBrandingFromCache = useDashboardStore((s: any) => s.getBrandingFromCache);
   const setBrandingInCache = useDashboardStore((s: any) => s.setBrandingInCache);
-  const superAdmin = isSuperAdmin(user);
+  const { theme, setTheme } = useTheme();
+  const { locale, setLocale } = useLocaleStore();
 
   // Load branding (logo, banner, colors) for dashboard and sidebar. It may already be preloaded on login.
   useEffect(() => {
+    const superAdmin = isSuperAdmin(user);
     if (superAdmin && !selectedCompanyId) {
       setCompanyBranding(null);
       return;
@@ -221,7 +226,7 @@ function DashboardLayoutInner({
         const current = useDashboardStore.getState().companyBranding;
         if (!current) setCompanyBranding(null);
       });
-  }, [selectedCompanyId, superAdmin, setCompanyBranding, getBrandingFromCache, setBrandingInCache, user?.id]);
+  }, [selectedCompanyId, user, setCompanyBranding, getBrandingFromCache, setBrandingInCache]);
 
   return (
     <ProtectedRoute>
@@ -282,8 +287,11 @@ function DashboardLayoutInner({
                   />
                 </>
               )}
-              <ThemeToggle />
-              <LocaleToggle />
+              {/* Theme and Locale toggles moved inside user menu for mobile optimization */}
+              <div className="hidden md:flex items-center gap-3">
+                <ThemeToggle />
+                <LocaleToggle />
+              </div>
               {user && (
                 <>
                   <div className="relative" ref={userMenuRef}>
@@ -352,10 +360,78 @@ function DashboardLayoutInner({
                               setUserMenuOpen(false);
                               router.push("/dashboard/profile");
                             }}
-                            className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"
                           >
+                            <UserRound className="w-4 h-4" />
                             {t("sidebar.profile")}
                           </button>
+                          <hr className="my-1 border-slate-200 dark:border-slate-700" />
+                          <div className="px-3 py-1">
+                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                              {t("settings.theme")}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nextTheme: "light" | "dark" = theme === "dark" ? "light" : "dark";
+                                setTheme(nextTheme);
+                                apiClient
+                                  .patch("/users/me", {
+                                    appPreferences: { theme: nextTheme },
+                                  })
+                                  .catch(() => {});
+                              }}
+                              className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"
+                            >
+                              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                              {theme === "dark" ? t("themeLight") : t("themeDark")}
+                            </button>
+                          </div>
+                          <hr className="my-1 border-slate-200 dark:border-slate-700" />
+                          <div className="px-3 py-1">
+                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                              {t("settings.language")}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setLocale("es");
+                                apiClient
+                                  .patch("/users/me", {
+                                    appPreferences: { locale: "es" },
+                                  })
+                                  .catch(() => {});
+                              }}
+                              className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg flex items-center gap-2 ${
+                                locale === "es"
+                                  ? "bg-company-primary-muted text-company-primary font-medium"
+                                  : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                              }`}
+                            >
+                              <Globe className="w-4 h-4" />
+                              {t("languageEs")}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setLocale("en");
+                                apiClient
+                                  .patch("/users/me", {
+                                    appPreferences: { locale: "en" },
+                                  })
+                                  .catch(() => {});
+                              }}
+                              className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg flex items-center gap-2 ${
+                                locale === "en"
+                                  ? "bg-company-primary-muted text-company-primary font-medium"
+                                  : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                              }`}
+                            >
+                              <Globe className="w-4 h-4" />
+                              {t("languageEn")}
+                            </button>
+                          </div>
+                          <hr className="my-1 border-slate-200 dark:border-slate-700" />
                           <button
                             type="button"
                             onClick={() => {
@@ -367,8 +443,9 @@ function DashboardLayoutInner({
                                 router.replace("/login");
                               }
                             }}
-                            className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-red-600 dark:text-red-400 hover:bg-red-500/10"
+                            className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-red-600 dark:text-red-400 hover:bg-red-500/10 flex items-center gap-2"
                           >
+                            <LogOut className="w-4 h-4" />
                             {t("auth.signOut")}
                           </button>
                         </div>

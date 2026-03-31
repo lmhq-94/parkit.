@@ -21,7 +21,7 @@ export default function RootLayout() {
       setIsHydrating(false);
     };
     init();
-  }, []);
+  }, [hydrate, hydrateLocale]);
 
   useEffect(() => {
     if (!isHydrating && fontsLoaded) {

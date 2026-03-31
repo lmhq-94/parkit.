@@ -12,11 +12,11 @@ export class UsersController {
       const user = await UsersService.getProfile(userId);
       if (!user) return notFound(res, "User not found");
       const {
-        passwordHash,
-        invitationToken,
+        passwordHash: _passwordHash,
+        invitationToken: _invitationToken,
         invitationTokenExpiresAt,
-        passwordResetToken,
-        passwordResetExpiresAt,
+        passwordResetToken: _passwordResetToken,
+        passwordResetExpiresAt: _passwordResetExpiresAt,
         ...rest
       } = user;
       const pendingInvitation =
@@ -36,11 +36,11 @@ export class UsersController {
       const userId = req.user.userId;
       const user = await UsersService.updateProfile(userId, req.body);
       const {
-        passwordHash,
-        invitationToken,
+        passwordHash: _passwordHash,
+        invitationToken: _invitationToken,
         invitationTokenExpiresAt,
-        passwordResetToken,
-        passwordResetExpiresAt,
+        passwordResetToken: _passwordResetToken,
+        passwordResetExpiresAt: _passwordResetExpiresAt,
         ...rest
       } = user;
       const pendingInvitation =
@@ -59,11 +59,11 @@ export class UsersController {
     try {
       const user = await UsersService.createSuperAdmin(req.body);
       const {
-        invitationToken,
-        invitationTokenExpiresAt,
-        passwordHash,
-        passwordResetToken,
-        passwordResetExpiresAt,
+        invitationToken: _invitationToken,
+        invitationTokenExpiresAt: _invitationTokenExpiresAt,
+        passwordHash: _passwordHash,
+        passwordResetToken: _passwordResetToken,
+        passwordResetExpiresAt: _passwordResetExpiresAt,
         ...rest
       } = user;
       return created(res, rest);
@@ -84,11 +84,11 @@ export class UsersController {
 
       // Don't expose invitation token or password hash in API response
       const {
-        invitationToken,
-        invitationTokenExpiresAt,
-        passwordHash,
-        passwordResetToken,
-        passwordResetExpiresAt,
+        invitationToken: _invitationToken,
+        invitationTokenExpiresAt: _invitationTokenExpiresAt,
+        passwordHash: _passwordHash,
+        passwordResetToken: _passwordResetToken,
+        passwordResetExpiresAt: _passwordResetExpiresAt,
         ...rest
       } = user;
       return created(res, rest);
@@ -155,11 +155,11 @@ export class UsersController {
       );
 
       const {
-        passwordHash,
-        invitationToken,
+        passwordHash: _passwordHash,
+        invitationToken: _invitationToken,
         invitationTokenExpiresAt,
-        passwordResetToken,
-        passwordResetExpiresAt,
+        passwordResetToken: _passwordResetToken,
+        passwordResetExpiresAt: _passwordResetExpiresAt,
         ...rest
       } = user;
       const pendingInvitation =

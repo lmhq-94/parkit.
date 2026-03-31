@@ -78,7 +78,7 @@ export function FeedbackModal() {
           opacity: 0.8,
         },
       }),
-    [theme]
+    [C, F, M, R, S, theme]
   );
 
   if (!isOpen || !options) return null;

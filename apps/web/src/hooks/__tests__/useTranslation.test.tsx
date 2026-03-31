@@ -1,4 +1,3 @@
-import React from "react";
 import { renderHook, act } from "@testing-library/react";
 import { useTranslation } from "../useTranslation";
 import { useLocaleStore } from "@/lib/store";

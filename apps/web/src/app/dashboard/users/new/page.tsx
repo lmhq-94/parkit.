@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { User, Mail, Phone, Clock, Shield } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";

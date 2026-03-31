@@ -15,7 +15,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { formatVehicleColorLabel } from "@parkit/shared/src/vehicleColors";
-import api, { clearAuthToken } from "@/lib/api";
+import api from "@/lib/api";
 import { ValetBackButton } from "@/components/ValetBackButton";
 import { SquareParkingOff, TrafficCone } from "lucide-react-native";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
@@ -433,7 +433,7 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
 
 export default function TicketsScreen() {
   const router = useRouter();
-  const { user, setUser } = useAuthStore();
+  const { user } = useAuthStore();
   useValetProfileSync(user);
   const locale = useLocaleStore((s) => s.locale);
   const theme = useValetTheme();
@@ -475,7 +475,7 @@ export default function TicketsScreen() {
       const timeB = new Date(b.createdAt || 0).getTime();
       return timeA - timeB;
     });
-  }, [tickets, isDriverUi]);
+  }, [tickets, queueMode]);
   const feedback = useMemo(() => createFeedback(locale), [locale]);
 
   const loadTickets = useCallback(async (opts?: { silent?: boolean }) => {
@@ -681,21 +681,6 @@ export default function TicketsScreen() {
           );
           feedback.success(t(locale, "tickets.successInTransit"));
         }
-      },
-    });
-  };
-
-  const handleLogout = () => {
-    feedback.confirm({
-      title: t(locale, "tickets.logoutConfirmTitle"),
-      message: t(locale, "tickets.logoutConfirmMessage"),
-      confirmText: t(locale, "tickets.logout"),
-      destructive: true,
-      onConfirm: async () => {
-        await api.post("/valets/me/presence", { status: "AWAY" }).catch(() => {});
-        await clearAuthToken();
-        setUser(null);
-        router.replace("/login");
       },
     });
   };

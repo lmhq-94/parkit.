@@ -21,7 +21,6 @@ import { FormattedInputCellEditor } from "@/components/FormattedInputCellEditor"
 import { BrandModelCatalogCellEditor } from "@/components/BrandModelCatalogCellEditor";
 import { AddressCellEditor } from "@/components/AddressCellEditor";
 import { DateTimeCellEditor } from "@/components/DateTimeCellEditor";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageLoader } from "@/components/PageLoader";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -496,8 +495,8 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
 }
 
 export function DashboardDataTablePage<T extends { id?: string | number }>({
-  title: _title,
-  description: _description,
+  title,
+  description,
   endpoint,
   fetchData,
   columns,
@@ -582,7 +581,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
     } finally {
       setIsLoading(false);
     }
-  }, [endpoint, fetchData, user?.id, locale]);
+  }, [endpoint, fetchData, user?.id, locale, showToastError]);
 
   useEffect(() => {
     loadData();
@@ -878,7 +877,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
       });
     }
     return dataCols;
-  }, [columns, locale, onView, onEdit, onDelete, onCreate, onRequestDelete, handleCreate, onUpdate, renderRowDetail, hasRowDetail, expandedRowId, customActions]);
+  }, [columns, locale, onView, onEdit, onDelete, onCreate, onRequestDelete, handleCreate, onUpdate, renderRowDetail, hasRowDetail, expandedRowId, customActions, handleEditRow]);
 
   const hasEditableColumns = useMemo(
     () => columns.some((c) => Boolean(c.editable && c.field)),
@@ -1061,6 +1060,8 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                 </div>
               )}
             </div>
+            {title && <h1 className="text-2xl font-bold text-text-primary mb-2">{title}</h1>}
+            {description && <p className="text-text-secondary mb-4">{description}</p>}
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-200 rounded-xl">
                 <span className="font-medium">{error}</span>

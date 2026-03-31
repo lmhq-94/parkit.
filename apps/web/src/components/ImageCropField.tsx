@@ -165,11 +165,13 @@ export function ImageCropField({
     const previewContent = (
       <div className="flex flex-col gap-4 flex-1 min-h-0" style={layout === "card" ? { minHeight: contentMinHeight } : undefined}>
         <div className={`overflow-hidden rounded-xl bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 w-full flex items-center justify-center ${isLogo ? "rounded-full max-w-[176px] aspect-square" : "rounded-xl aspect-[5/1] max-w-[400px] min-w-[240px]"}`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={value} alt="" className={`w-full h-full object-cover object-center ${isLogo ? "rounded-full" : ""}`} />
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {[1, 2, 3].map((i) => (
             <div key={i} className={`overflow-hidden rounded-lg bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 flex items-center justify-center ${isLogo ? "rounded-full" : ""}`} style={{ width: isLogo ? 44 : 80, height: isLogo ? 44 : 20 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={value} alt="" className="w-full h-full object-cover object-center" />
             </div>
           ))}

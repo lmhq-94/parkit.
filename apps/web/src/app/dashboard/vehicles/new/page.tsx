@@ -67,6 +67,8 @@ export default function NewVehiclePage() {
     (m) => m.name.toLowerCase() === form.brand.trim().toLowerCase()
   );
 
+  // Only when brand changes: do not refetch while typing year to avoid losing selected model
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     (async () => {
       try {
@@ -125,7 +127,7 @@ export default function NewVehiclePage() {
         setLoadingModels(false);
       }
     })();
-    // Only when brand changes: do not refetch while typing year to avoid losing selected model
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.brand, setValue]);
 
   const getDimensionsData = useCallback(async (): Promise<{ lengthCm?: number; widthCm?: number; heightCm?: number; weightKg?: number } | null> => {

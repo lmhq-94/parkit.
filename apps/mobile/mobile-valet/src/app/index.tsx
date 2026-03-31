@@ -81,7 +81,7 @@ export default function SplashScreen() {
       ]),
     ]);
     stagger.start();
-  }, []);
+  }, [breathScale, itOpacity, itScale, itTranslate, parkOpacity, parkTranslate, subtleOpacity]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

@@ -3,10 +3,11 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore, useDashboardStore, SIDEBAR_COLLAPSED_KEY } from "@/lib/store";
-import { getFullName, getAvatarColor, getInitials, isSuperAdmin, isAdmin } from "@/lib/auth";
+import { getAvatarColor, isSuperAdmin, isAdmin } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
 import { DefaultBanner } from "@/components/DefaultBanner";
 import { apiClient } from "@/lib/api";
@@ -306,7 +307,7 @@ function CompanySelector({
             }
           >
             {logoImageUrl?.trim() ? (
-              <img src={logoImageUrl} alt="" className="w-full h-full object-cover object-center" key={logoImageUrl} />
+              <Image src={logoImageUrl} alt="" width={40} height={40} className="w-full h-full object-cover object-center" key={logoImageUrl} />
             ) : selectedCompanyId ? (
               selectedInitials
             ) : (
@@ -441,7 +442,7 @@ export function DashboardSidebar() {
       .catch(() => {
         setAdminCompanyName(null);
       });
-  }, [mounted, user?.id, superAdmin, setSelectedCompany]);
+  }, [mounted, user?.id, superAdmin, setSelectedCompany, user]);
 
   // Unread notifications count for sidebar badge (refreshes on navigation)
   useEffect(() => {
@@ -712,7 +713,7 @@ export function DashboardSidebar() {
                       <SidebarTooltip show={collapsed} label={item.label}>
                         <Link
                           href={item.href}
-                          onClick={(e) => {
+                          onClick={() => {
                             handleNavClick();
                           }}
                           className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${

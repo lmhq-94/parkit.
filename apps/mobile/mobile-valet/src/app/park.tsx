@@ -3,7 +3,6 @@ import {
   Image,
   Platform,
   Pressable,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -45,7 +44,6 @@ function createParkStyles(theme: ReturnType<typeof useValetTheme>, contentMaxWid
   const S = theme.space;
   const R = theme.radius;
   const F = ticketsA11y.font;
-  const M = ticketsA11y.minTouch;
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: C.bg, alignItems: "center" },
     frame: {
@@ -282,7 +280,7 @@ export default function ParkFlowScreen() {
   const C = theme.colors;
   const M = ticketsA11y.minTouch;
 
-  const [ticket, setTicket] = useState<TicketDetail | null>(null);
+  const [_ticket, setTicket] = useState<TicketDetail | null>(null);
   const [slots, setSlots] = useState<ParkingSlot[]>([]);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

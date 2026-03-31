@@ -20,7 +20,7 @@ export function DateTimeCellEditor({
   value: valueProp,
   initialValue,
   onValueChange,
-  stopEditing,
+  stopEditing: _stopEditing,
   minNow,
 }: DateTimeCellEditorProps) {
   const current = (valueProp ?? initialValue ?? "") as string;
@@ -41,4 +41,3 @@ export function DateTimeCellEditor({
     </div>
   );
 }
-

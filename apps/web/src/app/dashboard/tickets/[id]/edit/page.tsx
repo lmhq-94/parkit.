@@ -87,7 +87,7 @@ export default function EditTicketPage() {
         setLoading(false);
       }
     })();
-  }, [id, selectedCompanyId]);
+  }, [id, selectedCompanyId, showError, t]);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLSelectElement>) => setForm((p) => ({ ...p, [k]: e.target.value }));

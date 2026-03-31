@@ -19,6 +19,11 @@ module.exports = {
   ignorePatterns: ['dist/', 'node_modules/', '**/*.test.ts', 'src/__tests__/**'],
   rules: {
     'no-console': 'off',
+    '@typescript-eslint/no-unused-vars': ['error', {
+      argsIgnorePattern: '^_',
+      varsIgnorePattern: '^_',
+      ignoreRestSiblings: true,
+    }],
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'error'
   },

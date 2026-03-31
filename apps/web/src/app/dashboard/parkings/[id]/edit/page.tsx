@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { MapPin, Hash, Tag, Navigation, Radius, ArrowRight, Plus, Trash2, Clock, Coins } from "lucide-react";
+import { MapPin, Tag, Navigation, Radius, ArrowRight, Plus, Trash2, Clock, Coins } from "lucide-react";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -94,7 +94,7 @@ export default function EditParkingPage() {
         setLoading(false);
       }
     })();
-  }, [id]);
+  }, [id, showError, t]);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm(p => ({ ...p, [k]: e.target.value }));
@@ -162,8 +162,6 @@ export default function EditParkingPage() {
 
   const handleSubmit = async () => {
     const requiresBilling = chargesParking;
-    const hasBillingData =
-      form.freeBenefitHours.trim() !== "" && form.pricePerExtraHour.trim() !== "";
 
     const nextErrors: typeof fieldErrors = {};
     if (!form.name.trim()) nextErrors.name = t("validation.required");

@@ -64,7 +64,7 @@ export default function NotificationsPage() {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, showToastError, t]);
 
   useEffect(() => {
     load();
