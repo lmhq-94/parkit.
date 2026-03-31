@@ -43,7 +43,7 @@ const PATH_HEADERS: Record<string, PathHeader> = {
   "/dashboard/settings": { title: "settings.title", description: "settings.description" },
   "/dashboard/users": { title: "tables.employees.title", description: "tables.employees.description" },
   "/dashboard/users/new": { title: "users.newUser", description: "users.newUserDescription", backHref: "/dashboard/users", backLabel: "tables.employees.title" },
-  "/dashboard/users/[id]/edit": { title: "tables.employees.title", description: "users.editUserDescription", backHref: "/dashboard/users", backLabel: "tables.employees.title" },
+  "/dashboard/users/[id]/edit": { title: "users.editUser", description: "users.editUserDescription", backHref: "/dashboard/users", backLabel: "tables.employees.title" },
   "/dashboard/valets": { title: "tables.valets.title", description: "tables.valets.description" },
   "/dashboard/valets/new": { title: "valets.newValet", description: "valets.newValetDescription", backHref: "/dashboard/valets", backLabel: "tables.valets.title" },
   "/dashboard/valets/[id]/edit": { title: "tables.valets.title", description: "valets.editValetDescription", backHref: "/dashboard/valets", backLabel: "tables.valets.title" },
