@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import Image from "next/image";
 
 type Props = {
   sourceDataUrl: string;
@@ -90,7 +89,12 @@ export function ImageCropEditor({
   };
 
   const handleApply = useCallback(() => {
-    const img = new Image();
+    const ImgCtor = typeof window !== "undefined" ? window.Image : null;
+    if (!ImgCtor) {
+      onApply(sourceDataUrl);
+      return;
+    }
+    const img = new ImgCtor();
     img.onload = () => {
       const { width: iw, height: ih } = img;
       // Which image area is visible inside crop box (image coordinates)

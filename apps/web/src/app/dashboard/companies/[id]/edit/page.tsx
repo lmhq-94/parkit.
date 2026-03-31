@@ -16,7 +16,7 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { COUNTRIES, CURRENCIES, TIMEZONES, INDUSTRIES } from "@/lib/companyOptions";
-import { formatTaxId, formatPhoneWithCountryCode, COUNTRY_DIAL_CODES } from "@/lib/inputMasks";
+import { formatTaxId, formatPhoneInternational, formatPhoneWithCountryCode, COUNTRY_DIAL_CODES } from "@/lib/inputMasks";
 import { required, email as validateEmail, phone as validatePhone } from "@/lib/validation";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";

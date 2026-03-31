@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import {
@@ -75,6 +75,7 @@ export default function ProfilePage() {
   const [submitting, setSubmitting] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [prefsMounted, setPrefsMounted] = useState(false);
+  const hasLocalEditsRef = useRef(false);
   useEffect(() => {
     setPrefsMounted(true);
   }, []);
@@ -85,6 +86,7 @@ export default function ProfilePage() {
       try {
         const data = await apiClient.get<Record<string, unknown>>("/users/me");
         if (!cancelled && data) {
+          if (hasLocalEditsRef.current) return;
           const loaded = {
             firstName: String(data.firstName ?? ""),
             lastName: String(data.lastName ?? ""),
@@ -113,11 +115,17 @@ export default function ProfilePage() {
   const set =
     (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-      setForm((p) => ({ ...p, [k]: e.target.value }));
+      setForm((p) => {
+        hasLocalEditsRef.current = true;
+        return { ...p, [k]: e.target.value };
+      });
   const setAndClearError =
     (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      setForm((p) => ({ ...p, [k]: e.target.value }));
+      setForm((p) => {
+        hasLocalEditsRef.current = true;
+        return { ...p, [k]: e.target.value };
+      });
       setErrors((prev) => ({ ...prev, [k]: undefined }));
     };
 
@@ -171,6 +179,23 @@ export default function ProfilePage() {
             response.avatarUrl != null ? String(response.avatarUrl) : undefined,
         });
       }
+      const nextForm = {
+        ...form,
+        firstName: String(response?.firstName ?? form.firstName),
+        lastName: String(response?.lastName ?? form.lastName),
+        email: String(response?.email ?? form.email),
+        phone:
+          response?.phone != null
+            ? formatPhoneInternational(String(response.phone))
+            : form.phone,
+        timezone:
+          response?.timezone != null ? String(response.timezone) : form.timezone,
+        avatarUrl:
+          response?.avatarUrl != null ? String(response.avatarUrl) : form.avatarUrl,
+      };
+      setForm(nextForm);
+      setInitialForm(nextForm);
+      hasLocalEditsRef.current = false;
       showSuccess(t("profile.saveSuccess"));
     } catch (err) {
       showError(getTranslatedApiErrorMessage(err, t) || t("profile.saveError"));
@@ -264,8 +289,14 @@ export default function ProfilePage() {
                 <ImageCropField
                   kind="logo"
                   value={form.avatarUrl}
-                  onChange={(v) => setForm((p) => ({ ...p, avatarUrl: v }))}
-                  onClear={() => setForm((p) => ({ ...p, avatarUrl: "" }))}
+                  onChange={(v) => {
+                    hasLocalEditsRef.current = true;
+                    setForm((p) => ({ ...p, avatarUrl: v }));
+                  }}
+                  onClear={() => {
+                    hasLocalEditsRef.current = true;
+                    setForm((p) => ({ ...p, avatarUrl: "" }));
+                  }}
                   label={t("profile.avatarFieldLabel")}
                   description={t("profile.avatarImageDescription")}
                   recommendedSize="400 × 400 px"

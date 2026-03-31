@@ -365,8 +365,7 @@ function DashboardLayoutInner({
                             <UserRound className="w-4 h-4" />
                             {t("sidebar.profile")}
                           </button>
-                          <hr className="my-1 border-slate-200 dark:border-slate-700" />
-                          <div className="px-3 py-1">
+                          <div className="px-3 py-1 md:hidden">
                             <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                               {t("settings.theme")}
                             </p>
@@ -416,8 +415,7 @@ function DashboardLayoutInner({
                               </div>
                             </div>
                           </div>
-                          <hr className="my-1 border-slate-200 dark:border-slate-700" />
-                          <div className="px-3 py-1">
+                          <div className="px-3 py-1 md:hidden">
                             <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                               {t("settings.language")}
                             </p>
