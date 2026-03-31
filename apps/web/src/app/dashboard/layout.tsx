@@ -367,69 +367,103 @@ function DashboardLayoutInner({
                           </button>
                           <hr className="my-1 border-slate-200 dark:border-slate-700" />
                           <div className="px-3 py-1">
-                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                               {t("settings.theme")}
                             </p>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const nextTheme: "light" | "dark" = theme === "dark" ? "light" : "dark";
-                                setTheme(nextTheme);
-                                apiClient
-                                  .patch("/users/me", {
-                                    appPreferences: { theme: nextTheme },
-                                  })
-                                  .catch(() => {});
-                              }}
-                              className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"
-                            >
-                              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                              {theme === "dark" ? t("themeLight") : t("themeDark")}
-                            </button>
+                            <div className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 px-2 py-2">
+                              <div className="flex items-center justify-center w-8 h-8 rounded-md bg-white/70 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200">
+                                {theme === "dark" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                              </div>
+                              <div className="flex-1 flex items-center rounded-md bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 p-0.5">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const nextTheme: "light" | "dark" = "light";
+                                    setTheme(nextTheme);
+                                    apiClient
+                                      .patch("/users/me", {
+                                        appPreferences: { theme: nextTheme },
+                                      })
+                                      .catch(() => {});
+                                  }}
+                                  className={`flex-1 px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors ${
+                                    theme === "light"
+                                      ? "bg-company-primary text-white shadow-sm"
+                                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                  }`}
+                                >
+                                  {locale === "es" ? "Claro" : "Light"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const nextTheme: "light" | "dark" = "dark";
+                                    setTheme(nextTheme);
+                                    apiClient
+                                      .patch("/users/me", {
+                                        appPreferences: { theme: nextTheme },
+                                      })
+                                      .catch(() => {});
+                                  }}
+                                  className={`flex-1 px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors ${
+                                    theme === "dark"
+                                      ? "bg-company-primary text-white shadow-sm"
+                                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                  }`}
+                                >
+                                  {locale === "es" ? "Oscuro" : "Dark"}
+                                </button>
+                              </div>
+                            </div>
                           </div>
                           <hr className="my-1 border-slate-200 dark:border-slate-700" />
                           <div className="px-3 py-1">
-                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                               {t("settings.language")}
                             </p>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setLocale("es");
-                                apiClient
-                                  .patch("/users/me", {
-                                    appPreferences: { locale: "es" },
-                                  })
-                                  .catch(() => {});
-                              }}
-                              className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg flex items-center gap-2 ${
-                                locale === "es"
-                                  ? "bg-company-primary-muted text-company-primary font-medium"
-                                  : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                              }`}
-                            >
-                              <Globe className="w-4 h-4" />
-                              {t("languageEs")}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setLocale("en");
-                                apiClient
-                                  .patch("/users/me", {
-                                    appPreferences: { locale: "en" },
-                                  })
-                                  .catch(() => {});
-                              }}
-                              className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg flex items-center gap-2 ${
-                                locale === "en"
-                                  ? "bg-company-primary-muted text-company-primary font-medium"
-                                  : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                              }`}
-                            >
-                              <Globe className="w-4 h-4" />
-                              {t("languageEn")}
-                            </button>
+                            <div className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 px-2 py-2">
+                              <div className="flex items-center justify-center w-8 h-8 rounded-md bg-white/70 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200">
+                                <Globe className="w-4 h-4" />
+                              </div>
+                              <div className="flex-1 flex items-center rounded-md bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 p-0.5">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setLocale("es");
+                                    apiClient
+                                      .patch("/users/me", {
+                                        appPreferences: { locale: "es" },
+                                      })
+                                      .catch(() => {});
+                                  }}
+                                  className={`flex-1 px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors ${
+                                    locale === "es"
+                                      ? "bg-company-primary text-white shadow-sm"
+                                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                  }`}
+                                >
+                                  ES
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setLocale("en");
+                                    apiClient
+                                      .patch("/users/me", {
+                                        appPreferences: { locale: "en" },
+                                      })
+                                      .catch(() => {});
+                                  }}
+                                  className={`flex-1 px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors ${
+                                    locale === "en"
+                                      ? "bg-company-primary text-white shadow-sm"
+                                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                  }`}
+                                >
+                                  EN
+                                </button>
+                              </div>
+                            </div>
                           </div>
                           <hr className="my-1 border-slate-200 dark:border-slate-700" />
                           <button
