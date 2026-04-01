@@ -100,32 +100,40 @@ export function DefaultBanner({
         {renderRight ? (
           renderRight
         ) : (
-          <>
+          <div
+            className="inline-flex flex-col gap-0.5 rounded-md px-2.5 py-1.5 backdrop-blur-sm"
+            style={{
+              backgroundColor: "rgba(15,23,42,0.55)",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
+            }}
+          >
             <p
               className="text-sm font-semibold truncate tracking-tight"
               style={{
-                color: isDark ? "rgba(255,255,255,0.95)" : "#1a1a1a",
+                color: "rgba(255,255,255,0.98)",
+                textShadow: "0 1px 2px rgba(0,0,0,0.45)",
               }}
             >
               {companyName || "Company"}
             </p>
             {subtitle && (
               <p
-                className="mt-0.5 text-[11px] truncate"
+                className="text-[11px] truncate"
                 style={{
-                  color: isDark ? "rgba(226,232,240,0.8)" : "rgba(15,23,42,0.65)",
+                  color: "rgba(226,232,240,0.9)",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.45)",
                 }}
               >
                 {subtitle}
               </p>
             )}
             <div
-              className="mt-1.5 w-8 h-0.5 rounded-sm"
+              className="mt-1 w-8 h-0.5 rounded-sm"
               style={{
-                backgroundColor: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.2)",
+                backgroundColor: "rgba(255,255,255,0.6)",
               }}
             />
-          </>
+          </div>
         )}
       </div>
     </div>

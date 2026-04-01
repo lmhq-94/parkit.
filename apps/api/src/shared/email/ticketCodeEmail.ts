@@ -1,40 +1,45 @@
 /**
- * Sends an invitation email with a link for the user to set their password.
- * Uses Resend when RESEND_API_KEY is set; otherwise logs the link to console (dev).
+ * Sends a ticket code email with the parking ticket code for the customer.
+ * Uses Resend when RESEND_API_KEY is set; otherwise logs the code to console (dev).
  */
 
-const INVITATION_BASE_URL =
-  process.env.INVITATION_BASE_URL || "http://localhost:3000";
 const FROM_EMAIL =
-  process.env.INVITATION_FROM_EMAIL || "Parkit <onboarding@resend.dev>";
-const INVITATION_TEMPLATE_ID = process.env.INVITATION_TEMPLATE_ID || "";
-/** Same support email as login/support link (e.g. soporte@parkit.app). */
+  process.env.TICKET_CODE_FROM_EMAIL || "Parkit <onboarding@resend.dev>";
+const TICKET_CODE_TEMPLATE_ID = process.env.TICKET_CODE_TEMPLATE_ID || "";
+/** Support email for ticket-related inquiries (e.g. soporte@parkit.app). */
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "soporte@parkit.app";
 /** Optional privacy policy URL */
-const PRIVACY_URL = process.env.INVITATION_PRIVACY_URL || "";
+const PRIVACY_URL = process.env.TICKET_CODE_PRIVACY_URL || "";
 /** Optional terms and conditions URL */
-const TERMS_URL = process.env.INVITATION_TERMS_URL || "";
+const TERMS_URL = process.env.TICKET_CODE_TERMS_URL || "";
 /** Optional unsubscribe URL */
-const UNSUBSCRIBE_URL = process.env.INVITATION_UNSUBSCRIBE_URL || "";
+const UNSUBSCRIBE_URL = process.env.TICKET_CODE_UNSUBSCRIBE_URL || "";
 
-export interface SendInvitationParams {
+export interface SendTicketCodeParams {
   to: string;
   firstName: string;
   lastName: string;
-  token: string;
-  /** Company display name (e.g. commercialName or legalName) when inviting to a company; empty for super-admin invite. */
-  companyName?: string;
+  ticketCode: string;
+  /** Parking location/venue name */
+  locationName?: string;
+  /** Parking entry date/time (ISO format or formatted string) */
+  entryTime?: string;
+  /** Optional additional instructions or notes */
+  notes?: string;
 }
 
-function buildInviteLink(token: string): string {
-  const base = INVITATION_BASE_URL.replace(/\/$/, "");
-  return `${base}/accept-invite?token=${encodeURIComponent(token)}`;
-}
-
-export async function sendInvitationEmail(
-  params: SendInvitationParams,
+export async function sendTicketCodeEmail(
+  params: SendTicketCodeParams,
 ): Promise<{ sent: boolean; error?: string }> {
-  const { to, firstName, lastName, token, companyName } = params;
+  const {
+    to,
+    firstName,
+    lastName,
+    ticketCode,
+    locationName,
+    entryTime,
+    notes,
+  } = params;
 
   // In development, redirect all emails to the developer's verified email for Resend testing
   // This allows testing with any email address without domain verification
@@ -43,33 +48,34 @@ export async function sendInvitationEmail(
 
   if (isDevelopment && to !== actualTo) {
     console.log(
-      `📧 [DEV MODE] Redirecting invitation email from ${to} → ${actualTo}`,
+      `🎫 [DEV MODE] Redirecting ticket code email from ${to} → ${actualTo}`,
     );
   }
 
-  const companyDisplay = (companyName || "").trim();
-  const inviteLink = buildInviteLink(token);
+  const locationDisplay = (locationName || "").trim();
 
   // Template must be configured in env
-  if (!INVITATION_TEMPLATE_ID) {
+  if (!TICKET_CODE_TEMPLATE_ID) {
     console.error(
-      "[Invitation email error] INVITATION_TEMPLATE_ID not configured in environment",
+      "[Ticket code email error] TICKET_CODE_TEMPLATE_ID not configured in environment",
     );
-    return { sent: false, error: "INVITATION_TEMPLATE_ID not configured" };
+    return { sent: false, error: "TICKET_CODE_TEMPLATE_ID not configured" };
   }
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey || apiKey === "re_xxxxxxxxx") {
     // Development fallback
-    console.log("[Invitation email not sent - no RESEND_API_KEY]");
+    console.log("[Ticket code email not sent - no RESEND_API_KEY]");
     console.log(`  Original To: ${to}`);
-    console.log(`  Invite link: ${inviteLink}`);
+    console.log(`  Ticket code: ${ticketCode}`);
+    if (locationDisplay) console.log(`  Location: ${locationDisplay}`);
+    if (entryTime) console.log(`  Entry time: ${entryTime}`);
     return { sent: true };
   }
 
   try {
     // Resend requires html or text as fallback when using template_id
-    // This fallback is specific to invitation emails for quality UX if template fails
+    // This fallback is specific to ticket code emails for quality UX if template fails
     const htmlFallback = `
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html dir="ltr" lang="es">
@@ -79,7 +85,9 @@ export async function sendInvitationEmail(
     <meta name="x-apple-disable-message-reformatting" />
     <meta content="IE=edge" http-equiv="X-UA-Compatible" />
     <meta name="x-apple-disable-message-reformatting" />
-    <meta content="telephone=no,address=no,email=no,date=no,url=no" name="format-detection" />
+    <meta
+      content="telephone=no,address=no,email=no,date=no,url=no"
+      name="format-detection" />
     <style>
       body, .email-body {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -95,11 +103,13 @@ export async function sendInvitationEmail(
       .content { padding: 36px 40px 28px; color: #0f172a; }
       .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.16em; color: #94a3b8; margin: 0 0 8px; }
       .title { font-size: 26px; font-weight: 700; margin: 0 0 12px; color: #0f172a; }
-      .subtitle { font-size: 15px; line-height: 24px; color: #475569; margin: 0 0 24px; }
-      .badge { display: inline-block; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-size: 12px; padding: 6px 10px; border-radius: 999px; font-weight: 600; margin-bottom: 16px; }
-      .cta-wrap { text-align: center; padding: 18px 0 8px; }
-      .cta { background: #3b82f6; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 600; display: inline-block; font-size: 15px; }
-      .meta { margin-top: 18px; font-size: 12px; color: #94a3b8; }
+      .subtitle { font-size: 15px; line-height: 24px; color: #475569; margin: 0 0 20px; }
+      .ticket { background: #f8fafc; border: 1px dashed #cbd5f5; border-radius: 14px; padding: 18px 18px 14px; text-align: center; }
+      .ticket-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.18em; color: #64748b; font-weight: 700; margin: 0 0 10px; }
+      .ticket-code { font-size: 44px; font-weight: 800; letter-spacing: 6px; color: #0f172a; margin: 0; font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;}
+      .ticket-meta { margin-top: 12px; font-size: 12px; color: #64748b; }
+      .info { margin-top: 16px; font-size: 12px; line-height: 18px; color: #64748b; }
+      .note { margin-top: 16px; font-size: 12px; line-height: 18px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 10px 12px; }
       .footer { border-top: 1px solid #eef2f7; padding: 20px 40px 30px; text-align: center; font-size: 12px; color: #94a3b8; }
       .footer a { color: #3b82f6; text-decoration: none; }
       .links a { color: #64748b; text-decoration: underline; margin: 0 6px; }
@@ -107,6 +117,7 @@ export async function sendInvitationEmail(
         .content, .hero, .footer { padding-left: 20px !important; padding-right: 20px !important; }
         .brand { font-size: 36px !important; }
         .title { font-size: 22px !important; }
+        .ticket-code { font-size: 34px !important; letter-spacing: 4px !important; }
       }
     </style>
   </head>
@@ -121,15 +132,22 @@ export async function sendInvitationEmail(
                   <p class="brand"><span style="color:#ffffff">park</span><span class="dot">it.</span></p>
                 </div>
                 <div class="content">
-                  <p class="eyebrow">Invitación</p>
-                  <h1 class="title">Te damos la bienvenida</h1>
+                  <p class="eyebrow">Tiquete digital</p>
+                  <h1 class="title">Código de retiro</h1>
                   <p class="subtitle">
-                    Has sido invitado a unirte a <strong>${companyDisplay || "Parkit"}</strong> como administrador.
-                    Configura tu contraseña para acceder al dashboard y empezar a gestionar tu operación.
+                    Tu tiquete digital fue generado con éxito. Presenta este código en la salida para autorizar el retiro del vehículo.
                   </p>
-                  <div class="cta-wrap">
-                    <a class="cta" href="${inviteLink}" target="_blank" rel="noopener noreferrer nofollow">Crear contraseña</a>
-                    <div class="meta">Este enlace caduca pronto por seguridad.</div>
+                  <div class="ticket">
+                    <p class="ticket-label">Código</p>
+                    <p class="ticket-code">${ticketCode}</p>
+                    <div class="ticket-meta">
+                      ${locationDisplay ? `<div><strong>Ubicación:</strong> ${locationDisplay}</div>` : ""}
+                      ${entryTime ? `<div><strong>Entrada:</strong> ${entryTime}</div>` : ""}
+                    </div>
+                  </div>
+                  ${notes ? `<div class="note">${notes}</div>` : ""}
+                  <div class="info">
+                    * Este código es de uso único. Si tienes inconvenientes, contacta al personal de soporte en sitio.
                   </div>
                 </div>
                 <div class="footer">
@@ -161,18 +179,18 @@ export async function sendInvitationEmail(
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: [actualTo],
-        subject: `Invitación a Parkit${companyDisplay ? ` - ${companyDisplay}` : ""}`,
+        subject: "Tu código de pase de salida - Parkit",
         html: htmlFallback,
-        template_id: INVITATION_TEMPLATE_ID,
+        template_id: TICKET_CODE_TEMPLATE_ID,
         template_data: {
-          company: companyDisplay || "Parkit",
-          url: inviteLink,
+          ticket_code: ticketCode,
+          location_name: locationDisplay || "",
+          entry_time: entryTime || "",
+          notes: notes || "",
           support: SUPPORT_EMAIL,
           privacy: PRIVACY_URL || "",
           terms: TERMS_URL || "",
           unsubscribe: UNSUBSCRIBE_URL || "",
-          first_name: firstName || "",
-          full_name: `${firstName} ${lastName}`.trim() || "",
         },
       }),
     });
@@ -181,14 +199,14 @@ export async function sendInvitationEmail(
     if (!response.ok) {
       const message =
         (result && result.error && result.error.message) || response.statusText;
-      console.error("[Invitation email error]", result);
+      console.error("[Ticket code email error]", result);
       return { sent: false, error: message };
     }
 
     return { sent: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[Invitation email error]", err);
+    console.error("[Ticket code email error]", err);
     return { sent: false, error: message };
   }
 }

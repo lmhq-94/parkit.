@@ -495,8 +495,8 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
 }
 
 export function DashboardDataTablePage<T extends { id?: string | number }>({
-  title,
-  description,
+  title: _title,
+  description: _description,
   endpoint,
   fetchData,
   columns,

@@ -471,11 +471,11 @@ const translations: Record<Locale, Record<string, string>> = {
       "Las dimensiones del vehículo son cargadas automáticamente desde catálogo.",
     "receive.benefitSection": "Reserva / beneficio valet",
     "receive.benefitHelp":
-      "Opcional: pega el ID de la reserva para validar horas de cortesía en el parqueo.",
+      "Opcional: pega el ID de la reserva para validar el tiempo de cortesía en el parqueo.",
     "receive.placeholderBooking": "ID de reserva",
     "receive.validate": "Validar",
     "receive.benefitOk":
-      "Reserva válida. Cortesía aprox.: {{hours}} h (según parqueo).",
+      "Reserva válida. Cortesía aprox.: {{time}} (según parqueo).",
     "receive.benefitInvalidEyebrow": "Validación",
     "receive.benefitInvalidTitle": "Sin reserva activa",
     "receive.benefitInvalid":
@@ -987,11 +987,11 @@ const translations: Record<Locale, Record<string, string>> = {
       "Vehicle dimensions loaded automatically from catalog.",
     "receive.benefitSection": "Booking / valet benefit",
     "receive.benefitHelp":
-      "Optional: paste booking ID to validate complimentary hours at the parking.",
+      "Optional: paste booking ID to validate courtesy time at the parking.",
     "receive.placeholderBooking": "Booking ID",
     "receive.validate": "Validate",
     "receive.benefitOk":
-      "Valid booking. Approx. courtesy: {{hours}} h (per parking rules).",
+      "Valid booking. Approx. courtesy: {{time}} (per parking rules).",
     "receive.benefitInvalidEyebrow": "Verification",
     "receive.benefitInvalidTitle": "No active booking",
     "receive.benefitInvalid":

@@ -22,7 +22,7 @@ type ParkingRow = {
   address?: string;
   type?: string;
   totalSlots?: number;
-  freeBenefitHours?: number;
+  freeBenefitMinutes?: number;
   pricePerExtraHour?: number | string | null;
   company?: { currency?: string | null };
   latitude?: number | null;
@@ -31,7 +31,7 @@ type ParkingRow = {
 };
 
 export default function ParkingsPage() {
-  const { t, tWithCompany, tEnum } = useTranslation();
+  const { t, tWithCompany, tEnum, locale } = useTranslation();
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const bumpParkings = useDashboardStore((s) => s.bumpParkings);
   const router = useRouter();
@@ -44,10 +44,10 @@ export default function ParkingsPage() {
       row.totalSlots == null || row.totalSlots === ("" as unknown as number)
         ? undefined
         : Number(row.totalSlots);
-    const freeBenefitHours =
-      row.freeBenefitHours == null || row.freeBenefitHours === ("" as unknown as number)
+    const freeBenefitMinutes =
+      row.freeBenefitMinutes == null || row.freeBenefitMinutes === ("" as unknown as number)
         ? undefined
-        : Number(row.freeBenefitHours);
+        : Number(row.freeBenefitMinutes);
     const pricePerExtraHour =
       row.pricePerExtraHour == null || row.pricePerExtraHour === ""
         ? undefined
@@ -57,7 +57,7 @@ export default function ParkingsPage() {
     if (name) payload.name = name;
     if (type) payload.type = type;
     if (totalSlots !== undefined) payload.totalSlots = totalSlots;
-    if (freeBenefitHours !== undefined) payload.freeBenefitHours = freeBenefitHours;
+    if (freeBenefitMinutes !== undefined) payload.freeBenefitMinutes = freeBenefitMinutes;
     if (pricePerExtraHour !== undefined) payload.pricePerExtraHour = pricePerExtraHour;
 
     await apiClient.patch(`/parkings/${row.id}`, payload);
@@ -70,8 +70,37 @@ export default function ParkingsPage() {
     if (price == null || price === "") return "—";
     const n = typeof price === "number" ? price : Number(price);
     if (Number.isNaN(n)) return "—";
-    return curr ? `${Number(n).toFixed(2)} ${curr}` : String(n);
-  }, []);
+    if (!curr) return String(n);
+    try {
+      return new Intl.NumberFormat(
+        locale === "es" ? "es-CR" : "en-US",
+        { style: "currency", currency: curr, currencyDisplay: "symbol", minimumFractionDigits: 2, maximumFractionDigits: 2 }
+      ).format(n);
+    } catch {
+      return `${Number(n).toFixed(2)} ${curr}`;
+    }
+  }, [locale]);
+
+  const formatLatLng = useCallback((value: number | null | undefined) => {
+    if (value == null || Number.isNaN(value)) return undefined;
+    return new Intl.NumberFormat(
+      locale === "es" ? "es-CR" : "en-US",
+      { minimumFractionDigits: 0, maximumFractionDigits: 6 }
+    ).format(value);
+  }, [locale]);
+
+  const formatBenefitTime = useCallback((value: number | null | undefined) => {
+    if (value == null || Number.isNaN(value)) return undefined;
+    const totalMinutes = Math.max(0, Math.floor(value));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (hours === 0 && minutes === 0) return locale === "es" ? "0 min" : "0 min";
+    if (hours === 0) return locale === "es" ? `${minutes} min` : `${minutes} min`;
+    if (minutes === 0) return locale === "es" ? `${hours} h` : `${hours} h`;
+    return locale === "es"
+      ? `${hours} h ${minutes} min`
+      : `${hours} h ${minutes} min`;
+  }, [locale]);
 
   const columns = useMemo(
     () => [
@@ -101,18 +130,18 @@ export default function ParkingsPage() {
           parking.latitude != null ||
           parking.longitude != null ||
           parking.geofenceRadius != null ||
-          parking.freeBenefitHours != null ||
+          parking.freeBenefitMinutes != null ||
           (parking.pricePerExtraHour != null && parking.pricePerExtraHour !== "")
         }
         renderRowDetail={(parking) => (
           <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
             <DetailSectionLabel text={t("common.additionalInfo")} />
             <DetailField label={t("parkings.address")} value={parking.address} wide multiline />
-            <DetailField label={t("parkings.latitude")} value={parking.latitude != null ? String(parking.latitude) : undefined} />
-            <DetailField label={t("parkings.longitude")} value={parking.longitude != null ? String(parking.longitude) : undefined} />
+            <DetailField label={t("parkings.latitude")} value={formatLatLng(parking.latitude)} />
+            <DetailField label={t("parkings.longitude")} value={formatLatLng(parking.longitude)} />
             <DetailField label={t("parkings.geofenceRadius")} value={parking.geofenceRadius != null ? String(parking.geofenceRadius) : undefined} />
-            {parking.freeBenefitHours != null && Number(parking.freeBenefitHours) !== 0 && (
-              <DetailField label={t("parkings.freeBenefitHours")} value={String(parking.freeBenefitHours)} />
+            {parking.freeBenefitMinutes != null && Number(parking.freeBenefitMinutes) !== 0 && (
+              <DetailField label={t("parkings.freeBenefitTime")} value={formatBenefitTime(parking.freeBenefitMinutes)} />
             )}
             {parking.pricePerExtraHour != null && parking.pricePerExtraHour !== "" && (
               <DetailField label={t("parkings.pricePerExtraHour")} value={formatPrice(parking)} />

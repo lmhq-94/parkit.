@@ -134,7 +134,7 @@ interface BookingLookup {
     id: string;
     name?: string | null;
     address?: string | null;
-    freeBenefitHours?: number | null;
+    freeBenefitMinutes?: number | null;
   };
 }
 
@@ -151,6 +151,22 @@ function randomWalkInPassword(): string {
 function isValidCrPlate(value: string): boolean {
   const p = formatPlate(value).trim();
   return /^\d{6}$/.test(p) || /^[A-Z]{3}-\d{3}$/.test(p);
+}
+
+function formatBenefitTime(
+  value: number | null | undefined,
+  locale: Locale
+): string {
+  if (value == null || Number.isNaN(value)) {
+    return locale === "es" ? "0 min" : "0 min";
+  }
+  const totalMinutes = Math.max(0, Math.floor(value));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours === 0 && minutes === 0) return locale === "es" ? "0 min" : "0 min";
+  if (hours === 0) return locale === "es" ? `${minutes} min` : `${minutes} min`;
+  if (minutes === 0) return locale === "es" ? `${hours} h` : `${hours} h`;
+  return locale === "es" ? `${hours} h ${minutes} min` : `${hours} h ${minutes} min`;
 }
 
 /** Extrae un posible UUID/id de reserva desde texto plano o URL en el QR. */
@@ -672,7 +688,7 @@ export default function ReceiveScreen() {
       setBookingCheck(b);
       feedback.success(
         t(locale, "receive.benefitOk", {
-          hours: String(b.parking?.freeBenefitHours ?? 0),
+          time: formatBenefitTime(b.parking?.freeBenefitMinutes, locale),
         })
       );
     } catch {
@@ -1634,7 +1650,7 @@ export default function ReceiveScreen() {
                           <Ionicons name="checkmark-circle" size={24} color={C.success} />
                           <Text style={styles.reservationQrSuccessText}>
                             {t(locale, "receive.benefitOk", {
-                              hours: String(bookingCheck.parking?.freeBenefitHours ?? 0),
+                              time: formatBenefitTime(bookingCheck.parking?.freeBenefitMinutes, locale),
                             })}
                           </Text>
                         </View>

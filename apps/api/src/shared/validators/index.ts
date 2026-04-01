@@ -283,7 +283,7 @@ export const CreateParkingSchema = z.object({
   latitude: z.number().optional(),
   longitude: z.number().optional(),
   geofenceRadius: z.number().optional(),
-  freeBenefitHours: z.number().int().min(0).optional(),
+  freeBenefitMinutes: z.number().int().min(0).optional(),
   pricePerExtraHour: z.number().min(0).optional(),
 });
 
@@ -294,7 +294,7 @@ export const UpdateParkingSchema = z.object({
   totalSlots: z.number().positive("Total slots must be positive").optional(),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
-  freeBenefitHours: z.number().int().min(0).optional(),
+  freeBenefitMinutes: z.number().int().min(0).optional(),
   pricePerExtraHour: z.number().min(0).optional(),
 });
 
