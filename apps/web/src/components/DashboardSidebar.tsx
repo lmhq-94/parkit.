@@ -162,6 +162,7 @@ function CompanySelector({
   isDark = false,
   logoImageUrl,
   hideAvatar = false,
+  highContrast = false,
 }: {
   companies: { id: string; commercialName?: string; legalName?: string }[];
   selectedCompanyId: string | null;
@@ -175,6 +176,8 @@ function CompanySelector({
   logoImageUrl?: string | null;
   /** Cuando es true, no se muestra el círculo con avatar/logo (para usar dentro del banner sin duplicar avatar). */
   hideAvatar?: boolean;
+  /** Fuerza contraste alto para usarse sobre banners con cualquier fondo. */
+  highContrast?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<{ top?: number; bottom?: number; left: number; width: number }>({ left: 0, width: 0 });
@@ -320,16 +323,26 @@ function CompanySelector({
           type="button"
           onClick={() => { if (!open) updatePosition(); setOpen((o) => !o); }}
           className={`flex-1 flex items-center min-w-0 ${hideAvatar ? "pl-3" : "pl-2"} pr-8 py-2.5 rounded-xl text-left text-sm transition-colors ${
-            isDark
-              ? "bg-white/15 hover:bg-white/25 text-white placeholder:text-white/60"
-              : "bg-black/10 hover:bg-black/15 text-slate-900 placeholder:text-slate-600"
-          } ${open ? "ring-2 ring-white/50" : ""}`}
+            highContrast
+              ? "bg-black/65 hover:bg-black/75 text-white placeholder:text-white/75 border border-white/20 shadow-[0_6px_16px_rgba(0,0,0,0.35)]"
+              : isDark
+                ? "bg-white/15 hover:bg-white/25 text-white placeholder:text-white/60"
+                : "bg-black/10 hover:bg-black/15 text-slate-900 placeholder:text-slate-600"
+          } ${open ? "ring-2 ring-white/60" : ""} ${highContrast ? "max-w-[220px] justify-center text-center" : ""}`}
         >
           <span className="truncate flex-1">
-            {selectedCompanyName || <span className={isDark ? "text-white/70" : "text-slate-500"}>{placeholder}</span>}
+            {selectedCompanyName || (
+              <span className={highContrast ? "text-white/85" : isDark ? "text-white/70" : "text-slate-500"}>
+                {placeholder}
+              </span>
+            )}
           </span>
         </button>
-        <ChevronDown className={`absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-transform duration-200 ${open ? "rotate-180" : ""} ${isDark ? "text-white/80" : "text-slate-600"}`} />
+        <ChevronDown
+          className={`absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-transform duration-200 ${
+            open ? "rotate-180" : ""
+          } ${highContrast ? "text-white/85" : isDark ? "text-white/80" : "text-slate-600"}`}
+        />
       </div>
       {dropdown}
     </>
@@ -599,19 +612,22 @@ export function DashboardSidebar() {
                     isDark={hasCustomBanner ? bannerVariant : isDark}
                     backgroundImageUrl={hasCustomBanner ? effectiveBannerSrc : null}
                     renderRight={
-                      <CompanySelector
-                        companies={companies}
-                        selectedCompanyId={selectedCompanyId}
-                        selectedCompanyName={selectedCompanyName}
-                        onSelect={handleSelectCompany}
-                        placeholder={t("sidebar.selectCompany")}
-                        allCompaniesLabel={t("sidebar.allCompanies")}
-                        addCompanyLabel={t("sidebar.addCompany")}
-                        emptyLabel={t("companies.noCompanies")}
-                        isDark={hasCustomBanner ? bannerVariant : isDark}
-                        logoImageUrl={companyBranding?.logoImageUrl}
-                        hideAvatar
-                      />
+                      <div className="flex w-full justify-center">
+                        <CompanySelector
+                          companies={companies}
+                          selectedCompanyId={selectedCompanyId}
+                          selectedCompanyName={selectedCompanyName}
+                          onSelect={handleSelectCompany}
+                          placeholder={t("sidebar.selectCompany")}
+                          allCompaniesLabel={t("sidebar.allCompanies")}
+                          addCompanyLabel={t("sidebar.addCompany")}
+                          emptyLabel={t("companies.noCompanies")}
+                          isDark={hasCustomBanner ? bannerVariant : isDark}
+                          logoImageUrl={companyBranding?.logoImageUrl}
+                          hideAvatar
+                          highContrast
+                        />
+                      </div>
                     }
                   />
                 </div>
@@ -776,5 +792,3 @@ export function DashboardSidebar() {
     </>
   );
 }
-
-

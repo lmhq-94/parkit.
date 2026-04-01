@@ -16,7 +16,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 import { apiClient } from "@/lib/api";
-import { formatPhoneInternational } from "@/lib/inputMasks";
+import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
 import { makeTzLabel } from "@/lib/companyOptions";
 import { StatusFilterToolbar } from "@/components/StatusFilterToolbar";
 
@@ -219,7 +219,14 @@ export default function CompaniesPage() {
               />
               <DetailField
                 label={t("companies.contactPhone")}
-                value={company.contactPhone ? formatPhoneInternational(company.contactPhone) : undefined}
+                value={
+                  company.contactPhone
+                    ? formatPhoneWithCountryCode(
+                        company.contactPhone,
+                        company.countryCode || "CR"
+                      )
+                    : undefined
+                }
                 linkType="phone"
               />
               <DetailField label={t("companies.countryCode")} value={company.countryCode} />

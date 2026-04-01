@@ -76,7 +76,10 @@ export default function EditCompanyPage() {
             currency: String(data.currency ?? ""),
             timezone: String(data.timezone ?? ""),
             email: String(data.email ?? ""),
-            contactPhone: formatPhoneInternational(String(data.contactPhone ?? "")),
+            contactPhone: formatPhoneWithCountryCode(
+              String(data.contactPhone ?? ""),
+              String(data.countryCode ?? "CR") || "CR"
+            ),
             legalAddress: String(data.legalAddress ?? ""),
             requiresCustomerApp:
               data.requiresCustomerApp === true ? "true" :

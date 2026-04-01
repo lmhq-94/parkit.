@@ -154,6 +154,12 @@ export default function EditVehiclePage() {
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((p) => ({ ...p, [k]: e.target.value }));
 
+  const setIntegerField = (k: keyof typeof defaultForm) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value.replace(/[^\d]/g, "");
+      setForm((p) => ({ ...p, [k]: raw }));
+    };
+
   const setBrand = useCallback((v: string) => {
     setForm((p) => ({ ...p, brand: v, model: "" }));
   }, []);
@@ -338,7 +344,7 @@ export default function EditVehiclePage() {
                   min={1900}
                   max={new Date().getFullYear() + 1}
                   value={form.year}
-                  onChange={set("year")}
+                  onChange={setIntegerField("year")}
                   placeholder={t("common.placeholderYear")}
                   className={IL}
                   aria-invalid={!!errors.year}

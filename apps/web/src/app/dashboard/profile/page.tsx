@@ -25,8 +25,8 @@ import { useToast } from "@/lib/toastStore";
 import { TIMEZONES } from "@/lib/companyOptions";
 import {
   formatPhoneWithCountryCode,
-  formatPhoneInternational,
   COUNTRY_DIAL_CODES,
+  getDeviceCountryCode,
 } from "@/lib/inputMasks";
 import {
   required,
@@ -76,6 +76,7 @@ export default function ProfilePage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [prefsMounted, setPrefsMounted] = useState(false);
   const hasLocalEditsRef = useRef(false);
+  const [phoneCountry, setPhoneCountry] = useState<string>("CR");
   useEffect(() => {
     setPrefsMounted(true);
   }, []);
@@ -84,14 +85,32 @@ export default function ProfilePage() {
     let cancelled = false;
     (async () => {
       try {
-        const data = await apiClient.get<Record<string, unknown>>("/users/me");
+        const companyPromise = (async () => {
+          const superAdmin = isSuperAdmin(user);
+          if (superAdmin && selectedCompanyId) {
+            return apiClient.get<{ countryCode?: string | null }>(`/companies/${selectedCompanyId}`);
+          }
+          if (!superAdmin) {
+            return apiClient.get<{ countryCode?: string | null }>("/companies/me");
+          }
+          return null;
+        })();
+        const [data, company] = await Promise.all([
+          apiClient.get<Record<string, unknown>>("/users/me"),
+          companyPromise,
+        ]);
+        const countryCode =
+          (company && typeof company === "object" && "countryCode" in company && company.countryCode) ||
+          getDeviceCountryCode() ||
+          "CR";
+        if (!cancelled) setPhoneCountry(countryCode);
         if (!cancelled && data) {
           if (hasLocalEditsRef.current) return;
           const loaded = {
             firstName: String(data.firstName ?? ""),
             lastName: String(data.lastName ?? ""),
             email: String(data.email ?? ""),
-            phone: formatPhoneInternational(String(data.phone ?? "")),
+            phone: formatPhoneWithCountryCode(String(data.phone ?? ""), countryCode),
             timezone: String(data.timezone ?? ""),
             avatarUrl: String(data.avatarUrl ?? ""),
           };
@@ -110,7 +129,7 @@ export default function ProfilePage() {
     return () => {
       cancelled = true;
     };
-  }, [selectedCompanyId, showError, t]);
+  }, [selectedCompanyId, showError, t, user]);
 
   const set =
     (k: keyof typeof defaultForm) =>
@@ -186,7 +205,7 @@ export default function ProfilePage() {
         email: String(response?.email ?? form.email),
         phone:
           response?.phone != null
-            ? formatPhoneInternational(String(response.phone))
+            ? formatPhoneWithCountryCode(String(response.phone), phoneCountry)
             : form.phone,
         timezone:
           response?.timezone != null ? String(response.timezone) : form.timezone,
@@ -412,10 +431,10 @@ export default function ProfilePage() {
                       type="tel"
                       value={form.phone}
                       onChange={(e) => {
-                        setForm((p) => ({ ...p, phone: formatPhoneWithCountryCode(e.target.value, "CR") }));
+                        setForm((p) => ({ ...p, phone: formatPhoneWithCountryCode(e.target.value, phoneCountry) }));
                         setErrors((prev) => ({ ...prev, phone: undefined }));
                       }}
-                      placeholder={`+${COUNTRY_DIAL_CODES["CR"]} 6216-4040`}
+                      placeholder={`+${COUNTRY_DIAL_CODES[phoneCountry] || "506"} 6216-4040`}
                       className={IL}
                       aria-invalid={!!errors.phone}
                     />

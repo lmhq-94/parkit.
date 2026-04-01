@@ -59,6 +59,25 @@ export default function NewVehiclePage() {
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((p) => ({ ...p, [k]: e.target.value }));
 
+  const setIntegerField = (k: keyof typeof defaultForm) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value.replace(/[^\d]/g, "");
+      setForm((p) => ({ ...p, [k]: raw }));
+    };
+
+  const setDecimalField = (k: keyof typeof defaultForm) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const normalized = e.target.value.replace(",", ".");
+      let cleaned = normalized.replace(/[^\d.]/g, "");
+      const firstDot = cleaned.indexOf(".");
+      if (firstDot !== -1) {
+        cleaned =
+          cleaned.slice(0, firstDot + 1) +
+          cleaned.slice(firstDot + 1).replace(/\./g, "");
+      }
+      setForm((p) => ({ ...p, [k]: cleaned }));
+    };
+
   const setValue = useCallback((k: keyof typeof defaultForm, value: string) => {
     setForm((p) => ({ ...p, [k]: value }));
   }, []);
@@ -343,7 +362,7 @@ export default function NewVehiclePage() {
                 min={1900}
                 max={new Date().getFullYear() + 1}
                 value={form.year}
-                onChange={set("year")}
+                onChange={setIntegerField("year")}
                 placeholder={t("common.placeholderYear")}
                 className={IL}
                 aria-invalid={!!errors.year}
@@ -387,7 +406,7 @@ export default function NewVehiclePage() {
                 min={0}
                 step={0.01}
                 value={form.lengthM}
-                onChange={(e) => setForm((p) => ({ ...p, lengthM: e.target.value }))}
+                onChange={setDecimalField("lengthM")}
                 placeholder={t("vehicles.lengthM")}
                 className={IL_UNIT}
                 aria-invalid={!!errors.lengthM}
@@ -414,7 +433,7 @@ export default function NewVehiclePage() {
                 min={0}
                 step={0.01}
                 value={form.widthM}
-                onChange={(e) => setForm((p) => ({ ...p, widthM: e.target.value }))}
+                onChange={setDecimalField("widthM")}
                 placeholder={t("vehicles.widthM")}
                 className={IL_UNIT}
                 aria-invalid={!!errors.widthM}
@@ -441,7 +460,7 @@ export default function NewVehiclePage() {
                 min={0}
                 step={0.01}
                 value={form.heightM}
-                onChange={(e) => setForm((p) => ({ ...p, heightM: e.target.value }))}
+                onChange={setDecimalField("heightM")}
                 placeholder={t("vehicles.heightM")}
                 className={IL_UNIT}
                 aria-invalid={!!errors.heightM}
@@ -468,7 +487,7 @@ export default function NewVehiclePage() {
                 min={0}
                 step={0.1}
                 value={form.weightKg}
-                onChange={(e) => setForm((p) => ({ ...p, weightKg: e.target.value }))}
+                onChange={setDecimalField("weightKg")}
                 placeholder={t("vehicles.weightKg")}
                 className={IL_UNIT}
                 aria-invalid={!!errors.weightKg}

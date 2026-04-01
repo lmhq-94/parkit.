@@ -117,6 +117,31 @@ export default function EditParkingPage() {
       setForm((p) => ({ ...p, [k]: String(capped) }));
     };
 
+  const setIntegerValue = (setter: (value: number) => void, min = 0, max?: number) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value.replace(/[^\d]/g, "");
+      if (!raw) {
+        setter(min);
+        return;
+      }
+      const parsed = Math.max(min, parseInt(raw, 10) || min);
+      const capped = max != null ? Math.min(max, parsed) : parsed;
+      setter(capped);
+    };
+
+  const setDecimalField = (k: keyof typeof defaultForm) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const normalized = e.target.value.replace(",", ".");
+      let cleaned = normalized.replace(/[^\d.]/g, "");
+      const firstDot = cleaned.indexOf(".");
+      if (firstDot !== -1) {
+        cleaned =
+          cleaned.slice(0, firstDot + 1) +
+          cleaned.slice(firstDot + 1).replace(/\./g, "");
+      }
+      setForm((p) => ({ ...p, [k]: cleaned }));
+    };
+
   const setSlot = (slotId: string, updates: Partial<SlotRow>) => {
     setSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, ...updates } : s)));
   };
@@ -413,7 +438,7 @@ export default function EditParkingPage() {
                           min={0}
                           step="any"
                           value={form.pricePerExtraHour}
-                          onChange={set("pricePerExtraHour")}
+                          onChange={setDecimalField("pricePerExtraHour")}
                           placeholder="0"
                           className={IL}
                           aria-invalid={!!fieldErrors.pricePerExtraHour}
@@ -468,7 +493,7 @@ export default function EditParkingPage() {
                 min={1}
                 max={100}
                 value={batchCount}
-                onChange={(e) => setBatchCount(Number(e.target.value) || 1)}
+                onChange={setIntegerValue(setBatchCount, 1, 100)}
                 className={INPUT}
               />
             </div>
