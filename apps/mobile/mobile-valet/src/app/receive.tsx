@@ -35,7 +35,7 @@ import { messageFromAxios } from "@/lib/apiErrors";
 import { useOnAppForeground } from "@/lib/useOnAppForeground";
 import { RECEIVE_META_POLL_MS } from "@/lib/syncConstants";
 import { useNearestParking, haversineKm } from "@/lib/useNearestParking";
-import { formatPhoneWithCountryCode, getDeviceCountryCode, phoneDigitsForApi } from "@/lib/phoneInternational";
+import { formatPhoneInternational, formatPhoneWithCountryCode, getDeviceCountryCode, phoneDigitsForApi } from "@/lib/phoneInternational";
 import { createFeedback } from "@/lib/feedback";
 import { ValetBackButton } from "@/components/ValetBackButton";
 import { StickyFormFooter } from "@/components/StickyFormFooter";
@@ -169,8 +169,7 @@ function formatBenefitTime(
   return locale === "es" ? `${hours} h ${minutes} min` : `${hours} h ${minutes} min`;
 }
 
-/** Extrae un posible UUID/id de reserva desde texto plano o URL en el QR. */
-/** Misma regla que la API al crear tiquete con códigos manuales. */
+
 const MANUAL_TICKET_CODE_RE = /^[A-Za-z0-9\-_]+$/;
 
 const MAX_DAMAGE_PHOTOS = 8;
@@ -249,6 +248,8 @@ export default function ReceiveScreen() {
     year: string;
   } | null>(null);
 
+  const [receptionType, setReceptionType] = useState<"CARD" | "DIRECT" | null>(null);
+
   const [bookingCode, setBookingCode] = useState("");
   const [bookingCheck, setBookingCheck] = useState<BookingLookup | null | "invalid">(null);
   const [bookingLoading, setBookingLoading] = useState(false);
@@ -263,10 +264,7 @@ export default function ReceiveScreen() {
   const [metaLoading, setMetaLoading] = useState(true);
   const [valetsLoading, setValetsLoading] = useState(false);
   const [valetsRefreshing, setValetsRefreshing] = useState(false);
-  /**
-   * Walk-in: 1 tarjeta … 6 tiquete, 7 estado vehículo (fotos), 8 valet + enviar.
-   * Reserva: 1 QR, 2 parqueo, 3 tiquete, 4 estado vehículo, 5 valet + enviar.
-   */
+
   const [wizardStep, setWizardStep] = useState(1);
   const [cardVerificationOpening, setCardVerificationOpening] = useState(false);
   const [cardVerificationStarted, setCardVerificationStarted] = useState(false);
@@ -275,7 +273,7 @@ export default function ReceiveScreen() {
   const [ticketCodesAcknowledged, setTicketCodesAcknowledged] = useState(false);
   const [manualTicketCode, setManualTicketCode] = useState("");
   const [manualKeyCode, setManualKeyCode] = useState("");
-  /** false = un solo campo para tiquete y llaves (mismo valor). */
+
   const [keyCodesUnlinked, setKeyCodesUnlinked] = useState(false);
   const [damagePhotoDataUrls, setDamagePhotoDataUrls] = useState<string[]>([]);
   const [damageNote, setDamageNote] = useState("");
@@ -287,8 +285,9 @@ export default function ReceiveScreen() {
   const [vehicleColorModalOpen, setVehicleColorModalOpen] = useState(false);
   const [manualBrandMode, setManualBrandMode] = useState(false);
   const [manualModelMode, setManualModelMode] = useState(false);
-  /** null = usar parqueo más cercano según GPS; si no, id elegido manualmente. */
+
   const [receiveManualParkingId, setReceiveManualParkingId] = useState<string | null>(null);
+  const [valetSelectModalOpen, setValetSelectModalOpen] = useState(false);
   const reservationParkingPreselectedRef = useRef<string | null>(null);
   const qrNoCompanyAlertShownRef = useRef(false);
 
@@ -326,15 +325,20 @@ export default function ReceiveScreen() {
   const skipCardVerification = useCallback(() => {
     setCardVerificationSkipped(true);
     setCardVerificationStarted(false);
-    feedback.info(t(locale, "receive.cardVerifySkipNote"));
+    feedback.alert(t(locale, "receive.cardVerifySkipNote"));
   }, [feedback, locale, t]);
 
-  const driverStepNum = 3;
-  const vehicleStepNum = 4;
-  const parkingStepNum = reservationFlow ? 2 : 5;
-  const damageStepNum = reservationFlow ? 3 : 6;
-  const ticketStepNum = reservationFlow ? 4 : 7;
-  const valetStepNum = reservationFlow ? 5 : 8;
+  const typeStepNum = 1;
+  const cardStepNum = 2;
+  const plateStepNum = 3;
+  const driverStepNum = 4;
+  const vehicleStepNum = 5;
+  const parkingStepNum = reservationFlow ? 2 : 6;
+  const damageStepNum = reservationFlow ? 3 : 7;
+  const ticketStepNum = reservationFlow ? 4 : 8;
+  const valetStepNum = reservationFlow ? 5 : 9;
+
+  const plateBackStep = receptionType === "CARD" ? cardStepNum : typeStepNum;
   const availableValets = useMemo(
     () => valets.filter((v) => v.currentStatus === "AVAILABLE"),
     [valets]
@@ -370,7 +374,6 @@ export default function ReceiveScreen() {
     return null;
   }, [vehicle, parkingId, parkings]);
 
-  /** Empresa para validar reserva antes de tener plaza/placa (p. ej. cabecera API). */
   const companyIdForBooking = useMemo(() => {
     return (
       effectiveCompanyId ??
@@ -388,12 +391,12 @@ export default function ReceiveScreen() {
       const parkingIdToSave = nextParkingId ?? parkingId;
       if (!companyIdToSave || !parkingIdToSave) return;
       try {
-        await api.patch("/valets/me", {
+        await api.patch("/valets/me", {   
           companyId: companyIdToSave,
           currentParkingId: parkingIdToSave,
         });
       } catch {
-        /* red o perfil no valet: no bloquear flujo */
+        console.error("Failed to sync valet working context");
       }
     },
     [user, effectiveCompanyId, parkingId]
@@ -435,8 +438,6 @@ export default function ReceiveScreen() {
   }, [wizardStep, parkingStepNum, receiveManualParkingId, nearest, allParkings]);
 
   useEffect(() => {
-    // No limpiar el contexto global a null mientras se resuelve carga inicial;
-    // preserva el companyId ya conocido para validación de QR.
     if (!effectiveCompanyId) return;
     setCompanyId(effectiveCompanyId);
   }, [effectiveCompanyId, setCompanyId]);
@@ -477,7 +478,6 @@ export default function ReceiveScreen() {
     void loadDispatchDrivers({ silent: true }).finally(() => setValetsRefreshing(false));
   }, [wizardStep, valetStepNum, loadDispatchDrivers]);
 
-  /** Persistir empresa y parqueo de trabajo del valet en servidor (otros ven la lista disponible). */
   useEffect(() => {
     const timer = setTimeout(() => {
       void syncValetWorkingContext();
@@ -646,7 +646,7 @@ export default function ReceiveScreen() {
       setLookupLoading(false);
       setVehicleResolved(true);
       setLookupReadyForPlate(formatted);
-      if (advanceStep) setWizardStep(3);
+      if (advanceStep) setWizardStep(driverStepNum);
     }
   };
 
@@ -721,7 +721,6 @@ export default function ReceiveScreen() {
       qrNoCompanyAlertShownRef.current = false;
       return;
     }
-    // Evita falso positivo mientras se cargan parqueos/meta del flujo.
     if (metaLoading) return;
     if (companyIdForBooking) {
       qrNoCompanyAlertShownRef.current = false;
@@ -909,7 +908,6 @@ export default function ReceiveScreen() {
     }
   }
 
-  /** Reserva: rellenar placa, conductor y vehículo desde el GET /bookings/:id. */
   useEffect(() => {
     if (!reservationFlow) return;
     if (!bookingCheck || bookingCheck === "invalid") return;
@@ -968,7 +966,6 @@ export default function ReceiveScreen() {
     };
   }, [reservationFlow, bookingCheck]);
 
-  /** Reserva: una sola vez por reserva, preseleccionar el parqueo del booking si existe en la lista. */
   useEffect(() => {
     if (!reservationFlow) {
       reservationParkingPreselectedRef.current = null;
@@ -1267,10 +1264,10 @@ export default function ReceiveScreen() {
     );
   }
 
-  const backStepForDriver = 2;
+  const backStepForDriver = plateStepNum;
 
   let footer: ReactNode = null;
-  if (wizardStep === 1 && !reservationFlow) {
+  if (wizardStep === typeStepNum && !reservationFlow) {
     footer = (
       <StickyFormFooter keyboardPinned>
         <Pressable
@@ -1278,16 +1275,24 @@ export default function ReceiveScreen() {
             styles.primaryBtn,
             styles.primaryBtnSticky,
             { minHeight: M },
+            !receptionType && styles.btnDisabled,
             pressed && styles.pressed,
           ]}
-          onPress={() => setWizardStep(2)}
+          onPress={() => {
+            if (receptionType === "CARD") {
+              setWizardStep(cardStepNum);
+            } else {
+              setWizardStep(plateStepNum);
+            }
+          }}
+          disabled={!receptionType}
           accessibilityLabel={t(locale, "receive.next")}
         >
           <Text style={styles.primaryBtnText}>{t(locale, "receive.next")}</Text>
         </Pressable>
       </StickyFormFooter>
     );
-  } else if (wizardStep === 1 && reservationFlow) {
+  } else if (wizardStep === typeStepNum && reservationFlow) {
     footer = (
       <StickyFormFooter keyboardPinned>
         <Pressable
@@ -1298,7 +1303,7 @@ export default function ReceiveScreen() {
             !bookingValidated && styles.btnDisabled,
             pressed && styles.pressed,
           ]}
-          onPress={() => setWizardStep(2)}
+          onPress={() => setWizardStep(parkingStepNum)}
           disabled={!bookingValidated}
           accessibilityLabel={t(locale, "receive.next")}
         >
@@ -1306,7 +1311,7 @@ export default function ReceiveScreen() {
         </Pressable>
       </StickyFormFooter>
     );
-  } else if (wizardStep === 2 && !reservationFlow) {
+  } else if (wizardStep === cardStepNum && !reservationFlow) {
     footer = (
       <StickyFormFooter keyboardPinned>
         <View style={styles.footerRow}>
@@ -1316,7 +1321,38 @@ export default function ReceiveScreen() {
               { minHeight: M },
               pressed && styles.pressed,
             ]}
-            onPress={() => setWizardStep(1)}
+            onPress={() => setWizardStep(typeStepNum)}
+            accessibilityLabel={t(locale, "common.back")}
+          >
+            <Text style={styles.footerSecondaryBtnText}>{t(locale, "common.back")}</Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.primaryBtn,
+              styles.primaryBtnSticky,
+              styles.footerPrimaryBtn,
+              { minHeight: M },
+              pressed && styles.pressed,
+            ]}
+            onPress={() => setWizardStep(plateStepNum)}
+            accessibilityLabel={t(locale, "receive.next")}
+          >
+            <Text style={styles.primaryBtnText}>{t(locale, "receive.next")}</Text>
+          </Pressable>
+        </View>
+      </StickyFormFooter>
+    );
+  } else if (wizardStep === plateStepNum && !reservationFlow) {
+    footer = (
+      <StickyFormFooter keyboardPinned>
+        <View style={styles.footerRow}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.footerSecondaryBtn,
+              { minHeight: M },
+              pressed && styles.pressed,
+            ]}
+            onPress={() => setWizardStep(plateBackStep)}
             accessibilityLabel={t(locale, "common.back")}
           >
             <Text style={styles.footerSecondaryBtnText}>{t(locale, "common.back")}</Text>
@@ -1330,7 +1366,7 @@ export default function ReceiveScreen() {
               (!plateLooksValid || lookupLoading || !vehicleResolved) && styles.btnDisabled,
               pressed && styles.pressed,
             ]}
-            onPress={() => setWizardStep(3)}
+            onPress={() => setWizardStep(driverStepNum)}
             disabled={!plateLooksValid || lookupLoading || !vehicleResolved}
             accessibilityLabel={t(locale, "receive.next")}
           >
@@ -1349,7 +1385,7 @@ export default function ReceiveScreen() {
               { minHeight: M },
               pressed && styles.pressed,
             ]}
-            onPress={() => setWizardStep(backStepForDriver)}
+            onPress={() => setWizardStep(plateStepNum)}
             accessibilityLabel={t(locale, "common.back")}
           >
             <Text style={styles.footerSecondaryBtnText}>{t(locale, "common.back")}</Text>
@@ -1415,7 +1451,7 @@ export default function ReceiveScreen() {
               { minHeight: M },
               pressed && styles.pressed,
             ]}
-            onPress={() => setWizardStep(reservationFlow ? 1 : vehicleStepNum)}
+            onPress={() => setWizardStep(reservationFlow ? typeStepNum : vehicleStepNum)}
             accessibilityLabel={t(locale, "common.back")}
           >
             <Text style={styles.footerSecondaryBtnText}>{t(locale, "common.back")}</Text>
@@ -1757,7 +1793,57 @@ export default function ReceiveScreen() {
             />
           }
         >
-          {wizardStep === 1 && !reservationFlow && (
+          {wizardStep === typeStepNum && !reservationFlow && (
+            <>
+              <Text style={styles.sectionLabel}>{t(locale, "receive.wizardTypeTitle")}</Text>
+              <Text style={styles.stepExplain}>{t(locale, "receive.wizardTypeHelp")}</Text>
+              <View style={styles.typeCardsGrid}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.typeCard,
+                    receptionType === "CARD" && styles.typeCardSelected,
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => setReceptionType("CARD")}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: receptionType === "CARD" }}
+                >
+                  <View style={[styles.typeCardIcon, receptionType === "CARD" && styles.typeCardIconActive]}>
+                    <Ionicons
+                      name="card-outline"
+                      size={28}
+                      color={receptionType === "CARD" ? "#fff" : theme.isDark ? "#38BDF8" : "#1D4ED8"}
+                    />
+                  </View>
+                  <Text style={styles.typeCardTitle}>{t(locale, "receive.typeCardTitle")}</Text>
+                  <Text style={styles.typeCardBody}>{t(locale, "receive.typeCardBody")}</Text>
+                </Pressable>
+
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.typeCard,
+                    receptionType === "DIRECT" && styles.typeCardSelected,
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => setReceptionType("DIRECT")}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: receptionType === "DIRECT" }}
+                >
+                  <View style={[styles.typeCardIcon, receptionType === "DIRECT" && styles.typeCardIconActive]}>
+                    <Ionicons
+                      name="cash-outline"
+                      size={28}
+                      color={receptionType === "DIRECT" ? "#fff" : theme.isDark ? "#FBBF24" : "#D97706"}
+                    />
+                  </View>
+                  <Text style={styles.typeCardTitle}>{t(locale, "receive.typeDirectTitle")}</Text>
+                  <Text style={styles.typeCardBody}>{t(locale, "receive.typeDirectBody")}</Text>
+                </Pressable>
+              </View>
+            </>
+          )}
+
+          {wizardStep === cardStepNum && !reservationFlow && (
             <>
               <Text style={styles.sectionLabel}>{t(locale, "receive.wizardCardTitle")}</Text>
               <Text style={styles.stepExplain}>{t(locale, "receive.wizardCardHelp")}</Text>
@@ -1849,7 +1935,7 @@ export default function ReceiveScreen() {
             </>
           )}
 
-          {wizardStep === 2 && !reservationFlow && (
+          {wizardStep === plateStepNum && !reservationFlow && (
             <>
               <Text style={styles.sectionLabel}>{t(locale, "receive.wizardPlateTitle")}</Text>
               <Text style={styles.stepExplain}>{t(locale, "receive.wizardPlateHelp")}</Text>
@@ -2361,112 +2447,101 @@ export default function ReceiveScreen() {
             <>
               <Text style={styles.sectionLabel}>{t(locale, "receive.wizardValetStepTitle")}</Text>
               <Text style={styles.stepExplain}>{t(locale, "receive.wizardValetStepHelp")}</Text>
-              {metaLoading || valetsLoading ? (
-                <ActivityIndicator color={C.primary} style={{ marginVertical: theme.space.lg }} />
-              ) : !parkingId || !effectiveCompanyId ? (
-                <Text style={[styles.help, { marginBottom: theme.space.lg }]}>
-                  {t(locale, "receive.valetDriversNeedParking")}
-                </Text>
-              ) : (
-                <View style={styles.valetDriverList}>
-                  {valets.length === 0 ? (
-                    <Text style={[styles.help, { marginTop: theme.space.sm }]}>
-                      {t(locale, "receive.valetDriversEmpty")}
-                    </Text>
-                  ) : (
-                    <>
-                      {availableValets.length > 0 ? (
-                        <>
-                          <Text style={styles.valetSectionTitle}>
-                            {t(locale, "receive.valetDriversAvailableTitle")}
-                          </Text>
-                          {availableValets.map((v) => (
-                            <ValetDispatchRow
-                              key={v.id}
-                              v={v}
-                              selected={driverValetId === v.id}
-                              isBusy={false}
-                              onPress={() => setDriverValetId(v.id)}
-                              locale={locale}
-                              theme={theme}
-                              styles={styles}
-                              statusMeta={t(locale, "receive.valetStatusAvailable")}
-                              statusBadgeShort={t(locale, "receive.valetStatusAvailableShort")}
-                              badgeVariant="available"
-                            />
-                          ))}
-                        </>
-                      ) : null}
 
-                      {availableValets.length === 0 && busyValets.length > 0 ? (
-                        <>
-                          <View style={styles.valetQueueCard}>
-                            <Ionicons name="time-outline" size={18} color={C.warning} />
-                            <Text style={styles.valetQueueCardText}>
-                              {t(locale, "receive.valetQueueNotice")}
+              <View style={styles.receiveParkingCard}>
+                <View style={[styles.bottomCardInner, !driverValetId && { borderColor: C.border }]}>
+                  <View style={styles.bottomIconWrap}>
+                    <Ionicons
+                      name="person-circle-outline"
+                      size={26}
+                      color={driverValetId ? C.primary : C.textMuted}
+                    />
+                  </View>
+                  <View style={styles.bottomTextCol}>
+                    <View style={styles.bottomTitleRow}>
+                      <Text style={styles.bottomTitle} numberOfLines={1}>
+                        {t(locale, "receive.driverValetSection")}
+                      </Text>
+                      <Pressable
+                        style={({ pressed }) => [styles.bottomChooseBtn, pressed && styles.pressed]}
+                        onPress={() => setValetSelectModalOpen(true)}
+                        accessibilityRole="button"
+                        accessibilityLabel={t(locale, "receive.valetSelectChoose")}
+                      >
+                        <Ionicons name="list-outline" size={16} color={C.primary} />
+                        <Text style={[styles.bottomChooseBtnText, { color: C.primary }]}>
+                          {t(locale, "receive.valetSelectChoose")}
+                        </Text>
+                      </Pressable>
+                    </View>
+
+                    {metaLoading || valetsLoading ? (
+                      <View style={styles.bottomLoadingRow}>
+                        <ActivityIndicator size="small" color={C.primary} />
+                        <Text style={styles.bottomMeta}>{t(locale, "common.loading")}</Text>
+                      </View>
+                    ) : !parkingId || !effectiveCompanyId ? (
+                      <Text style={styles.bottomMeta}>{t(locale, "receive.valetDriversNeedParking")}</Text>
+                    ) : selectedDispatchDriver ? (
+                      <View style={{ gap: 2 }}>
+                        <Text style={styles.bottomName} numberOfLines={1}>
+                          {selectedDispatchDriver.user.firstName} {selectedDispatchDriver.user.lastName}
+                        </Text>
+                        <Text style={styles.bottomCompany} numberOfLines={1}>
+                          {selectedDispatchDriver.user.email || t(locale, "receive.valetNoEmail")}
+                        </Text>
+                        {selectedBusyDriver ? (
+                          <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 }}>
+                            <Ionicons name="time-outline" size={14} color={C.warning} />
+                            <Text style={[styles.bottomMeta, { color: C.warning, marginTop: 0 }]}>
+                              {t(locale, "receive.valetStatusBusy")} (5-15 min)
                             </Text>
                           </View>
-                          <Text style={styles.valetSectionTitle}>
-                            {t(locale, "receive.valetDriversBusyTitle")}
-                          </Text>
-                          {busyValets.map((v) => (
-                            <ValetDispatchRow
-                              key={v.id}
-                              v={v}
-                              selected={driverValetId === v.id}
-                              isBusy
-                              onPress={() => setDriverValetId(v.id)}
-                              locale={locale}
-                              theme={theme}
-                              styles={styles}
-                              statusMeta={t(locale, "receive.valetStatusBusy")}
-                              statusBadgeShort={t(locale, "receive.valetStatusBusyShort")}
-                              badgeVariant="busy"
-                            />
-                          ))}
-                        </>
-                      ) : null}
-
-                      {selectedBusyDriver ? (
-                        <View style={styles.valetEtaCard}>
-                          <LinearGradient
-                            colors={
-                              theme.isDark
-                                ? ["rgba(245, 158, 11, 0.22)", "rgba(245, 158, 11, 0.06)"]
-                                : ["rgba(251, 191, 36, 0.35)", "rgba(254, 243, 199, 0.5)"]
-                            }
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                            style={StyleSheet.absoluteFill}
-                          />
-                          <View style={styles.valetEtaAccent} />
-                          <View style={styles.valetEtaContent}>
-                            <View style={styles.valetEtaIconWrap}>
-                              <Ionicons name="hourglass-outline" size={22} color={C.warning} />
-                            </View>
-                            <View style={styles.valetEtaTextCol}>
-                              <Text style={styles.valetEtaKicker}>
-                                {t(locale, "receive.valetEtaKicker")}
-                              </Text>
-                              <Text style={styles.valetEtaTitle}>
-                                {t(locale, "receive.valetEtaTitle")}
-                              </Text>
-                              <Text style={styles.valetEtaBody} maxFontSizeMultiplier={2}>
-                                {t(locale, "receive.valetEtaBody", { min: "5", max: "15" })}
-                              </Text>
-                              <Text style={styles.valetEtaFootnote} maxFontSizeMultiplier={2}>
-                                {t(locale, "receive.valetEtaFootnote", {
-                                  name: `${selectedBusyDriver.user.firstName} ${selectedBusyDriver.user.lastName}`.trim(),
-                                })}
-                              </Text>
-                            </View>
+                        ) : (
+                          <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 }}>
+                            <Ionicons name="checkmark-circle-outline" size={14} color={C.success} />
+                            <Text style={[styles.bottomMeta, { color: C.success, marginTop: 0 }]}>
+                              {t(locale, "receive.valetStatusAvailable")}
+                            </Text>
                           </View>
-                        </View>
-                      ) : null}
-                    </>
-                  )}
+                        )}
+                      </View>
+                    ) : (
+                      <Text style={[styles.bottomMeta, { color: C.textSubtle }]}>
+                        {t(locale, "receive.valetSelectNoSelection")}
+                      </Text>
+                    )}
+                  </View>
                 </View>
-              )}
+              </View>
+
+              {selectedBusyDriver ? (
+                <View style={[styles.valetEtaCard, { marginTop: 0 }]}>
+                  <LinearGradient
+                    colors={
+                      theme.isDark
+                        ? ["rgba(245, 158, 11, 0.22)", "rgba(245, 158, 11, 0.06)"]
+                        : ["rgba(251, 191, 36, 0.35)", "rgba(254, 243, 199, 0.5)"]
+                    }
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <View style={styles.valetEtaAccent} />
+                  <View style={styles.valetEtaContent}>
+                    <View style={styles.valetEtaIconWrap}>
+                      <Ionicons name="hourglass-outline" size={22} color={C.warning} />
+                    </View>
+                    <View style={styles.valetEtaTextCol}>
+                      <Text style={styles.valetEtaKicker}>{t(locale, "receive.valetEtaKicker")}</Text>
+                      <Text style={styles.valetEtaTitle}>{t(locale, "receive.valetEtaTitle")}</Text>
+                      <Text style={styles.valetEtaBody} maxFontSizeMultiplier={2}>
+                        {t(locale, "receive.valetEtaBody", { min: "5", max: "15" })}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              ) : null}
             </>
           )}
         </KeyboardAwareScrollView>
@@ -2717,6 +2792,64 @@ export default function ReceiveScreen() {
         </Modal>
 
         <Modal
+          visible={valetSelectModalOpen}
+          animationType="slide"
+          transparent
+          onRequestClose={() => setValetSelectModalOpen(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <Pressable
+              style={styles.modalBackdropPress}
+              onPress={() => setValetSelectModalOpen(false)}
+              accessibilityLabel={t(locale, "common.cancel")}
+            />
+            <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
+              <View style={[styles.bottomTitleRow, { paddingBottom: theme.space.sm, marginBottom: theme.space.sm }]}>
+                <Text style={[styles.modalTitle, { color: C.text, marginBottom: 0 }]}>
+                    {t(locale, "receive.valetSelectPlaceholder")}
+                </Text>
+              </View>
+              <FlatList
+                data={[...availableValets.map(v => ({ ...v, variant: 'available' as const })), ...busyValets.map(v => ({ ...v, variant: 'busy' as const }))] }
+                keyExtractor={(item) => item.id}
+                style={styles.modalList}
+                keyboardShouldPersistTaps="handled"
+                renderItem={({ item }) => (
+                  <ValetDispatchRow
+                    v={item}
+                    selected={driverValetId === item.id}
+                    isBusy={item.variant === 'busy'}
+                    onPress={() => {
+                        setDriverValetId(item.id);
+                        setValetSelectModalOpen(false);
+                    }}
+                    locale={locale}
+                    theme={theme}
+                    styles={styles}
+                    statusMeta={item.variant === 'available' ? t(locale, "receive.valetStatusAvailable") : t(locale, "receive.valetStatusBusy")}
+                    statusBadgeShort={item.variant === 'available' ? t(locale, "receive.valetStatusAvailableShort") : t(locale, "receive.valetStatusBusyShort")}
+                    badgeVariant={item.variant}
+                  />
+                )}
+                ListHeaderComponent={() => {
+                   if (availableValets.length > 0) {
+                       return <Text style={[styles.valetSectionTitle, { marginTop: 0 }]}>{t(locale, "receive.valetDriversAvailableTitle")}</Text>
+                   }
+                   return null;
+                }}
+                ListEmptyComponent={
+                  <Text style={{ color: C.textMuted, padding: theme.space.md }}>
+                    {t(locale, "receive.valetDriversEmpty")}
+                  </Text>
+                }
+                ItemSeparatorComponent={() => <View style={{ height: theme.space.sm }} />}
+                contentContainerStyle={{ paddingBottom: theme.space.xl }}
+              />
+            </View>
+          </View>
+        </Modal>
+
+        <Modal
           visible={receiveParkingModalOpen}
           animationType="slide"
           transparent
@@ -2906,6 +3039,49 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       alignItems: "center",
     },
     secondaryBtnText: { color: C.primary, fontWeight: "800" },
+    typeCardsGrid: {
+      gap: S.md,
+      paddingTop: S.xs,
+      marginBottom: S.lg,
+    },
+    typeCard: {
+      backgroundColor: C.card,
+      borderRadius: R.card,
+      borderWidth: 2,
+      borderColor: C.border,
+      padding: S.lg,
+      justifyContent: "center",
+      alignItems: "center",
+      gap: S.sm,
+    },
+    typeCardSelected: {
+      borderColor: C.primary,
+      backgroundColor: theme.isDark ? "rgba(59, 130, 246, 0.08)" : "rgba(59, 130, 246, 0.04)",
+    },
+    typeCardIcon: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: theme.isDark ? "rgba(30, 41, 59, 0.5)" : "rgba(241, 245, 249, 1)",
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: S.xs,
+    },
+    typeCardIconActive: {
+      backgroundColor: C.primary,
+    },
+    typeCardTitle: {
+      fontSize: F.body,
+      fontWeight: "800",
+      color: C.text,
+      textAlign: "center",
+    },
+    typeCardBody: {
+      fontSize: F.secondary,
+      color: C.textMuted,
+      textAlign: "center",
+      lineHeight: 20,
+    },
     btnDisabled: { opacity: 0.55 },
     pressed: { opacity: 0.9 },
     card: {

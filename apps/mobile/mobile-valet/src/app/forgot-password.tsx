@@ -29,6 +29,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { AuthHeroGradient } from "@/components/AuthHeroGradient";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
+import { getTranslatedApiErrorMessage } from "@/lib/apiErrors";
 
 const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
 const LOGO_SIZE = 72;
@@ -257,11 +258,7 @@ export default function ForgotPasswordScreen() {
       await api.post("/auth/forgot-password", { email: email.trim() });
       setSubmitted(true);
     } catch (err: unknown) {
-      const msg =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-          : null;
-      setError(msg || t(locale, "forgot.errorSend"));
+      setError(getTranslatedApiErrorMessage(err, t, locale));
     } finally {
       setLoading(false);
     }

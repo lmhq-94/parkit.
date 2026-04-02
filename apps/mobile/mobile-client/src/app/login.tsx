@@ -20,6 +20,7 @@ import { saveUser } from "@/lib/auth";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { getHasSeenOnboarding } from "@/lib/onboarding";
 import { t } from "@/lib/i18n";
+import { getTranslatedApiErrorMessage } from "@/lib/apiErrors";
 import { Ionicons } from "@expo/vector-icons";
 
 const DARK_BG = "#0F172A";
@@ -67,11 +68,7 @@ export default function LoginScreen() {
         router.replace(hasSeenOnboarding ? "/(tabs)" : "/onboarding");
       }
     } catch (err) {
-      const errorMsg =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-          : null;
-      const msg = errorMsg || t(locale, "common.loginFailed");
+      const msg = getTranslatedApiErrorMessage(err, t, locale);
       setErrorState(msg);
       setError(msg);
     } finally {

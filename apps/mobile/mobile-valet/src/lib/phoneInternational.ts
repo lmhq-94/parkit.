@@ -7,6 +7,7 @@ export {
   COUNTRY_DIAL_CODES,
   formatPhone,
   formatPhoneInternational,
+  formatPhoneWithCountryCode,
   isValidPhoneOptional,
   phoneDigitsForApi,
   getDeviceCountryCode,
