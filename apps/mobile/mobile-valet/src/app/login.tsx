@@ -31,7 +31,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { AuthHeroGradient } from "@/components/AuthHeroGradient";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
-import { messageFromAxios } from "@/lib/apiErrors";
+import { messageFromAxios, getTranslatedApiErrorMessage } from "@/lib/apiErrors";
+import { Users, Car } from "lucide-react-native";
 
 const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
 const LOGO_SIZE = 72;
@@ -54,6 +55,7 @@ export default function LoginScreen() {
   const isLandscape = width > height;
   const horizontalPadding = isTablet ? 36 : 28;
   const sheetMaxWidth = isTablet ? 640 : 560;
+  const { isDark } = theme;
   const heroMinHeight = Math.round((isLandscape ? height * 0.24 : height * 0.32));
 
   const styles = useMemo(
@@ -272,8 +274,97 @@ export default function LoginScreen() {
         pressed: {
           opacity: 0.92,
         },
+        // Role Selection Card Styles (Standardized with home.tsx)
+        roleCard: {
+          marginBottom: 16,
+        },
+        roleCardInner: {
+          flexDirection: "row",
+          alignItems: "flex-start",
+          gap: 16,
+          backgroundColor: a.inputBg,
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: a.inputBorder,
+          padding: 16,
+          minHeight: 100,
+        },
+        roleIconWrap: {
+          marginTop: 2,
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          backgroundColor: isDark ? "rgba(59, 130, 246, 0.16)" : "rgba(59, 130, 246, 0.08)",
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        roleTextCol: {
+          flex: 1,
+          minWidth: 0,
+        },
+        roleTitleRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
+          marginBottom: 4,
+        },
+        roleTitle: {
+          fontSize: 11,
+          fontWeight: "800",
+          color: a.textMuted,
+          textTransform: "uppercase",
+          letterSpacing: 0.6,
+          flex: 1,
+        },
+        roleChooseBtn: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 4,
+          paddingVertical: 4,
+          paddingHorizontal: 8,
+        },
+        roleChooseBtnText: {
+          fontSize: 12,
+          fontWeight: "800",
+          color: a.linkAccent,
+        },
+        roleName: {
+          fontSize: 16,
+          fontWeight: "800",
+          color: a.text,
+        },
+        roleDescription: {
+          fontSize: 12,
+          color: a.textSecondary,
+          marginTop: 4,
+          lineHeight: 16,
+        },
+        // Role Modal List Styles
+        roleRow: {
+          paddingVertical: 12,
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        },
+        roleRowTextCol: {
+          flex: 1,
+          marginRight: 12,
+        },
+        roleRowName: {
+          fontSize: 16,
+          fontWeight: "800",
+          color: a.text,
+        },
+        roleRowDescription: {
+          fontSize: 12,
+          color: a.textMuted,
+          marginTop: 2,
+          lineHeight: 16,
+        },
       }),
-    [a, heroMinHeight, horizontalPadding, sheetMaxWidth]
+    [a, heroMinHeight, horizontalPadding, sheetMaxWidth, isDark]
   );
 
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -387,14 +478,7 @@ export default function LoginScreen() {
       setUser(user);
       router.replace("/home");
     } catch (err: unknown) {
-      const msg = messageFromAxios(err);
-      setError(
-        msg === "USER_INACTIVE"
-          ? t(locale, "login.accountInactive")
-          : msg === "NETWORK_ERROR"
-            ? t(locale, "common.networkError")
-            : msg || t(locale, "common.loginFailed")
-      );
+      setError(getTranslatedApiErrorMessage(err, t, locale));
     } finally {
       setLoading(false);
     }
@@ -422,12 +506,7 @@ export default function LoginScreen() {
       setUser(user);
       router.replace("/home");
     } catch (err: unknown) {
-      const msg = messageFromAxios(err);
-      setError(
-        msg === "NETWORK_ERROR"
-          ? t(locale, "common.networkError")
-          : msg || t(locale, "common.loginFailed")
-      );
+      setError(getTranslatedApiErrorMessage(err, t, locale));
     } finally {
       setLoading(false);
     }
@@ -556,83 +635,6 @@ export default function LoginScreen() {
                         />
                       </View>
                     </View>
-
-                    <View style={styles.inputBlock}>
-                      <Text style={styles.label}>{t(locale, "signup.staffRoleLabel")}</Text>
-                      <TouchableOpacity
-                        style={styles.inputRow}
-                        onPress={() => {
-                          if (!loading) setStaffRolePickerOpen(true);
-                        }}
-                        activeOpacity={0.85}
-                        disabled={loading}
-                      >
-                        <Text style={styles.input}>
-                          {staffRole === "RECEPTIONIST"
-                            ? t(locale, "signup.staffRoleReceptionist")
-                            : t(locale, "signup.staffRoleDriver")}
-                        </Text>
-                        <Ionicons name="chevron-down" size={22} color={ph} style={styles.inputIconRight} />
-                      </TouchableOpacity>
-                      <Modal
-                        visible={staffRolePickerOpen}
-                        animationType="slide"
-                        transparent
-                        onRequestClose={() => setStaffRolePickerOpen(false)}
-                      >
-                        <View style={styles.modalOverlay}>
-                          <Pressable
-                            style={styles.modalBackdropPress}
-                            onPress={() => setStaffRolePickerOpen(false)}
-                            accessibilityLabel={t(locale, "common.cancel")}
-                          />
-                          <View
-                            style={[
-                              styles.modalSheet,
-                              { backgroundColor: a.modalSheet, borderColor: a.border },
-                            ]}
-                          >
-                            <Text style={[styles.modalTitle, { color: a.text }]}>
-                              {t(locale, "signup.staffRoleLabel")}
-                            </Text>
-                            <View style={styles.modalList}>
-                              {STAFF_ROLES.map((r) => {
-                                const active = staffRole === r;
-                                return (
-                                  <Pressable
-                                    key={r}
-                                    style={({ pressed }) => [
-                                      styles.optionRow,
-                                      { borderBottomColor: a.border },
-                                      pressed && styles.pressed,
-                                    ]}
-                                    onPress={() => {
-                                      setStaffRole(r);
-                                      setStaffRolePickerOpen(false);
-                                      setError(null);
-                                    }}
-                                  >
-                                    <Text
-                                      style={[
-                                        styles.optionText,
-                                        active && { color: a.linkAccent, fontWeight: "700" },
-                                      ]}
-                                    >
-                                      {r === "RECEPTIONIST"
-                                        ? t(locale, "signup.staffRoleReceptionist")
-                                        : t(locale, "signup.staffRoleDriver")}
-                                    </Text>
-                                    {active ? (
-                                      <Ionicons name="checkmark-circle" size={22} color={a.linkAccent} />
-                                    ) : null}
-                                  </Pressable>
-                                );
-                              })}
-                            </View>
-                          </View>
-                        </View>
-                      </Modal>
-                    </View>
                   </>
                 ) : null}
 
@@ -700,6 +702,111 @@ export default function LoginScreen() {
                     </TouchableOpacity>
                   ) : null}
                 </View>
+
+                {mode === "signup" ? (
+                  <View style={styles.inputBlock}>
+                    <Text style={styles.label}>{t(locale, "signup.staffRoleLabel")}</Text>
+                    <Pressable
+                      style={({ pressed }) => [styles.roleCard, pressed && styles.pressed]}
+                      onPress={() => {
+                        if (!loading) setStaffRolePickerOpen(true);
+                      }}
+                      disabled={loading}
+                      accessibilityRole="button"
+                    >
+                      <View style={styles.roleCardInner}>
+                        <View style={styles.roleIconWrap}>
+                          {staffRole === "RECEPTIONIST" ? (
+                            <Users size={22} color={a.linkAccent} strokeWidth={2.5} />
+                          ) : (
+                            <Car size={22} color={a.linkAccent} strokeWidth={2.5} />
+                          )}
+                        </View>
+                        <View style={styles.roleTextCol}>
+                          <View style={styles.roleTitleRow}>
+                            <Text style={styles.roleTitle} numberOfLines={1}>
+                              {t(locale, "signup.staffRoleLabel")}
+                            </Text>
+                          </View>
+                          <Text style={styles.roleName} numberOfLines={1}>
+                            {staffRole === "RECEPTIONIST"
+                              ? t(locale, "signup.staffRoleReceptionist")
+                              : t(locale, "signup.staffRoleDriver")}
+                          </Text>
+                          <Text style={styles.roleDescription} numberOfLines={2}>
+                            {staffRole === "RECEPTIONIST"
+                              ? t(locale, "profile.staffRoleSubReceptionist")
+                              : t(locale, "profile.staffRoleSubDriver")}
+                          </Text>
+                        </View>
+                        <View style={{ alignSelf: "center", marginLeft: 8 }}>
+                          <Ionicons name="chevron-forward" size={20} color={a.textMuted} />
+                        </View>
+                      </View>
+                    </Pressable>
+
+                    <Modal
+                      visible={staffRolePickerOpen}
+                      animationType="slide"
+                      transparent
+                      onRequestClose={() => setStaffRolePickerOpen(false)}
+                    >
+                      <View style={styles.modalOverlay}>
+                        <Pressable
+                          style={styles.modalBackdropPress}
+                          onPress={() => setStaffRolePickerOpen(false)}
+                          accessibilityLabel={t(locale, "common.cancel")}
+                        />
+                        <View
+                          style={[
+                            styles.modalSheet,
+                            { backgroundColor: a.modalSheet, borderColor: a.inputBorder, maxHeight: 400 },
+                          ]}
+                        >
+                          <Text style={[styles.modalTitle, { color: a.text }]}>
+                            {t(locale, "signup.staffRolePickerTitle")}
+                          </Text>
+                          <View style={[styles.modalList, { maxHeight: 320 }]}>
+                            {STAFF_ROLES.map((r) => {
+                              const active = staffRole === r;
+                              return (
+                                <Pressable
+                                  key={r}
+                                  style={({ pressed }) => [
+                                    styles.roleRow,
+                                    { borderBottomColor: a.inputBorder },
+                                    pressed && styles.pressed,
+                                  ]}
+                                  onPress={() => {
+                                    setStaffRole(r);
+                                    setStaffRolePickerOpen(false);
+                                    setError(null);
+                                  }}
+                                >
+                                  <View style={styles.roleRowTextCol}>
+                                    <Text style={[styles.roleRowName, active && { color: a.linkAccent }]}>
+                                      {r === "RECEPTIONIST"
+                                        ? t(locale, "signup.staffRoleReceptionist")
+                                        : t(locale, "signup.staffRoleDriver")}
+                                    </Text>
+                                    <Text style={styles.roleRowDescription}>
+                                      {r === "RECEPTIONIST"
+                                        ? t(locale, "profile.staffRoleSubReceptionist")
+                                        : t(locale, "profile.staffRoleSubDriver")}
+                                    </Text>
+                                  </View>
+                                  {active ? (
+                                    <Ionicons name="checkmark-circle" size={24} color={a.linkAccent} />
+                                  ) : null}
+                                </Pressable>
+                              );
+                            })}
+                          </View>
+                        </View>
+                      </View>
+                    </Modal>
+                  </View>
+                ) : null}
 
                 {error ? (
                   <View style={styles.errorWrap}>

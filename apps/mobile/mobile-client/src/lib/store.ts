@@ -166,3 +166,5 @@ export const usePreferencesStore = create<PreferencesStore>((set, get) => ({
     set({ pendingLocale: locale, pendingTheme: theme });
   },
 }));
+
+export const useLocaleStore = usePreferencesStore;

@@ -81,7 +81,10 @@ export default function SignupScreen() {
         err && typeof err === "object" && "response" in err
           ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
           : null;
-      const msg = errorMsg || t(locale, "common.signupFailed");
+      const msg =
+        errorMsg === "Email already in use"
+          ? t(locale, "signup.errorEmailTaken")
+          : errorMsg || t(locale, "common.signupFailed");
       setErrorState(msg);
       setError(msg);
     } finally {

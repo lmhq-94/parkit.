@@ -235,11 +235,13 @@ function DashboardLayoutInner({
           <DashboardSidebar />
           <main className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden" data-dashboard>
             <header
-              className={`shrink-0 sticky top-0 z-10 flex flex-col bg-card/50 backdrop-blur-sm transition-shadow duration-200 ${
-                headerShadow ? "shadow-[0_1px_3px_0_rgba(0,0,0,0.06),0_1px_2px_-1px_rgba(0,0,0,0.06)] dark:shadow-[0_1px_3px_0_rgba(0,0,0,0.2),0_1px_2px_-1px_rgba(0,0,0,0.15)]" : ""
+              className={`shrink-0 sticky top-0 z-10 flex flex-col bg-card/50 backdrop-blur-sm transition-all duration-200 ${
+                headerShadow 
+                  ? "border-b border-card-border pb-3 md:pb-5 shadow-[0_1px_3px_0_rgba(0,0,0,0.06),0_1px_2px_-1px_rgba(0,0,0,0.06)] dark:shadow-[0_1px_3px_0_rgba(0,0,0,0.2),0_1px_2px_-1px_rgba(0,0,0,0.15)]" 
+                  : "pb-0"
               }`}
             >
-              <div className="flex flex-wrap items-center justify-between gap-4 pt-5 md:pt-8 pb-0 px-4 md:px-10 lg:px-12">
+              <div className="flex flex-wrap items-center justify-between gap-4 pt-3 md:pt-5 pb-0 px-4 md:px-8 lg:px-10">
               <div className="flex items-center gap-3 min-w-0">
                 {/* Hamburger: mobile only */}
                 <button

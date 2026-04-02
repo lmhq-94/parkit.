@@ -232,31 +232,63 @@ export class ParkingsService {
     parkingId: string,
     slots: Array<{ label: string; slotType?: SlotType }>
   ) {
-    if (slots.length === 0) return [];
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Get existing slots
+      const existing = await tx.parkingSlot.findMany({
+        where: { parkingId },
+        select: { label: true },
+      });
+      const inputLabels = new Set(slots.map((s) => s.label.trim()));
 
-    const createdSlots = await prisma.$transaction(async (tx) => {
-      const created: ParkingSlot[] = [];
+      // 2. Delete slots not in input (synchronization)
+      // Only delete if the slot is not currently occupied by an active ticket
+      const toDelete = existing.filter((s) => !inputLabels.has(s.label));
+      for (const slot of toDelete) {
+        const inUse = await tx.ticket.count({
+          where: { 
+            slot: { parkingId, label: slot.label }, 
+            exitTime: null 
+          },
+        });
+        if (inUse === 0) {
+          await tx.parkingSlot.delete({
+            where: { parkingId_label: { parkingId, label: slot.label } },
+          }).catch(() => {
+            // If deletion fails due to other constraints, we skip it silently
+          });
+        }
+      }
+
+      // 3. Upsert input slots
+      const createdOrUpdated: ParkingSlot[] = [];
       for (const slot of slots) {
-        const s = await tx.parkingSlot.create({
-          data: {
+        const label = slot.label.trim();
+        if (!label) continue;
+
+        const s = await tx.parkingSlot.upsert({
+          where: { parkingId_label: { parkingId, label } },
+          update: {
+            slotType: slot.slotType || "REGULAR",
+          },
+          create: {
             parkingId,
-            label: slot.label,
+            label,
             slotType: slot.slotType || "REGULAR",
           },
         });
-        created.push(s);
+        createdOrUpdated.push(s);
       }
+
+      // 4. Update the totalSlots count in the main Parking record
+      const finalCount = await tx.parkingSlot.count({ where: { parkingId } });
       await tx.parking.update({
         where: { id: parkingId },
-        data: {
-          totalSlots: {
-            increment: created.length,
-          },
-        },
+        data: { totalSlots: finalCount },
       });
-      return created;
+
+      return createdOrUpdated;
     });
 
-    return createdSlots;
+    return result;
   }
 }

@@ -8,6 +8,7 @@ import {
   NotificationType,
 } from "@prisma/client";
 import type { CreateTicketDTO } from "./tickets.types";
+import { sendTicketCodeEmail } from "../../shared/email/ticketCodeEmail";
 
 const MANUAL_CODE_MIN_LEN = 2;
 const MANUAL_CODE_MAX_LEN = 64;
@@ -129,6 +130,7 @@ export class TicketsService {
             select: {
               firstName: true,
               lastName: true,
+              email: true,
             },
           },
         },
@@ -138,6 +140,11 @@ export class TicketsService {
           plate: true,
           brand: true,
           model: true,
+        },
+      },
+      company: {
+        select: {
+          timezone: true,
         },
       },
       parking: {
@@ -167,7 +174,7 @@ export class TicketsService {
       },
     } as const;
 
-    return prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       if (data.driverValetId) {
         /**
          * Conductor debe poder recibir otro tiquete en cola aunque esté BUSY.
@@ -230,6 +237,16 @@ export class TicketsService {
           status: TicketStatus.REQUEST_PARKING,
         },
       });
+
+      if (data.bankCard) {
+        await tx.bankCard.create({
+          data: {
+            clientId: data.clientId,
+            issuer: data.bankCard.issuer as any,
+            type: data.bankCard.type as any,
+          },
+        });
+      }
 
       const intake = data.intakeDamageReport;
       if (intake) {
@@ -330,6 +347,22 @@ export class TicketsService {
         include,
       });
     });
+
+    const userEmail = result.client?.user?.email;
+    if (userEmail) {
+      sendTicketCodeEmail({
+        to: userEmail,
+        firstName: result.client?.user?.firstName ?? "",
+        lastName: result.client?.user?.lastName ?? "",
+        ticketCode: result.ticketCode ?? "",
+        locationName: result.parking?.name ?? undefined,
+        plateNumber: result.vehicle?.plate ?? undefined,
+        entryTime: result.entryTime ? result.entryTime.toLocaleString("es-CR", { timeZone: result.company?.timezone ?? "UTC", dateStyle: "short", timeStyle: "short" }) : undefined,
+        notes: data.intakeDamageReport?.description?.trim() ?? undefined,
+      }).catch(err => console.error("[TicketCodeEmail Async Error]", err));
+    }
+
+    return result;
   }
 
   static async list(companyId: string, filters: TicketFilters) {
