@@ -270,6 +270,8 @@ export default function ReceiveScreen() {
   const [wizardStep, setWizardStep] = useState(1);
   const [cardVerificationOpening, setCardVerificationOpening] = useState(false);
   const [cardVerificationStarted, setCardVerificationStarted] = useState(false);
+  const [cardVerificationSkipped, setCardVerificationSkipped] = useState(false);
+  const [cardVerificationSkipConfirmOpen, setCardVerificationSkipConfirmOpen] = useState(false);
   const [ticketCodesAcknowledged, setTicketCodesAcknowledged] = useState(false);
   const [manualTicketCode, setManualTicketCode] = useState("");
   const [manualKeyCode, setManualKeyCode] = useState("");
@@ -298,6 +300,7 @@ export default function ReceiveScreen() {
   const startCardVerification = useCallback(async () => {
     try {
       setCardVerificationOpening(true);
+      setCardVerificationSkipped(false);
       const res = await api.post<{ data?: { url?: string } }>("/payments/card-verification/session", {
         locale,
       });
@@ -309,11 +312,22 @@ export default function ReceiveScreen() {
       setCardVerificationStarted(true);
       feedback.success(t(locale, "receive.cardVerifyStarted"));
     } catch (e) {
-      feedback.error(messageFromAxios(e) || t(locale, "receive.cardVerifyError"));
+      const msg = messageFromAxios(e);
+      feedback.error(
+        msg === "NETWORK_ERROR"
+          ? t(locale, "common.networkError")
+          : msg || t(locale, "receive.cardVerifyError")
+      );
     } finally {
       setCardVerificationOpening(false);
     }
-  }, [feedback, locale]);
+  }, [api, feedback, locale, t]);
+
+  const skipCardVerification = useCallback(() => {
+    setCardVerificationSkipped(true);
+    setCardVerificationStarted(false);
+    feedback.info(t(locale, "receive.cardVerifySkipNote"));
+  }, [feedback, locale, t]);
 
   const driverStepNum = 3;
   const vehicleStepNum = 4;
@@ -1111,7 +1125,12 @@ export default function ReceiveScreen() {
         onPress: () => router.replace("/home"),
       });
     } catch (e) {
-      feedback.error(messageFromAxios(e) || t(locale, "receive.errorSubmit"));
+      const msg = messageFromAxios(e);
+      feedback.error(
+        msg === "NETWORK_ERROR"
+          ? t(locale, "common.networkError")
+          : msg || t(locale, "receive.errorSubmit")
+      );
     } finally {
       setSubmitting(false);
     }
@@ -1813,8 +1832,20 @@ export default function ReceiveScreen() {
               <Text style={styles.cardVerifyHintText}>
                 {cardVerificationStarted
                   ? t(locale, "receive.cardVerifyStartedHint")
+                  : cardVerificationSkipped
+                    ? t(locale, "receive.cardVerifySkippedHint")
                   : t(locale, "receive.cardVerifyOptionalHint")}
               </Text>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.cardVerifySkipBtn,
+                  pressed && styles.pressed,
+                ]}
+                onPress={() => setCardVerificationSkipConfirmOpen(true)}
+                accessibilityLabel={t(locale, "receive.cardVerifySkipCta")}
+              >
+                <Text style={styles.cardVerifySkipText}>{t(locale, "receive.cardVerifySkipCta")}</Text>
+              </Pressable>
             </>
           )}
 
@@ -2442,6 +2473,54 @@ export default function ReceiveScreen() {
         )}
 
         {footer ? <KeyboardStickyView>{footer}</KeyboardStickyView> : null}
+
+        <Modal
+          visible={cardVerificationSkipConfirmOpen}
+          animationType="fade"
+          transparent
+          onRequestClose={() => setCardVerificationSkipConfirmOpen(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <Pressable
+              style={styles.modalBackdropPress}
+              onPress={() => setCardVerificationSkipConfirmOpen(false)}
+              accessibilityLabel={t(locale, "common.cancel")}
+            />
+            <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
+              <Text style={[styles.modalTitle, { color: C.text }]}>
+                {t(locale, "receive.cardVerifySkipTitle")}
+              </Text>
+              <Text style={[styles.modalBody, { color: C.textMuted }]}>
+                {t(locale, "receive.cardVerifySkipBody")}
+              </Text>
+              <View style={styles.modalActions}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.footerSecondaryBtn,
+                    styles.modalActionBtn,
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => setCardVerificationSkipConfirmOpen(false)}
+                >
+                  <Text style={styles.footerSecondaryBtnText}>{t(locale, "common.cancel")}</Text>
+                </Pressable>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.primaryBtn,
+                    styles.modalActionBtn,
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => {
+                    setCardVerificationSkipConfirmOpen(false);
+                    skipCardVerification();
+                  }}
+                >
+                  <Text style={styles.primaryBtnText}>{t(locale, "receive.cardVerifySkipConfirm")}</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
 
         <Modal
           visible={vehicleBrandModalOpen}
@@ -3345,6 +3424,30 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       lineHeight: 22,
       marginBottom: S.md,
     },
+    cardVerifySkipBtn: {
+      alignSelf: "center",
+      marginBottom: S.md,
+      paddingHorizontal: S.lg,
+      paddingVertical: S.sm,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: theme.isDark ? "rgba(255,255,255,0.2)" : C.border,
+      backgroundColor: theme.isDark ? "rgba(255,255,255,0.06)" : C.card,
+    },
+    cardVerifySkipText: {
+      color: C.text,
+      fontWeight: "700",
+      fontSize: F.secondary,
+    },
+    modalBody: {
+      fontSize: F.secondary,
+      color: C.textMuted,
+      lineHeight: 20,
+      marginTop: S.xs,
+      marginBottom: S.md,
+    },
+    modalActions: { flexDirection: "row", gap: S.sm, marginTop: S.sm },
+    modalActionBtn: { flex: 1, marginBottom: 0 },
     chips: { flexDirection: "row", flexWrap: "wrap", gap: S.sm, marginBottom: S.lg },
     chip: {
       paddingVertical: 10,

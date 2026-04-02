@@ -24,6 +24,12 @@ export function messageFromAxios(err: unknown): string | null {
   if (err && typeof err === "object" && "response" in err) {
     const ax = err as AxiosError<{ message?: string; errors?: unknown }>;
     const data = ax.response?.data;
+    if (!ax.response) {
+      if (ax.message && ax.message.toLowerCase().includes("network")) {
+        return "NETWORK_ERROR";
+      }
+      return "NETWORK_ERROR";
+    }
     const m = data?.message;
     const detail = detailFromValidationErrors(data?.errors);
     if (typeof m === "string" && m.trim()) {
@@ -33,6 +39,9 @@ export function messageFromAxios(err: unknown): string | null {
       return m;
     }
   }
-  if (err instanceof Error) return err.message;
+  if (err instanceof Error) {
+    if (err.message.toLowerCase().includes("network")) return "NETWORK_ERROR";
+    return err.message;
+  }
   return null;
 }

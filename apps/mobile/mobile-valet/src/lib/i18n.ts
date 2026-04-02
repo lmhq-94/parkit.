@@ -70,6 +70,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "common.loading": "Cargando…",
     "common.errorFillFields": "Completa todos los campos",
     "common.loginFailed": "Error al iniciar sesión",
+    "common.networkError": "No se pudo conectar al servidor. Revisa tu conexión.",
     "common.cancel": "Cancelar",
     "common.ok": "Entendido",
     "common.errorTitle": "Aviso",
@@ -482,6 +483,15 @@ const translations: Record<Locale, Record<string, string>> = {
       "No hay una reserva activa vinculada a este código (cancelada, caducada o incorrecta).",
     "receive.benefitInvalidHint":
       "Pide al huésped el QR actualizado, mejora la luz o acerca el código y vuelve a escanear.",
+    "receive.cardVerifySkipCta": "Omitir verificación de tarjeta",
+    "receive.cardVerifySkipTitle": "Omitir verificación",
+    "receive.cardVerifySkipBody":
+      "Confirma solo si el cliente no tiene beneficio con su tarjeta y pagará el servicio de valet.",
+    "receive.cardVerifySkipConfirm": "Sí, omitir",
+    "receive.cardVerifySkipNote":
+      "Solo si el cliente no tiene beneficio con su tarjeta y pagará el servicio de valet.",
+    "receive.cardVerifySkippedHint":
+      "Verificación omitida. Usa este flujo solo si el cliente pagará el servicio.",
     "receive.parkingSection": "Parqueo",
     "receive.driverValetSection": "Conductor valet",
     "receive.driverValetHelp":
@@ -590,6 +600,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "common.loading": "Loading…",
     "common.errorFillFields": "Please fill all fields",
     "common.loginFailed": "Login failed",
+    "common.networkError": "Could not connect to the server. Check your connection.",
     "common.cancel": "Cancel",
     "common.ok": "OK",
     "common.errorTitle": "Notice",
@@ -998,6 +1009,15 @@ const translations: Record<Locale, Record<string, string>> = {
       "There’s no active booking linked to this code—it may be cancelled, expired, or wrong.",
     "receive.benefitInvalidHint":
       "Ask the guest for an updated QR, improve lighting, move closer, and scan again.",
+    "receive.cardVerifySkipCta": "Skip card verification",
+    "receive.cardVerifySkipTitle": "Skip verification",
+    "receive.cardVerifySkipBody":
+      "Confirm only if the guest has no card benefit and will pay for valet service.",
+    "receive.cardVerifySkipConfirm": "Yes, skip",
+    "receive.cardVerifySkipNote":
+      "Only if the guest has no card benefit and will pay for valet service.",
+    "receive.cardVerifySkippedHint":
+      "Verification skipped. Use this flow only if the guest will pay for the service.",
     "receive.parkingSection": "Parking",
     "receive.driverValetSection": "Valet driver",
     "receive.driverValetHelp": "Assign who will park the vehicle (optional).",

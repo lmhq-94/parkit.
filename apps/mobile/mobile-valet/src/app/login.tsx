@@ -31,6 +31,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { AuthHeroGradient } from "@/components/AuthHeroGradient";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
+import { messageFromAxios } from "@/lib/apiErrors";
 
 const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
 const LOGO_SIZE = 72;
@@ -386,14 +387,13 @@ export default function LoginScreen() {
       setUser(user);
       router.replace("/home");
     } catch (err: unknown) {
-      const msg =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-          : null;
+      const msg = messageFromAxios(err);
       setError(
         msg === "USER_INACTIVE"
           ? t(locale, "login.accountInactive")
-          : msg || t(locale, "common.loginFailed")
+          : msg === "NETWORK_ERROR"
+            ? t(locale, "common.networkError")
+            : msg || t(locale, "common.loginFailed")
       );
     } finally {
       setLoading(false);
@@ -422,11 +422,12 @@ export default function LoginScreen() {
       setUser(user);
       router.replace("/home");
     } catch (err: unknown) {
-      const msg =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-          : null;
-      setError(msg || t(locale, "common.loginFailed"));
+      const msg = messageFromAxios(err);
+      setError(
+        msg === "NETWORK_ERROR"
+          ? t(locale, "common.networkError")
+          : msg || t(locale, "common.loginFailed")
+      );
     } finally {
       setLoading(false);
     }

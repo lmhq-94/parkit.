@@ -96,7 +96,7 @@ export function DefaultBanner({
       </div>
 
       {/* Derecha: o bien título/subtítulo por defecto o contenido personalizado (ej. selector) */}
-      <div className={`relative z-10 flex-1 min-w-0 pl-3 pr-4 ${hasBackgroundImage ? "drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" : ""}`}>
+      <div className={`relative z-10 flex-1 min-w-0 pl-3 pr-4 flex justify-center ${hasBackgroundImage ? "drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" : ""}`}>
         {renderRight ? (
           renderRight
         ) : (

@@ -1,4 +1,5 @@
 import type { Locale } from "@parkit/shared";
+export type { Locale };
 
 const translations: Record<Locale, Record<string, string>> = {
   es: {
@@ -42,6 +43,13 @@ const translations: Record<Locale, Record<string, string>> = {
     "settings.language": "Idioma",
     "settings.spanish": "Español",
     "settings.english": "English",
+    "settings.preferencesSection": "Preferencias de la app",
+    "settings.theme": "Tema",
+    "settings.themeLight": "Claro",
+    "settings.themeDark": "Oscuro",
+    "settings.themeSystem": "Sistema",
+    "settings.save": "GUARDAR CAMBIOS",
+    "settings.saveSuccess": "Preferencias guardadas",
     "profile.accountInfo": "Información de la cuenta",
     "profile.email": "Correo",
     "profile.name": "Nombre",
@@ -95,6 +103,13 @@ const translations: Record<Locale, Record<string, string>> = {
     "settings.language": "Language",
     "settings.spanish": "Español",
     "settings.english": "English",
+    "settings.preferencesSection": "App Preferences",
+    "settings.theme": "Theme",
+    "settings.themeLight": "Light",
+    "settings.themeDark": "Dark",
+    "settings.themeSystem": "System",
+    "settings.save": "SAVE CHANGES",
+    "settings.saveSuccess": "Preferences saved",
     "profile.accountInfo": "Account Information",
     "profile.email": "Email",
     "profile.name": "Name",

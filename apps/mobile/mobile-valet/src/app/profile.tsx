@@ -345,7 +345,12 @@ export default function ProfileScreen() {
         feedback.success(t(locale, "profile.saveSuccess"));
       }
     } catch (e) {
-      feedback.error(messageFromAxios(e) || t(locale, "profile.saveError"));
+      const msg = messageFromAxios(e);
+      feedback.error(
+        msg === "NETWORK_ERROR"
+          ? t(locale, "common.networkError")
+          : msg || t(locale, "profile.saveError")
+      );
     } finally {
       setSaving(false);
     }

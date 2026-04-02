@@ -1,14 +1,23 @@
 import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
-import { useAuthStore, useLocaleStore } from "@/lib/store";
+import { useAuthStore, usePreferencesStore } from "@/lib/store";
 import { clearUser } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { router } from "expo-router";
-import type { Locale } from "@parkit/shared";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
-  const { locale, setLocale } = useLocaleStore();
+  const {
+    locale,
+    pendingLocale,
+    pendingTheme,
+    setPendingLocale,
+    setPendingTheme,
+    savePreferences,
+    isDirty,
+    isSaving,
+  } = usePreferencesStore();
+  const dirty = isDirty();
 
   const handleLogout = async () => {
     await clearUser();
@@ -16,8 +25,13 @@ export default function ProfileScreen() {
     router.replace("/welcome");
   };
 
-  const handleSetLocale = (newLocale: Locale) => {
-    setLocale(newLocale);
+  const handleSave = async () => {
+    try {
+      await savePreferences();
+      // Optional: Show success alert
+    } catch (error) {
+      // Optional: Show error alert
+    }
   };
 
   if (!user) {
@@ -61,20 +75,61 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t(locale, "settings.language")}</Text>
+        <Text style={styles.sectionTitle}>{t(locale, "settings.preferencesSection")}</Text>
+        
+        {/* Language Selection */}
+        <Text style={styles.subSectionTitle}>{t(locale, "settings.language")}</Text>
         <Pressable
-          style={[styles.localeRow, locale === "es" && styles.localeRowActive]}
-          onPress={() => handleSetLocale("es")}
+          style={[styles.localeRow, pendingLocale === "es" && styles.localeRowActive]}
+          onPress={() => setPendingLocale("es")}
         >
           <Text style={styles.localeLabel}>{t(locale, "settings.spanish")}</Text>
-          {locale === "es" && <Ionicons name="checkmark-circle" size={22} color="#0066FF" />}
+          {pendingLocale === "es" && <Ionicons name="checkmark-circle" size={22} color="#0066FF" />}
         </Pressable>
         <Pressable
-          style={[styles.localeRow, locale === "en" && styles.localeRowActive]}
-          onPress={() => handleSetLocale("en")}
+          style={[styles.localeRow, pendingLocale === "en" && styles.localeRowActive]}
+          onPress={() => setPendingLocale("en")}
         >
           <Text style={styles.localeLabel}>{t(locale, "settings.english")}</Text>
-          {locale === "en" && <Ionicons name="checkmark-circle" size={22} color="#0066FF" />}
+          {pendingLocale === "en" && <Ionicons name="checkmark-circle" size={22} color="#0066FF" />}
+        </Pressable>
+
+        {/* Theme Selection */}
+        <Text style={[styles.subSectionTitle, { marginTop: 20 }]}>{t(locale, "settings.theme")}</Text>
+        <Pressable
+          style={[styles.localeRow, pendingTheme === "system" && styles.localeRowActive]}
+          onPress={() => setPendingTheme("system")}
+        >
+          <Text style={styles.localeLabel}>{t(locale, "settings.themeSystem")}</Text>
+          {pendingTheme === "system" && <Ionicons name="checkmark-circle" size={22} color="#0066FF" />}
+        </Pressable>
+        <Pressable
+          style={[styles.localeRow, pendingTheme === "light" && styles.localeRowActive]}
+          onPress={() => setPendingTheme("light")}
+        >
+          <Text style={styles.localeLabel}>{t(locale, "settings.themeLight")}</Text>
+          {pendingTheme === "light" && <Ionicons name="checkmark-circle" size={22} color="#0066FF" />}
+        </Pressable>
+        <Pressable
+          style={[styles.localeRow, pendingTheme === "dark" && styles.localeRowActive]}
+          onPress={() => setPendingTheme("dark")}
+        >
+          <Text style={styles.localeLabel}>{t(locale, "settings.themeDark")}</Text>
+          {pendingTheme === "dark" && <Ionicons name="checkmark-circle" size={22} color="#0066FF" />}
+        </Pressable>
+
+        {/* Save Button */}
+        <Pressable
+          style={[
+            styles.saveButton,
+            (!dirty || isSaving) && styles.saveButtonDisabled
+          ]}
+          onPress={handleSave}
+          disabled={!dirty || isSaving}
+        >
+          <Text style={styles.saveButtonText}>
+            {isSaving ? t(locale, "common.loading") : t(locale, "settings.save")}
+          </Text>
         </Pressable>
       </View>
 
@@ -138,7 +193,15 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: "600",
-    marginBottom: 12,
+    marginBottom: 16,
+    color: "#000",
+  },
+  subSectionTitle: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#666",
+    marginBottom: 8,
+    textTransform: "uppercase",
   },
   infoRow: {
     flexDirection: "row",
@@ -184,5 +247,22 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  saveButton: {
+    backgroundColor: "#0066FF",
+    marginTop: 24,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  saveButtonDisabled: {
+    backgroundColor: "#ccc",
+    opacity: 0.5,
+  },
+  saveButtonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "700",
+    letterSpacing: 0.5,
   },
 });
