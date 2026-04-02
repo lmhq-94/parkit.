@@ -22,6 +22,8 @@ export interface SendTicketCodeParams {
   ticketCode: string;
   /** Parking location/venue name */
   locationName?: string;
+  /** Vehicle plate number */
+  plateNumber?: string;
   /** Parking entry date/time (ISO format or formatted string) */
   entryTime?: string;
   /** Optional additional instructions or notes */
@@ -37,6 +39,7 @@ export async function sendTicketCodeEmail(
     lastName,
     ticketCode,
     locationName,
+    plateNumber,
     entryTime,
     notes,
   } = params;
@@ -76,99 +79,140 @@ export async function sendTicketCodeEmail(
   try {
     // Resend requires html or text as fallback when using template_id
     // This fallback is specific to ticket code emails for quality UX if template fails
-    const htmlFallback = `
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    const htmlFallback = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html dir="ltr" lang="es">
   <head>
-    <meta content="width=device-width" name="viewport" />
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-    <meta name="x-apple-disable-message-reformatting" />
-    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
-    <meta name="x-apple-disable-message-reformatting" />
-    <meta
-      content="telephone=no,address=no,email=no,date=no,url=no"
-      name="format-detection" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-      body, .email-body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f6f8fb;
-      }
-      .container { width: 100%; max-width: 640px; margin: 0 auto; }
-      .card { background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08); border: 1px solid #eef2f7; }
-      .hero { background: linear-gradient(135deg, #0f172a 0%, #111827 45%, #1e293b 100%); padding: 36px 40px; color: #ffffff; }
-      .brand { font-size: 44px; font-weight: 700; letter-spacing: -0.04em; margin: 0; }
-      .brand .dot { color: #3b82f6; }
-      .content { padding: 36px 40px 28px; color: #0f172a; }
-      .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.16em; color: #94a3b8; margin: 0 0 8px; }
-      .title { font-size: 26px; font-weight: 700; margin: 0 0 12px; color: #0f172a; }
-      .subtitle { font-size: 15px; line-height: 24px; color: #475569; margin: 0 0 20px; }
-      .ticket { background: #f8fafc; border: 1px dashed #cbd5f5; border-radius: 14px; padding: 18px 18px 14px; text-align: center; }
-      .ticket-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.18em; color: #64748b; font-weight: 700; margin: 0 0 10px; }
-      .ticket-code { font-size: 44px; font-weight: 800; letter-spacing: 6px; color: #0f172a; margin: 0; font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;}
-      .ticket-meta { margin-top: 12px; font-size: 12px; color: #64748b; }
-      .info { margin-top: 16px; font-size: 12px; line-height: 18px; color: #64748b; }
-      .note { margin-top: 16px; font-size: 12px; line-height: 18px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 10px 12px; }
-      .footer { border-top: 1px solid #eef2f7; padding: 20px 40px 30px; text-align: center; font-size: 12px; color: #94a3b8; }
-      .footer a { color: #3b82f6; text-decoration: none; }
-      .links a { color: #64748b; text-decoration: underline; margin: 0 6px; }
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=JetBrains+Mono:wght@800&display=swap');
       @media only screen and (max-width: 480px) {
-        .content, .hero, .footer { padding-left: 20px !important; padding-right: 20px !important; }
-        .brand { font-size: 36px !important; }
-        .title { font-size: 22px !important; }
-        .ticket-code { font-size: 34px !important; letter-spacing: 4px !important; }
+        .container { width: 100% !important; }
+        .content { padding: 30px 20px !important; }
+        .ticket-paper { padding: 40px 15px !important; width: 280px !important; }
+        .brand-text { font-size: 38px !important; }
       }
     </style>
   </head>
-  <body>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-      <tbody>
-        <tr>
-          <td style="padding: 12px;">
-            <div class="container">
-              <div class="card">
-                <div class="hero">
-                  <p class="brand"><span style="color:#ffffff">park</span><span class="dot">it.</span></p>
-                </div>
-                <div class="content">
-                  <p class="eyebrow">Tiquete digital</p>
-                  <h1 class="title">Código de retiro</h1>
-                  <p class="subtitle">
-                    Tu tiquete digital fue generado con éxito. Presenta este código en la salida para autorizar el retiro del vehículo.
-                  </p>
-                  <div class="ticket">
-                    <p class="ticket-label">Código</p>
-                    <p class="ticket-code">${ticketCode}</p>
-                    <div class="ticket-meta">
-                      ${locationDisplay ? `<div><strong>Ubicación:</strong> ${locationDisplay}</div>` : ""}
-                      ${entryTime ? `<div><strong>Entrada:</strong> ${entryTime}</div>` : ""}
-                    </div>
+  <body style="font-family: 'Inter', Helvetica, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 0;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f0f4f8;">
+      <tr>
+        <td align="center" style="padding: 40px 10px;">
+          
+          <table role="presentation" class="container" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.08);">
+            
+            <tr>
+              <td style="background: #0f172a; background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%); padding: 40px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td>
+                      <h1 class="brand-text" style="font-size: 42px; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: -0.05em;">
+                        park<span style="color: #3b82f6;">it.</span>
+                      </h1>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="content" style="padding: 45px 50px 10px;">
+                <h2 style="font-size: 26px; font-weight: 800; margin: 0 0 12px; color: #1e293b; letter-spacing: -0.02em;">Te damos la bienvenida</h2>
+                <p style="font-size: 15px; line-height: 24px; color: #475569; margin: 0 0 30px;">
+                  Su vehículo ha sido ingresado a nuestro sistema de custodia. Deberá mostrar este código al personal cuando desee solicitar su vehículo nuevamente.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="padding: 10px 20px 40px;">
+                <div class="ticket-paper" style="
+                  background-color: #fefefe;
+                  background-image: radial-gradient(#e5e7eb 0.7px, transparent 0);
+                  background-size: 10px 10px;
+                  position: relative;
+                  padding: 50px 30px;
+                  border-left: 1px solid #e2e8f0;
+                  border-right: 1px solid #e2e8f0;
+                  box-shadow: 0 15px 35px rgba(0,0,0,0.07);
+                  max-width: 320px;
+                ">
+                  <div style="position: absolute; top: -10px; left: -1px; right: -1px; height: 12px; background-image: radial-gradient(circle at 8px -4px, #ffffff 10px, transparent 11px); background-size: 16px 12px;"></div>
+
+                  <div style="text-align: center; border-bottom: 2px dashed #cbd5e1; padding-bottom: 20px; margin-bottom: 25px;">
+                    <p style="margin: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #64748b; font-weight: 700;">Comprobante de Parqueo</p>
+                    <h3 style="margin: 8px 0 0; font-size: 18px; font-weight: 900; color: #000000; font-family: 'JetBrains Mono', monospace;">VALET PARKING</h3>
+                                   <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 25px 5px; margin-bottom: 25px; text-align: center;">
+                    <span style="font-size: 9px; text-transform: uppercase; color: #64748b; display: block; margin-bottom: 10px; font-weight: 700;">Código para Retiro</span>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 44px; font-weight: 800; letter-spacing: 5px; color: #000; line-height: 1;">${ticketCode}</span>
                   </div>
-                  ${notes ? `<div class="note">${notes}</div>` : ""}
-                  <div class="info">
-                    * Este código es de uso único. Si tienes inconvenientes, contacta al personal de soporte en sitio.
+
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="font-family: 'Courier New', Courier, monospace; font-size: 12px; color: #1a202c;">
+                    <tr>
+                      <td style="padding: 8px 0; border-bottom: 1px dotted #cbd5e1; text-align: left;">UBICACIÓN:</td>
+                      <td style="padding: 8px 0; border-bottom: 1px dotted #cbd5e1; text-align: right; font-weight: bold;">${locationDisplay || "—"}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 8px 0; border-bottom: 1px dotted #cbd5e1; text-align: left;">PLACA:</td>
+                      <td style="padding: 8px 0; border-bottom: 1px dotted #cbd5e1; text-align: right; font-weight: bold;">${plateNumber || "—"}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 8px 0; border-bottom: 1px dotted #cbd5e1; text-align: left;">INGRESO:</td>
+                      <td style="padding: 8px 0; border-bottom: 1px dotted #cbd5e1; text-align: right; font-weight: bold;">${entryTime || "—"}</td>
+                    </tr>
+                  </table>
+
+                  <div style="margin: 35px auto 5px; width: 100%; height: 50px; background: repeating-linear-gradient(90deg, #000, #000 1px, transparent 1px, transparent 3px, #000 3px, #000 4px, transparent 4px, transparent 6px); opacity: 0.8;"></div>
+                  <p style="font-size: 10px; color: #64748b; margin: 15px 0 0; text-align: center; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Código de un único uso.</p>
+                  <div style="position: absolute; bottom: -10px; left: -1px; right: -1px; height: 12px; background-image: radial-gradient(circle at 8px 16px, #ffffff 10px, transparent 11px); background-size: 16px 12px;"></div>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding: 0 50px 40px;">
+                <div style="padding: 20px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; color: #475569; font-size: 13px; line-height: 1.6;">
+                  <strong style="color: #1e293b; display: block; margin-bottom: 8px; font-size: 14px;">Instrucciones de Retiro:</strong>
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                    <tr><td style="padding-bottom: 4px;">• Diríjase al mostrador de Valet Parking.</td></tr>
+                    <tr><td style="padding-bottom: 4px;">• Presente este comprobante digital.</td></tr>
+                    <tr><td style="padding-bottom: 10px;">• Nuestro personal gestionará el retiro de su vehículo.</td></tr>
+                  </table>
+
+                  ${notes ? `
+                  <div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; color: #92400e;">
+                    <strong style="display: block; margin-bottom: 2px;">Notas adicionales:</strong>
+                    ${notes}
                   </div>
+                  ` : ''}
                 </div>
-                <div class="footer">
-                  <p style="margin: 0 0 10px;">¿Necesitas ayuda? <a href="${SUPPORT_EMAIL}" target="_blank" rel="noopener noreferrer nofollow">Contacta soporte</a></p>
-                  <p class="links" style="margin: 0 0 8px;">
-                    <a href="${TERMS_URL || "#"}" target="_blank" rel="noopener noreferrer nofollow">Términos</a> ·
-                    <a href="${PRIVACY_URL || "#"}" target="_blank" rel="noopener noreferrer nofollow">Privacidad</a>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="border-top: 1px solid #f1f5f9; padding: 40px; text-align: center; background-color: #fafbfc;">
+                <div style="font-family: 'Inter', Helvetica, Arial, sans-serif;">
+                  <p style="margin: 0 0 12px; font-size: 13px; color: #64748b;">¿Necesitas ayuda? <a href="mailto:${SUPPORT_EMAIL}" style="color: #3b82f6; text-decoration: none; font-weight: 700;">Contacta soporte</a></p>
+                  
+                  <p style="margin: 0 0 15px; font-size: 12px; color: #94a3b8;">
+                    <a href="${TERMS_URL}" style="color: #94a3b8; text-decoration: underline;">Términos</a> · 
+                    <a href="${PRIVACY_URL}" style="color: #94a3b8; text-decoration: underline;">Privacidad</a>
                   </p>
-                  <p style="margin: 0;">© 2026 Parkit Inc. · Atenas, Alajuela, Costa Rica ·
-                    <a href="${UNSUBSCRIBE_URL || "#"}" target="_blank" rel="noopener noreferrer nofollow">Darse de baja</a>
+
+                  <p style="margin: 0; font-size: 11px; color: #cbd5e1; line-height: 1.6; letter-spacing: 0.3px;">
+                    © ${new Date().getFullYear()} Parkit. Hecho con ♥ por el <strong>equipo de Parkit</strong>.<br>
+                    Atenas, Alajuela, Costa Rica.
                   </p>
                 </div>
-              </div>
-            </div>
-          </td>
-        </tr>
-      </tbody>
+              </td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
     </table>
   </body>
-</html>
-    `;
+</html>`;
 
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -185,12 +229,14 @@ export async function sendTicketCodeEmail(
         template_data: {
           ticket_code: ticketCode,
           location_name: locationDisplay || "",
+          plate_number: plateNumber || "",
           entry_time: entryTime || "",
           notes: notes || "",
           support: SUPPORT_EMAIL,
           privacy: PRIVACY_URL || "",
           terms: TERMS_URL || "",
           unsubscribe: UNSUBSCRIBE_URL || "",
+          current_year: new Date().getFullYear(),
         },
       }),
     });

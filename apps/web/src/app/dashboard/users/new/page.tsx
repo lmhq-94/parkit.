@@ -21,7 +21,7 @@ const ROLES = ["CUSTOMER", "ADMIN"] as const;
 const defaultForm = {
   firstName: "", lastName: "", email: "",
   systemRole: "CUSTOMER" as const, phone: "",
-  timezone: "America/Costa_Rica",
+  timezone: "UTC",
 };
 
 export default function NewUserPage() {

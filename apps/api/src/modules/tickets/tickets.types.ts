@@ -10,6 +10,10 @@ export interface CreateTicketDTO {
   /** Manual codes from valet app; if both omitted, server allocates unique codes. */
   keyCode?: string;
   ticketCode?: string;
+  bankCard?: {
+    issuer: string;
+    type: string;
+  };
   /**
    * Estado del vehículo al ingreso (fotos en data URL o URL pública + nota opcional).
    * Si no hay fotos ni descripción, no se crea fila DamageReport.

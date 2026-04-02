@@ -40,7 +40,7 @@ function Field({ label, required, icon: Icon, error, children }: {
 
 const defaultForm = {
   legalName: "", taxId: "", industry: "", commercialName: "",
-  countryCode: "CR", currency: "CRC", timezone: "America/Costa_Rica",
+  countryCode: "CR", currency: "CRC", timezone: "UTC",
   email: "", contactPhone: "", legalAddress: "",
   requiresCustomerApp: "" as "" | "true" | "false",
 };
