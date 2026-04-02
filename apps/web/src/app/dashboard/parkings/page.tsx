@@ -32,8 +32,8 @@ type ParkingRow = {
 
 export default function ParkingsPage() {
   const { t, tWithCompany, tEnum, locale } = useTranslation();
-  const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
-  const bumpParkings = useDashboardStore((s) => s.bumpParkings);
+  const selectedCompanyName = useDashboardStore((s: any) => s.selectedCompanyName);
+  const bumpParkings = useDashboardStore((s: any) => s.bumpParkings);
   const router = useRouter();
 
   const onUpdate = useCallback(async (row: ParkingRow) => {
@@ -56,9 +56,11 @@ export default function ParkingsPage() {
     const payload: Record<string, unknown> = {};
     if (name) payload.name = name;
     if (type) payload.type = type;
-    if (totalSlots !== undefined) payload.totalSlots = totalSlots;
-    if (freeBenefitMinutes !== undefined) payload.freeBenefitMinutes = freeBenefitMinutes;
-    if (pricePerExtraHour !== undefined) payload.pricePerExtraHour = pricePerExtraHour;
+    if (totalSlots !== undefined && !Number.isNaN(totalSlots)) payload.totalSlots = totalSlots;
+    if (freeBenefitMinutes !== undefined && !Number.isNaN(freeBenefitMinutes)) payload.freeBenefitMinutes = freeBenefitMinutes;
+    if (pricePerExtraHour !== undefined && !Number.isNaN(pricePerExtraHour)) payload.pricePerExtraHour = pricePerExtraHour;
+
+    if (Object.keys(payload).length === 0) return;
 
     await apiClient.patch(`/parkings/${row.id}`, payload);
     bumpParkings();
@@ -113,7 +115,19 @@ export default function ParkingsPage() {
         cellEditorValues: ["OPEN", "COVERED", "TOWER", "UNDERGROUND", "ELEVATOR"],
         cellEditorLabels: ["OPEN", "COVERED", "TOWER", "UNDERGROUND", "ELEVATOR"].map((v) => tEnum("parkingType", v)),
       },
-      { header: t("tables.parkings.totalSlots"), render: (p: ParkingRow) => (p.totalSlots != null ? String(p.totalSlots) : "—"), field: "totalSlots" as const, editable: true },
+      {
+        header: t("tables.parkings.totalSlots"),
+        render: (p: ParkingRow) => (p.totalSlots != null ? String(p.totalSlots) : "—"),
+        field: "totalSlots" as const,
+        editable: true,
+        validator: (val: any) => {
+          const n = Number(val);
+          if (val != null && val !== "" && (Number.isNaN(n) || n < 0)) {
+            return t("validation.invalidNumber");
+          }
+          return null;
+        }
+      },
     ],
     [t, tEnum]
   );
