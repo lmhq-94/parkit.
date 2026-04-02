@@ -82,6 +82,36 @@ enum NotificationStatus {
   FAILED
 }
 
+enum BankIssuer {
+  BAC_CREDOMATIC
+  PROMERICA
+  NO_ISSUER
+}
+
+enum BankCardType {
+  AMEX_THE_PLATINUM_CARD
+  AMEX_CASHBACK_PREMIUM
+  AMEX_MILLAS_PLUS_BLACK
+  AMEX_PLATINUM
+  AMEX_INCAE
+  AMEX_AADVANTAGE_PRESTIGE
+  AMEX_LIFEMILES_ELITE
+  MASTERCARD_BLACK
+  MASTERCARD_PLATINUM
+  MASTERCARD_BLACK_MILLAS_PLUS
+  MASTERCARD_CASHBACK_PREMIUM
+  MASTERCARD_BLACK_AADVANTAGE
+  VISA_INFINITE
+  VISA_INFINITE_IBERIA
+  VISA_INFINITE_EMERALD
+  VISA_INFINITE_CONNECT_MILES
+  VISA_INFINITE_MILLAS_PLUS
+  VISA_PLATINO
+  LINCOLN_PLAZA
+  CORPORATE_BENEFICIARY
+  NO_CARD
+}
+
 /**
  * |--------------------------------------------------------------------------
  * | CORE
@@ -171,27 +201,43 @@ model Client {
   updatedAt DateTime @updatedAt
 
   // relations
-  company  Company         @relation(fields: [companyId], references: [id])
-  user     User            @relation(fields: [userId], references: [id])
-  vehicles ClientVehicle[]
-  bookings Booking[]
-  tickets  Ticket[]
+  company   Company         @relation(fields: [companyId], references: [id])
+  user      User            @relation(fields: [userId], references: [id])
+  vehicles  ClientVehicle[]
+  bookings  Booking[]
+  tickets   Ticket[]
+  bankCards BankCard[]
+}
+model BankCard {
+  id        String        @id @default(uuid())
+  clientId  String
+  
+  issuer    BankIssuer
+  type      BankCardType
+  
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  // relations
+  client    Client        @relation(fields: [clientId], references: [id])
+
+  @@unique([clientId, issuer, type])
 }
 
 model Valet {
   id               String      @id @default(uuid())
-  companyId        String?     // null = valet subcontratado, rota entre empresas
+  companyId        String?    //rotation between companies
   userId           String      @unique
   currentParkingId String?
-  /** Null si el valet se registró solo desde la app (ej. mobile-valet) y aún no se cargó en el panel. */
+
   licenseNumber    String?
   licenseExpiry    DateTime?
   currentStatus    ValetStatus @default(AVAILABLE)
-  /** Último ping desde la app; si queda obsoleto, no se lista como disponible en parqueo. */
+
   lastPresenceAt   DateTime?
-  /** Sub-rol operativo (recepcionista / conductor). */
+
   staffRole        ValetStaffRole?
-  /** Media de valoraciones de clientes (app); null hasta que existan reseñas. */
+
   ratingAvg        Float?
 
   createdAt DateTime @default(now())
@@ -220,7 +266,7 @@ model Parking {
   geofenceRadius     Float       @default(50)
   type               ParkingType @default(OPEN)
   totalSlots         Int
-  freeBenefitHours   Int         @default(0)
+  freeBenefitMinutes Int         @default(0)
   pricePerExtraHour  Decimal?    @db.Decimal(12, 2)
 
   createdAt DateTime @default(now())
@@ -282,6 +328,7 @@ model ClientVehicle {
   vehicleId String
   isPrimary Boolean @default(false)
 
+  // relations
   client  Client  @relation(fields: [clientId], references: [id])
   vehicle Vehicle @relation(fields: [vehicleId], references: [id])
 }
@@ -322,9 +369,9 @@ model Ticket {
   vehicleId String
   clientId  String
   slotId    String?
-  /** Código corto interno (p. ej. llave / mostrador). */
+  
   keyCode   String?      @unique
-  /** Código legible para el cliente (ticket / QR). */
+  
   ticketCode String?     @unique
   status    TicketStatus @default(REQUEST_PARKING)
   entryTime DateTime     @default(now())
@@ -356,6 +403,7 @@ model TicketAssignment {
   role       ValetStaffRole
   assignedAt DateTime       @default(now())
 
+  // relations
   ticket Ticket @relation(fields: [ticketId], references: [id])
   valet  Valet  @relation(fields: [valetId], references: [id])
 }
@@ -369,6 +417,7 @@ model DamageReport {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // relations
   ticket Ticket        @relation(fields: [ticketId], references: [id])
   valet  Valet         @relation(fields: [valetId], references: [id])
   photos DamagePhoto[]
@@ -382,6 +431,7 @@ model DamagePhoto {
 
   uploadedAt DateTime @default(now())
 
+  // relations
   damageReport DamageReport @relation(fields: [damageReportId], references: [id])
 }
 
@@ -394,6 +444,7 @@ model TicketReview {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // relations
   ticket Ticket @relation(fields: [ticketId], references: [id])
 }
 
@@ -414,6 +465,7 @@ model AuditLog {
 
   createdAt DateTime @default(now())
 
+  // relations
   user   User    @relation(fields: [userId], references: [id])
   ticket Ticket? @relation(fields: [ticketId], references: [id])
 }
@@ -429,6 +481,7 @@ model NotificationLog {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  
   user User @relation(fields: [userId], references: [id])
 }
 

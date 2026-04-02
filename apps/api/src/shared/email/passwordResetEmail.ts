@@ -30,6 +30,11 @@ export async function sendPasswordResetEmail(params: {
   token: string;
 }): Promise<{ sent: boolean; error?: string }> {
   const { to, firstName, lastName, token } = params;
+
+  // In development, redirect all emails to the developer's verified email
+  const isDevelopment = process.env.NODE_ENV !== "production";
+  const actualTo = isDevelopment ? "luis.herrera506@gmail.com" : to;
+
   const resetLink = buildResetLink(token);
   const fullName = `${firstName} ${lastName}`.trim() || "ahí";
   const fullNameEscaped = escapeHtml(fullName);
@@ -88,7 +93,7 @@ Soporte: ${SUPPORT_EMAIL}`;
   const client = getResendClient();
   if (!client) {
     console.log("[Password reset email not sent - no RESEND_API_KEY]");
-    console.log(`  To: ${to}`);
+    console.log(`  Original To: ${to}`);
     console.log(`  Reset link: ${resetLink}`);
     return { sent: true };
   }
@@ -96,7 +101,7 @@ Soporte: ${SUPPORT_EMAIL}`;
   try {
     const { error } = await client.emails.send({
       from: FROM_EMAIL,
-      to: [to],
+      to: [actualTo],
       subject: "Parkit – restablecer contraseña",
       html,
       text,

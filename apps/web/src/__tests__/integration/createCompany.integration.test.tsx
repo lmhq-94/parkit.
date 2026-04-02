@@ -2,7 +2,7 @@
  * Integration test: create company flow (wizard, validation, POST, redirect).
  */
 import React from "react";
-import { render, screen, waitFor, act, within } from "@testing-library/react";
+import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import NewCompanyPage from "@/app/dashboard/companies/new/page";
 import { useLocaleStore } from "@/lib/store";
@@ -19,7 +19,6 @@ jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush, replace: jest.fn() }),
 }));
 jest.mock("next/link", () => {
-  const React = require("react");
   return {
     __esModule: true,
     default: ({ children, href }: { children: React.ReactNode; href: string }) =>
@@ -45,6 +44,7 @@ jest.mock("@/components/AddressPickerModal", () => ({
 // In this integration flow we mainly care about payload shape
 // more than detailed step-by-step validation UX, so we relax `required`.
 jest.mock("@/lib/validation", () => {
+// eslint-disable-next-line @typescript-eslint/no-var-requires
   const actual = jest.requireActual("@/lib/validation");
   return {
     ...actual,

@@ -21,7 +21,6 @@ jest.mock("next/navigation", () => ({
   useParams: () => ({ id: "company-1" }),
 }));
 jest.mock("next/link", () => {
-  const React = require("react");
   return {
     __esModule: true,
     default: ({ children, href }: { children: React.ReactNode; href: string }) =>
@@ -35,6 +34,7 @@ jest.mock("@/lib/api", () => ({
   },
 }));
 jest.mock("@/lib/store", () => ({
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   ...jest.requireActual("@/lib/store"),
   useDashboardStore: (selector: (s: { bumpCompanies: () => void }) => unknown) => {
     const state = { bumpCompanies: mockBumpCompanies };

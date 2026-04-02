@@ -29,7 +29,6 @@ export class DashboardService {
     to?: string
   ): Promise<DashboardStats> {
     const isGlobal = !companyId;
-    const where = isGlobal ? {} : { companyId };
 
     const companyWhere = isGlobal ? {} : { companyId: companyId! };
     const ticketsByDay = (from != null && to != null)

@@ -70,6 +70,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "common.loading": "Cargando…",
     "common.errorFillFields": "Completa todos los campos",
     "common.loginFailed": "Error al iniciar sesión",
+    "common.networkError": "No se pudo conectar al servidor. Revisa tu conexión.",
     "common.cancel": "Cancelar",
     "common.ok": "Entendido",
     "common.errorTitle": "Aviso",
@@ -471,17 +472,26 @@ const translations: Record<Locale, Record<string, string>> = {
       "Las dimensiones del vehículo son cargadas automáticamente desde catálogo.",
     "receive.benefitSection": "Reserva / beneficio valet",
     "receive.benefitHelp":
-      "Opcional: pega el ID de la reserva para validar horas de cortesía en el parqueo.",
+      "Opcional: pega el ID de la reserva para validar el tiempo de cortesía en el parqueo.",
     "receive.placeholderBooking": "ID de reserva",
     "receive.validate": "Validar",
     "receive.benefitOk":
-      "Reserva válida. Cortesía aprox.: {{hours}} h (según parqueo).",
+      "Reserva válida. Cortesía aprox.: {{time}} (según parqueo).",
     "receive.benefitInvalidEyebrow": "Validación",
     "receive.benefitInvalidTitle": "Sin reserva activa",
     "receive.benefitInvalid":
       "No hay una reserva activa vinculada a este código (cancelada, caducada o incorrecta).",
     "receive.benefitInvalidHint":
       "Pide al huésped el QR actualizado, mejora la luz o acerca el código y vuelve a escanear.",
+    "receive.cardVerifySkipCta": "Omitir verificación de tarjeta",
+    "receive.cardVerifySkipTitle": "Omitir verificación",
+    "receive.cardVerifySkipBody":
+      "Confirma solo si el cliente no tiene beneficio con su tarjeta y pagará el servicio de valet.",
+    "receive.cardVerifySkipConfirm": "Sí, omitir",
+    "receive.cardVerifySkipNote":
+      "Solo si el cliente no tiene beneficio con su tarjeta y pagará el servicio de valet.",
+    "receive.cardVerifySkippedHint":
+      "Verificación omitida. Usa este flujo solo si el cliente pagará el servicio.",
     "receive.parkingSection": "Parqueo",
     "receive.driverValetSection": "Conductor valet",
     "receive.driverValetHelp":
@@ -590,6 +600,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "common.loading": "Loading…",
     "common.errorFillFields": "Please fill all fields",
     "common.loginFailed": "Login failed",
+    "common.networkError": "Could not connect to the server. Check your connection.",
     "common.cancel": "Cancel",
     "common.ok": "OK",
     "common.errorTitle": "Notice",
@@ -987,17 +998,26 @@ const translations: Record<Locale, Record<string, string>> = {
       "Vehicle dimensions loaded automatically from catalog.",
     "receive.benefitSection": "Booking / valet benefit",
     "receive.benefitHelp":
-      "Optional: paste booking ID to validate complimentary hours at the parking.",
+      "Optional: paste booking ID to validate courtesy time at the parking.",
     "receive.placeholderBooking": "Booking ID",
     "receive.validate": "Validate",
     "receive.benefitOk":
-      "Valid booking. Approx. courtesy: {{hours}} h (per parking rules).",
+      "Valid booking. Approx. courtesy: {{time}} (per parking rules).",
     "receive.benefitInvalidEyebrow": "Verification",
     "receive.benefitInvalidTitle": "No active booking",
     "receive.benefitInvalid":
       "There’s no active booking linked to this code—it may be cancelled, expired, or wrong.",
     "receive.benefitInvalidHint":
       "Ask the guest for an updated QR, improve lighting, move closer, and scan again.",
+    "receive.cardVerifySkipCta": "Skip card verification",
+    "receive.cardVerifySkipTitle": "Skip verification",
+    "receive.cardVerifySkipBody":
+      "Confirm only if the guest has no card benefit and will pay for valet service.",
+    "receive.cardVerifySkipConfirm": "Yes, skip",
+    "receive.cardVerifySkipNote":
+      "Only if the guest has no card benefit and will pay for valet service.",
+    "receive.cardVerifySkippedHint":
+      "Verification skipped. Use this flow only if the guest will pay for the service.",
     "receive.parkingSection": "Parking",
     "receive.driverValetSection": "Valet driver",
     "receive.driverValetHelp": "Assign who will park the vehicle (optional).",

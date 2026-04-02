@@ -29,7 +29,6 @@ function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadd
   const F = theme.font;
   const Fa = ticketsA11y.font;
   const R = theme.radius;
-  const M = theme.minTouch;
 
   return StyleSheet.create({
     safe: {

@@ -162,7 +162,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [query, selectedCompanyId]);
+  }, [query, selectedCompanyId, showToastError, t]);
 
   // After opening custom range for the first time, reset the flag
   useEffect(() => {

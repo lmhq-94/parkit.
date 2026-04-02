@@ -8,11 +8,17 @@ import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
+import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { TIMEZONES } from "@/lib/companyOptions";
-import { formatPhoneWithCountryCode, COUNTRY_DIAL_CODES } from "@/lib/inputMasks";
+import {
+  formatPhoneWithCountryCode,
+  COUNTRY_DIAL_CODES,
+  getDeviceCountryCode,
+} from "@/lib/inputMasks";
 import { required, email as validateEmail, phone as validatePhone } from "@/lib/validation";
+import { isSuperAdmin } from "@/lib/auth";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -30,17 +36,38 @@ export default function EditUserPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const user = useAuthStore((s) => s.user);
+  const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
   const [form, setForm] = useState(defaultForm);
   const [initialForm, setInitialForm] = useState(defaultForm);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof typeof defaultForm, string>>>({});
+  const [phoneCountry, setPhoneCountry] = useState<string>("CR");
 
   useEffect(() => {
     (async () => {
       try {
-        const data = await apiClient.get<Record<string, unknown>>(`/users/${id}`);
+        const companyPromise = (async () => {
+          const superAdmin = isSuperAdmin(user);
+          if (superAdmin && selectedCompanyId) {
+            return apiClient.get<{ countryCode?: string | null }>(`/companies/${selectedCompanyId}`);
+          }
+          if (!superAdmin) {
+            return apiClient.get<{ countryCode?: string | null }>("/companies/me");
+          }
+          return null;
+        })();
+        const [data, company] = await Promise.all([
+          apiClient.get<Record<string, unknown>>(`/users/${id}`),
+          companyPromise,
+        ]);
+        const countryCode =
+          (company && typeof company === "object" && "countryCode" in company && company.countryCode) ||
+          getDeviceCountryCode() ||
+          "CR";
+        setPhoneCountry(countryCode);
         if (data) {
           const role = String(data.systemRole ?? "STAFF");
           const loaded = {
@@ -48,7 +75,7 @@ export default function EditUserPage() {
             lastName: String(data.lastName ?? ""),
             email: String(data.email ?? ""),
             systemRole: ROLES.includes(role as (typeof ROLES)[number]) ? role : "ADMIN",
-            phone: formatPhoneInternational(String(data.phone ?? "")),
+            phone: formatPhoneWithCountryCode(String(data.phone ?? ""), countryCode),
             timezone: String(data.timezone ?? ""),
           };
           setForm(loaded);
@@ -61,7 +88,7 @@ export default function EditUserPage() {
         setLoading(false);
       }
     })();
-  }, [id]);
+  }, [id, showError, t, user, selectedCompanyId]);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm(p => ({ ...p, [k]: e.target.value }));
@@ -181,7 +208,16 @@ export default function EditUserPage() {
               <label className={LABEL}>{t("users.phone")}</label>
               <div className="relative group">
                 <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                <input type="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: formatPhoneWithCountryCode(e.target.value, "CR") }))} placeholder={`+${COUNTRY_DIAL_CODES["CR"]} 6216-4040`} className={IL} aria-invalid={!!errors.phone} />
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, phone: formatPhoneWithCountryCode(e.target.value, phoneCountry) }))
+                  }
+                  placeholder={`+${COUNTRY_DIAL_CODES[phoneCountry] || "506"} 6216-4040`}
+                  className={IL}
+                  aria-invalid={!!errors.phone}
+                />
               </div>
               <div className="min-h-[1.25rem] mt-1">{errors.phone && <p className="text-sm text-red-500" role="alert">{errors.phone}</p>}</div>
             </div>

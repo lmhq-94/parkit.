@@ -33,7 +33,7 @@ export default function RootLayout() {
     };
 
     hydrate();
-  }, []);
+  }, [hydrateLocale, hydrateTheme, setLoading, setUser]);
 
   useEffect(() => {
     if (!isLoading && fontsLoaded) {

@@ -163,7 +163,7 @@ export default function HomeScreen() {
         .catch(() => {});
     }, 350);
     return () => clearTimeout(timer);
-  }, [user, displayedParking?.parking?.id, displayedParking?.parking?.companyId]);
+  }, [user, displayedParking?.parking, displayedParking?.parking?.id, displayedParking?.parking?.companyId]);
 
   const styles = useMemo(
     () => createStyles(theme, shortestSide, isTablet, isLandscape),
@@ -236,7 +236,7 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
       <StatusBar
         barStyle={theme.isDark ? "light-content" : "dark-content"}
-        backgroundColor="transparent"
+        backgroundColor={statusBarBg}
         translucent={Platform.OS === "android"}
       />
       <View style={styles.mainColumn}>

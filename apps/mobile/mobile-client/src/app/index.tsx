@@ -71,7 +71,7 @@ export default function SplashScreen() {
       ]),
     ]);
     stagger.start();
-  }, []);
+  }, [breathScale, itOpacity, itScale, itTranslate, parkOpacity, parkTranslate]);
 
   useEffect(() => {
     const go = async () => {

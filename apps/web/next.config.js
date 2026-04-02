@@ -3,8 +3,16 @@ const path = require('path');
 const { version: packageVersion } = require("./package.json");
 
 const nextConfig = {
-  transpilePackages: ['@parkit/shared'],
+  transpilePackages: ['@parkit/shared', 'react-native', 'react-native-web'],
   reactStrictMode: true,
+
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      'react-native$': 'react-native-web',
+    };
+    return config;
+  },
 
   /**
    * MONOREPO CONFIGURATION

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Building2, Receipt, Mail, Phone, Globe,
-  DollarSign, Clock, MapPin, Smartphone,
+  DollarSign, Clock, MapPin,
 } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";

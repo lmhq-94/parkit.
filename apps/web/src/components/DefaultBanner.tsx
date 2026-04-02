@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 /**
  * Banner estilo Microsoft/Google: avatar/logo en círculo a la izquierda
  * y nombre de empresa a la derecha. Misma estructura con o sin imagen de fondo.
@@ -37,9 +39,11 @@ export function DefaultBanner({
     >
       {hasBackgroundImage && (
         <>
-          <img
+          <Image
             src={backgroundImageUrl!}
             alt=""
+            width={1000}
+            height={200}
             className="absolute inset-0 w-full h-full object-cover object-center"
             style={{ transform: "scaleX(-1)" }}
           />
@@ -78,9 +82,11 @@ export function DefaultBanner({
           }}
         >
           {logoImageUrl?.trim() ? (
-            <img
+            <Image
               src={logoImageUrl}
               alt=""
+              width={48}
+              height={48}
               className="w-full h-full object-cover object-center"
             />
           ) : (
@@ -90,36 +96,44 @@ export function DefaultBanner({
       </div>
 
       {/* Derecha: o bien título/subtítulo por defecto o contenido personalizado (ej. selector) */}
-      <div className={`relative z-10 flex-1 min-w-0 pl-3 pr-4 ${hasBackgroundImage ? "drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" : ""}`}>
+      <div className={`relative z-10 flex-1 min-w-0 pl-3 pr-4 flex justify-center ${hasBackgroundImage ? "drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" : ""}`}>
         {renderRight ? (
           renderRight
         ) : (
-          <>
+          <div
+            className="inline-flex flex-col gap-0.5 rounded-md px-2.5 py-1.5 backdrop-blur-sm"
+            style={{
+              backgroundColor: "rgba(15,23,42,0.55)",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
+            }}
+          >
             <p
               className="text-sm font-semibold truncate tracking-tight"
               style={{
-                color: isDark ? "rgba(255,255,255,0.95)" : "#1a1a1a",
+                color: "rgba(255,255,255,0.98)",
+                textShadow: "0 1px 2px rgba(0,0,0,0.45)",
               }}
             >
               {companyName || "Company"}
             </p>
             {subtitle && (
               <p
-                className="mt-0.5 text-[11px] truncate"
+                className="text-[11px] truncate"
                 style={{
-                  color: isDark ? "rgba(226,232,240,0.8)" : "rgba(15,23,42,0.65)",
+                  color: "rgba(226,232,240,0.9)",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.45)",
                 }}
               >
                 {subtitle}
               </p>
             )}
             <div
-              className="mt-1.5 w-8 h-0.5 rounded-sm"
+              className="mt-1 w-8 h-0.5 rounded-sm"
               style={{
-                backgroundColor: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.2)",
+                backgroundColor: "rgba(255,255,255,0.6)",
               }}
             />
-          </>
+          </div>
         )}
       </div>
     </div>

@@ -9,7 +9,6 @@ import {
   Modal,
   FlatList,
   Image,
-  ScrollView,
   useWindowDimensions,
   Animated,
   RefreshControl,
@@ -135,7 +134,7 @@ interface BookingLookup {
     id: string;
     name?: string | null;
     address?: string | null;
-    freeBenefitHours?: number | null;
+    freeBenefitMinutes?: number | null;
   };
 }
 
@@ -152,6 +151,22 @@ function randomWalkInPassword(): string {
 function isValidCrPlate(value: string): boolean {
   const p = formatPlate(value).trim();
   return /^\d{6}$/.test(p) || /^[A-Z]{3}-\d{3}$/.test(p);
+}
+
+function formatBenefitTime(
+  value: number | null | undefined,
+  locale: Locale
+): string {
+  if (value == null || Number.isNaN(value)) {
+    return locale === "es" ? "0 min" : "0 min";
+  }
+  const totalMinutes = Math.max(0, Math.floor(value));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours === 0 && minutes === 0) return locale === "es" ? "0 min" : "0 min";
+  if (hours === 0) return locale === "es" ? `${minutes} min` : `${minutes} min`;
+  if (minutes === 0) return locale === "es" ? `${hours} h` : `${hours} h`;
+  return locale === "es" ? `${hours} h ${minutes} min` : `${hours} h ${minutes} min`;
 }
 
 /** Extrae un posible UUID/id de reserva desde texto plano o URL en el QR. */
@@ -255,6 +270,8 @@ export default function ReceiveScreen() {
   const [wizardStep, setWizardStep] = useState(1);
   const [cardVerificationOpening, setCardVerificationOpening] = useState(false);
   const [cardVerificationStarted, setCardVerificationStarted] = useState(false);
+  const [cardVerificationSkipped, setCardVerificationSkipped] = useState(false);
+  const [cardVerificationSkipConfirmOpen, setCardVerificationSkipConfirmOpen] = useState(false);
   const [ticketCodesAcknowledged, setTicketCodesAcknowledged] = useState(false);
   const [manualTicketCode, setManualTicketCode] = useState("");
   const [manualKeyCode, setManualKeyCode] = useState("");
@@ -283,6 +300,7 @@ export default function ReceiveScreen() {
   const startCardVerification = useCallback(async () => {
     try {
       setCardVerificationOpening(true);
+      setCardVerificationSkipped(false);
       const res = await api.post<{ data?: { url?: string } }>("/payments/card-verification/session", {
         locale,
       });
@@ -294,11 +312,22 @@ export default function ReceiveScreen() {
       setCardVerificationStarted(true);
       feedback.success(t(locale, "receive.cardVerifyStarted"));
     } catch (e) {
-      feedback.error(messageFromAxios(e) || t(locale, "receive.cardVerifyError"));
+      const msg = messageFromAxios(e);
+      feedback.error(
+        msg === "NETWORK_ERROR"
+          ? t(locale, "common.networkError")
+          : msg || t(locale, "receive.cardVerifyError")
+      );
     } finally {
       setCardVerificationOpening(false);
     }
-  }, [feedback, locale]);
+  }, [api, feedback, locale, t]);
+
+  const skipCardVerification = useCallback(() => {
+    setCardVerificationSkipped(true);
+    setCardVerificationStarted(false);
+    feedback.info(t(locale, "receive.cardVerifySkipNote"));
+  }, [feedback, locale, t]);
 
   const driverStepNum = 3;
   const vehicleStepNum = 4;
@@ -635,6 +664,7 @@ export default function ReceiveScreen() {
       void handleLookup({ advanceStep: false, plateValue: formatted });
     }, 350);
     return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wizardStep, plate, lookupLoading, lookupReadyForPlate]);
 
   const validateBooking = async (overrideCode?: string) => {
@@ -672,7 +702,7 @@ export default function ReceiveScreen() {
       setBookingCheck(b);
       feedback.success(
         t(locale, "receive.benefitOk", {
-          hours: String(b.parking?.freeBenefitHours ?? 0),
+          time: formatBenefitTime(b.parking?.freeBenefitMinutes, locale),
         })
       );
     } catch {
@@ -983,7 +1013,7 @@ export default function ReceiveScreen() {
         setDamagePhotoBusy(false);
       }
     },
-    [locale, t]
+    [feedback, locale]
   );
 
   const pickDamageFromLibrary = useCallback(async () => {
@@ -1003,7 +1033,7 @@ export default function ReceiveScreen() {
     });
     if (result.canceled || !result.assets?.[0]?.uri) return;
     await processAndAddDamagePhoto(result.assets[0].uri);
-  }, [locale, t, processAndAddDamagePhoto]);
+  }, [feedback, locale, processAndAddDamagePhoto]);
 
   const takeDamagePhoto = useCallback(async () => {
     if (damagePhotosRef.current.length >= MAX_DAMAGE_PHOTOS) {
@@ -1021,7 +1051,7 @@ export default function ReceiveScreen() {
     });
     if (result.canceled || !result.assets?.[0]?.uri) return;
     await processAndAddDamagePhoto(result.assets[0].uri);
-  }, [locale, t, processAndAddDamagePhoto]);
+  }, [feedback, locale, processAndAddDamagePhoto]);
 
   const removeDamagePhotoAt = useCallback((index: number) => {
     setDamagePhotoDataUrls((prev) => prev.filter((_, i) => i !== index));
@@ -1095,14 +1125,16 @@ export default function ReceiveScreen() {
         onPress: () => router.replace("/home"),
       });
     } catch (e) {
-      feedback.error(messageFromAxios(e) || t(locale, "receive.errorSubmit"));
+      const msg = messageFromAxios(e);
+      feedback.error(
+        msg === "NETWORK_ERROR"
+          ? t(locale, "common.networkError")
+          : msg || t(locale, "receive.errorSubmit")
+      );
     } finally {
       setSubmitting(false);
     }
   };
-
-  const showNewDriverFields =
-    vehicleResolved && (vehicle === null || !vehicle?.owners?.length);
 
   const plateFormatted = formatPlate(plate).trim();
   const plateLooksValid = isValidCrPlate(plateFormatted);
@@ -1637,7 +1669,7 @@ export default function ReceiveScreen() {
                           <Ionicons name="checkmark-circle" size={24} color={C.success} />
                           <Text style={styles.reservationQrSuccessText}>
                             {t(locale, "receive.benefitOk", {
-                              hours: String(bookingCheck.parking?.freeBenefitHours ?? 0),
+                              time: formatBenefitTime(bookingCheck.parking?.freeBenefitMinutes, locale),
                             })}
                           </Text>
                         </View>
@@ -1800,8 +1832,20 @@ export default function ReceiveScreen() {
               <Text style={styles.cardVerifyHintText}>
                 {cardVerificationStarted
                   ? t(locale, "receive.cardVerifyStartedHint")
+                  : cardVerificationSkipped
+                    ? t(locale, "receive.cardVerifySkippedHint")
                   : t(locale, "receive.cardVerifyOptionalHint")}
               </Text>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.cardVerifySkipBtn,
+                  pressed && styles.pressed,
+                ]}
+                onPress={() => setCardVerificationSkipConfirmOpen(true)}
+                accessibilityLabel={t(locale, "receive.cardVerifySkipCta")}
+              >
+                <Text style={styles.cardVerifySkipText}>{t(locale, "receive.cardVerifySkipCta")}</Text>
+              </Pressable>
             </>
           )}
 
@@ -2429,6 +2473,54 @@ export default function ReceiveScreen() {
         )}
 
         {footer ? <KeyboardStickyView>{footer}</KeyboardStickyView> : null}
+
+        <Modal
+          visible={cardVerificationSkipConfirmOpen}
+          animationType="fade"
+          transparent
+          onRequestClose={() => setCardVerificationSkipConfirmOpen(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <Pressable
+              style={styles.modalBackdropPress}
+              onPress={() => setCardVerificationSkipConfirmOpen(false)}
+              accessibilityLabel={t(locale, "common.cancel")}
+            />
+            <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
+              <Text style={[styles.modalTitle, { color: C.text }]}>
+                {t(locale, "receive.cardVerifySkipTitle")}
+              </Text>
+              <Text style={[styles.modalBody, { color: C.textMuted }]}>
+                {t(locale, "receive.cardVerifySkipBody")}
+              </Text>
+              <View style={styles.modalActions}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.footerSecondaryBtn,
+                    styles.modalActionBtn,
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => setCardVerificationSkipConfirmOpen(false)}
+                >
+                  <Text style={styles.footerSecondaryBtnText}>{t(locale, "common.cancel")}</Text>
+                </Pressable>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.primaryBtn,
+                    styles.modalActionBtn,
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => {
+                    setCardVerificationSkipConfirmOpen(false);
+                    skipCardVerification();
+                  }}
+                >
+                  <Text style={styles.primaryBtnText}>{t(locale, "receive.cardVerifySkipConfirm")}</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
 
         <Modal
           visible={vehicleBrandModalOpen}
@@ -3332,6 +3424,30 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       lineHeight: 22,
       marginBottom: S.md,
     },
+    cardVerifySkipBtn: {
+      alignSelf: "center",
+      marginBottom: S.md,
+      paddingHorizontal: S.lg,
+      paddingVertical: S.sm,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: theme.isDark ? "rgba(255,255,255,0.2)" : C.border,
+      backgroundColor: theme.isDark ? "rgba(255,255,255,0.06)" : C.card,
+    },
+    cardVerifySkipText: {
+      color: C.text,
+      fontWeight: "700",
+      fontSize: F.secondary,
+    },
+    modalBody: {
+      fontSize: F.secondary,
+      color: C.textMuted,
+      lineHeight: 20,
+      marginTop: S.xs,
+      marginBottom: S.md,
+    },
+    modalActions: { flexDirection: "row", gap: S.sm, marginTop: S.sm },
+    modalActionBtn: { flex: 1, marginBottom: 0 },
     chips: { flexDirection: "row", flexWrap: "wrap", gap: S.sm, marginBottom: S.lg },
     chip: {
       paddingVertical: 10,

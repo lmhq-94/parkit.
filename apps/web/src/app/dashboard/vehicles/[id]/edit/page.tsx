@@ -90,7 +90,7 @@ export default function EditVehiclePage() {
         setLoading(false);
       }
     })();
-  }, [id]);
+  }, [id, showError, t]);
 
   useEffect(() => {
     if (!selectedCompanyId) {
@@ -125,6 +125,8 @@ export default function EditVehiclePage() {
     })();
   }, [form.year]);
 
+  // Only when brand changes: do not refetch while typing year to avoid losing selected model
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!form.brand.trim()) {
       setModels([]);
@@ -145,12 +147,18 @@ export default function EditVehiclePage() {
         setLoadingModels(false);
       }
     })();
-    // Only when brand changes: do not refetch while typing year to avoid losing selected model
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.brand]);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((p) => ({ ...p, [k]: e.target.value }));
+
+  const setIntegerField = (k: keyof typeof defaultForm) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value.replace(/[^\d]/g, "");
+      setForm((p) => ({ ...p, [k]: raw }));
+    };
 
   const setBrand = useCallback((v: string) => {
     setForm((p) => ({ ...p, brand: v, model: "" }));
@@ -336,7 +344,7 @@ export default function EditVehiclePage() {
                   min={1900}
                   max={new Date().getFullYear() + 1}
                   value={form.year}
-                  onChange={set("year")}
+                  onChange={setIntegerField("year")}
                   placeholder={t("common.placeholderYear")}
                   className={IL}
                   aria-invalid={!!errors.year}

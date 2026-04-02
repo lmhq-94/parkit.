@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { User, Mail, Phone, Clock, Shield } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";
@@ -8,9 +8,11 @@ import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
+import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { TIMEZONES } from "@/lib/companyOptions";
-import { formatPhoneWithCountryCode, COUNTRY_DIAL_CODES } from "@/lib/inputMasks";
+import { formatPhoneWithCountryCode, COUNTRY_DIAL_CODES, getDeviceCountryCode } from "@/lib/inputMasks";
 import { required, email as validateEmail, phone as validatePhone } from "@/lib/validation";
+import { isSuperAdmin } from "@/lib/auth";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -27,6 +29,8 @@ export default function NewUserPage() {
   const { showSuccess, showError } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const user = useAuthStore((s) => s.user);
+  const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
   const roleParam = (searchParams.get("role") || "").toUpperCase();
   const initialRole: (typeof ROLES)[number] =
     roleParam === "ADMIN" ? "ADMIN" : "CUSTOMER";
@@ -39,6 +43,30 @@ export default function NewUserPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof typeof defaultForm, string>>>({});
+  const [phoneCountry, setPhoneCountry] = useState<string>("CR");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const superAdmin = isSuperAdmin(user);
+        let company: { countryCode?: string | null } | null = null;
+        if (superAdmin && selectedCompanyId) {
+          company = await apiClient.get(`/companies/${selectedCompanyId}`);
+        } else if (!superAdmin) {
+          company = await apiClient.get("/companies/me");
+        }
+        const countryCode =
+          (company && company.countryCode) || getDeviceCountryCode() || "CR";
+        if (!cancelled) setPhoneCountry(countryCode);
+      } catch {
+        if (!cancelled) setPhoneCountry(getDeviceCountryCode() || "CR");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, selectedCompanyId]);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm(p => ({ ...p, [k]: e.target.value }));
@@ -152,7 +180,16 @@ export default function NewUserPage() {
             <label className={LABEL}>{t("users.phone")}</label>
             <div className="relative group">
               <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: formatPhoneWithCountryCode(e.target.value, "CR") }))} placeholder={`+${COUNTRY_DIAL_CODES["CR"]} 6216-4040`} className={IL} aria-invalid={!!errors.phone} />
+              <input
+                type="tel"
+                value={form.phone}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, phone: formatPhoneWithCountryCode(e.target.value, phoneCountry) }))
+                }
+                placeholder={`+${COUNTRY_DIAL_CODES[phoneCountry] || "506"} 6216-4040`}
+                className={IL}
+                aria-invalid={!!errors.phone}
+              />
             </div>
             <div className="min-h-[1.25rem] mt-1">{errors.phone && <p className="text-sm text-red-500" role="alert">{errors.phone}</p>}</div>
           </div>

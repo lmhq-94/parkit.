@@ -29,6 +29,7 @@ const defaultForm = {
   longitude: "",
   geofenceRadius: "50",
   freeBenefitHours: "0",
+  freeBenefitMinutes: "0",
   pricePerExtraHour: "",
 };
 
@@ -55,7 +56,7 @@ export default function NewParkingPage() {
   const [fieldErrors, setFieldErrors] = useState<{
     name?: string;
     address?: string;
-    freeBenefitHours?: string;
+    freeBenefitTime?: string;
     pricePerExtraHour?: string;
   }>({});
 
@@ -79,6 +80,43 @@ export default function NewParkingPage() {
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((p) => ({ ...p, [k]: e.target.value }));
+
+  const setNumberField = (k: keyof typeof defaultForm, max?: number) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value.replace(/[^\d]/g, "");
+      if (raw === "") {
+        setForm((p) => ({ ...p, [k]: "" }));
+        return;
+      }
+      const parsed = Math.max(0, parseInt(raw, 10) || 0);
+      const capped = max != null ? Math.min(max, parsed) : parsed;
+      setForm((p) => ({ ...p, [k]: String(capped) }));
+    };
+
+  const setDecimalField = (k: keyof typeof defaultForm) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const normalized = e.target.value.replace(",", ".");
+      let cleaned = normalized.replace(/[^\d.]/g, "");
+      const firstDot = cleaned.indexOf(".");
+      if (firstDot !== -1) {
+        cleaned =
+          cleaned.slice(0, firstDot + 1) +
+          cleaned.slice(firstDot + 1).replace(/\./g, "");
+      }
+      setForm((p) => ({ ...p, [k]: cleaned }));
+    };
+
+  const setIntegerValue = (setter: (value: number) => void, min = 0, max?: number) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value.replace(/[^\d]/g, "");
+      if (!raw) {
+        setter(min);
+        return;
+      }
+      const parsed = Math.max(min, parseInt(raw, 10) || min);
+      const capped = max != null ? Math.min(max, parsed) : parsed;
+      setter(capped);
+    };
 
   const setSlot = (id: string, updates: Partial<SlotRow>) => {
     setSlots((prev) =>
@@ -129,7 +167,9 @@ export default function NewParkingPage() {
     if (!form.name.trim()) nextErrors.name = t("validation.required");
     if (!form.address.trim()) nextErrors.address = t("validation.required");
     if (chargesParking) {
-      if (!form.freeBenefitHours.trim()) nextErrors.freeBenefitHours = t("validation.required");
+      if (!form.freeBenefitHours.trim() || !form.freeBenefitMinutes.trim()) {
+        nextErrors.freeBenefitTime = t("validation.required");
+      }
       if (!form.pricePerExtraHour.trim()) nextErrors.pricePerExtraHour = t("validation.required");
     }
     if (!step2Valid) {
@@ -140,17 +180,19 @@ export default function NewParkingPage() {
 
     const requiresBilling = chargesParking;
     const hasBillingData =
-      form.freeBenefitHours.trim() !== "" && form.pricePerExtraHour.trim() !== "";
+      form.freeBenefitHours.trim() !== "" &&
+      form.freeBenefitMinutes.trim() !== "" &&
+      form.pricePerExtraHour.trim() !== "";
     if (!form.name.trim() || !form.address.trim() || !form.type) return;
     if (requiresBilling && !hasBillingData) return;
     const slotList = slots.map((s) => ({ label: s.label.trim(), slotType: s.slotType }));
     setSubmitting(true);
     setError(null);
     try {
-      const freeBenefit =
-        requiresBilling && form.freeBenefitHours !== ""
-          ? Math.max(0, parseInt(form.freeBenefitHours, 10) || 0)
-          : 0;
+      const hours = Math.max(0, parseInt(form.freeBenefitHours, 10) || 0);
+      const minutes = Math.min(59, Math.max(0, parseInt(form.freeBenefitMinutes, 10) || 0));
+      const freeBenefitMinutes =
+        requiresBilling ? (hours * 60 + minutes) : 0;
       const priceExtra =
         requiresBilling && form.pricePerExtraHour !== ""
           ? Number(form.pricePerExtraHour)
@@ -163,7 +205,7 @@ export default function NewParkingPage() {
         latitude: form.latitude !== "" ? Number(form.latitude) : undefined,
         longitude: form.longitude !== "" ? Number(form.longitude) : undefined,
         geofenceRadius: form.geofenceRadius !== "" ? Number(form.geofenceRadius) : undefined,
-        freeBenefitHours: freeBenefit,
+        freeBenefitMinutes,
         pricePerExtraHour: priceExtra,
         slots: slotList,
       });
@@ -181,7 +223,11 @@ export default function NewParkingPage() {
   const step1Valid = (() => {
     if (!form.name.trim() || !form.address.trim() || !form.type) return false;
     if (!chargesParking) return true;
-    return form.freeBenefitHours.trim() !== "" && form.pricePerExtraHour.trim() !== "";
+    return (
+      form.freeBenefitHours.trim() !== "" &&
+      form.freeBenefitMinutes.trim() !== "" &&
+      form.pricePerExtraHour.trim() !== ""
+    );
   })();
   const step2Valid = slots.length > 0 && slots.every((s) => s.label.trim().length > 0);
 
@@ -191,7 +237,9 @@ export default function NewParkingPage() {
       if (!form.name.trim()) nextErrors.name = t("validation.required");
       if (!form.address.trim()) nextErrors.address = t("validation.required");
       if (chargesParking) {
-        if (!form.freeBenefitHours.trim()) nextErrors.freeBenefitHours = t("validation.required");
+        if (!form.freeBenefitHours.trim() || !form.freeBenefitMinutes.trim()) {
+          nextErrors.freeBenefitTime = t("validation.required");
+        }
         if (!form.pricePerExtraHour.trim()) nextErrors.pricePerExtraHour = t("validation.required");
       }
       setFieldErrors(nextErrors);
@@ -280,22 +328,44 @@ export default function NewParkingPage() {
 
           {chargesParking && (
           <div>
-            <label className={LABEL}>{t("parkings.freeBenefitHours")}</label>
-            <div className="relative group">
-              <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input
-                type="number"
-                min={0}
-                value={form.freeBenefitHours}
-                onChange={set("freeBenefitHours")}
-                placeholder="0"
-                className={IL}
-                aria-invalid={!!fieldErrors.freeBenefitHours}
-              />
+            <label className={LABEL}>{t("parkings.freeBenefitTime")}</label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <div className="relative group">
+                  <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                  <input
+                    type="number"
+                    min={0}
+                    inputMode="numeric"
+                    value={form.freeBenefitHours}
+                    onChange={setNumberField("freeBenefitHours")}
+                    placeholder="0"
+                    className={IL}
+                    aria-invalid={!!fieldErrors.freeBenefitTime}
+                  />
+                </div>
+                <p className="mt-1 text-xs text-text-muted">{t("parkings.freeBenefitHoursLabel")}</p>
+              </div>
+              <div>
+                <div className="relative group">
+                  <input
+                    type="number"
+                    min={0}
+                    max={59}
+                    inputMode="numeric"
+                    value={form.freeBenefitMinutes}
+                    onChange={setNumberField("freeBenefitMinutes", 59)}
+                    placeholder="0"
+                    className={INPUT}
+                    aria-invalid={!!fieldErrors.freeBenefitTime}
+                  />
+                </div>
+                <p className="mt-1 text-xs text-text-muted">{t("parkings.freeBenefitMinutesLabel")}</p>
+              </div>
             </div>
-            <p className="mt-1 text-xs text-text-muted">{t("parkings.freeBenefitHoursHint")}</p>
+            <p className="mt-2 text-xs text-text-muted">{t("parkings.freeBenefitTimeHint")}</p>
             <div className="min-h-[1.25rem] mt-1">
-              {fieldErrors.freeBenefitHours && <p className="text-sm text-red-500" role="alert">{fieldErrors.freeBenefitHours}</p>}
+              {fieldErrors.freeBenefitTime && <p className="text-sm text-red-500" role="alert">{fieldErrors.freeBenefitTime}</p>}
             </div>
           </div>
           )}
@@ -310,7 +380,7 @@ export default function NewParkingPage() {
                   min={0}
                   step="any"
                   value={form.pricePerExtraHour}
-                  onChange={set("pricePerExtraHour")}
+                  onChange={setDecimalField("pricePerExtraHour")}
                   placeholder="0"
                   className={IL}
                   aria-invalid={!!fieldErrors.pricePerExtraHour}
@@ -356,7 +426,7 @@ export default function NewParkingPage() {
                 min={1}
                 max={100}
                 value={batchCount}
-                onChange={(e) => setBatchCount(Number(e.target.value) || 1)}
+                onChange={setIntegerValue(setBatchCount, 1, 100)}
                 className={INPUT}
               />
             </div>

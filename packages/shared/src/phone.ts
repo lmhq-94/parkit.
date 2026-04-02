@@ -130,6 +130,20 @@ export function formatPhoneInternational(value: string): string {
   }
 
   if (!dial) {
+    // If no explicit "+", try to detect a known dialing code by prefix
+    for (const d of DIAL_CODES_SORTED) {
+      if (digits.startsWith(d)) {
+        const remaining = digits.length - d.length;
+        if (remaining >= 4) {
+          dial = d;
+          localDigits = digits.slice(d.length);
+          break;
+        }
+      }
+    }
+  }
+
+  if (!dial) {
     dial = defaultDial;
     const maxLocalLength = Math.max(0, 15 - dial.length);
     if (digits.startsWith(defaultDial)) {

@@ -21,7 +21,6 @@ import { FormattedInputCellEditor } from "@/components/FormattedInputCellEditor"
 import { BrandModelCatalogCellEditor } from "@/components/BrandModelCatalogCellEditor";
 import { AddressCellEditor } from "@/components/AddressCellEditor";
 import { DateTimeCellEditor } from "@/components/DateTimeCellEditor";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageLoader } from "@/components/PageLoader";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -181,7 +180,7 @@ type DetailRow<T> = { __detail: true; __parent: T };
  * Altura inicial antes de medir: debe ser >0 para que el contenido no quede recortado.
  * Tras el primer layout, ResizeObserver + medición “ajustada” fijan la altura real por fila/grid.
  */
-const DETAIL_ROW_FALLBACK_HEIGHT = 160;
+const DETAIL_ROW_FALLBACK_HEIGHT = 220;
 const DETAIL_ROW_MEASURE_BUFFER_PX = 10;
 
 /**
@@ -231,9 +230,9 @@ function DetailRowMeasureWrapper({
       if (!el) return;
       // offsetHeight / border box del contenedor: incluye padding interno del panel (additional info)
       const layoutH = Math.max(
+        el.scrollHeight,
         el.offsetHeight,
         Math.ceil(el.getBoundingClientRect().height),
-        el.scrollHeight,
         measureTightDetailHeight(el)
       );
       // Add a small safety buffer to avoid clipping descenders/bottom spacing due to sub-pixel rounding.
@@ -272,7 +271,7 @@ function DetailRowMeasureWrapper({
   }, []);
 
   return (
-    <div ref={ref} className="w-full min-h-0 h-fit parkit-grid-detail-measure parkit-grid-detail-root">
+    <div ref={ref} className="w-full min-h-0 h-fit overflow-visible parkit-grid-detail-measure parkit-grid-detail-root">
       {children}
     </div>
   );
@@ -532,6 +531,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   const [navigating, setNavigating] = useState(false);
   const gridRef = useRef<AgGridReact<T>>(null);
   const [quickFilter, setQuickFilter] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
   // Measured detail-row heights by row id (so each grid/row adapts to its content).
   const [detailRowHeights, setDetailRowHeights] = useState<Record<string | number, number>>({});
 
@@ -582,11 +582,20 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
     } finally {
       setIsLoading(false);
     }
-  }, [endpoint, fetchData, user?.id, locale]);
+  }, [endpoint, fetchData, user?.id, locale, showToastError]);
 
   useEffect(() => {
     loadData();
   }, [loadData, refreshToken, selectedCompanyId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 768px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener?.("change", update);
+    return () => mq.removeEventListener?.("change", update);
+  }, []);
 
   /** Evita alturas cacheadas de otra fila detalle; fuerza nueva medición al expandir. */
   useEffect(() => {
@@ -878,7 +887,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
       });
     }
     return dataCols;
-  }, [columns, locale, onView, onEdit, onDelete, onCreate, onRequestDelete, handleCreate, onUpdate, renderRowDetail, hasRowDetail, expandedRowId, customActions]);
+  }, [columns, locale, onView, onEdit, onDelete, onCreate, onRequestDelete, handleCreate, onUpdate, renderRowDetail, hasRowDetail, expandedRowId, customActions, handleEditRow]);
 
   const hasEditableColumns = useMemo(
     () => columns.some((c) => Boolean(c.editable && c.field)),
@@ -927,6 +936,16 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
     return () => cancelAnimationFrame(id);
   }, [rowData]);
 
+  useEffect(() => {
+    if (!isMobile) return;
+    const api = gridRef.current?.api as { autoSizeAllColumns?: (skipHeader?: boolean) => void } | undefined;
+    if (!api?.autoSizeAllColumns) return;
+    const id = requestAnimationFrame(() => {
+      api.autoSizeAllColumns(false);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [isMobile, columns, rowData]);
+
   const fullWidthCellRenderer = useCallback(
     (params: ICellRendererParams<T | DetailRow<T>>) => {
       const data = params.data as DetailRow<T>;
@@ -952,14 +971,17 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
           key={nodeId != null ? `detail-${String(nodeId)}` : "detail"}
           trimPx={detailRowHeightTrimPx}
           onMeasured={(height) => {
-            if (nodeId == null) return;
+            const rowId =
+              nodeId ??
+              (data.__parent?.id != null ? `detail-${String(data.__parent.id)}` : undefined);
+            if (rowId == null) return;
+            const nextHeight = Math.max(1, Math.ceil(height));
+            params.node?.setRowHeight(nextHeight);
+            params.api?.onRowHeightChanged();
             setDetailRowHeights((prev) => {
-              const prevHeight = prev[nodeId];
-              const nextHeight = Math.max(1, Math.floor(height));
+              const prevHeight = prev[rowId];
               if (prevHeight === nextHeight) return prev;
-              const next = { ...prev, [nodeId]: nextHeight };
-              params.api?.resetRowHeights();
-              return next;
+              return { ...prev, [rowId]: nextHeight };
             });
           }}
         >
@@ -1040,26 +1062,40 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
 
   return (
     <div className="flex-1 flex flex-col min-h-0 pt-6 md:pt-8 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 w-full">
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <div className="flex flex-wrap items-center gap-3 shrink-0">
-                {toolbar}
-              </div>
-              <div className="relative w-full max-w-sm shrink-0">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
-                <input
-                  type="text"
-                  value={quickFilter}
-                  onChange={(e) => setQuickFilter(e.target.value)}
-                  placeholder={t(locale, "grid.filterOoo")}
-                  className="w-full min-h-[42px] pl-9 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-sm text-text-primary placeholder:text-text-muted transition-colors focus:outline-none focus:ring-1 focus:ring-company-primary focus:border-company-primary"
-                />
-              </div>
-              {(toolbarRight != null || addButtonNode != null) && (
-                <div className="flex items-center gap-3 shrink-0 ml-auto">
-                  {toolbarRight}
-                  {addButtonNode}
+            <div className="flex flex-col md:flex-row md:items-center md:flex-nowrap gap-3 mb-4">
+              <div className="flex-1 min-w-0 overflow-x-auto">
+                <div className="inline-flex items-center gap-3 min-w-full">
+                  {toolbar}
+                  <div className="relative hidden md:block min-w-[220px] w-full max-w-[320px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+                    <input
+                      type="text"
+                      value={quickFilter}
+                      onChange={(e) => setQuickFilter(e.target.value)}
+                      placeholder={t(locale, "grid.filterOoo")}
+                      className="w-full min-h-[42px] pl-9 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-sm text-text-primary placeholder:text-text-muted transition-colors focus:outline-none focus:ring-1 focus:ring-company-primary focus:border-company-primary"
+                    />
+                  </div>
                 </div>
-              )}
+              </div>
+              <div className="flex items-center gap-3 md:ml-auto w-full md:w-auto">
+                <div className="relative flex-1 md:hidden">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+                  <input
+                    type="text"
+                    value={quickFilter}
+                    onChange={(e) => setQuickFilter(e.target.value)}
+                    placeholder={t(locale, "grid.filterOoo")}
+                    className="w-full min-h-[42px] pl-9 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-sm text-text-primary placeholder:text-text-muted transition-colors focus:outline-none focus:ring-1 focus:ring-company-primary focus:border-company-primary"
+                  />
+                </div>
+                {(toolbarRight != null || addButtonNode != null) && (
+                  <div className="flex items-center gap-3 shrink-0">
+                    {toolbarRight}
+                    {addButtonNode}
+                  </div>
+                )}
+              </div>
             </div>
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-200 rounded-xl">
@@ -1088,9 +1124,10 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                       sortable: true,
                       filter: false,
                       resizable: true,
-                      flex: 1,
-                      minWidth: 140,
+                      flex: isMobile ? undefined : 1,
+                      minWidth: isMobile ? 180 : 140,
                     }}
+                    alwaysShowHorizontalScroll={isMobile}
                     overlayNoRowsTemplate={`<div class="flex flex-col items-center justify-center text-company-tertiary"><svg class="w-12 h-12 mb-3 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg><span>${emptyMessage}</span></div>`}
                     pagination
                     paginationPageSize={20}

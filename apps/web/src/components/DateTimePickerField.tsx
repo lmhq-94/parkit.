@@ -164,7 +164,7 @@ export function DateTimePickerField({
     if (parsed) {
       setTime({ hour: parsed.getHours(), minute: parsed.getMinutes() });
     }
-  }, [value, open]);
+  }, [value, open, parsed]);
 
   useEffect(() => {
     if (!open) return;
@@ -478,4 +478,3 @@ export function DateTimePickerField({
     </>
   );
 }
-

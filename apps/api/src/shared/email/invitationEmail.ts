@@ -3,15 +3,19 @@
  * Uses Resend when RESEND_API_KEY is set; otherwise logs the link to console (dev).
  */
 
-import { getResendClient } from "./resendClient";
-
 const INVITATION_BASE_URL =
   process.env.INVITATION_BASE_URL || "http://localhost:3000";
-const FROM_EMAIL = process.env.INVITATION_FROM_EMAIL || "Parkit <onboarding@resend.dev>";
+const FROM_EMAIL =
+  process.env.INVITATION_FROM_EMAIL || "Parkit <onboarding@resend.dev>";
+const INVITATION_TEMPLATE_ID = process.env.INVITATION_TEMPLATE_ID || "";
 /** Same support email as login/support link (e.g. soporte@parkit.app). */
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "soporte@parkit.app";
-/** Optional logo URL for email header (if set, shown left in header). */
-const PARKIT_LOGO_URL = process.env.PARKIT_LOGO_URL || "";
+/** Optional privacy policy URL */
+const PRIVACY_URL = process.env.INVITATION_PRIVACY_URL || "";
+/** Optional terms and conditions URL */
+const TERMS_URL = process.env.INVITATION_TERMS_URL || "";
+/** Optional unsubscribe URL */
+const UNSUBSCRIBE_URL = process.env.INVITATION_UNSUBSCRIBE_URL || "";
 
 export interface SendInvitationParams {
   to: string;
@@ -27,154 +31,160 @@ function buildInviteLink(token: string): string {
   return `${base}/accept-invite?token=${encodeURIComponent(token)}`;
 }
 
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
 export async function sendInvitationEmail(
-  params: SendInvitationParams
+  params: SendInvitationParams,
 ): Promise<{ sent: boolean; error?: string }> {
   const { to, firstName, lastName, token, companyName } = params;
-  const inviteLink = buildInviteLink(token);
-  const fullName = `${firstName} ${lastName}`.trim() || "ahí";
+
+  // In development, redirect all emails to the developer's verified email for Resend testing
+  // This allows testing with any email address without domain verification
+  const isDevelopment = process.env.NODE_ENV !== "production";
+  const actualTo = isDevelopment ? "luis.herrera506@gmail.com" : to;
+
+  if (isDevelopment && to !== actualTo) {
+    console.log(
+      `📧 [DEV MODE] Redirecting invitation email from ${to} → ${actualTo}`,
+    );
+  }
+
   const companyDisplay = (companyName || "").trim();
+  const inviteLink = buildInviteLink(token);
 
-  // Preheader: short text some clients show as preview (keep under ~130 chars)
-  const preheader = companyDisplay
-    ? `Te han invitado a ${companyDisplay} en Parkit. Crea tu contraseña.`
-    : `Crea tu contraseña y únete a Parkit.`;
+  // Template must be configured in env
+  if (!INVITATION_TEMPLATE_ID) {
+    console.error(
+      "[Invitation email error] INVITATION_TEMPLATE_ID not configured in environment",
+    );
+    return { sent: false, error: "INVITATION_TEMPLATE_ID not configured" };
+  }
 
-  // Parkit design tokens (from apps/web: globals.css + themeDefaults — light theme)
-  const pageBg = "#f1f5f9";
-  const cardBorder = "rgba(0, 0, 0, 0.08)";
-  const textPrimary = "#0f172a";
-  const textSecondary = "#475569";
-  const textMuted = "#64748b";
-  const companyPrimary = "#2563eb"; // blue-600, logo "it." (same as sidebar)
-  const supportMailto = `mailto:${SUPPORT_EMAIL}`;
-  // Inter: professional font, highly legible in emails (Google Fonts)
-  const fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
-  // Header logo: larger size. If image, ~56px height; if "park"+"it." text, 2.25rem
-  const headerLogoHtml = PARKIT_LOGO_URL
-    ? `<img src="${PARKIT_LOGO_URL}" alt="Parkit" width="168" height="56" style="display: block; max-height: 56px; width: auto;" />`
-    : `<span class="logo-text" style="font-size: 2.25rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.2;"><span style="color: ${textPrimary};">park</span><span style="color: ${companyPrimary};">it.</span></span>`;
-
-  const companyEscaped = escapeHtml(companyDisplay);
-  const fullNameEscaped = escapeHtml(fullName);
-  const inviteIntro = companyDisplay
-    ? `Te han invitado a unirte a <strong>${companyEscaped}</strong> en Parkit. Haz clic en el botón de abajo para crear tu contraseña y activar tu cuenta.`
-    : `Te han invitado a unirte a Parkit. Haz clic en el botón de abajo para crear tu contraseña y activar tu cuenta.`;
-  const inviteIntroPlain = companyDisplay
-    ? `Te han invitado a unirte a ${companyDisplay} en Parkit.`
-    : `Te han invitado a unirte a Parkit.`;
-
-  const html = `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="light">
-  <title>Invitación a Parkit</title>
-  <!--[if mso]>
-  <noscript><meta http-equiv="X-UA-Compatible" content="IE=edge"></noscript>
-  <![endif]-->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    .preheader { display: none !important; visibility: hidden; max-height: 0; overflow: hidden; }
-    body, .email-body { font-family: ${fontFamily}; }
-    @media only screen and (max-width: 480px) {
-      .card { border-radius: 12px !important; padding: 16px !important; }
-      .btn { padding: 14px 20px !important; font-size: 16px !important; }
-      .logo-text { font-size: 1.75rem !important; }
-    }
-  </style>
-</head>
-<body class="email-body" style="margin: 0; padding: 0; font-family: ${fontFamily}; background-color: ${pageBg}; line-height: 1.6; color: ${textPrimary};">
-  <div class="preheader">${preheader}</div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: ${pageBg}; padding: 24px 16px;">
-    <tr>
-      <td align="center" style="width: 100%;">
-        <table role="presentation" class="card" width="100%" cellpadding="0" cellspacing="0" style="max-width: 100%; width: 100%; background: #ffffff; border-radius: 16px; border: 1px solid ${cardBorder}; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -2px rgba(0,0,0,0.04); overflow: hidden; font-family: ${fontFamily};">
-          <tr>
-            <td style="padding: 24px 32px; text-align: left; border-bottom: 1px solid ${cardBorder}; font-family: ${fontFamily};">
-              ${headerLogoHtml}
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 32px; font-family: ${fontFamily};">
-              <h1 style="margin: 0 0 8px; font-size: 1.375rem; font-weight: 600; color: ${textPrimary};">Estás invitado</h1>
-              <p style="margin: 0 0 24px; font-size: 0.9375rem; color: ${textMuted};">${companyDisplay ? `Únete a Parkit y empieza a gestionar estacionamientos.` : "Únete a tu equipo y empieza a gestionar estacionamientos."}</p>
-              <p style="margin: 0 0 24px; font-size: 1rem; color: ${textSecondary};">Hola ${fullNameEscaped},</p>
-              <p style="margin: 0 0 28px; font-size: 1rem; color: ${textSecondary};">${inviteIntro}</p>
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td>
-                    <a href="${inviteLink}" class="btn" style="display: inline-block; background: ${companyPrimary}; color: #ffffff !important; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 0.875rem;">Crear contraseña</a>
-                  </td>
-                </tr>
-              </table>
-              <p style="margin: 28px 0 0; font-size: 0.875rem; color: ${textMuted};">Este enlace caduca en 72 horas. Si no esperabas este correo, puedes ignorarlo.</p>
-              <p style="margin: 16px 0 0; font-size: 0.8125rem; color: ${textMuted};">Si el botón no funciona, copia y pega este enlace en tu navegador:</p>
-              <p style="margin: 8px 0 0; font-size: 0.75rem; color: ${textMuted}; word-break: break-all;">${inviteLink}</p>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 20px 32px; background: ${pageBg}; border-top: 1px solid ${cardBorder}; font-family: ${fontFamily};">
-              <p style="margin: 0; font-size: 0.75rem; color: ${textMuted}; text-align: center;">Este correo fue enviado por Parkit. Si tienes preguntas, contacta a <a href="${supportMailto}" style="color: ${companyPrimary}; text-decoration: none;">soporte de Parkit</a>.</p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-`.trim();
-
-  const text = `Invitación a Parkit
-
-Hola ${fullName},
-
-${inviteIntroPlain} Crea tu contraseña y activa tu cuenta visitando este enlace:
-
-${inviteLink}
-
-Este enlace caduca en 72 horas. Si no esperabas este correo, puedes ignorarlo.
-
-Si tienes preguntas, contacta a soporte: ${SUPPORT_EMAIL}
-
-— Parkit`;
-
-  const client = getResendClient();
-
-  if (!client) {
-    // Development: log link so you can test without email configured
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey || apiKey === "re_xxxxxxxxx") {
+    // Development fallback
     console.log("[Invitation email not sent - no RESEND_API_KEY]");
-    console.log(`  To: ${to}`);
+    console.log(`  Original To: ${to}`);
     console.log(`  Invite link: ${inviteLink}`);
     return { sent: true };
   }
 
   try {
-    const { error } = await client.emails.send({
-      from: FROM_EMAIL,
-      to: [to],
-      subject: "Invitación a Parkit – crea tu contraseña",
-      html,
-      text,
+    // Resend requires html or text as fallback when using template_id
+    // This fallback is specific to invitation emails for quality UX if template fails
+    const htmlFallback = `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html dir="ltr" lang="es">
+  <head>
+    <meta content="width=device-width" name="viewport" />
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta content="telephone=no,address=no,email=no,date=no,url=no" name="format-detection" />
+    <style>
+      body, .email-body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f6f8fb;
+      }
+      .container { width: 100%; max-width: 640px; margin: 0 auto; }
+      .card { background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08); border: 1px solid #eef2f7; }
+      .hero { background: linear-gradient(135deg, #0f172a 0%, #111827 45%, #1e293b 100%); padding: 36px 40px; color: #ffffff; }
+      .brand { font-size: 44px; font-weight: 700; letter-spacing: -0.04em; margin: 0; }
+      .brand .dot { color: #3b82f6; }
+      .content { padding: 36px 40px 28px; color: #0f172a; }
+      .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.16em; color: #94a3b8; margin: 0 0 8px; }
+      .title { font-size: 26px; font-weight: 700; margin: 0 0 12px; color: #0f172a; }
+      .subtitle { font-size: 15px; line-height: 24px; color: #475569; margin: 0 0 24px; }
+      .badge { display: inline-block; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-size: 12px; padding: 6px 10px; border-radius: 999px; font-weight: 600; margin-bottom: 16px; }
+      .cta-wrap { text-align: center; padding: 18px 0 8px; }
+      .cta { background: #3b82f6; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 600; display: inline-block; font-size: 15px; }
+      .meta { margin-top: 18px; font-size: 12px; color: #94a3b8; }
+      .footer { border-top: 1px solid #eef2f7; padding: 20px 40px 30px; text-align: center; font-size: 12px; color: #94a3b8; }
+      .footer a { color: #3b82f6; text-decoration: none; }
+      .links a { color: #64748b; text-decoration: underline; margin: 0 6px; }
+      @media only screen and (max-width: 480px) {
+        .content, .hero, .footer { padding-left: 20px !important; padding-right: 20px !important; }
+        .brand { font-size: 36px !important; }
+        .title { font-size: 22px !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tbody>
+        <tr>
+          <td style="padding: 12px;">
+            <div class="container">
+              <div class="card">
+                <div class="hero">
+                  <p class="brand"><span style="color:#ffffff">park</span><span class="dot">it.</span></p>
+                </div>
+                <div class="content">
+                  <p class="eyebrow">Invitación</p>
+                  <h1 class="title">Te damos la bienvenida</h1>
+                  <p class="subtitle">
+                    Has sido invitado a unirte a <strong>${companyDisplay || "Parkit"}</strong> como administrador.
+                    Configura tu contraseña para acceder al dashboard y empezar a gestionar tu operación.
+                  </p>
+                  <div class="cta-wrap">
+                    <a class="cta" href="${inviteLink}" target="_blank" rel="noopener noreferrer nofollow">Crear contraseña</a>
+                    <div class="meta">Este enlace caduca pronto por seguridad.</div>
+                  </div>
+                </div>
+                <div class="footer">
+                  <p style="margin: 0 0 10px;">¿Necesitas ayuda? <a href="${SUPPORT_EMAIL}" target="_blank" rel="noopener noreferrer nofollow">Contacta soporte</a></p>
+                  <p class="links" style="margin: 0 0 8px;">
+                    <a href="${TERMS_URL || "#"}" target="_blank" rel="noopener noreferrer nofollow">Términos</a> ·
+                    <a href="${PRIVACY_URL || "#"}" target="_blank" rel="noopener noreferrer nofollow">Privacidad</a>
+                  </p>
+                  <p style="margin: 0;">© 2026 Parkit Inc. · Atenas, Alajuela, Costa Rica ·
+                    <a href="${UNSUBSCRIBE_URL || "#"}" target="_blank" rel="noopener noreferrer nofollow">Darse de baja</a>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>
+    `;
+
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        from: FROM_EMAIL,
+        to: [actualTo],
+        subject: `Invitación a Parkit${companyDisplay ? ` - ${companyDisplay}` : ""}`,
+        html: htmlFallback,
+        template_id: INVITATION_TEMPLATE_ID,
+        template_data: {
+          company: companyDisplay || "Parkit",
+          url: inviteLink,
+          support: SUPPORT_EMAIL,
+          privacy: PRIVACY_URL || "",
+          terms: TERMS_URL || "",
+          unsubscribe: UNSUBSCRIBE_URL || "",
+          first_name: firstName || "",
+          full_name: `${firstName} ${lastName}`.trim() || "",
+        },
+      }),
     });
 
-    if (error) {
-      console.error("[Invitation email error]", error);
-      return { sent: false, error: error.message };
+    const result = await response.json();
+    if (!response.ok) {
+      const message =
+        (result && result.error && result.error.message) || response.statusText;
+      console.error("[Invitation email error]", result);
+      return { sent: false, error: message };
     }
+
     return { sent: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

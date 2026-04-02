@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useMemo } from "react";
 import { create } from "zustand";
 
 export type ToastType = "success" | "error" | "info";
@@ -45,9 +46,20 @@ export const useToastStore = create<ToastStore>((set) => ({
 
 export function useToast() {
   const add = useToastStore((s) => s.add);
-  return {
-    showSuccess: (message: string, duration?: number) => add("success", message, duration),
-    showError: (message: string, duration?: number) => add("error", message, duration),
-    showInfo: (message: string, duration?: number) => add("info", message, duration),
-  };
+  const showSuccess = useCallback(
+    (message: string, duration?: number) => add("success", message, duration),
+    [add]
+  );
+  const showError = useCallback(
+    (message: string, duration?: number) => add("error", message, duration),
+    [add]
+  );
+  const showInfo = useCallback(
+    (message: string, duration?: number) => add("info", message, duration),
+    [add]
+  );
+  return useMemo(
+    () => ({ showSuccess, showError, showInfo }),
+    [showSuccess, showError, showInfo]
+  );
 }

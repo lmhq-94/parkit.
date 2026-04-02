@@ -4,7 +4,7 @@ import { BookingQRModal } from "../BookingQRModal";
 
 jest.mock("next/dynamic", () => ({
   __esModule: true,
-  default: (fn: () => Promise<{ default: React.ComponentType<{ value: string; size?: number }> }>) => {
+  default: (_dynamicImport: () => Promise<{ default: React.ComponentType<{ value: string; size?: number }> }>) => {
     const Component = function MockQR({ value }: { value: string; size?: number }) {
       return <div data-testid="qr-code">{value}</div>;
     };

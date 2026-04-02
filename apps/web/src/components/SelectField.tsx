@@ -151,6 +151,7 @@ export function SelectField({ value, onChange, icon: Icon, children, className, 
         {Icon && (
           <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none z-10 transition-colors" />
         )}
+        {/* eslint-disable-next-line jsx-a11y/role-supports-aria-props */}
         <button
           ref={triggerRef}
           type="button"

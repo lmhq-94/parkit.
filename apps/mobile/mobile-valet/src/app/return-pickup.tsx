@@ -125,7 +125,12 @@ export default function ReturnPickupScreen() {
         });
       }
     } catch (e) {
-      feedback.error(messageFromAxios(e) || t(locale, "tickets.errorUpdate"));
+      const msg = messageFromAxios(e);
+      feedback.error(
+        msg === "NETWORK_ERROR"
+          ? t(locale, "common.networkError")
+          : msg || t(locale, "tickets.errorUpdate")
+      );
     } finally {
       setSubmitting(false);
     }

@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Building2, Receipt, Mail, Phone, Globe,
-  DollarSign, Clock, MapPin, ArrowRight, Smartphone,
+  DollarSign, Clock, MapPin, ArrowRight,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
@@ -16,7 +16,7 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { COUNTRIES, CURRENCIES, TIMEZONES, INDUSTRIES } from "@/lib/companyOptions";
-import { formatTaxId, formatPhoneWithCountryCode, COUNTRY_DIAL_CODES } from "@/lib/inputMasks";
+import { formatTaxId, formatPhoneInternational, formatPhoneWithCountryCode, COUNTRY_DIAL_CODES } from "@/lib/inputMasks";
 import { required, email as validateEmail, phone as validatePhone } from "@/lib/validation";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
@@ -76,7 +76,10 @@ export default function EditCompanyPage() {
             currency: String(data.currency ?? ""),
             timezone: String(data.timezone ?? ""),
             email: String(data.email ?? ""),
-            contactPhone: formatPhoneInternational(String(data.contactPhone ?? "")),
+            contactPhone: formatPhoneWithCountryCode(
+              String(data.contactPhone ?? ""),
+              String(data.countryCode ?? "CR") || "CR"
+            ),
             legalAddress: String(data.legalAddress ?? ""),
             requiresCustomerApp:
               data.requiresCustomerApp === true ? "true" :
@@ -93,7 +96,7 @@ export default function EditCompanyPage() {
         setLoading(false);
       }
     })();
-  }, [id]);
+  }, [id, showError, t]);
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>

@@ -16,7 +16,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin } from "@/lib/auth";
 import { apiClient } from "@/lib/api";
-import { formatPhoneInternational } from "@/lib/inputMasks";
+import { formatPhoneWithCountryCode } from "@/lib/inputMasks";
 import { makeTzLabel } from "@/lib/companyOptions";
 import { StatusFilterToolbar } from "@/components/StatusFilterToolbar";
 
@@ -56,7 +56,7 @@ export default function CompaniesPage() {
   const [refreshToken, setRefreshToken] = useState(0);
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const fetchData = useCallback(
-    async (_userId: string): Promise<Company[]> => {
+    async (): Promise<Company[]> => {
       const u = useAuthStore.getState().user;
       if (isSuperAdmin(u)) {
         const params =
@@ -161,7 +161,7 @@ export default function CompaniesPage() {
           setSelectedCompany(row.id, newName);
         }
       } else {
-        const { status: _s, ...mePayload } = payload;
+        const { status: _status, ...mePayload } = payload;
         if (Object.keys(mePayload).length > 0) {
           await apiClient.patch("/companies/me", mePayload);
         }
@@ -219,7 +219,14 @@ export default function CompaniesPage() {
               />
               <DetailField
                 label={t("companies.contactPhone")}
-                value={company.contactPhone ? formatPhoneInternational(company.contactPhone) : undefined}
+                value={
+                  company.contactPhone
+                    ? formatPhoneWithCountryCode(
+                        company.contactPhone,
+                        company.countryCode || "CR"
+                      )
+                    : undefined
+                }
                 linkType="phone"
               />
               <DetailField label={t("companies.countryCode")} value={company.countryCode} />

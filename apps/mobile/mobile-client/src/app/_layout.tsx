@@ -1,6 +1,6 @@
 import "@/lib/textDefaults";
 import { useEffect, useState } from "react";
-import { useAuthStore, useLocaleStore } from "@/lib/store";
+import { useAuthStore, usePreferencesStore } from "@/lib/store";
 import { Stack, SplashScreen } from "expo-router";
 import { useFonts } from "expo-font";
 
@@ -8,7 +8,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { hydrate } = useAuthStore();
-  const { hydrateLocale } = useLocaleStore();
+  const { hydratePreferences } = usePreferencesStore();
   const [isHydrating, setIsHydrating] = useState(true);
 
   const [fontsLoaded] = useFonts({
@@ -17,11 +17,11 @@ export default function RootLayout() {
 
   useEffect(() => {
     const init = async () => {
-      await Promise.all([hydrate(), hydrateLocale()]);
+      await Promise.all([hydrate(), hydratePreferences()]);
       setIsHydrating(false);
     };
     init();
-  }, []);
+  }, [hydrate, hydratePreferences]);
 
   useEffect(() => {
     if (!isHydrating && fontsLoaded) {

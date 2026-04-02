@@ -36,17 +36,17 @@ function AcceptInviteForm() {
   useEffect(() => {
     if (!success) return;
     const id = setInterval(() => {
-      setRedirectSeconds((s) => {
-        if (s <= 1) {
-          clearInterval(id);
-          router.push("/login");
-          return 0;
-        }
-        return s - 1;
-      });
+      setRedirectSeconds((s) => Math.max(0, s - 1));
     }, 1000);
     return () => clearInterval(id);
   }, [success, router]);
+
+  useEffect(() => {
+    if (!success) return;
+    if (redirectSeconds <= 0) {
+      router.push("/login");
+    }
+  }, [success, redirectSeconds, router]);
 
   const req = checkPasswordRequirements(password);
 

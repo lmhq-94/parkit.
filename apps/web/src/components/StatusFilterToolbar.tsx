@@ -112,7 +112,7 @@ export function StatusFilterToolbar({
     "rounded-lg border border-input-border bg-input-bg text-sm font-medium transition-colors min-h-[42px] px-4 py-3";
 
   return (
-    <div className={`flex flex-wrap items-center gap-2 ${className ?? ""}`}>
+    <div className={`flex flex-nowrap md:flex-wrap items-center gap-2 ${className ?? ""}`}>
       <button
         type="button"
         onClick={() => onChange([])}

@@ -8,14 +8,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LocaleToggle } from "@/components/LocaleToggle";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import type { CompanyBranding } from "@/lib/store";
 import { getAvatarColor, getFullName, getInitials, getShortName, isSuperAdmin } from "@/lib/auth";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { LocaleToggle } from "@/components/LocaleToggle";
+import { useTheme } from "next-themes";
+import { useLocaleStore } from "@/lib/store";
+import { Sun, Moon, Globe } from "lucide-react";
 import { apiClient } from "@/lib/api";
-import { ArrowLeft, ChevronDown, Menu } from "lucide-react";
+import { ArrowLeft, ChevronDown, Menu, UserRound, LogOut } from "lucide-react";
 
 const HeaderActionContext = createContext<((node: React.ReactNode) => void) | null>(null);
 export function useHeaderAction() {
@@ -40,7 +43,7 @@ const PATH_HEADERS: Record<string, PathHeader> = {
   "/dashboard/settings": { title: "settings.title", description: "settings.description" },
   "/dashboard/users": { title: "tables.employees.title", description: "tables.employees.description" },
   "/dashboard/users/new": { title: "users.newUser", description: "users.newUserDescription", backHref: "/dashboard/users", backLabel: "tables.employees.title" },
-  "/dashboard/users/[id]/edit": { title: "tables.employees.title", description: "users.editUserDescription", backHref: "/dashboard/users", backLabel: "tables.employees.title" },
+  "/dashboard/users/[id]/edit": { title: "users.editUser", description: "users.editUserDescription", backHref: "/dashboard/users", backLabel: "tables.employees.title" },
   "/dashboard/valets": { title: "tables.valets.title", description: "tables.valets.description" },
   "/dashboard/valets/new": { title: "valets.newValet", description: "valets.newValetDescription", backHref: "/dashboard/valets", backLabel: "tables.valets.title" },
   "/dashboard/valets/[id]/edit": { title: "tables.valets.title", description: "valets.editValetDescription", backHref: "/dashboard/valets", backLabel: "tables.valets.title" },
@@ -180,10 +183,12 @@ function DashboardLayoutInner({
   const setCompanyBranding = useDashboardStore((s: any) => s.setCompanyBranding);
   const getBrandingFromCache = useDashboardStore((s: any) => s.getBrandingFromCache);
   const setBrandingInCache = useDashboardStore((s: any) => s.setBrandingInCache);
-  const superAdmin = isSuperAdmin(user);
+  const { theme, setTheme } = useTheme();
+  const { locale, setLocale } = useLocaleStore();
 
   // Load branding (logo, banner, colors) for dashboard and sidebar. It may already be preloaded on login.
   useEffect(() => {
+    const superAdmin = isSuperAdmin(user);
     if (superAdmin && !selectedCompanyId) {
       setCompanyBranding(null);
       return;
@@ -221,7 +226,7 @@ function DashboardLayoutInner({
         const current = useDashboardStore.getState().companyBranding;
         if (!current) setCompanyBranding(null);
       });
-  }, [selectedCompanyId, superAdmin, setCompanyBranding, getBrandingFromCache, setBrandingInCache, user?.id]);
+  }, [selectedCompanyId, user, setCompanyBranding, getBrandingFromCache, setBrandingInCache]);
 
   return (
     <ProtectedRoute>
@@ -282,8 +287,11 @@ function DashboardLayoutInner({
                   />
                 </>
               )}
-              <ThemeToggle />
-              <LocaleToggle />
+              {/* Theme and Locale toggles moved inside user menu for mobile optimization */}
+              <div className="hidden md:flex items-center gap-3">
+                <ThemeToggle />
+                <LocaleToggle />
+              </div>
               {user && (
                 <>
                   <div className="relative" ref={userMenuRef}>
@@ -352,10 +360,110 @@ function DashboardLayoutInner({
                               setUserMenuOpen(false);
                               router.push("/dashboard/profile");
                             }}
-                            className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"
                           >
+                            <UserRound className="w-4 h-4" />
                             {t("sidebar.profile")}
                           </button>
+                          <div className="px-3 py-1 md:hidden">
+                            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                              {t("settings.theme")}
+                            </p>
+                            <div className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 px-2 py-2">
+                              <div className="flex items-center justify-center w-8 h-8 rounded-md bg-white/70 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200">
+                                {theme === "dark" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                              </div>
+                              <div className="flex-1 flex items-center rounded-md bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 p-0.5">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const nextTheme: "light" | "dark" = "light";
+                                    setTheme(nextTheme);
+                                    apiClient
+                                      .patch("/users/me", {
+                                        appPreferences: { theme: nextTheme },
+                                      })
+                                      .catch(() => {});
+                                  }}
+                                  className={`flex-1 px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors ${
+                                    theme === "light"
+                                      ? "bg-company-primary text-white shadow-sm"
+                                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                  }`}
+                                >
+                                  {locale === "es" ? "Claro" : "Light"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const nextTheme: "light" | "dark" = "dark";
+                                    setTheme(nextTheme);
+                                    apiClient
+                                      .patch("/users/me", {
+                                        appPreferences: { theme: nextTheme },
+                                      })
+                                      .catch(() => {});
+                                  }}
+                                  className={`flex-1 px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors ${
+                                    theme === "dark"
+                                      ? "bg-company-primary text-white shadow-sm"
+                                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                  }`}
+                                >
+                                  {locale === "es" ? "Oscuro" : "Dark"}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="px-3 py-1 md:hidden">
+                            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                              {t("settings.language")}
+                            </p>
+                            <div className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 px-2 py-2">
+                              <div className="flex items-center justify-center w-8 h-8 rounded-md bg-white/70 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200">
+                                <Globe className="w-4 h-4" />
+                              </div>
+                              <div className="flex-1 flex items-center rounded-md bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 p-0.5">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setLocale("es");
+                                    apiClient
+                                      .patch("/users/me", {
+                                        appPreferences: { locale: "es" },
+                                      })
+                                      .catch(() => {});
+                                  }}
+                                  className={`flex-1 px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors ${
+                                    locale === "es"
+                                      ? "bg-company-primary text-white shadow-sm"
+                                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                  }`}
+                                >
+                                  ES
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setLocale("en");
+                                    apiClient
+                                      .patch("/users/me", {
+                                        appPreferences: { locale: "en" },
+                                      })
+                                      .catch(() => {});
+                                  }}
+                                  className={`flex-1 px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors ${
+                                    locale === "en"
+                                      ? "bg-company-primary text-white shadow-sm"
+                                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                  }`}
+                                >
+                                  EN
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <hr className="my-1 border-slate-200 dark:border-slate-700" />
                           <button
                             type="button"
                             onClick={() => {
@@ -367,8 +475,9 @@ function DashboardLayoutInner({
                                 router.replace("/login");
                               }
                             }}
-                            className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-red-600 dark:text-red-400 hover:bg-red-500/10"
+                            className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-red-600 dark:text-red-400 hover:bg-red-500/10 flex items-center gap-2"
                           >
+                            <LogOut className="w-4 h-4" />
                             {t("auth.signOut")}
                           </button>
                         </div>
