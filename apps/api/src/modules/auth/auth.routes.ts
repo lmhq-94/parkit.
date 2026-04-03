@@ -2,7 +2,6 @@ import { Router } from "express";
 import { AuthController } from "./auth.controller";
 import { validateRequest } from "../../shared/middleware/validateRequest";
 import {
-  AcceptInvitationSchema,
   ForgotPasswordSchema,
   LoginSchema,
   RegisterSchema,
@@ -10,18 +9,16 @@ import {
   RequestOtpSchema,
   ResetPasswordSchema,
   VerifyOtpSchema,
+  RegisterInvitedSchema,
 } from "../../shared/validators";
 
 const router = Router();
 
 router.post("/register", validateRequest(RegisterSchema), AuthController.register);
-router.post("/register-valet", validateRequest(RegisterValetSchema), AuthController.registerValet);
-router.post("/login", validateRequest(LoginSchema), AuthController.login);
-router.post(
-  "/forgot-password",
-  validateRequest(ForgotPasswordSchema),
-  AuthController.forgotPassword
-);
+router.post("/register-valet", AuthController.registerValet);
+router.post("/login", AuthController.login);
+router.post("/register-invited", AuthController.registerInvited);
+router.post("/forgot-password", AuthController.forgotPassword);
 router.post(
   "/reset-password",
   validateRequest(ResetPasswordSchema),
@@ -38,9 +35,9 @@ router.post(
   AuthController.verifyOtp
 );
 router.post(
-  "/invitations/accept",
-  validateRequest(AcceptInvitationSchema),
-  AuthController.acceptInvitation
+  "/register-invited",
+  validateRequest(RegisterInvitedSchema),
+  AuthController.registerInvited
 );
 
 export default router;

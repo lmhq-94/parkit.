@@ -1,4 +1,5 @@
 export * from "./types/user";
+export * from "./types/invitation";
 export * from "./types/locale";
 export * from "./logoTokens";
 export * from "./validators/password";

@@ -112,6 +112,12 @@ enum BankCardType {
   NO_CARD
 }
 
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+}
+
 /**
  * |--------------------------------------------------------------------------
  * | CORE
@@ -145,6 +151,7 @@ model Company {
   vehicles Vehicle[]
   bookings Booking[]
   tickets  Ticket[]
+  invitations Invitation[]
 }
 
 model User {
@@ -159,18 +166,9 @@ model User {
   phone          String?
   phoneVerified  Boolean    @default(false)
   systemRole     SystemRole @default(CUSTOMER)
-  pushToken      String?
   lastLogin      DateTime?
   isActive       Boolean    @default(true)
   appPreferences Json?
-
-  // Invitation flow: when admin invites by email, user sets password via link
-  invitationToken         String?   @unique
-  invitationTokenExpiresAt DateTime?
-
-  // Forgot-password flow: link in email points to web /reset-password
-  passwordResetToken         String?   @unique
-  passwordResetExpiresAt     DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -182,6 +180,27 @@ model User {
   auditLogs        AuditLog[]
   notificationLogs NotificationLog[]
   oneTimeCodes     OneTimeCode[]
+  sentInvitations  Invitation[]      @relation("InvitedBy")
+}
+
+model Invitation {
+  id              String           @id @default(uuid())
+  email           String
+  companyId       String
+  role            SystemRole       @default(CUSTOMER)
+  token           String           @unique
+  status          InvitationStatus @default(PENDING)
+  invitedByUserId String
+  expiresAt       DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relations
+  company   Company @relation(fields: [companyId], references: [id])
+  invitedBy User    @relation("InvitedBy", fields: [invitedByUserId], references: [id])
+
+  @@index([email, companyId])
 }
 
 /**

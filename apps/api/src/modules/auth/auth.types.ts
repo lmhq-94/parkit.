@@ -16,6 +16,13 @@ export interface AcceptInvitationDTO {
   password: string;
 }
 
+export interface RegisterInvitedDTO {
+  token: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+}
+
 export interface ForgotPasswordDTO {
   email: string;
 }

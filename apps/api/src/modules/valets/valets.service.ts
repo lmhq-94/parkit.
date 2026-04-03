@@ -273,7 +273,6 @@ export class ValetsService {
       phone: true,
       isActive: true,
       lastLogin: true,
-      invitationTokenExpiresAt: true,
     } as const;
     const userSelectWithoutInvitation = {
       id: true,
@@ -323,12 +322,7 @@ export class ValetsService {
 
       const listWithLastActivity = valets.map((v) => {
         const user = v.user
-          ? (() => {
-              const { invitationTokenExpiresAt, ...rest } = v.user!;
-              const pendingInvitation =
-                invitationTokenExpiresAt != null && new Date(invitationTokenExpiresAt) > new Date();
-              return { ...rest, pendingInvitation };
-            })()
+          ? { ...v.user, pendingInvitation: false }
           : null;
 
         let lastActivity: ValetLastActivity | null = null;

@@ -45,11 +45,10 @@ export class AuthController {
     }
   }
 
-  static async acceptInvitation(req: Request, res: Response) {
+  static async registerInvited(req: Request, res: Response) {
     try {
-      const result = await AuthService.acceptInvitation(req.body);
-
-      return ok(res, result);
+      const result = await AuthService.registerInvited(req.body);
+      return created(res, result);
     } catch (error: unknown) {
       return fail(
         res,
