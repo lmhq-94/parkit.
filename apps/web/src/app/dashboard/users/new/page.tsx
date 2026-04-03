@@ -9,7 +9,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
-import { TIMEZONES } from "@/lib/companyOptions";
+import { TIMEZONES, getLocalTimezone } from "@/lib/companyOptions";
 import { formatPhoneWithCountryCode, COUNTRY_DIAL_CODES, getDeviceCountryCode } from "@/lib/inputMasks";
 import { required, email as validateEmail, phone as validatePhone } from "@/lib/validation";
 import { isSuperAdmin } from "@/lib/auth";
@@ -21,7 +21,7 @@ const ROLES = ["CUSTOMER", "ADMIN"] as const;
 const defaultForm = {
   firstName: "", lastName: "", email: "",
   systemRole: "CUSTOMER" as const, phone: "",
-  timezone: "UTC",
+  timezone: getLocalTimezone(),
 };
 
 export default function NewUserPage() {

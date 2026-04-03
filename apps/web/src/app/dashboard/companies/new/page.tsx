@@ -13,7 +13,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { useDashboardStore } from "@/lib/store";
-import { COUNTRIES, CURRENCIES, TIMEZONES, INDUSTRIES } from "@/lib/companyOptions";
+import { COUNTRIES, CURRENCIES, TIMEZONES, INDUSTRIES, getLocalTimezone } from "@/lib/companyOptions";
 import { formatTaxId, formatPhoneWithCountryCode, COUNTRY_DIAL_CODES } from "@/lib/inputMasks";
 import { required, email as validateEmail, phone as validatePhone } from "@/lib/validation";
 
@@ -40,7 +40,7 @@ function Field({ label, required, icon: Icon, error, children }: {
 
 const defaultForm = {
   legalName: "", taxId: "", industry: "", commercialName: "",
-  countryCode: "CR", currency: "CRC", timezone: "UTC",
+  countryCode: "CR", currency: "CRC", timezone: getLocalTimezone(),
   email: "", contactPhone: "", legalAddress: "",
   requiresCustomerApp: "" as "" | "true" | "false",
 };

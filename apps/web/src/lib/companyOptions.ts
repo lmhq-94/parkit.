@@ -474,3 +474,16 @@ export const TIMEZONES: { value: string; label: string }[] = TIMEZONE_IDS.map((i
   value: id,
   label: makeTzLabel(id),
 }));
+
+/**
+ * Returns the browser's local IANA timezone if it exists in the curated TIMEZONE_IDS list.
+ * Falls back to 'UTC' when running on the server (SSR) or if the local timezone is not listed.
+ */
+export function getLocalTimezone(): string {
+  try {
+    const local = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return (TIMEZONE_IDS as readonly string[]).includes(local) ? local : 'UTC';
+  } catch {
+    return 'UTC';
+  }
+}

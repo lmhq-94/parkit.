@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, Check } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface StatusFilterOption {
   value: string;
@@ -24,13 +25,15 @@ interface StatusFilterToolbarProps {
 export function StatusFilterToolbar({
   allLabel,
   placeholder,
-  clearSelectionLabel = "Limpiar selección",
+  clearSelectionLabel,
   options,
   selected,
   onChange,
   tableKey,
   className,
 }: StatusFilterToolbarProps) {
+  const { t } = useTranslation();
+  const resolvedClearLabel = clearSelectionLabel ?? t("grid.clearSelection");
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [position, setPosition] = useState<{
@@ -140,7 +143,7 @@ export function StatusFilterToolbar({
               ? placeholder
               : selected.length === 1
                 ? options.find((o) => o.value === selected[0])?.label ?? selected[0]
-                : `${selected.length} seleccionados`}
+                : t("grid.nSelected", { n: selected.length })}
           </span>
           <ChevronDown
             className={`shrink-0 w-4 h-4 transition-transform duration-200 ${
@@ -199,7 +202,7 @@ export function StatusFilterToolbar({
                     onClick={() => onChange([])}
                     className="text-sm text-text-muted hover:text-red-500 dark:hover:text-red-400 transition-colors"
                   >
-                    {clearSelectionLabel}
+                    {resolvedClearLabel}
                   </button>
                 </div>
               )}
