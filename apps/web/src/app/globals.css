@@ -498,3 +498,201 @@ body {
 .address-picker-geofence-slider:focus::-moz-range-thumb {
   box-shadow: 0 0 0 2px var(--company-primary);
 }
+
+/* Smooth fluid animations for Parkit theme */
+@keyframes smooth-gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 25%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 75%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes smooth-gradient-flow-reverse {
+  0% {
+    background-position: 100% 0%;
+  }
+  33% {
+    background-position: 25% 50%;
+  }
+  66% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 100% 0%;
+  }
+}
+
+/* Drop/splatter animations */
+@keyframes drop-float {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateY(0px) scale(1);
+  }
+  25% {
+    opacity: 0.6;
+    transform: translateY(-5px) scale(1.05);
+  }
+  50% {
+    opacity: 0.4;
+    transform: translateY(3px) scale(0.95);
+  }
+  75% {
+    opacity: 0.7;
+    transform: translateY(-3px) scale(1.02);
+  }
+}
+
+.animate-gradient-flow {
+  background-size: 800% 800%;
+  animation: lava-gradient-shift 8s ease infinite;
+}
+
+.animate-gradient-flow-reverse {
+  background-size: 250% 250%;
+  animation: gradient-flow-reverse 15s ease-in-out infinite;
+}
+
+/* Lava morphing animations - organic irregular shapes */
+@keyframes lava-morph-1 {
+  0%, 100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  25% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+    transform: translate(30px, -20px) rotate(5deg) scale(1.1);
+  }
+  50% {
+    border-radius: 50% 60% 40% 50% / 40% 40% 60% 50%;
+    transform: translate(-20px, 30px) rotate(-3deg) scale(0.95);
+  }
+  75% {
+    border-radius: 40% 50% 60% 40% / 60% 50% 40% 60%;
+    transform: translate(20px, 20px) rotate(2deg) scale(1.05);
+  }
+}
+
+@keyframes lava-morph-2 {
+  0%, 100% {
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  33% {
+    border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%;
+    transform: translate(-40px, 40px) rotate(-8deg) scale(1.15);
+  }
+  66% {
+    border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+    transform: translate(30px, -30px) rotate(5deg) scale(0.9);
+  }
+}
+
+@keyframes lava-morph-3 {
+  0%, 100% {
+    border-radius: 70% 30% 50% 50% / 30% 50% 50% 70%;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  25% {
+    border-radius: 40% 60% 60% 40% / 60% 40% 40% 60%;
+    transform: translate(50px, 50px) rotate(10deg) scale(1.1);
+  }
+  50% {
+    border-radius: 60% 40% 40% 60% / 40% 60% 60% 40%;
+    transform: translate(-30px, -40px) rotate(-5deg) scale(0.95);
+  }
+  75% {
+    border-radius: 50% 50% 60% 40% / 50% 40% 50% 50%;
+    transform: translate(20px, -20px) rotate(3deg) scale(1.02);
+  }
+}
+
+@keyframes lava-morph-4 {
+  0%, 100% {
+    border-radius: 50% 60% 40% 50% / 40% 50% 60% 50%;
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+  }
+  50% {
+    border-radius: 40% 50% 50% 60% / 60% 40% 50% 40%;
+    transform: translate(-50%, -50%) rotate(180deg) scale(1.2);
+  }
+}
+
+@keyframes lava-morph-5 {
+  0%, 100% {
+    border-radius: 40% 50% 60% 40% / 50% 40% 50% 60%;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  33% {
+    border-radius: 60% 40% 40% 60% / 40% 60% 60% 40%;
+    transform: translate(20px, -30px) rotate(15deg) scale(1.1);
+  }
+  66% {
+    border-radius: 50% 60% 40% 50% / 60% 50% 40% 50%;
+    transform: translate(-20px, 20px) rotate(-10deg) scale(0.95);
+  }
+}
+
+/* Base gradient animation for lava effect - more dramatic movement */
+@keyframes lava-gradient-shift {
+  0% {
+    background-position: 0% 0%;
+  }
+  25% {
+    background-position: 100% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+/* Additional lava morphing animations */
+@keyframes lava-morph-6 {
+  0%, 100% {
+    border-radius: 60% 30% 40% 60% / 30% 60% 50% 40%;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  25% {
+    border-radius: 40% 50% 60% 40% / 50% 40% 50% 60%;
+    transform: translate(40px, -40px) rotate(20deg) scale(1.2);
+  }
+  50% {
+    border-radius: 50% 60% 40% 50% / 60% 50% 40% 50%;
+    transform: translate(-30px, 30px) rotate(-15deg) scale(0.9);
+  }
+  75% {
+    border-radius: 70% 40% 50% 60% / 40% 50% 60% 50%;
+    transform: translate(20px, 10px) rotate(5deg) scale(1.1);
+  }
+}
+
+@keyframes lava-morph-7 {
+  0%, 100% {
+    border-radius: 30% 60% 70% 40% / 60% 40% 30% 60%;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  33% {
+    border-radius: 70% 30% 40% 70% / 30% 70% 60% 40%;
+    transform: translate(-50px, 25px) rotate(25deg) scale(1.15);
+  }
+  66% {
+    border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+    transform: translate(25px, -50px) rotate(-20deg) scale(0.85);
+  }
+}
