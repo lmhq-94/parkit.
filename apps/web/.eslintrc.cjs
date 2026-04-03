@@ -12,4 +12,7 @@ module.exports = {
     }],
     "@typescript-eslint/no-explicit-any": "off",
   },
+  parserOptions: {
+    warnOnUnsupportedTypeScriptVersion: false,
+  },
 };

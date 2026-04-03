@@ -268,8 +268,6 @@ export default function ReceiveScreen() {
   const [wizardStep, setWizardStep] = useState(1);
   const [cardVerificationOpening, setCardVerificationOpening] = useState(false);
   const [cardVerificationStarted, setCardVerificationStarted] = useState(false);
-  const [cardVerificationSkipped, setCardVerificationSkipped] = useState(false);
-  const [cardVerificationSkipConfirmOpen, setCardVerificationSkipConfirmOpen] = useState(false);
   const [ticketCodesAcknowledged, setTicketCodesAcknowledged] = useState(false);
   const [manualTicketCode, setManualTicketCode] = useState("");
   const [manualKeyCode, setManualKeyCode] = useState("");
@@ -299,7 +297,6 @@ export default function ReceiveScreen() {
   const startCardVerification = useCallback(async () => {
     try {
       setCardVerificationOpening(true);
-      setCardVerificationSkipped(false);
       const res = await api.post<{ data?: { url?: string } }>("/payments/card-verification/session", {
         locale,
       });
@@ -320,13 +317,8 @@ export default function ReceiveScreen() {
     } finally {
       setCardVerificationOpening(false);
     }
-  }, [api, feedback, locale, t]);
+  }, [feedback, locale]);
 
-  const skipCardVerification = useCallback(() => {
-    setCardVerificationSkipped(true);
-    setCardVerificationStarted(false);
-    feedback.alert(t(locale, "receive.cardVerifySkipNote"));
-  }, [feedback, locale, t]);
 
   const typeStepNum = 1;
   const cardStepNum = 2;
@@ -1264,7 +1256,6 @@ export default function ReceiveScreen() {
     );
   }
 
-  const backStepForDriver = plateStepNum;
 
   let footer: ReactNode = null;
   if (wizardStep === typeStepNum && !reservationFlow) {
@@ -1332,9 +1323,11 @@ export default function ReceiveScreen() {
               styles.primaryBtnSticky,
               styles.footerPrimaryBtn,
               { minHeight: M },
+              !cardVerificationStarted && styles.btnDisabled,
               pressed && styles.pressed,
             ]}
             onPress={() => setWizardStep(plateStepNum)}
+            disabled={!cardVerificationStarted}
             accessibilityLabel={t(locale, "receive.next")}
           >
             <Text style={styles.primaryBtnText}>{t(locale, "receive.next")}</Text>
@@ -1850,8 +1843,8 @@ export default function ReceiveScreen() {
               <LinearGradient
                 colors={
                   theme.isDark
-                    ? ["rgba(56,189,248,0.42)", "rgba(99,102,241,0.34)", "rgba(45,212,191,0.3)"]
-                    : ["rgba(56,189,248,0.28)", "rgba(99,102,241,0.2)", "rgba(45,212,191,0.2)"]
+                    ? ["#38BDF8", "#6366F1", "#2DD4BF"]
+                    : ["#0EA5E9", "#4F46E5", "#10B981"]
                 }
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -1864,7 +1857,11 @@ export default function ReceiveScreen() {
                 >
                   <View style={styles.cardVerifyOnHoldRow}>
                     <View style={styles.cardVerifyIconBubble}>
-                      <Ionicons name="card-outline" size={26} color={theme.isDark ? "#38BDF8" : "#1D4ED8"} />
+                      <Ionicons 
+                        name={cardVerificationStarted ? "checkmark-done-circle" : "card-outline"} 
+                        size={26} 
+                        color={cardVerificationStarted ? C.success : (theme.isDark ? "#38BDF8" : "#1D4ED8")} 
+                      />
                     </View>
                     <View style={styles.cardVerifyOnHoldTextCol}>
                       <Text style={styles.cardVerifyOnHoldTitle}>
@@ -1876,15 +1873,21 @@ export default function ReceiveScreen() {
                     </View>
                   </View>
                   <View style={styles.cardVerifyBadgeRow}>
-                    <View style={styles.cardVerifyBadge}>
-                      <Text style={styles.cardVerifyBadgeText}>{t(locale, "receive.cardVerifyBadge")}</Text>
+                    <View style={[styles.cardVerifyBadge, cardVerificationStarted && { backgroundColor: "rgba(16, 185, 129, 0.15)" }]}>
+                      <Text style={[styles.cardVerifyBadgeText, cardVerificationStarted && { color: C.success }]}>
+                        {cardVerificationStarted ? t(locale, "common.successTitle") : t(locale, "receive.cardVerifyBadge")}
+                      </Text>
                     </View>
                     {cardVerificationStarted ? (
                       <View style={styles.cardVerifyStartedBadge}>
-                        <Ionicons name="checkmark-circle" size={14} color={C.success} />
-                        <Text style={styles.cardVerifyStartedBadgeText}>{t(locale, "common.successTitle")}</Text>
+                        <Ionicons name="shield-checkmark-outline" size={14} color={C.success} />
+                        <Text style={styles.cardVerifyStartedBadgeText}>{t(locale, "receive.cardVerifyStarted")}</Text>
                       </View>
-                    ) : null}
+                    ) : (
+                      <View style={[styles.cardVerifyBadge, { backgroundColor: "rgba(245, 158, 11, 0.15)" }]}>
+                        <Text style={[styles.cardVerifyBadgeText, { color: C.warning }]}>{t(locale, "common.loading")}</Text>
+                      </View>
+                    )}
                   </View>
                 </View>
               </LinearGradient>
@@ -1918,20 +1921,8 @@ export default function ReceiveScreen() {
               <Text style={styles.cardVerifyHintText}>
                 {cardVerificationStarted
                   ? t(locale, "receive.cardVerifyStartedHint")
-                  : cardVerificationSkipped
-                    ? t(locale, "receive.cardVerifySkippedHint")
                   : t(locale, "receive.cardVerifyOptionalHint")}
               </Text>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.cardVerifySkipBtn,
-                  pressed && styles.pressed,
-                ]}
-                onPress={() => setCardVerificationSkipConfirmOpen(true)}
-                accessibilityLabel={t(locale, "receive.cardVerifySkipCta")}
-              >
-                <Text style={styles.cardVerifySkipText}>{t(locale, "receive.cardVerifySkipCta")}</Text>
-              </Pressable>
             </>
           )}
 
@@ -2549,53 +2540,6 @@ export default function ReceiveScreen() {
 
         {footer ? <KeyboardStickyView>{footer}</KeyboardStickyView> : null}
 
-        <Modal
-          visible={cardVerificationSkipConfirmOpen}
-          animationType="fade"
-          transparent
-          onRequestClose={() => setCardVerificationSkipConfirmOpen(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <Pressable
-              style={styles.modalBackdropPress}
-              onPress={() => setCardVerificationSkipConfirmOpen(false)}
-              accessibilityLabel={t(locale, "common.cancel")}
-            />
-            <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
-              <Text style={[styles.modalTitle, { color: C.text }]}>
-                {t(locale, "receive.cardVerifySkipTitle")}
-              </Text>
-              <Text style={[styles.modalBody, { color: C.textMuted }]}>
-                {t(locale, "receive.cardVerifySkipBody")}
-              </Text>
-              <View style={styles.modalActions}>
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.footerSecondaryBtn,
-                    styles.modalActionBtn,
-                    pressed && styles.pressed,
-                  ]}
-                  onPress={() => setCardVerificationSkipConfirmOpen(false)}
-                >
-                  <Text style={styles.footerSecondaryBtnText}>{t(locale, "common.cancel")}</Text>
-                </Pressable>
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.primaryBtn,
-                    styles.modalActionBtn,
-                    pressed && styles.pressed,
-                  ]}
-                  onPress={() => {
-                    setCardVerificationSkipConfirmOpen(false);
-                    skipCardVerification();
-                  }}
-                >
-                  <Text style={styles.primaryBtnText}>{t(locale, "receive.cardVerifySkipConfirm")}</Text>
-                </Pressable>
-              </View>
-            </View>
-          </View>
-        </Modal>
 
         <Modal
           visible={vehicleBrandModalOpen}
@@ -3599,21 +3543,6 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       color: C.textSubtle,
       lineHeight: 22,
       marginBottom: S.md,
-    },
-    cardVerifySkipBtn: {
-      alignSelf: "center",
-      marginBottom: S.md,
-      paddingHorizontal: S.lg,
-      paddingVertical: S.sm,
-      borderRadius: 999,
-      borderWidth: 1,
-      borderColor: theme.isDark ? "rgba(255,255,255,0.2)" : C.border,
-      backgroundColor: theme.isDark ? "rgba(255,255,255,0.06)" : C.card,
-    },
-    cardVerifySkipText: {
-      color: C.text,
-      fontWeight: "700",
-      fontSize: F.secondary,
     },
     modalBody: {
       fontSize: F.secondary,

@@ -2,6 +2,9 @@ module.exports = {
   root: true,
   parser: "@typescript-eslint/parser",
   plugins: ["@typescript-eslint", "react-hooks"],
+  parserOptions: {
+    warnOnUnsupportedTypeScriptVersion: false,
+  },
   env: {
     node: true,
     es2022: true,

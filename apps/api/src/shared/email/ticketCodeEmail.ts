@@ -117,7 +117,8 @@ export async function sendTicketCodeEmail(
 
             <tr>
               <td class="content" style="padding: 45px 50px 10px;">
-                <h2 style="font-size: 26px; font-weight: 800; margin: 0 0 12px; color: #1e293b; letter-spacing: -0.02em;">Te damos la bienvenida</h2>
+                <div style="margin-bottom: 8px; font-size: 12px; font-weight: 700; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.1em;">Tiquete</div>
+                <h2 style="font-size: 26px; font-weight: 800; margin: 0 0 12px; color: #1e293b; letter-spacing: -0.02em;">Te damos la bienvenida, ${firstName} ${lastName}</h2>
                 <p style="font-size: 15px; line-height: 24px; color: #475569; margin: 0 0 30px;">
                   Su vehículo ha sido ingresado a nuestro sistema de custodia. Deberá mostrar este código al personal cuando desee solicitar su vehículo nuevamente.
                 </p>
@@ -231,6 +232,8 @@ export async function sendTicketCodeEmail(
           location_name: locationDisplay || "",
           plate_number: plateNumber || "",
           entry_time: entryTime || "",
+          first_name: firstName,
+          last_name: lastName,
           notes: notes || "",
           support: SUPPORT_EMAIL,
           privacy: PRIVACY_URL || "",

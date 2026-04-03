@@ -31,7 +31,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { AuthHeroGradient } from "@/components/AuthHeroGradient";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
-import { messageFromAxios, getTranslatedApiErrorMessage } from "@/lib/apiErrors";
+import { getTranslatedApiErrorMessage } from "@/lib/apiErrors";
 import { Users, Car } from "lucide-react-native";
 
 const SUPPORT_EMAIL = "mailto:soporte@parkit.app";

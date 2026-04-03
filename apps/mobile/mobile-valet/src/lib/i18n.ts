@@ -332,8 +332,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.stepCardVerify": "1. Tarjeta del cliente",
     "receive.cardVerifyOnHoldTitle": "Validación premium",
     "receive.cardVerifyOnHoldBody":
-      "Verifica en segundos que el método de pago esté activo con una experiencia segura de Stripe. Puedes continuar aunque no lo completes en este momento.",
-    "receive.cardVerifyBadge": "Opcional",
+      "Verifica en segundos que el método de pago esté activo con una experiencia segura de Stripe. Este paso es necesario para completar el registro.",
+    "receive.cardVerifyBadge": "Requerido",
     "receive.stepReservationQr": "1. Reserva (QR)",
     "receive.reservationQrHelp":
       "Escanea el QR de la reserva; los datos del cliente y el vehículo se cargan solos.",
@@ -367,12 +367,12 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.lookupInlineLoading": "Buscando matrícula...",
     "receive.wizardCardTitle": "Verificación de Tarjeta",
     "receive.wizardCardHelp":
-      "Ofrece una experiencia más profesional iniciando la verificación de tarjeta con Stripe. Este paso es opcional por ahora.",
+      "Ofrece una experiencia más profesional iniciando la verificación de tarjeta con Stripe.",
     "receive.wizardCardAck":
       "Confirmo que seguimos con el proceso de tarjeta acordado con el cliente",
     "receive.cardVerifyStart": "Verificar tarjeta con Stripe",
     "receive.cardVerifyOptionalHint":
-      "Sugerido para una recepción premium. Si lo prefieres, puedes continuar sin verificar tarjeta.",
+      "Necesario para una recepción eficiente. Sigue las instrucciones de Stripe para verificar la tarjeta.",
     "receive.cardVerifyStartedHint":
       "Stripe ya está abierto para completar la verificación de forma segura. Cuando termines, regresa para seguir con el check-in.",
     "receive.cardVerifyStarted":
@@ -871,8 +871,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.stepCardVerify": "1. Customer card",
     "receive.cardVerifyOnHoldTitle": "Premium verification",
     "receive.cardVerifyOnHoldBody":
-      "Confirm in seconds that the payment method is active using Stripe's secure flow. You can still continue even if you skip this step.",
-    "receive.cardVerifyBadge": "Optional",
+      "Verify in seconds that the payment method is active with a secure Stripe experience. This step is required to complete the registration.",
+    "receive.cardVerifyBadge": "Required",
     "receive.stepReservationQr": "1. Booking (QR)",
     "receive.reservationQrHelp":
       "Scan the booking QR; guest and vehicle details load automatically.",
@@ -906,12 +906,12 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.lookupInlineLoading": "Searching plate...",
     "receive.wizardCardTitle": "Card Verification",
     "receive.wizardCardHelp":
-      "Deliver a more premium experience by starting Stripe card verification here. This step is optional for now.",
+      "Provide a more professional experience by starting card verification with Stripe.",
     "receive.wizardCardAck":
       "I confirm we are proceeding with the agreed card step with the customer",
     "receive.cardVerifyStart": "Verify card with Stripe",
     "receive.cardVerifyOptionalHint":
-      "Recommended for a premium check-in flow. You can still tap Next without card verification.",
+      "Required for an efficient reception. Follow Stripe's instructions to verify the card.",
     "receive.cardVerifyStartedHint":
       "Stripe is now open to complete secure verification. Come back when finished to continue check-in.",
     "receive.cardVerifyStarted": "Stripe opened for card verification.",
