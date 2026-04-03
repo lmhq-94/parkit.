@@ -195,28 +195,20 @@ export class UsersService {
     };
     const orderBy = { createdAt: "desc" as const };
 
-    try {
-      const users = await prisma.user.findMany({
-        where,
-        select: this.listSelectWithoutInvitation,
-        orderBy,
-      });
-      return users;
-    } catch (err) {
-      throw err;
-    }
+    const users = await prisma.user.findMany({
+      where,
+      select: this.listSelectWithoutInvitation,
+      orderBy,
+    });
+    return users;
   }
 
   static async getById(companyId: string, userId: string) {
-    try {
-      const user = await prisma.user.findFirst({
-        where: { id: userId, companyId },
-        select: { ...this.listSelectWithoutInvitation },
-      });
-      return user;
-    } catch (err) {
-      throw err;
-    }
+    const user = await prisma.user.findFirst({
+      where: { id: userId, companyId },
+      select: { ...this.listSelectWithoutInvitation },
+    });
+    return user;
   }
 
 

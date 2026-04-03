@@ -15,10 +15,9 @@ import {
 const router = Router();
 
 router.post("/register", validateRequest(RegisterSchema), AuthController.register);
-router.post("/register-valet", AuthController.registerValet);
-router.post("/login", AuthController.login);
-router.post("/register-invited", AuthController.registerInvited);
-router.post("/forgot-password", AuthController.forgotPassword);
+router.post("/register-valet", validateRequest(RegisterValetSchema), AuthController.registerValet);
+router.post("/login", validateRequest(LoginSchema), AuthController.login);
+router.post("/forgot-password", validateRequest(ForgotPasswordSchema), AuthController.forgotPassword);
 router.post(
   "/reset-password",
   validateRequest(ResetPasswordSchema),

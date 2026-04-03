@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { SystemRole } from "@prisma/client";
 
 // JWT configuration - expires in 7 days for security balance between usability and token refresh
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
@@ -43,14 +44,17 @@ export interface RegisterInvitedDTO {
   password: string;
 }
 
-export const verifyInvitationToken = (token: string) => {
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    if (decoded.type !== "invitation") {
-      throw new Error("Invalid token type");
-    }
-    return decoded;
-  } catch (err) {
-    throw new Error("Invalid or expired invitation token");
+export interface InvitationPayload {
+  email: string;
+  companyId: string;
+  role: SystemRole;
+  type: string;
+}
+
+export const verifyInvitationToken = (token: string): InvitationPayload => {
+  const decoded = jwt.verify(token, JWT_SECRET) as unknown as InvitationPayload;
+  if (decoded.type !== "invitation") {
+    throw new Error("Invalid token type");
   }
+  return decoded;
 };

@@ -12,7 +12,6 @@ import {
 import { comparePassword, hashPassword, signToken, verifyInvitationToken } from "./auth.utils";
 import crypto from "crypto";
 import { UsersService } from "../users/users.service";
-import { InvitationsService } from "../users/invitations.service";
 import { ValetsService } from "../valets/valets.service";
 import { sendPasswordResetEmail } from "../../shared/email/passwordResetEmail";
 import { toAuthUserResponse } from "./authUserResponse";
@@ -168,6 +167,7 @@ export class AuthService {
     const { email, companyId, role } = payload;
 
     // Check if invitation exists and is pending
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const invitation = await (prisma as any).invitation.findUnique({
       where: { token: data.token, status: "PENDING" },
     });
@@ -200,6 +200,7 @@ export class AuthService {
         });
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (tx as any).invitation.update({
         where: { id: invitation.id },
         data: { status: "ACCEPTED" },
