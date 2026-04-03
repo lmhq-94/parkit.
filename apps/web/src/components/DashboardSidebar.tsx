@@ -164,10 +164,10 @@ function CompanySelector({
   hideAvatar = false,
   highContrast = false,
 }: {
-  companies: { id: string; commercialName?: string; legalName?: string }[];
+  companies: { id: string; commercialName?: string; legalName?: string; requiresCustomerApp?: boolean }[];
   selectedCompanyId: string | null;
   selectedCompanyName: string | null;
-  onSelect: (id: string, name: string) => void;
+  onSelect: (id: string, name: string, requiresCustomerApp?: boolean) => void;
   placeholder: string;
   allCompaniesLabel: string;
   addCompanyLabel: string;
@@ -255,7 +255,7 @@ function CompanySelector({
             <button
               key={c.id}
               type="button"
-              onClick={() => { onSelect(c.id, name); setOpen(false); }}
+              onClick={() => { onSelect(c.id, name, c.requiresCustomerApp); setOpen(false); }}
               className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg truncate ${
                 selectedCompanyId === c.id
                   ? "bg-company-primary-muted text-company-primary font-medium"
@@ -368,7 +368,7 @@ export function DashboardSidebar() {
     companyBranding,
   } = useDashboardStore();
   const [mounted, setMounted] = useState(false);
-  const [companies, setCompanies] = useState<{ id: string; commercialName?: string; legalName?: string }[]>([]);
+  const [companies, setCompanies] = useState<{ id: string; commercialName?: string; legalName?: string; requiresCustomerApp?: boolean }[]>([]);
   const [adminCompanyName, setAdminCompanyName] = useState<string | null>(null);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [bannerIsDark, setBannerIsDark] = useState<boolean | null>(null);
@@ -437,19 +437,19 @@ export function DashboardSidebar() {
     if (currentExists) return;
     const first = companies[0];
     const name = first.commercialName || first.legalName || first.id;
-    setSelectedCompany(first.id, name);
+    setSelectedCompany(first.id, name, first.requiresCustomerApp);
   }, [superAdmin, companies, setSelectedCompany]);
 
   // For ADMIN: fetch company (name and id) and, if none is selected, set it so layout can load branding
   useEffect(() => {
     if (!mounted || !user || superAdmin) return;
     apiClient
-      .get<{ id?: string; commercialName?: string; legalName?: string; email?: string }>("/companies/me")
+      .get<{ id?: string; commercialName?: string; legalName?: string; email?: string; requiresCustomerApp?: boolean }>("/companies/me")
       .then((company) => {
         const name = company?.commercialName || company?.legalName || null;
         setAdminCompanyName(name ?? null);
         if (company?.id && name) {
-          setSelectedCompany(company.id, name);
+          setSelectedCompany(company.id, name, company.requiresCustomerApp);
         }
       })
       .catch(() => {
@@ -487,8 +487,8 @@ export function DashboardSidebar() {
     }
   };
 
-  const handleSelectCompany = (id: string, name: string) => {
-    setSelectedCompany(id, name);
+  const handleSelectCompany = (id: string, name: string, requiresCustomerApp?: boolean) => {
+    setSelectedCompany(id, name, requiresCustomerApp);
     if (pathname !== "/dashboard") {
       router.push("/dashboard");
     }

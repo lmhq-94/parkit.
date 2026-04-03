@@ -95,7 +95,8 @@ interface DashboardStore {
   setSidebarCollapsed: (collapsed: boolean) => void;
   selectedCompanyId: string | null;
   selectedCompanyName: string | null;
-  setSelectedCompany: (id: string | null, name: string | null) => void;
+  requiresCustomerApp: boolean | null;
+  setSelectedCompany: (id: string | null, name: string | null, requiresCustomerApp?: boolean | null) => void;
   /** Incrementar para forzar recarga de la lista de companies en el sidebar */
   companiesVersion: number;
   bumpCompanies: () => void;
@@ -127,7 +128,8 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
     typeof window !== "undefined" ? localStorage.getItem(SELECTED_COMPANY_KEY) : null,
   selectedCompanyName:
     typeof window !== "undefined" ? localStorage.getItem(SELECTED_COMPANY_NAME_KEY) : null,
-  setSelectedCompany: (id: string | null, name: string | null) => {
+  requiresCustomerApp: null,
+  setSelectedCompany: (id: string | null, name: string | null, requiresCustomerApp: boolean | null = null) => {
     if (typeof window !== "undefined") {
       if (id) {
         localStorage.setItem(SELECTED_COMPANY_KEY, id);
@@ -137,7 +139,7 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
         localStorage.removeItem(SELECTED_COMPANY_NAME_KEY);
       }
     }
-    set({ selectedCompanyId: id, selectedCompanyName: name });
+    set({ selectedCompanyId: id, selectedCompanyName: name, requiresCustomerApp });
   },
   companiesVersion: 0,
   bumpCompanies: () => set((s) => ({ companiesVersion: s.companiesVersion + 1 })),

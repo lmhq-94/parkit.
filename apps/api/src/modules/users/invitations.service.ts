@@ -94,4 +94,33 @@ export class InvitationsService {
       data: { status: InvitationStatus.EXPIRED }, // revoked
     });
   }
+
+  static async sendInvitationsBatch(data: {
+    emails: string[];
+    companyId: string;
+    role: SystemRole;
+    invitedByUserId: string;
+  }) {
+    const { emails, companyId, role, invitedByUserId } = data;
+    const results: any[] = [];
+    for (const email of emails) {
+      if (!email.trim() || !email.includes("@")) continue;
+      try {
+        const invitation = await this.sendInvitation({
+          email: email.toLowerCase().trim(),
+          companyId,
+          role,
+          invitedByUserId,
+        });
+        results.push({ email, success: true, invitation });
+      } catch (error: unknown) {
+        results.push({
+          email,
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    }
+    return results;
+  }
 }

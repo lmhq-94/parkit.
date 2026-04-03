@@ -187,6 +187,27 @@ export class UsersController {
     }
   }
 
+  static async inviteBatch(req: Request, res: Response) {
+    try {
+      const companyId = req.user.companyId!;
+      const { emails, role } = req.body;
+      if (!Array.isArray(emails) || emails.length === 0) {
+        throw new Error("Emails array is required and cannot be empty");
+      }
+
+      const results = await InvitationsService.sendInvitationsBatch({
+        emails: emails.map((e) => String(e).trim()),
+        companyId,
+        role: (role as SystemRole) || SystemRole.ADMIN,
+        invitedByUserId: req.user.userId,
+      });
+
+      return created(res, results);
+    } catch (error: unknown) {
+      return fail(res, 400, error instanceof Error ? error.message : "Unknown error");
+    }
+  }
+
   static async listInvitations(req: Request, res: Response) {
     try {
       const companyId = req.user.companyId!;

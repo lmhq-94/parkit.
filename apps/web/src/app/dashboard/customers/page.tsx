@@ -62,7 +62,10 @@ type UserRow = {
 
 export default function CustomersPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
-  const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
+  const {
+    selectedCompanyName,
+    requiresCustomerApp
+  } = useDashboardStore();
   const router = useRouter();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
@@ -223,14 +226,16 @@ export default function CustomersPage() {
         onEdit={(row: UserRow) => !row.pendingInvitation && router.push(`/dashboard/users/${row.id}/edit`)}
         onUpdate={onUpdate}
         headerAction={
-          <button
-            type="button"
-            onClick={() => setIsInviteModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 min-h-[42px] rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors shadow-sm"
-          >
-            <UserPlus className="w-4 h-4" strokeWidth={2.25} />
-            {t("users.inviteUser")}
-          </button>
+          requiresCustomerApp ? (
+            <button
+              type="button"
+              onClick={() => setIsInviteModalOpen(true)}
+              className="inline-flex items-center gap-2 px-4 min-h-[42px] rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors shadow-sm"
+            >
+              <UserPlus className="w-4 h-4" strokeWidth={2.25} />
+              {t("users.inviteUser")}
+            </button>
+          ) : undefined
         }
       />
 
@@ -239,6 +244,8 @@ export default function CustomersPage() {
         onClose={() => setIsInviteModalOpen(false)}
         onSuccess={() => setRefreshToken((prev) => prev + 1)}
         defaultRole="CUSTOMER"
+        title={t("users.inviteUser")}
+        description={t("users.inviteCustomerDescription")}
       />
     </>
   );
