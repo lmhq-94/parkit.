@@ -102,7 +102,12 @@ export class InvitationsService {
     invitedByUserId: string;
   }) {
     const { emails, companyId, role, invitedByUserId } = data;
-    const results: any[] = [];
+    const results: Array<{
+      email: string;
+      success: boolean;
+      invitation?: unknown;
+      error?: string;
+    }> = [];
     for (const email of emails) {
       if (!email.trim() || !email.includes("@")) continue;
       try {
