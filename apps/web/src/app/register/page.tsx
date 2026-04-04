@@ -24,18 +24,17 @@ import { LocaleToggleSimple } from "@/components/LocaleToggleSimple";
 
 const REDIRECT_DELAY_SECONDS = 3;
 
-const INPUT_BASE = "w-full rounded-lg border border-input-border bg-input-bg px-4 py-3 text-text-primary text-sm transition-all duration-200 focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted/40";
-const LABEL_BASE = "block text-sm font-medium text-text-secondary mb-1.5";
+const INPUT_BASE = "w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-slate-900 dark:text-white text-sm transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500";
+const LABEL_BASE = "block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5";
 
 function PasswordRequirement({ label, met }: { label: string; met: boolean }) {
   return (
     <div className="flex items-center gap-2 text-xs">
-      <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-colors duration-200 ${
-        met ? "bg-emerald-500 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
-      }`}>
+      <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-colors duration-200 ${met ? "bg-emerald-500 text-white" : "bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500"
+        }`}>
         {met ? <Check className="w-2.5 h-2.5" /> : <X className="w-2.5 h-2.5" />}
       </div>
-      <span className={`${met ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-text-muted"}`}>
+      <span className={`${met ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-slate-500"}`}>
         {label}
       </span>
     </div>
@@ -101,17 +100,17 @@ function RegisterForm() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-page px-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
         <div className="w-full max-w-[360px] text-center">
           <div className="mb-8 flex justify-center">
             <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center">
               <CheckCircle2 className="w-8 h-8 text-emerald-500" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-text-primary mb-2">{t("auth.registrationComplete")}</h1>
-          <p className="text-sm text-text-muted mb-4">{t("auth.redirectingToLogin", { seconds: redirectSeconds })}</p>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-            <div 
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{t("auth.registrationComplete")}</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{t("auth.redirectingToLogin", { seconds: redirectSeconds })}</p>
+          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+            <div
               className="bg-emerald-500 h-full transition-all duration-1000 ease-linear"
               style={{ width: `${((REDIRECT_DELAY_SECONDS - redirectSeconds) / REDIRECT_DELAY_SECONDS) * 100}%` }}
             />
@@ -121,179 +120,142 @@ function RegisterForm() {
     );
   }
 
+  // Prevent hydration mismatch by not rendering theme-dependent styles until mounted
+  const isDark = mounted && resolvedTheme === 'dark';
+
   return (
-    <div className="min-h-screen flex items-stretch bg-page overflow-hidden">
-      
+    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden px-4">
+
+      {/* Full screen animated gradient background */}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        {/* Base gradient - Dark navy/purple like Gratafy */}
+        <div
+          className="absolute inset-0 transition-all duration-700"
+          style={{
+            background: isDark
+              ? 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 25%, #16213e 50%, #1a1a2e 75%, #0a0a1a 100%)'
+              : 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #dbeafe 50%, #e0f2fe 75%, #f0f9ff 100%)',
+          }}
+        />
+
+        {/* Large organic blob shapes - more visible like Gratafy */}
+        <div
+          className="absolute -top-40 -left-40 w-[600px] h-[600px]"
+          style={{
+            background: isDark
+              ? 'linear-gradient(135deg, #1e3a8a 0%, #312e81 50%, #1e1b4b 100%)'
+              : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%)',
+            borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%',
+            filter: 'blur(60px)',
+            opacity: isDark ? 0.6 : 0.7,
+            animation: 'lava-morph-1 20s ease-in-out infinite',
+          }}
+        />
+
+        <div
+          className="absolute top-1/3 -right-32 w-[500px] h-[500px]"
+          style={{
+            background: isDark
+              ? 'linear-gradient(225deg, #3730a3 0%, #4338ca 50%, #1e3a5f 100%)'
+              : 'linear-gradient(225deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%)',
+            borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
+            filter: 'blur(50px)',
+            opacity: isDark ? 0.5 : 0.65,
+            animation: 'lava-morph-2 25s ease-in-out infinite',
+          }}
+        />
+
+        <div
+          className="absolute bottom-20 left-1/4 w-[450px] h-[450px]"
+          style={{
+            background: isDark
+              ? 'linear-gradient(45deg, #1e1b4b 0%, #312e81 50%, #1e3a8a 100%)'
+              : 'linear-gradient(45deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%)',
+            borderRadius: '70% 30% 50% 50% / 30% 50% 50% 70%',
+            filter: 'blur(70px)',
+            opacity: isDark ? 0.55 : 0.75,
+            animation: 'lava-morph-3 22s ease-in-out infinite',
+          }}
+        />
+
+        <div
+          className="absolute top-1/2 right-1/4 w-[400px] h-[400px]"
+          style={{
+            background: isDark
+              ? 'linear-gradient(315deg, #4338ca 0%, #3730a3 50%, #312e81 100%)'
+              : 'linear-gradient(315deg, #4338ca 0%, #4f46e5 50%, #6366f1 100%)',
+            borderRadius: '40% 60% 60% 40% / 60% 40% 60% 40%',
+            filter: 'blur(55px)',
+            opacity: isDark ? 0.45 : 0.6,
+            animation: 'lava-morph-4 18s ease-in-out infinite',
+          }}
+        />
+
+        <div
+          className="absolute bottom-1/3 left-10 w-[350px] h-[350px]"
+          style={{
+            background: isDark
+              ? 'linear-gradient(135deg, #312e81 0%, #1e1b4b 100%)'
+              : 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
+            borderRadius: '50% 50% 40% 60% / 50% 40% 60% 50%',
+            filter: 'blur(45px)',
+            opacity: isDark ? 0.4 : 0.6,
+            animation: 'lava-morph-5 24s ease-in-out infinite',
+          }}
+        />
+
+        <div
+          className="absolute top-1/4 right-1/5 w-[300px] h-[300px]"
+          style={{
+            background: isDark
+              ? 'linear-gradient(180deg, #4c1d95 0%, #5b21b6 50%, #312e81 100%)'
+              : 'linear-gradient(180deg, #6d28d9 0%, #7c3aed 50%, #8b5cf6 100%)',
+            borderRadius: '60% 40% 70% 30% / 40% 60% 30% 70%',
+            filter: 'blur(40px)',
+            opacity: isDark ? 0.35 : 0.65,
+            animation: 'lava-morph-6 28s ease-in-out infinite',
+          }}
+        />
+
+        <div
+          className="absolute bottom-1/4 left-1/3 w-[280px] h-[280px]"
+          style={{
+            background: isDark
+              ? 'linear-gradient(45deg, #1e3a8a 0%, #3730a3 100%)'
+              : 'linear-gradient(45deg, #2563eb 0%, #3b82f6 100%)',
+            borderRadius: '40% 60% 50% 50% / 50% 40% 50% 60%',
+            filter: 'blur(35px)',
+            opacity: isDark ? 0.3 : 0.55,
+            animation: 'lava-morph-7 30s ease-in-out infinite',
+          }}
+        />
+
+        {/* Subtle overlay for depth */}
+        <div
+          className="absolute inset-0 transition-all duration-700"
+          style={{
+            background: isDark
+              ? 'radial-gradient(ellipse at center, transparent 0%, rgba(10,10,26,0.4) 100%)'
+              : 'radial-gradient(ellipse at center, transparent 0%, rgba(255,255,255,0.3) 100%)',
+          }}
+        />
+      </div>
+
       {/* TOP RIGHT: Theme and Locale toggles */}
       <div className="absolute top-4 right-4 z-30 hidden md:flex items-center gap-3">
         <ThemeToggleSimple />
         <LocaleToggleSimple />
       </div>
-      
-      {/* LEFT PANEL: SPLATTER/DROPS DESIGN WITH ANIMATED GRADIENT */}
-      <aside 
-        className="hidden lg:flex relative flex-col justify-between w-1/2 p-16 select-none shadow-[20px_0_50px_rgba(0,0,0,0.3)] z-20 overflow-hidden"
-      >
-        
-        {/* Animated gradient background */}
-        <div className="absolute inset-0 -z-10 overflow-hidden">
-          {/* Base gradient - theme aware with dramatic tone differences */}
-          <div 
-            className="absolute inset-0 transition-all duration-700 animate-gradient-flow"
-            style={{
-              backgroundImage: resolvedTheme === 'dark' 
-                ? 'linear-gradient(135deg, #020617, #0f172a, #1e1b4b, #312e81, #1e1b4b, #0f172a, #020617)'
-                : 'linear-gradient(135deg, #dbeafe, #bfdbfe, #93c5fd, #60a5fa, #93c5fd, #bfdbfe, #dbeafe)',
-              backgroundSize: '600% 600%',
-            }}
-          />
-          
-          {/* Theme-aware lava shapes */}
-          <div 
-            className="absolute -top-20 -left-20 w-[500px] h-[500px] transition-all duration-700"
-            style={{
-              background: resolvedTheme === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(147, 197, 253, 0.5)',
-              borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%',
-              filter: 'blur(80px)',
-              animation: 'lava-morph-1 12s ease-in-out infinite',
-            }}
-          />
-          
-          <div 
-            className="absolute top-1/4 -right-20 w-[400px] h-[400px] transition-all duration-700"
-            style={{
-              background: resolvedTheme === 'dark' ? 'rgba(79, 70, 229, 0.25)' : 'rgba(191, 219, 254, 0.45)',
-              borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
-              filter: 'blur(70px)',
-              animation: 'lava-morph-2 14s ease-in-out infinite',
-            }}
-          />
-          
-          <div 
-            className="absolute bottom-0 left-1/4 w-[450px] h-[450px] transition-all duration-700"
-            style={{
-              background: resolvedTheme === 'dark' ? 'rgba(67, 56, 202, 0.3)' : 'rgba(96, 165, 250, 0.5)',
-              borderRadius: '70% 30% 50% 50% / 30% 50% 50% 70%',
-              filter: 'blur(90px)',
-              animation: 'lava-morph-3 16s ease-in-out infinite',
-            }}
-          />
-          
-          <div 
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] transition-all duration-700"
-            style={{
-              background: resolvedTheme === 'dark' ? 'rgba(55, 48, 163, 0.2)' : 'rgba(59, 130, 246, 0.4)',
-              borderRadius: '50% 60% 40% 50% / 40% 50% 60% 50%',
-              filter: 'blur(100px)',
-              animation: 'lava-morph-4 18s ease-in-out infinite',
-            }}
-          />
-          
-          <div 
-            className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] transition-all duration-700"
-            style={{
-              background: resolvedTheme === 'dark' ? 'rgba(30, 27, 75, 0.35)' : 'rgba(37, 99, 235, 0.45)',
-              borderRadius: '40% 50% 60% 40% / 50% 40% 50% 60%',
-              filter: 'blur(60px)',
-              animation: 'lava-morph-5 13s ease-in-out infinite',
-            }}
-          />
-          
-          <div 
-            className="absolute top-1/3 right-1/3 w-[250px] h-[250px] transition-all duration-700"
-            style={{
-              background: resolvedTheme === 'dark' ? 'rgba(49, 46, 129, 0.3)' : 'rgba(29, 78, 216, 0.4)',
-              borderRadius: '60% 30% 40% 60% / 30% 60% 50% 40%',
-              filter: 'blur(50px)',
-              animation: 'lava-morph-6 11s ease-in-out infinite',
-            }}
-          />
-          
-          <div 
-            className="absolute bottom-1/3 left-10 w-[280px] h-[280px] transition-all duration-700"
-            style={{
-              background: resolvedTheme === 'dark' ? 'rgba(15, 23, 42, 0.4)' : 'rgba(147, 197, 253, 0.6)',
-              borderRadius: '30% 60% 70% 40% / 60% 40% 30% 60%',
-              filter: 'blur(65px)',
-              animation: 'lava-morph-7 17s ease-in-out infinite',
-            }}
-          />
-          
-          {/* Overlay */}
-          <div 
-            className="absolute inset-0 transition-all duration-700"
-            style={{
-              background: resolvedTheme === 'dark' ? 'rgba(2,6,23,0.1)' : 'rgba(255,255,255,0.15)',
-              backdropFilter: 'blur(1px)',
-            }} 
-          />
-        </div>
 
-        {/* Top Section - Logo Only */}
-        <div className="relative z-30">
-          <Logo variant={logoVariant} className="text-3xl" />
-        </div>
-
-        {/* Center Section - Ultra Premium Design */}
-        <div className="relative z-30 flex flex-col items-start justify-center flex-1">
-          {/* Decorative line */}
-          <div className="w-20 h-0.5 bg-gradient-to-r from-white/60 to-transparent mb-8" />
-          
-          {/* Main tagline */}
-          <div className="space-y-2">
-            <p className={`text-sm font-medium tracking-[0.3em] uppercase ${resolvedTheme === 'dark' ? 'text-white/50' : 'text-slate-500'}`}>
-              {t("auth.welcomeTo")}
-            </p>
-            <h2 className={`text-4xl xl:text-5xl font-black leading-tight tracking-tight ${resolvedTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-              {t("auth.parking")}
-              <span className={`block ${resolvedTheme === 'dark' ? 'text-white/80' : 'text-slate-700'}`}>
-                {t("auth.reimagined")}
-              </span>
-            </h2>
-          </div>
-          
-          {/* Description */}
-          <p className={`mt-6 text-base font-light max-w-xs leading-relaxed ${resolvedTheme === 'dark' ? 'text-white/60' : 'text-slate-600'}`}>
-            {t("auth.premiumDescription")}
-          </p>
-          
-          {/* Feature pills */}
-          <div className="flex flex-wrap gap-3 mt-8">
-            <span className={`px-4 py-2 rounded-full text-xs font-medium tracking-wide ${resolvedTheme === 'dark' ? 'bg-white/10 text-white/80 border border-white/20' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
-              {t("auth.smartParking")}
-            </span>
-            <span className={`px-4 py-2 rounded-full text-xs font-medium tracking-wide ${resolvedTheme === 'dark' ? 'bg-white/10 text-white/80 border border-white/20' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
-              {t("auth.realTime")}
-            </span>
-          </div>
-        </div>
-        
-        {/* Bottom stats - Ultra minimal */}
-        <div className="relative z-30 mt-auto">
-          <div className="flex items-center gap-8">
-            <div>
-              <p className={`text-3xl font-black ${resolvedTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>10K+</p>
-              <p className={`text-xs uppercase tracking-wider ${resolvedTheme === 'dark' ? 'text-white/50' : 'text-slate-500'}`}>{t("auth.users")}</p>
-            </div>
-            <div className={`w-px h-10 ${resolvedTheme === 'dark' ? 'bg-white/20' : 'bg-slate-300'}`} />
-            <div>
-              <p className={`text-3xl font-black ${resolvedTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>50+</p>
-              <p className={`text-xs uppercase tracking-wider ${resolvedTheme === 'dark' ? 'text-white/50' : 'text-slate-500'}`}>{t("auth.cities")}</p>
-            </div>
-          </div>
-        </div>
-
-      </aside>
-
-      {/* RIGHT PANEL: CLEAN FORM */}
-      <main className="flex-1 flex flex-col items-center justify-center bg-page px-8 py-12 relative z-10">
-        <div className="w-full max-w-[420px]">
+      {/* MAIN: Centered Form with Logo */}
+      <main className="w-full max-w-[480px] relative z-10">
+        {/* Premium Glass Card Container */}
+        <div className="bg-white/90 dark:bg-slate-900/70 backdrop-blur-2xl rounded-3xl border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-8 md:p-10">
+          {/* Logo and Title */}
           <div className="flex flex-col items-center mb-10">
-            <div className="lg:hidden mb-8 text-center">
-              <Logo variant={logoVariant} className="text-4xl inline-block" />
-            </div>
-            <h1 className="text-3xl font-bold text-text-primary mb-2">{t("auth.completeProfile")}</h1>
-            <p className="mt-4 text-sm text-text-muted text-center">
+            <Logo variant={logoVariant} className="text-5xl mb-5" />
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">{t("auth.completeProfile")}</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 text-center max-w-[280px]">
               {t("auth.completeProfileDescription")}
             </p>
           </div>
@@ -357,7 +319,7 @@ function RegisterForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-muted hover:text-text-secondary transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
                   aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
                 >
                   {showPassword ? (
@@ -367,33 +329,29 @@ function RegisterForm() {
                   )}
                 </button>
               </div>
-              
+
               {/* Password Requirements */}
               {password && (
-                <div className="mt-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 space-y-2">
-                  <p className="text-xs font-medium text-text-secondary mb-2">
+                <div className="mt-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 space-y-2">
+                  <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
                     {t("auth.passwordRequirements")}
                   </p>
                   <div className="space-y-1.5">
-                    <PasswordRequirement 
-                      label={t("auth.passwordReqMinLength")} 
-                      met={req.minLength} 
+                    <PasswordRequirement
+                      label={t("auth.passwordReqMinLength")}
+                      met={req.minLength}
                     />
-                    <PasswordRequirement 
-                      label={t("auth.passwordReqUppercase")} 
-                      met={req.hasUppercase} 
+                    <PasswordRequirement
+                      label={t("auth.passwordReqUppercase")}
+                      met={req.hasUppercase}
                     />
-                    <PasswordRequirement 
-                      label={t("auth.passwordReqLowercase")} 
-                      met={req.hasLowercase} 
+                    <PasswordRequirement
+                      label={t("auth.passwordReqLowercase")}
+                      met={req.hasLowercase}
                     />
-                    <PasswordRequirement 
-                      label={t("auth.passwordReqNumber")} 
-                      met={req.hasNumber} 
-                    />
-                    <PasswordRequirement 
-                      label={t("auth.passwordReqSpecial")} 
-                      met={req.hasSpecialChar} 
+                    <PasswordRequirement
+                      label={t("auth.passwordReqNumber")}
+                      met={req.hasNumber}
                     />
                   </div>
                 </div>
@@ -424,7 +382,7 @@ function RegisterForm() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 rounded-lg bg-company-primary py-3 text-sm font-medium text-white hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-all"
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:pointer-events-none transition-all"
             >
               {isSubmitting ? (
                 <LoadingSpinner size="sm" variant="white" />
@@ -437,27 +395,42 @@ function RegisterForm() {
             </button>
           </form>
 
-          <div className="mt-8 pt-6 text-center">
-            <p className="text-sm text-text-muted">
+          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 text-center">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               {t("auth.alreadyHaveAccount")}{" "}
-              <Link href="/login" className="font-medium text-company-primary hover:text-company-primary hover:underline transition-colors">
+              <Link href="/login" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 underline-offset-2 hover:underline transition-colors">
                 {t("auth.signIn")}
               </Link>
             </p>
           </div>
         </div>
 
-        <footer className="absolute bottom-0 left-0 right-0 py-4 text-center">
-          <p className="text-xs text-text-muted">
-            {t("auth.supportHint")}{" "}
-            <a
-              href="mailto:soporte@parkit.app"
-              className="font-medium text-company-primary hover:text-company-primary underline-offset-2 hover:underline transition-colors"
-            >
-              {t("auth.supportLinkLabel")}
-            </a>
-          </p>
-        </footer>
+        {/* Bottom section - Fixed at bottom */}
+        <div className="fixed bottom-0 left-0 right-0 py-4 px-4 text-center z-20">
+          <div className="max-w-[480px] mx-auto space-y-2">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              {t("auth.supportHint")}{" "}
+              <a href="mailto:soporte@parkit.app" className="font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
+                {t("auth.supportLinkLabel")}
+              </a>
+            </p>
+
+            {/* Contenedor ajustado para forzar una sola fila */}
+            <div className="flex items-center justify-center gap-2 sm:gap-3 text-[10px] text-slate-500 dark:text-slate-400 flex-nowrap whitespace-nowrap overflow-hidden">
+              <span>© {new Date().getFullYear()} Parkit. {t("privacy.footerRights")}</span>
+
+              <span className="shrink-0 w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
+              <Link href="/terms" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+                {t("privacy.footerTerms")}
+              </Link>
+
+              <span className="shrink-0 w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
+              <Link href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+                {t("privacy.footerPrivacy")}
+              </Link>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   );
