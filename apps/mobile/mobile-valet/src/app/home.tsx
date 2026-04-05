@@ -369,15 +369,6 @@ export default function HomeScreen() {
               </View>
               <View style={styles.gridRowFill}>
                 <GridTile
-                  variant="booking"
-                  icon="calendar-outline"
-                  title={t(locale, "home.actionReservation")}
-                  sub={t(locale, "home.actionReservationSub")}
-                  onPress={() => router.push("/receive?flow=reservation")}
-                  styles={styles}
-                  isDark={theme.isDark}
-                />
-                <GridTile
                   variant="workflow"
                   icon="git-branch-outline"
                   title={t(locale, "home.actionWorkflow")}
@@ -386,8 +377,6 @@ export default function HomeScreen() {
                   styles={styles}
                   isDark={theme.isDark}
                 />
-              </View>
-              <View style={styles.gridRowFill}>
                 <GridTile
                   variant="profile"
                   icon="person-circle-outline"
@@ -397,6 +386,8 @@ export default function HomeScreen() {
                   styles={styles}
                   isDark={theme.isDark}
                 />
+              </View>
+              <View style={styles.gridRowFill}>
                 <GridTile
                   variant="settings"
                   icon="settings-outline"
@@ -406,6 +397,7 @@ export default function HomeScreen() {
                   styles={styles}
                   isDark={theme.isDark}
                 />
+                <View style={[styles.tile, styles.tileGhost]} pointerEvents="none" />
               </View>
             </>
           )}

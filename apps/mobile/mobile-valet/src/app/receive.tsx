@@ -124,7 +124,7 @@ export default function ReceiveScreen() {
     year: string;
   } | null>(null);
 
-  const [receptionType, setReceptionType] = useState<"CARD" | "DIRECT" | null>(null);
+  const [receptionType, setReceptionType] = useState<"CARD" | "DIRECT" | "RESERVATION" | null>(null);
 
   const [bookingCode, setBookingCode] = useState("");
   const [bookingCheck, setBookingCheck] = useState<BookingLookup | null | "invalid">(null);
@@ -1148,6 +1148,8 @@ export default function ReceiveScreen() {
           onPress={() => {
             if (receptionType === "CARD") {
               setWizardStep(cardStepNum);
+            } else if (receptionType === "RESERVATION") {
+              router.replace("/receive?flow=reservation");
             } else {
               setWizardStep(plateStepNum);
             }
@@ -1686,6 +1688,27 @@ export default function ReceiveScreen() {
                   </View>
                   <Text style={styles.typeCardTitle}>{t(locale, "receive.typeCardTitle")}</Text>
                   <Text style={styles.typeCardBody}>{t(locale, "receive.typeCardBody")}</Text>
+                </Pressable>
+
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.typeCard,
+                    receptionType === "RESERVATION" && styles.typeCardSelected,
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => setReceptionType("RESERVATION")}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: receptionType === "RESERVATION" }}
+                >
+                  <View style={[styles.typeCardIcon, receptionType === "RESERVATION" && styles.typeCardIconActive]}>
+                    <Ionicons
+                      name="calendar-outline"
+                      size={28}
+                      color={receptionType === "RESERVATION" ? "#fff" : theme.isDark ? "#A78BFA" : "#7C3AED"}
+                    />
+                  </View>
+                  <Text style={styles.typeCardTitle}>{t(locale, "receive.typeReservationTitle")}</Text>
+                  <Text style={styles.typeCardBody}>{t(locale, "receive.typeReservationBody")}</Text>
                 </Pressable>
 
                 <Pressable

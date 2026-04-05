@@ -100,6 +100,11 @@ export function CardVerification({
     void startVerification();
   }, [startVerification]);
 
+  const handleScannerCancel = useCallback(() => {
+    setShowScanner(false);
+    onCancel();
+  }, [onCancel]);
+
   const scanGradient = isDark
     ? (['#10B981', '#059669'] as [string, string])
     : (['#059669', '#047857'] as [string, string]);
@@ -112,7 +117,7 @@ export function CardVerification({
             locale={locale}
             isDark={isDark}
             onCardScanned={handleCardScanned}
-            onCancel={() => setShowScanner(false)}
+            onCancel={handleScannerCancel}
             colors={{
               primary: C.primary,
               text: C.text,

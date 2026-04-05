@@ -6,8 +6,6 @@ import {
   Pressable,
   ActivityIndicator,
   useWindowDimensions,
-  Animated,
-  Easing,
   Platform,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -17,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@parkit/shared';
+import { StickyFormFooter } from '@/components/StickyFormFooter';
 import { ValetBackButton } from '@/components/ValetBackButton';
 
 interface CardScannerProps {
@@ -48,11 +47,6 @@ interface CardScannerProps {
   };
 }
 
-const CORNER_LEN = 28;
-const CORNER_THICK = 3;
-const ACCENT_GLOW = 'rgba(56, 189, 248, 0.95)';
-const ACCENT_SOFT = 'rgba(56, 189, 248, 0.35)';
-
 export function CardScanner({
   locale,
   isDark,
@@ -67,64 +61,12 @@ export function CardScanner({
   const safeInsets = useSafeAreaInsets();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanning, setScanning] = useState(false);
+  const [scannedCardData, setScannedCardData] = useState<{ number: string; expiryMonth: string; expiryYear: string } | null>(null);
   const [guideText, setGuideText] = useState(t(locale, 'receive.scanCardGuide'));
   const cameraRef = useRef<CameraView>(null);
 
-  const scanLineAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const lineLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(scanLineAnim, {
-          toValue: 1,
-          duration: 2400,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(scanLineAnim, {
-          toValue: 0,
-          duration: 0,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    lineLoop.start();
-    return () => lineLoop.stop();
-  }, [scanLineAnim]);
-
-  useEffect(() => {
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1600,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 0,
-          duration: 1600,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulse.start();
-    return () => pulse.stop();
-  }, [pulseAnim]);
-
-  const cardWidth = Math.min(winW * 0.85, 320);
+  const cardWidth = Math.min(winW * 0.92, 360);
   const cardHeight = cardWidth * 0.63;
-  const mask = 'rgba(2, 6, 23, 0.72)';
-  const lineTranslate = scanLineAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [8, cardHeight - 16],
-  });
-  const cornerOpacity = pulseAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.75, 1],
-  });
 
   const styles = StyleSheet.create({
     container: {
@@ -133,82 +75,6 @@ export function CardScanner({
     },
     camera: {
       ...StyleSheet.absoluteFillObject,
-    },
-    maskColumn: {
-      ...StyleSheet.absoluteFillObject,
-      justifyContent: 'center',
-    },
-    maskBand: {
-      flex: 1,
-    },
-    maskSide: {
-      flex: 1,
-    },
-    frameLayer: {
-      ...StyleSheet.absoluteFillObject,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    frameBox: {
-      position: 'relative',
-      width: cardWidth,
-      height: cardHeight,
-      borderRadius: 16,
-    },
-    frameHairline: {
-      ...StyleSheet.absoluteFillObject,
-      borderRadius: 16,
-      borderWidth: 1,
-      borderColor: ACCENT_GLOW,
-      opacity: 0.45,
-    },
-    scanLine: {
-      position: 'absolute',
-      left: 12,
-      right: 12,
-      height: 2,
-      top: 0,
-      overflow: 'hidden',
-    },
-    cornerTL: {
-      position: 'absolute',
-      top: -2,
-      left: -2,
-      width: CORNER_LEN,
-      height: CORNER_LEN,
-      borderTopWidth: CORNER_THICK,
-      borderLeftWidth: CORNER_THICK,
-      borderColor: ACCENT_GLOW,
-    },
-    cornerTR: {
-      position: 'absolute',
-      top: -2,
-      right: -2,
-      width: CORNER_LEN,
-      height: CORNER_LEN,
-      borderTopWidth: CORNER_THICK,
-      borderRightWidth: CORNER_THICK,
-      borderColor: ACCENT_GLOW,
-    },
-    cornerBL: {
-      position: 'absolute',
-      bottom: -2,
-      left: -2,
-      width: CORNER_LEN,
-      height: CORNER_LEN,
-      borderBottomWidth: CORNER_THICK,
-      borderLeftWidth: CORNER_THICK,
-      borderColor: ACCENT_GLOW,
-    },
-    cornerBR: {
-      position: 'absolute',
-      bottom: -2,
-      right: -2,
-      width: CORNER_LEN,
-      height: CORNER_LEN,
-      borderBottomWidth: CORNER_THICK,
-      borderRightWidth: CORNER_THICK,
-      borderColor: ACCENT_GLOW,
     },
     screenHeader: {
       flexDirection: 'row',
@@ -227,25 +93,120 @@ export function CardScanner({
       flex: 1,
       textAlign: 'center',
     },
-    backBtn: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
-      backgroundColor: isDark ? 'rgba(248, 250, 252, 0.12)' : 'rgba(15, 23, 42, 0.07)',
-      borderWidth: 2,
-      borderColor: C.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
     cameraArea: {
       flex: 1,
       backgroundColor: '#020617',
     },
-    guideTextTop: {
+    headerOverlay: {
       position: 'absolute',
-      top: S.lg,
+      top: 0,
+      left: 0,
+      right: 0,
+      paddingTop: S.lg,
+      paddingBottom: S.md,
+      paddingHorizontal: S.lg,
+      zIndex: 10,
+    },
+    headerGradient: {
+      ...StyleSheet.absoluteFillObject,
+    },
+    headerTitle: {
+      fontSize: 26,
+      fontWeight: '800',
+      color: '#F8FAFC',
+      letterSpacing: -0.5,
+    },
+    headerSubtitle: {
+      marginTop: S.sm,
+      fontSize: F.secondary,
+      lineHeight: 22,
+      color: 'rgba(248, 250, 252, 0.72)',
+      maxWidth: 320,
+    },
+    scannerContainer: {
+      position: 'absolute',
+      top: '50%',
+      left: 0,
+      right: 0,
+      alignItems: 'center',
+      transform: [{ translateY: -(cardHeight / 2) }],
+    },
+    cardFrame: {
+      width: cardWidth,
+      height: cardHeight,
+      borderRadius: 16,
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      borderColor: 'rgba(255, 255, 255, 0.4)',
+    },
+    fakeCardContainer: {
+      position: 'absolute',
+      top: '50%',
+      left: 0,
+      right: 0,
+      alignItems: 'center',
+      marginTop: cardHeight * 0.6,
+    },
+    fakeCard: {
+      width: cardWidth,
+      height: cardHeight,
+      borderRadius: 16,
+      backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
+      padding: 20,
+      justifyContent: 'space-between',
+      ...Platform.select({
+        ios: {
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+        },
+        android: { elevation: 6 },
+      }),
+    },
+    fakeCardChip: {
+      width: 48,
+      height: 36,
+      borderRadius: 6,
+      backgroundColor: isDark ? '#FCD34D' : '#D97706',
+      opacity: 0.8,
+    },
+    fakeCardNumber: {
+      fontSize: 18,
+      fontWeight: '600',
+      letterSpacing: 2,
+      color: isDark ? '#94A3B8' : '#64748B',
+    },
+    fakeCardNumberScanned: {
+      color: '#F8FAFC',
+    },
+    fakeCardRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-end',
+    },
+    fakeCardLabel: {
+      fontSize: 10,
+      color: isDark ? '#64748B' : '#94A3B8',
+      textTransform: 'uppercase',
+      marginBottom: 4,
+    },
+    fakeCardValue: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: isDark ? '#94A3B8' : '#64748B',
+    },
+    fakeCardValueScanned: {
+      color: '#F8FAFC',
+    },
+    guideTextContainer: {
+      position: 'absolute',
+      top: '58%',
       left: S.lg,
       right: S.lg,
+      alignItems: 'center',
+    },
+    guideText: {
       fontSize: F.secondary,
       lineHeight: 22,
       color: 'rgba(248, 250, 252, 0.85)',
@@ -258,21 +219,21 @@ export function CardScanner({
       marginLeft: -25,
       marginTop: -25,
     },
-    footerContainer: {
-      paddingHorizontal: S.lg,
-      paddingTop: S.md,
-      paddingBottom: Math.max(safeInsets.bottom, 20),
-      backgroundColor: C.card,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: C.border,
+    footerRow: {
+      flexDirection: 'row',
+    },
+    footerPrimaryBtn: {
+      flex: 1,
     },
     primaryBtn: {
+      position: 'relative',
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: C.primary,
       borderRadius: 14,
-      paddingVertical: S.md,
+      height: 60,
+      flex: 1,
+      overflow: 'hidden',
       ...Platform.select({
         ios: {
           shadowColor: C.primary,
@@ -282,6 +243,9 @@ export function CardScanner({
         },
         android: { elevation: 3 },
       }),
+    },
+    primaryBtnDisabled: {
+      opacity: 0.55,
     },
     primaryBtnText: {
       color: '#fff',
@@ -337,13 +301,44 @@ export function CardScanner({
     },
   });
 
-  const extractCardData = useCallback((text: string) => {
-    // Extract card number (16 digits with or without spaces)
-    const cardNumberMatch = text.match(/(\d{4}\s?){4}/);
-    const number = cardNumberMatch ? cardNumberMatch[0].replace(/\s/g, '') : '';
+  const formatCardNumber = (num: string) => {
+    return num.replace(/(\d{4})/g, '$1 ').trim();
+  };
 
-    // Extract expiry date (MM/YY or MM/YYYY)
-    const expiryMatch = text.match(/(\d{2})\s*[/-]\s*(\d{2,4})/);
+  const extractCardData = useCallback((text: string) => {
+    // Log para debuggear
+    console.log('OCR Text:', text);
+    
+    // Extract card number - buscar 15-19 dígitos consecutivos
+    // Limpiar todo excepto dígitos
+    const digitsOnly = text.replace(/\D/g, '');
+    console.log('Digits only:', digitsOnly);
+    
+    let number = '';
+    
+    // Buscar cualquier secuencia de 15-19 dígitos en los dígitos consecutivos
+    const cardPattern = /(\d{15,19})/g;
+    const matches = digitsOnly.match(cardPattern);
+    
+    if (matches) {
+      // Preferir el que tenga 16 dígitos, o el más largo
+      const sixteen = matches.find(m => m.length === 16);
+      number = sixteen || matches.reduce((a, b) => a.length >= b.length ? a : b, '');
+    }
+    
+    // Si no encontramos, buscar en el texto original por grupos de 4
+    if (!number) {
+      const groupPattern = /(\d{4})\s*(\d{4})\s*(\d{4})\s*(\d{4})/;
+      const groupMatch = text.match(groupPattern);
+      if (groupMatch) {
+        number = groupMatch.slice(1).join('');
+      }
+    }
+    
+    console.log('Extracted number:', number, 'length:', number.length);
+
+    // Extract expiry date (MM/YY o MM-YY)
+    const expiryMatch = text.match(/(0[1-9]|1[0-2])\s*[/-]\s*(\d{2,4})/);
     let expiryMonth = '';
     let expiryYear = '';
     if (expiryMatch) {
@@ -355,15 +350,15 @@ export function CardScanner({
     return { number, expiryMonth, expiryYear };
   }, []);
 
-  const handleScan = useCallback(async () => {
-    if (!cameraRef.current || scanning) return;
+  const handleScan = useCallback(async (quality: number = 0.8) => {
+    if (!cameraRef.current || scanning) return null;
 
     setScanning(true);
     setGuideText(t(locale, 'receive.scanningCard'));
 
     try {
       const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.8,
+        quality,
         base64: true,
       });
 
@@ -373,30 +368,52 @@ export function CardScanner({
 
         const cardData = extractCardData(fullText);
 
-        if (cardData.number.length === 16) {
-          onCardScanned(cardData);
+        if (cardData.number.length >= 15 && cardData.number.length <= 19) {
+          setScannedCardData(cardData);
+          setGuideText(t(locale, 'receive.cardScannedSuccess'));
+          return cardData;
         } else {
+          console.log('Card rejected, length:', cardData.number.length);
           setGuideText(t(locale, 'receive.scanCardRetry'));
+          return null;
         }
       }
     } catch (error) {
       setGuideText(t(locale, 'receive.scanCardError'));
+      return null;
     } finally {
       setScanning(false);
     }
-  }, [cameraRef, scanning, extractCardData, onCardScanned, locale]);
+  }, [cameraRef, scanning, extractCardData, locale]);
+
+  const handleVerify = useCallback(() => {
+    if (scannedCardData) {
+      onCardScanned(scannedCardData);
+    }
+  }, [scannedCardData, onCardScanned]);
+
+  // Auto-scan effect: escanea automáticamente cada 2 segundos
+  useEffect(() => {
+    if (!permission?.granted || scanning || scannedCardData) return;
+    
+    const interval = setInterval(() => {
+      void handleScan();
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, [permission?.granted, scanning, scannedCardData, handleScan]);
 
   if (!permission?.granted) {
     return (
       <View style={styles.permissionContainer}>
         <View style={styles.permissionIconWrap}>
           <LinearGradient
-            colors={[ACCENT_SOFT, 'rgba(59, 130, 246, 0.15)']}
+            colors={['rgba(59, 130, 246, 0.35)', 'rgba(59, 130, 246, 0.15)']}
             style={StyleSheet.absoluteFill}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           />
-          <Ionicons name="camera-outline" size={36} color={ACCENT_GLOW} />
+          <Ionicons name="camera-outline" size={36} color={C.primary} />
         </View>
         <Text style={styles.permissionTitle}>
           {t(locale, 'receive.cameraPermissionNeeded')}
@@ -409,7 +426,7 @@ export function CardScanner({
           onPress={requestPermission}
         >
           <LinearGradient
-            colors={['#38BDF8', '#3B82F6']}
+            colors={[C.primary, C.primary]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={StyleSheet.absoluteFill}
@@ -450,67 +467,90 @@ export function CardScanner({
           pointerEvents="none"
         />
 
-        <Text style={styles.guideTextTop} pointerEvents="none">
-          {guideText}
-        </Text>
-
-        <View style={styles.maskColumn} pointerEvents="none">
-          <View style={[styles.maskBand, { backgroundColor: mask }]} />
-          <View style={{ flexDirection: 'row', height: cardHeight }}>
-            <View style={[styles.maskSide, { backgroundColor: mask }]} />
-            <View style={{ width: cardWidth }} />
-            <View style={[styles.maskSide, { backgroundColor: mask }]} />
-          </View>
-          <View style={[styles.maskBand, { backgroundColor: mask }]} />
+        {/* Header con título y subtítulo */}
+        <View style={styles.headerOverlay} pointerEvents="none">
+          <LinearGradient
+            colors={['rgba(2,6,23,0.92)', 'rgba(2,6,23,0)']}
+            style={styles.headerGradient}
+            pointerEvents="none"
+          />
+          <Text style={styles.headerTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>
+            {t(locale, 'receive.cardScannerTitle')}
+          </Text>
+          <Text style={styles.headerSubtitle} numberOfLines={2}>
+            {t(locale, 'receive.cardScannerSubtitle')}
+          </Text>
         </View>
 
-        <View style={styles.frameLayer} pointerEvents="none">
-          <View style={styles.frameBox}>
-            <Animated.View style={[styles.cornerTL, { opacity: cornerOpacity }]} />
-            <Animated.View style={[styles.cornerTR, { opacity: cornerOpacity }]} />
-            <Animated.View style={[styles.cornerBL, { opacity: cornerOpacity }]} />
-            <Animated.View style={[styles.cornerBR, { opacity: cornerOpacity }]} />
-
-            <View style={styles.frameHairline} />
-
-            {!scanning && (
-              <Animated.View
-                style={[
-                  styles.scanLine,
-                  {
-                    transform: [{ translateY: lineTranslate }],
-                  },
-                ]}
-              >
-                <LinearGradient
-                  colors={['transparent', 'rgba(56, 189, 248, 0.9)', 'transparent']}
-                  start={{ x: 0.5, y: 0 }}
-                  end={{ x: 0.5, y: 1 }}
-                  style={StyleSheet.absoluteFill}
-                />
-              </Animated.View>
-            )}
-          </View>
+        {/* Scanner frame - solo silueta de tarjeta */}
+        <View style={styles.scannerContainer} pointerEvents="none">
+          <View style={styles.cardFrame} />
         </View>
+
+        {/* Fake card preview - solo aparece después de escanear */}
+        {scannedCardData && (
+          <View style={styles.fakeCardContainer} pointerEvents="none">
+            <View style={styles.fakeCard}>
+              <View style={styles.fakeCardChip} />
+              <Text style={[styles.fakeCardNumber, styles.fakeCardNumberScanned]}>
+                {formatCardNumber(scannedCardData.number)}
+              </Text>
+              <View style={styles.fakeCardRow}>
+                <View>
+                  <Text style={styles.fakeCardLabel}>Titular</Text>
+                  <Text style={[styles.fakeCardValue, styles.fakeCardValueScanned]}>
+                    NOMBRE APELLIDO
+                  </Text>
+                </View>
+                <View>
+                  <Text style={styles.fakeCardLabel}>Vence</Text>
+                  <Text style={[styles.fakeCardValue, styles.fakeCardValueScanned]}>
+                    {scannedCardData.expiryMonth}/{scannedCardData.expiryYear.slice(-2)}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
 
         {scanning && (
           <View style={styles.scanningIndicator}>
-            <ActivityIndicator size="large" color={ACCENT_GLOW} />
+            <ActivityIndicator size="large" color={C.primary} />
           </View>
         )}
+
+        <View style={styles.guideTextContainer} pointerEvents="none">
+          <Text style={styles.guideText}>
+            {guideText}
+          </Text>
+        </View>
       </View>
 
-      <View style={styles.footerContainer}>
-        <Pressable
-          style={({ pressed }) => [styles.primaryBtn, scanning && { opacity: 0.55 }, pressed && styles.pressed]}
-          onPress={handleScan}
-          disabled={scanning}
-        >
-          <Text style={styles.primaryBtnText}>
-            {t(locale, 'receive.verifyCardButton')}
-          </Text>
-        </Pressable>
-      </View>
+      <StickyFormFooter keyboardPinned>
+        <View style={styles.footerRow}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.primaryBtn,
+              styles.footerPrimaryBtn,
+              (!scannedCardData || scanning) && styles.primaryBtnDisabled,
+              pressed && styles.pressed,
+            ]}
+            onPress={handleVerify}
+            disabled={!scannedCardData || scanning}
+            accessibilityLabel={t(locale, 'receive.verifyCardButton')}
+          >
+            <LinearGradient
+              colors={[C.primary, C.primary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+            <Text style={styles.primaryBtnText}>
+              {t(locale, 'receive.verifyCardButton')}
+            </Text>
+          </Pressable>
+        </View>
+      </StickyFormFooter>
     </View>
   );
 }
