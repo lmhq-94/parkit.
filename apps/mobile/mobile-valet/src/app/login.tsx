@@ -34,10 +34,20 @@ import { useValetTheme, ACCENT } from "@/theme/valetTheme";
 import { getTranslatedApiErrorMessage } from "@/lib/apiErrors";
 import { Users, Car } from "lucide-react-native";
 import { STAFF_ROLES, type StaffRole } from "@/lib/staffRoles";
+import { 
+  initializeGoogleSignIn, 
+  signInWithGoogle, 
+  signInWithApple, 
+  signInWithMicrosoft,
+  type OAuthResponse 
+} from "@/lib/oauth";
 
 const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
 const LOGO_SIZE = 72;
 const CONTROL_HEIGHT = 56;
+
+// Check if OAuth is configured
+const isOAuthConfigured = !!process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -361,6 +371,55 @@ export default function LoginScreen() {
           marginTop: 2,
           lineHeight: 16,
         },
+        // OAuth Section Styles
+        oauthSection: {
+          marginTop: 24,
+          marginBottom: 16,
+        },
+        oauthDivider: {
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 16,
+        },
+        oauthDividerLine: {
+          flex: 1,
+          height: 1,
+          backgroundColor: a.inputBorder,
+        },
+        oauthDividerText: {
+          paddingHorizontal: 16,
+          fontSize: 12,
+          color: a.textMuted,
+          fontWeight: "600",
+        },
+        oauthButtonsRow: {
+          flexDirection: "row",
+          justifyContent: "center",
+          gap: 12,
+        },
+        oauthButton: {
+          width: 56,
+          height: 56,
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: a.inputBorder,
+          backgroundColor: a.inputBg,
+          alignItems: "center",
+          justifyContent: "center",
+          ...Platform.select({
+            ios: {
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+            },
+            android: { elevation: 1 },
+          }),
+        },
+        oauthButtonPressed: {
+          opacity: 0.8,
+          transform: [{ scale: 0.95 }],
+        },
       }),
     [a, heroMinHeight, horizontalPadding, sheetMaxWidth, isDark]
   );
@@ -377,6 +436,7 @@ export default function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [oauthLoading, setOAuthLoading] = useState<string | null>(null);
   const heroTranslateY = useRef(new Animated.Value(0)).current;
   const formTranslateY = useRef(new Animated.Value(22)).current;
   const formOpacity = useRef(new Animated.Value(0)).current;
@@ -386,6 +446,11 @@ export default function LoginScreen() {
     const next = raw === "signup" ? "signup" : "login";
     setMode(next);
   }, [params?.mode]);
+
+  useEffect(() => {
+    // Initialize Google Sign-In when component mounts
+    initializeGoogleSignIn();
+  }, []);
 
   useEffect(() => {
     formTranslateY.setValue(22);
@@ -507,6 +572,41 @@ export default function LoginScreen() {
       setError(getTranslatedApiErrorMessage(err, t, locale));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOAuthSignIn = async (provider: 'google' | 'apple' | 'microsoft') => {
+    setError(null);
+    setOAuthLoading(provider);
+    
+    try {
+      let result: OAuthResponse;
+      
+      switch (provider) {
+        case 'google':
+          result = await signInWithGoogle();
+          break;
+        case 'apple':
+          result = await signInWithApple();
+          break;
+        case 'microsoft':
+          result = await signInWithMicrosoft();
+          break;
+        default:
+          throw new Error('Unsupported provider');
+      }
+
+      if (result.success && result.user && result.token) {
+        await api.post("/valets/me/presence", { status: "AVAILABLE" }).catch(() => {});
+        setUser(result.user);
+        router.replace("/home");
+      } else {
+        setError(result.error || `${provider} sign-in failed`);
+      }
+    } catch (err: any) {
+      setError(err.message || `${provider} sign-in failed`);
+    } finally {
+      setOAuthLoading(null);
     }
   };
 
@@ -833,6 +933,72 @@ export default function LoginScreen() {
                   </Text>
                 )}
               </Pressable>
+
+              {/* OAuth Section - only shown when configured */}
+              {isOAuthConfigured && (
+              <View style={styles.oauthSection}>
+                <View style={styles.oauthDivider}>
+                  <View style={styles.oauthDividerLine} />
+                  <Text style={styles.oauthDividerText}>
+                    {t(locale, "auth.orContinueWith")}
+                  </Text>
+                  <View style={styles.oauthDividerLine} />
+                </View>
+                
+                <View style={styles.oauthButtonsRow}>
+                  <Pressable
+                    onPress={() => handleOAuthSignIn('google')}
+                    disabled={oauthLoading !== null}
+                    style={({ pressed }) => [
+                      styles.oauthButton,
+                      pressed && styles.oauthButtonPressed,
+                      oauthLoading === 'google' && styles.btnDisabled,
+                    ]}
+                    hitSlop={8}
+                  >
+                    {oauthLoading === 'google' ? (
+                      <ActivityIndicator size="small" color={a.text} />
+                    ) : (
+                      <Text style={{ fontSize: 20, color: a.text }}>G</Text>
+                    )}
+                  </Pressable>
+                  
+                  <Pressable
+                    onPress={() => handleOAuthSignIn('apple')}
+                    disabled={oauthLoading !== null || Platform.OS !== 'ios'}
+                    style={({ pressed }) => [
+                      styles.oauthButton,
+                      pressed && styles.oauthButtonPressed,
+                      (oauthLoading !== null || Platform.OS !== 'ios') && styles.btnDisabled,
+                    ]}
+                    hitSlop={8}
+                  >
+                    {oauthLoading === 'apple' ? (
+                      <ActivityIndicator size="small" color={a.text} />
+                    ) : (
+                      <Ionicons name="logo-apple" size={20} color={a.text} />
+                    )}
+                  </Pressable>
+                  
+                  <Pressable
+                    onPress={() => handleOAuthSignIn('microsoft')}
+                    disabled={oauthLoading !== null}
+                    style={({ pressed }) => [
+                      styles.oauthButton,
+                      pressed && styles.oauthButtonPressed,
+                      oauthLoading === 'microsoft' && styles.btnDisabled,
+                    ]}
+                    hitSlop={8}
+                  >
+                    {oauthLoading === 'microsoft' ? (
+                      <ActivityIndicator size="small" color={a.text} />
+                    ) : (
+                      <Text style={{ fontSize: 16, fontWeight: 'bold', color: a.text }}>M</Text>
+                    )}
+                  </Pressable>
+                </View>
+              </View>
+              )}
 
               <View
                 style={[
