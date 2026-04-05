@@ -554,7 +554,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
       "filterOoo", "contains", "equals", "notEqual", "startsWith", "endsWith",
       "lessThan", "greaterThan", "lessThanOrEqual", "greaterThanOrEqual",
       "inRange", "andCondition", "orCondition", "and", "or",
-      "applyFilter", "resetFilter", "clearFilter", "notContains",
+      "applyFilter", "resetFilter", "clearFilter", "notContains", "noRowsToShow",
       "firstPage", "lastPage", "nextPage", "previousPage",
     ] as const;
     const out: Record<string, string> = {};

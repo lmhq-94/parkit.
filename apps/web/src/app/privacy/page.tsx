@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
-import { ArrowLeft, Shield, Lock, Eye, Database, Trash2, UserCheck } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { ThemeToggleSimple } from "@/components/ThemeToggleSimple";
 import { LocaleToggleSimple } from "@/components/LocaleToggleSimple";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -12,6 +13,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 export default function PrivacyPage() {
   const { resolvedTheme } = useTheme();
   const { t, locale } = useTranslation();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -19,12 +21,6 @@ export default function PrivacyPage() {
   }, []);
 
   const isDark = mounted && resolvedTheme === 'dark';
-
-  const PrivacyIcon = ({ icon: Icon }: { icon: typeof Shield }) => (
-    <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center mb-4">
-      <Icon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-    </div>
-  );
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -51,10 +47,10 @@ export default function PrivacyPage() {
           <div className="bg-white/90 dark:bg-slate-900/70 backdrop-blur-2xl rounded-3xl border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-8 md:p-12">
             {/* Header */}
             <div className="mb-10 border-b border-slate-200 dark:border-slate-700 pb-8">
-              <Link href="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors mb-6">
+              <button onClick={() => router.back()} className="inline-flex items-center gap-2 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm font-medium transition-colors mb-6">
                 <ArrowLeft className="w-4 h-4" />
-                <span className="text-sm">{t("privacy.backToHome")}</span>
-              </Link>
+                {t("privacy.backToHome")}
+              </button>
               <Logo variant={isDark ? 'onDark' : 'default'} className="text-3xl mb-4" />
               <h1 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-white mb-2">{t("privacy.title")}</h1>
               <p className="text-slate-500 dark:text-slate-400 text-sm">{t("privacy.updatedAt")}: {new Date().toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
@@ -70,7 +66,6 @@ export default function PrivacyPage() {
             {/* Content */}
             <div className="space-y-8">
               <section>
-                <PrivacyIcon icon={Database} />
                 <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("privacy.section1Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm mb-3">
                   {t("privacy.section1Intro")}
@@ -116,7 +111,6 @@ export default function PrivacyPage() {
               </section>
 
               <section>
-                <PrivacyIcon icon={Eye} />
                 <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("privacy.section2Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm mb-3">
                   {t("privacy.section2Intro")}
@@ -133,7 +127,6 @@ export default function PrivacyPage() {
               </section>
 
               <section>
-                <PrivacyIcon icon={Lock} />
                 <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("privacy.section3Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm mb-3">
                   {t("privacy.section3Intro")}
@@ -149,7 +142,6 @@ export default function PrivacyPage() {
               </section>
 
               <section>
-                <PrivacyIcon icon={UserCheck} />
                 <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("privacy.section4Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm mb-3">
                   {t("privacy.section4Intro")}
@@ -187,7 +179,6 @@ export default function PrivacyPage() {
               </section>
 
               <section>
-                <PrivacyIcon icon={Trash2} />
                 <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("privacy.section5Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm">
                   {t("privacy.section5Content")}
@@ -195,7 +186,6 @@ export default function PrivacyPage() {
               </section>
 
               <section>
-                <PrivacyIcon icon={Shield} />
                 <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("privacy.section6Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm mb-3">
                   {t("privacy.section6Intro")}
@@ -228,19 +218,6 @@ export default function PrivacyPage() {
                 <ArrowLeft className="w-4 h-4" />
                 {t("privacy.backToHome")}
               </Link>
-            </div>
-          </div>
-
-          {/* Bottom Footer */}
-          <div className="fixed bottom-0 left-0 right-0 py-4 px-4 text-center z-20">
-            <div className="max-w-[480px] mx-auto">
-              <div className="flex items-center justify-center gap-3 text-[10px] text-slate-500 dark:text-slate-400">
-                <span>© {new Date().getFullYear()} Parkit. {t("privacy.footerRights")}</span>
-                <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
-                <Link href="/terms" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">{t("privacy.footerTerms")}</Link>
-                <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
-                <Link href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">{t("privacy.footerPrivacy")}</Link>
-              </div>
             </div>
           </div>
         </div>

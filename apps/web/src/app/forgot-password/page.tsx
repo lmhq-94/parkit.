@@ -126,19 +126,21 @@ export default function ForgotPasswordPage() {
               </a>
             </p>
 
-            {/* Contenedor ajustado para forzar una sola fila */}
-            <div className="flex items-center justify-center gap-2 sm:gap-3 text-[10px] text-slate-500 dark:text-slate-400 flex-nowrap whitespace-nowrap overflow-hidden">
+            <div className="flex flex-col items-center justify-center gap-2 text-[10px] text-slate-500 dark:text-slate-400">
+
               <span>© {new Date().getFullYear()} Parkit. {t("privacy.footerRights")}</span>
 
-              <span className="shrink-0 w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
-              <Link href="/terms" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
-                {t("privacy.footerTerms")}
-              </Link>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Link href="/terms" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+                  {t("privacy.footerTerms")}
+                </Link>
 
-              <span className="shrink-0 w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
-              <Link href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
-                {t("privacy.footerPrivacy")}
-              </Link>
+                <span className="shrink-0 w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
+
+                <Link href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+                  {t("privacy.footerPrivacy")}
+                </Link>
+              </div>
             </div>
           </div>
         </div>
