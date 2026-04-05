@@ -6,7 +6,6 @@ import {
   Pressable,
   Platform,
   ActivityIndicator,
-  Image,
   StatusBar,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -23,6 +22,7 @@ import { messageFromAxios } from "@/lib/apiErrors";
 import { createFeedback } from "@/lib/feedback";
 import { ValetBackButton } from "@/components/ValetBackButton";
 import { StickyFormFooter } from "@/components/StickyFormFooter";
+import { ValetChipAvatar } from "@/components/ValetChipAvatar";
 import {
   KeyboardAwareScrollView,
   KeyboardStickyView,
@@ -256,7 +256,6 @@ export default function ReturnPickupScreen() {
                         lastName={v.user.lastName}
                         avatarUrl={v.user.avatarUrl}
                         isDark={theme.isDark}
-                        styles={styles}
                       />
                       <Text style={[styles.chipText, delivererId === v.id && styles.chipTextOn]}>
                         {v.user.firstName} {v.user.lastName}
@@ -469,67 +468,4 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     backBtnText: { color: "#fff", fontWeight: "800" },
   });
-}
-
-function valetHash(id: string): number {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (Math.imul(31, h) + id.charCodeAt(i)) | 0;
-  return Math.abs(h);
-}
-
-function valetInitials(firstName: string, lastName: string): string {
-  const f = (firstName ?? "").trim();
-  const l = (lastName ?? "").trim();
-  const a = f.charAt(0);
-  const b = l.charAt(0);
-  const u = (c: string) => c.toLocaleUpperCase();
-  if (a && b) return u(a) + u(b);
-  if (f.length >= 2) return u(f.charAt(0)) + u(f.charAt(1));
-  if (a) return u(a);
-  return "?";
-}
-
-function valetAvatarColors(id: string, isDark: boolean): { bg: string; fg: string; border: string } {
-  const hue = valetHash(id) % 360;
-  if (isDark) {
-    return {
-      bg: `hsla(${hue}, 42%, 30%, 1)`,
-      fg: `hsla(${hue}, 40%, 97%, 1)`,
-      border: `hsla(${hue}, 55%, 48%, 0.5)`,
-    };
-  }
-  return {
-    bg: `hsla(${hue}, 52%, 93%, 1)`,
-    fg: `hsla(${hue}, 48%, 28%, 1)`,
-    border: `hsla(${hue}, 45%, 78%, 0.9)`,
-  };
-}
-
-function ValetChipAvatar({
-  id,
-  firstName,
-  lastName,
-  avatarUrl,
-  isDark,
-  styles,
-}: {
-  id: string;
-  firstName: string;
-  lastName: string;
-  avatarUrl?: string | null;
-  isDark: boolean;
-  styles: ReturnType<typeof createStyles>;
-}) {
-  const av = valetAvatarColors(id, isDark);
-  const initials = valetInitials(firstName, lastName);
-  const src = avatarUrl?.trim() || "";
-  return (
-    <View style={[styles.chipAvatar, { backgroundColor: av.bg, borderColor: av.border }]}>
-      {src ? (
-        <Image source={{ uri: src }} style={styles.chipAvatarImage} resizeMode="cover" />
-      ) : (
-        <Text style={[styles.chipAvatarText, { color: av.fg }]}>{initials}</Text>
-      )}
-    </View>
-  );
 }

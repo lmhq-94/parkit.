@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@parkit/shared';
+import { ValetBackButton } from '@/components/ValetBackButton';
 
 interface CardScannerProps {
   locale: Locale;
@@ -38,6 +39,7 @@ interface CardScannerProps {
     secondary: number;
     body: number;
     button: number;
+    title: number;
   };
   space: {
     sm: number;
@@ -217,10 +219,9 @@ export function CardScanner({
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: C.border,
       backgroundColor: C.card,
-      paddingTop: safeInsets.top + S.md,
     },
     screenTitle: {
-      fontSize: F.body,
+      fontSize: F.title - 2,
       fontWeight: '800',
       color: C.text,
       flex: 1,
@@ -236,10 +237,6 @@ export function CardScanner({
       alignItems: 'center',
       justifyContent: 'center',
     },
-    backBtnIcon: {
-      marginLeft: Platform.OS === 'ios' ? -3 : -2,
-    },
-    headerSpacer: { width: 44 },
     cameraArea: {
       flex: 1,
       backgroundColor: '#020617',
@@ -427,17 +424,15 @@ export function CardScanner({
 
   return (
     <View style={styles.container}>
-      <View style={styles.screenHeader}>
-        <Pressable
-          style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
+      <View style={[styles.screenHeader, { paddingTop: safeInsets.top + S.md }]}>
+        <ValetBackButton
           onPress={onCancel}
-        >
-          <Ionicons name="chevron-back" size={26} color={C.text} style={styles.backBtnIcon} />
-        </Pressable>
+          accessibilityLabel={t(locale, 'common.back')}
+        />
         <Text style={styles.screenTitle}>
           {t(locale, 'receive.wizardCardTitle')}
         </Text>
-        <View style={styles.headerSpacer} />
+        <View style={{ width: 44 }} />
       </View>
 
       <View style={styles.cameraArea}>

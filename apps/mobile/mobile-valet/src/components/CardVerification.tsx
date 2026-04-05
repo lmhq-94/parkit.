@@ -36,6 +36,7 @@ interface CardVerificationProps {
     secondary: number;
     body: number;
     button: number;
+    title: number;
   };
   space: {
     sm: number;
@@ -58,7 +59,7 @@ export function CardVerification({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showScanner, setShowScanner] = useState(true);
-  const [scanSuccess, setScanSuccess] = useState(false);
+  const [_scanSuccess, setScanSuccess] = useState(false);
 
   const startVerification = useCallback(async () => {
     setLoading(true);
@@ -119,7 +120,7 @@ export function CardVerification({
               card: C.card,
               border: C.border,
             }}
-            fonts={{ secondary: F.secondary, body: F.body, button: F.button }}
+            fonts={{ secondary: F.secondary, body: F.body, button: F.button, title: F.title }}
             space={{ sm: S.sm, md: S.md, lg: S.lg }}
           />
         </View>

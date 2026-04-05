@@ -25,7 +25,7 @@ import { ValetBackButton } from "@/components/ValetBackButton";
 import { StickyFormFooter } from "@/components/StickyFormFooter";
 import { ticketsA11y, useResponsiveLayout, useValetTheme } from "@/theme/valetTheme";
 
-const MAX_DAMAGE_PHOTOS = 8;
+import { MAX_DAMAGE_PHOTOS } from "@/lib/receiveUtils";
 
 type TicketDetail = {
   id: string;

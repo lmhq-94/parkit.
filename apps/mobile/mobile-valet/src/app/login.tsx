@@ -33,13 +33,11 @@ import { AuthHeroGradient } from "@/components/AuthHeroGradient";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
 import { getTranslatedApiErrorMessage } from "@/lib/apiErrors";
 import { Users, Car } from "lucide-react-native";
+import { STAFF_ROLES, type StaffRole } from "@/lib/staffRoles";
 
 const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
 const LOGO_SIZE = 72;
 const CONTROL_HEIGHT = 56;
-
-const STAFF_ROLES = ["RECEPTIONIST", "DRIVER"] as const;
-type StaffRole = (typeof STAFF_ROLES)[number];
 
 export default function LoginScreen() {
   const router = useRouter();

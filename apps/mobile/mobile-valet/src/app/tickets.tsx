@@ -28,87 +28,8 @@ import {
   ticketsA11y,
   useResponsiveLayout,
 } from "@/theme/valetTheme";
-/** Assignment from API GET /valets/me/assignments */
-interface ApiAssignment {
-  id: string;
-  ticketId: string;
-  valetId: string;
-  assignedAt: string;
-  ticket: {
-    id: string;
-    status: string;
-    companyId: string;
-    ticketCode?: string | null;
-    keyCode?: string | null;
-    entryTime?: string;
-    vehicle: {
-      plate: string;
-      countryCode?: string;
-      brand?: string | null;
-      model?: string | null;
-      color?: string | null;
-    };
-    parking: { name: string; address?: string };
-    slot?: { label: string } | null;
-  };
-}
-
-interface TicketAssignment {
-  id: string;
-  assignmentId: string;
-  ticketId: string;
-  valetId: string;
-  /** Estado real del ticket en backend. */
-  ticketStatus: string;
-  status: "assigned" | "in-transit" | "completed";
-  ticketCode?: string | null;
-  keyCode?: string | null;
-  vehiclePlate: string;
-  vehicleBrandModel: string;
-  vehicleColor: string | null;
-  parkingName: string;
-  createdAt: string;
-  location: string;
-  timestamp: string;
-  companyId: string;
-}
-
-function mapApiAssignmentToDisplay(a: ApiAssignment): TicketAssignment {
-  const status =
-    a.ticket.status === "DELIVERED"
-      ? "completed"
-      : a.ticket.status === "REQUEST_DELIVERY"
-        ? "assigned"
-        : "assigned";
-  const location =
-    [a.ticket.parking?.name, a.ticket.slot?.label].filter(Boolean).join(" · ") ||
-    a.ticket.parking?.address ||
-    "—";
-  const plate = a.ticket.vehicle?.plate ? `${a.ticket.vehicle.plate}` : "—";
-  const brand = a.ticket.vehicle?.brand?.trim() || "";
-  const model = a.ticket.vehicle?.model?.trim() || "";
-  const brandModel = [brand, model].filter(Boolean).join(" ").trim() || "—";
-  const color = a.ticket.vehicle?.color?.trim() || null;
-  const parkingName = a.ticket.parking?.name?.trim() || "—";
-  return {
-    id: a.ticket.id,
-    assignmentId: a.id,
-    ticketId: a.ticket.id,
-    valetId: a.valetId,
-    ticketStatus: a.ticket.status,
-    status,
-    ticketCode: a.ticket.ticketCode ?? null,
-    keyCode: a.ticket.keyCode ?? null,
-    vehiclePlate: plate,
-    vehicleBrandModel: brandModel,
-    vehicleColor: color,
-    parkingName,
-    createdAt: a.ticket.entryTime || a.assignedAt,
-    location,
-    timestamp: a.assignedAt,
-    companyId: a.ticket.companyId,
-  };
-}
+import { mapApiAssignmentToDisplay } from "@/lib/ticketUtils";
+import type { ApiAssignment, TicketAssignment } from "@/types/tickets";
 
 type Theme = ReturnType<typeof useValetTheme>;
 

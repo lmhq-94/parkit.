@@ -14,10 +14,9 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useMemo, useEffect, useState, useCallback, useRef, type ComponentType } from "react";
+import { useMemo, useEffect, useState, useCallback, useRef } from "react";
 import { SquareParking } from "lucide-react-native";
 import { Logo } from "@parkit/shared";
-import type { ValetOperationalStatus } from "@parkit/shared";
 import api, { clearAuthToken } from "@/lib/api";
 import { useAuthStore, useLocaleStore, useCompanyStore, useParkingPreferenceStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
@@ -27,37 +26,15 @@ import { useNearestParking, haversineKm } from "@/lib/useNearestParking";
 import { createFeedback } from "@/lib/feedback";
 import { useOnAppForeground } from "@/lib/useOnAppForeground";
 import { TICKETS_POLL_MS } from "@/lib/syncConstants";
+import {
+  parkitTilePalette,
+  avatarPresenceRingColor,
+  HEADER_RADIUS_BOTTOM,
+  HEADER_AVATAR_SIZE,
+  AVATAR_PRESENCE_RING,
+} from "@/lib/homeUtils";
+import { GridTile } from "@/components/GridTile";
 import { LinearGradient } from "expo-linear-gradient";
-
-/** Tonos por tile: modo claro (más profundos) vs oscuro (más vivos sobre fondo oscuro). */
-function parkitTilePalette(isDark: boolean) {
-  if (isDark) {
-    return {
-      receive: "#2563EB",
-      return: "#F97316",
-      reservation: "#2DD4BF",
-      queue: "#818CF8",
-      profile: "#C084FC",
-      settings: "#64748B",
-      workflow: "#06B6D4",
-    };
-  }
-  return {
-    receive: "#1D4ED8",
-    return: "#C2410C",
-    reservation: "#0D9488",
-    queue: "#4338CA",
-    profile: "#7C3AED",
-    settings: "#334155",
-    workflow: "#0E7490",
-  };
-}
-
-const HEADER_RADIUS_BOTTOM = 22;
-/** Tamaño del avatar en header (círculo perfecto: radio = mitad) */
-const HEADER_AVATAR_SIZE = 48;
-/** Grosor del anillo de estado alrededor del avatar (borde de color) */
-const AVATAR_PRESENCE_RING = 3;
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -603,149 +580,6 @@ export default function HomeScreen() {
         </View>
       </View>
     </SafeAreaView>
-  );
-}
-
-/** Anillo de presencia en el avatar (estilo apps modernas): verde disponible, rojo ocupado, etc. */
-function avatarPresenceRingColor(
-  theme: ReturnType<typeof useValetTheme>,
-  status: ValetOperationalStatus | null | undefined
-): string {
-  if (status === "AVAILABLE") {
-    return "#34D399"; // verde claro brillante (emerald-400)
-  }
-  if (status === "BUSY") {
-    return "#EF4444"; // rojo (red-500)
-  }
-  if (status === "AWAY") {
-    return theme.isDark ? "#94A3B8" : "#64748B";
-  }
-  return "#60A5FA"; // sincronizando / desconocido — azul (sky-400)
-}
-
-type GridVariant = "accent" | "warm" | "queue" | "booking" | "profile" | "settings" | "workflow";
-
-/** Fondo suave del círculo de icono (modo claro; hex de `parkitTilePalette(false)`). */
-const TILE_ICON_BG_LIGHT: Record<GridVariant, string> = {
-  accent: "rgba(29, 78, 216, 0.12)",
-  warm: "rgba(194, 65, 12, 0.12)",
-  queue: "rgba(67, 56, 202, 0.12)",
-  booking: "rgba(13, 148, 136, 0.12)",
-  profile: "rgba(124, 58, 237, 0.12)",
-  settings: "rgba(51, 65, 85, 0.12)",
-  workflow: "rgba(14, 116, 144, 0.12)",
-};
-
-/** Fondo suave del círculo de icono en modo oscuro (hex de `parkitTilePalette(true)` sobre `C.card`). */
-const TILE_ICON_BG_DARK: Record<GridVariant, string> = {
-  accent: "rgba(37, 99, 235, 0.22)",
-  warm: "rgba(249, 115, 22, 0.2)",
-  queue: "rgba(129, 140, 248, 0.22)",
-  booking: "rgba(45, 212, 191, 0.18)",
-  profile: "rgba(192, 132, 252, 0.22)",
-  settings: "rgba(148, 163, 184, 0.18)",
-  workflow: "rgba(6, 182, 212, 0.2)",
-};
-
-function tileIconHex(variant: GridVariant, P: ReturnType<typeof parkitTilePalette>): string {
-  switch (variant) {
-    case "accent":
-      return P.receive;
-    case "warm":
-      return P.return;
-    case "queue":
-      return P.queue;
-    case "booking":
-      return P.reservation;
-    case "profile":
-      return P.profile;
-    case "settings":
-      return P.settings;
-    case "workflow":
-      return P.workflow;
-  }
-}
-
-const TILE_ICON_SIZE = 30;
-
-type TileLucideIcon = ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
-
-function GridTile(props: {
-  variant: GridVariant;
-  /** Ionicon por defecto; omitir si usas `lucideIcon`. */
-  icon?: keyof typeof Ionicons.glyphMap;
-  /** Icono Lucide (p. ej. SquareParking para recibir vehículo). */
-  lucideIcon?: TileLucideIcon;
-  iconSize?: number;
-  title: string;
-  sub: string;
-  badgeCount?: number;
-  onPress: () => void;
-  styles: ReturnType<typeof createStyles>;
-  isDark: boolean;
-}) {
-  const {
-    variant,
-    icon,
-    lucideIcon: LucideCmp,
-    iconSize = TILE_ICON_SIZE,
-    title,
-    sub,
-    badgeCount = 0,
-    onPress,
-    styles,
-    isDark,
-  } = props;
-  const P = parkitTilePalette(isDark);
-  const iconColor = tileIconHex(variant, P);
-  const iconBubbleBg = isDark ? TILE_ICON_BG_DARK[variant] : TILE_ICON_BG_LIGHT[variant];
-
-  return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.tile,
-        variant === "accent" && styles.tileAccent,
-        variant === "warm" && styles.tileWarm,
-        variant === "queue" && styles.tileQueue,
-        variant === "booking" && styles.tileBooking,
-        variant === "profile" && styles.tileProfile,
-        variant === "settings" && styles.tileSettings,
-        variant === "workflow" && styles.tileWorkflow,
-        pressed && styles.pressed,
-      ]}
-      onPress={onPress}
-      accessibilityRole="button"
-    >
-      {badgeCount > 0 ? (
-        <View style={styles.tileBadge}>
-          <Text style={styles.tileBadgeText}>
-            {badgeCount > 99 ? "99+" : String(badgeCount)}
-          </Text>
-        </View>
-      ) : null}
-      <View style={[styles.tileIconWrap, { backgroundColor: iconBubbleBg }]}>
-        {LucideCmp ? (
-          <LucideCmp size={iconSize} color={iconColor} strokeWidth={2.25} />
-        ) : (
-          <Ionicons name={icon ?? "ellipse-outline"} size={iconSize} color={iconColor} />
-        )}
-      </View>
-      <Text
-        style={[
-          styles.tileTitle,
-          {
-            fontFamily: "CalSans",
-          },
-        ]}
-        numberOfLines={2}
-        maxFontSizeMultiplier={1.75}
-      >
-        {title}
-      </Text>
-      <Text style={[styles.tileSub]} numberOfLines={2} maxFontSizeMultiplier={1.65}>
-        {sub}
-      </Text>
-    </Pressable>
   );
 }
 

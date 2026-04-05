@@ -10,7 +10,6 @@ import {
   FlatList,
   Image,
   useWindowDimensions,
-  Animated,
   RefreshControl,
   StatusBar,
 } from "react-native";
@@ -22,12 +21,12 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { Redirect, useRouter, useLocalSearchParams } from "expo-router";
 import * as Linking from "expo-linking";
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { formatPlate } from "@parkit/shared";
-import { formatVehicleColorLabel, getVehicleColorOptions, normalizeVehicleColorValue } from "@parkit/shared";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { formatPlate, getVehicleColorOptions, formatVehicleColorLabel, normalizeVehicleColorValue } from "@parkit/shared";
 import { useAuthStore, useLocaleStore, useCompanyStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
-import type { Locale } from "@parkit/shared";
+import type { Locale as _Locale } from "@parkit/shared";
+import type { ReactNode } from "react";
 import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import api from "@/lib/api";
@@ -44,156 +43,29 @@ import { CardVerification } from "@/components/CardVerification";
 import { VehiclePlateInput } from "@/components/VehiclePlateInput";
 import { DriverInfoForm } from "@/components/DriverInfoForm";
 import { TicketQRPanel } from "@/components/TicketQRPanel";
+import { ValetDispatchRow, createValetRowStyles } from "@/components/ValetDispatchRow";
+import {
+  COUNTRY_CR,
+  MANUAL_TICKET_CODE_RE,
+  MAX_DAMAGE_PHOTOS,
+  randomWalkInPassword,
+  isValidCrPlate,
+  formatBenefitTime,
+  extractBookingIdFromScan,
+} from "@/lib/receiveUtils";
+import type {
+  VehicleLookup,
+  CatalogMake,
+  CatalogModel,
+  VehicleDimensions,
+  ParkingOpt,
+  ValetOpt,
+  BookingLookup,
+  ClientByIdLookup,
+} from "@/types/receive";
 import * as ImagePicker from "expo-image-picker";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import { LinearGradient } from "expo-linear-gradient";
-
-interface VehicleOwnerRow {
-  client: {
-    id: string;
-    user: {
-      id?: string;
-      firstName: string;
-      lastName: string;
-      email?: string | null;
-      phone?: string | null;
-    };
-  };
-}
-
-interface VehicleLookup {
-  id: string;
-  plate: string;
-  brand: string;
-  model: string;
-  color?: string | null;
-  year?: number | null;
-  countryCode: string;
-  companyId: string;
-  owners: VehicleOwnerRow[];
-}
-
-interface CatalogMake {
-  id: number;
-  name: string;
-}
-
-interface CatalogModel {
-  id: number;
-  name: string;
-}
-
-interface VehicleDimensions {
-  lengthCm?: number;
-  widthCm?: number;
-  heightCm?: number;
-  weightKg?: number;
-}
-
-interface ParkingOpt {
-  id: string;
-  name: string;
-  address: string;
-  companyId: string;
-}
-
-const COUNTRY_CR = "CR";
-
-interface ValetOpt {
-  id: string;
-  staffRole?: string | null;
-  currentStatus?: "AVAILABLE" | "BUSY" | "AWAY" | null;
-  user: {
-    firstName: string;
-    lastName: string;
-    email?: string | null;
-    avatarUrl?: string | null;
-  };
-}
-
-interface BookingLookup {
-  id: string;
-  status: string;
-  clientId: string;
-  vehicleId: string;
-  parkingId: string;
-  client?: {
-    id: string;
-    user?: {
-      firstName?: string | null;
-      lastName?: string | null;
-      email?: string | null;
-      phone?: string | null;
-    };
-  };
-  vehicle?: {
-    id: string;
-    plate?: string | null;
-    brand?: string | null;
-    model?: string | null;
-    color?: string | null;
-    year?: number | null;
-  };
-  parking?: {
-    id: string;
-    name?: string | null;
-    address?: string | null;
-    freeBenefitMinutes?: number | null;
-  };
-}
-
-interface ClientByIdLookup {
-  id: string;
-  user?: { email?: string | null; phone?: string | null };
-}
-
-function randomWalkInPassword(): string {
-  const r = Math.random().toString(36).slice(2, 10);
-  return `Tmp${r}Aa1`;
-}
-
-function isValidCrPlate(value: string): boolean {
-  const p = formatPlate(value).trim();
-  return /^\d{6}$/.test(p) || /^[A-Z]{3}-\d{3}$/.test(p);
-}
-
-function formatBenefitTime(
-  value: number | null | undefined,
-  locale: Locale
-): string {
-  if (value == null || Number.isNaN(value)) {
-    return locale === "es" ? "0 min" : "0 min";
-  }
-  const totalMinutes = Math.max(0, Math.floor(value));
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  if (hours === 0 && minutes === 0) return locale === "es" ? "0 min" : "0 min";
-  if (hours === 0) return locale === "es" ? `${minutes} min` : `${minutes} min`;
-  if (minutes === 0) return locale === "es" ? `${hours} h` : `${hours} h`;
-  return locale === "es" ? `${hours} h ${minutes} min` : `${hours} h ${minutes} min`;
-}
-
-
-const MANUAL_TICKET_CODE_RE = /^[A-Za-z0-9\-_]+$/;
-
-const MAX_DAMAGE_PHOTOS = 8;
-
-function extractBookingIdFromScan(raw: string): string {
-  const t = raw.trim();
-  if (!t) return t;
-  if (/^[a-f0-9-]{8,}$/i.test(t)) return t;
-  try {
-    const u = new URL(t);
-    const parts = u.pathname.split("/").filter(Boolean);
-    const last = parts[parts.length - 1];
-    if (last && /^[a-f0-9-]{8,}$/i.test(last)) return last;
-    const q = u.searchParams.get("id") || u.searchParams.get("bookingId");
-    if (q && /^[a-f0-9-]{8,}$/i.test(q.trim())) return q.trim();
-  } catch {
-    /* no es URL */
-  }
-  return t;
-}
 
 export default function ReceiveScreen() {
   const router = useRouter();
@@ -1864,6 +1736,7 @@ export default function ReceiveScreen() {
                 secondary: ticketsA11y.font.secondary,
                 body: ticketsA11y.font.body,
                 button: ticketsA11y.font.button,
+                title: ticketsA11y.font.title,
               }}
               space={{
                 sm: theme.space.sm,
@@ -2138,7 +2011,7 @@ export default function ReceiveScreen() {
               </Pressable>
 
               {ticketCodesAcknowledged && manualTicketCode.length >= 2 && (
-                <View style={{ marginTop: S.lg, height: 400 }}>
+                <View style={{ marginTop: theme.space.lg, height: 400 }}>
                   <TicketQRPanel
                     locale={locale}
                     isDark={theme.isDark}
@@ -2711,7 +2584,7 @@ export default function ReceiveScreen() {
                     }}
                     locale={locale}
                     theme={theme}
-                    styles={styles}
+                    styles={createValetRowStyles(theme)}
                     statusMeta={item.variant === 'available' ? t(locale, "receive.valetStatusAvailable") : t(locale, "receive.valetStatusBusy")}
                     statusBadgeShort={item.variant === 'available' ? t(locale, "receive.valetStatusAvailableShort") : t(locale, "receive.valetStatusBusyShort")}
                     badgeVariant={item.variant}
@@ -3777,152 +3650,4 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     backBtnText: { color: "#fff", fontWeight: "800" },
   });
-}
-
-function valetHash(id: string): number {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) {
-    h = (Math.imul(31, h) + id.charCodeAt(i)) | 0;
-  }
-  return Math.abs(h);
-}
-
-function valetInitials(firstName: string, lastName: string): string {
-  const f = (firstName ?? "").trim();
-  const l = (lastName ?? "").trim();
-  const a = f.charAt(0);
-  const b = l.charAt(0);
-  const u = (c: string) => c.toLocaleUpperCase();
-  if (a && b) return u(a) + u(b);
-  if (f.length >= 2) return u(f.charAt(0)) + u(f.charAt(1));
-  if (a) return u(a);
-  return "?";
-}
-
-function valetAvatarColors(
-  id: string,
-  isDark: boolean
-): { bg: string; fg: string; border: string } {
-  const hue = valetHash(id) % 360;
-  if (isDark) {
-    return {
-      bg: `hsla(${hue}, 42%, 30%, 1)`,
-      fg: `hsla(${hue}, 40%, 97%, 1)`,
-      border: `hsla(${hue}, 55%, 48%, 0.5)`,
-    };
-  }
-  return {
-    bg: `hsla(${hue}, 52%, 93%, 1)`,
-    fg: `hsla(${hue}, 48%, 28%, 1)`,
-    border: `hsla(${hue}, 45%, 78%, 0.9)`,
-  };
-}
-
-function ValetDispatchRow(props: {
-  v: ValetOpt;
-  selected: boolean;
-  isBusy: boolean;
-  onPress: () => void;
-  locale: Locale;
-  theme: Theme;
-  styles: ReturnType<typeof createStyles>;
-  statusMeta: string;
-  statusBadgeShort: string;
-  badgeVariant: "available" | "busy";
-}) {
-  const {
-    v,
-    selected,
-    isBusy,
-    onPress,
-    locale,
-    theme,
-    styles,
-    statusMeta,
-    statusBadgeShort,
-    badgeVariant,
-  } = props;
-  const C = theme.colors;
-  const scale = useRef(new Animated.Value(1)).current;
-  const wasSelected = useRef(false);
-
-  useEffect(() => {
-    if (selected && !wasSelected.current) {
-      Animated.sequence([
-        Animated.spring(scale, {
-          toValue: 1.024,
-          useNativeDriver: true,
-          friction: 5,
-          tension: 380,
-        }),
-        Animated.spring(scale, { toValue: 1, useNativeDriver: true, friction: 8 }),
-      ]).start();
-    }
-    wasSelected.current = selected;
-  }, [selected, scale]);
-
-  const av = valetAvatarColors(v.id, theme.isDark);
-  const initials = valetInitials(v.user.firstName, v.user.lastName);
-  const avatarUrl = v.user.avatarUrl?.trim() || "";
-  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
-
-  useEffect(() => {
-    setAvatarLoadFailed(false);
-  }, [avatarUrl]);
-
-  return (
-    <Pressable onPress={onPress} accessibilityRole="radio" accessibilityState={{ selected }}>
-      {({ pressed }) => (
-        <Animated.View
-          style={[
-            styles.valetDriverRow,
-            isBusy && styles.valetDriverRowBusy,
-            selected && !isBusy && styles.valetDriverRowSelected,
-            selected && isBusy && styles.valetDriverRowSelectedBusy,
-            {
-              transform: [{ scale }],
-              opacity: pressed ? 0.88 : 1,
-            },
-          ]}
-        >
-          <View style={[styles.valetAvatar, { backgroundColor: av.bg, borderColor: av.border }]}>
-            {avatarUrl && !avatarLoadFailed ? (
-              <Image
-                source={{ uri: avatarUrl }}
-                style={styles.valetAvatarImage}
-                resizeMode="cover"
-                onError={() => setAvatarLoadFailed(true)}
-              />
-            ) : (
-              <Text style={[styles.valetAvatarText, { color: av.fg }]}>{initials}</Text>
-            )}
-          </View>
-          <View style={styles.valetDriverRowTextCol}>
-            <Text
-              style={[
-                styles.valetDriverRowText,
-                selected && !isBusy && { color: C.primary },
-                selected && isBusy && { color: C.warning },
-              ]}
-              maxFontSizeMultiplier={2}
-            >
-              {v.user.firstName} {v.user.lastName}
-            </Text>
-            <Text style={styles.valetDriverRowMeta} numberOfLines={1}>
-              {v.user.email || t(locale, "receive.valetNoEmail")} · {statusMeta}
-            </Text>
-          </View>
-          {badgeVariant === "available" ? (
-            <View style={styles.valetStatusBadgeAvailable}>
-              <Text style={styles.valetStatusBadgeAvailableText}>{statusBadgeShort}</Text>
-            </View>
-          ) : (
-            <View style={styles.valetStatusBadgeBusy}>
-              <Text style={styles.valetStatusBadgeBusyText}>{statusBadgeShort}</Text>
-            </View>
-          )}
-        </Animated.View>
-      )}
-    </Pressable>
-  );
 }

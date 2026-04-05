@@ -39,6 +39,10 @@ import {
   phoneDigitsForApi,
 } from "@/lib/phoneInternational";
 
+import { formatYmdLocal, parseYmdLocal } from "@/lib/dateUtils";
+import { EMAIL_RE } from "@/lib/validation";
+import { STAFF_ROLES } from "@/lib/staffRoles";
+
 type MePayload = {
   firstName?: string;
   lastName?: string;
@@ -46,24 +50,6 @@ type MePayload = {
   phone?: string | null;
   avatarUrl?: string | null;
 };
-
-const STAFF_ROLES: ValetStaffRole[] = ["RECEPTIONIST", "DRIVER"];
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function formatYmdLocal(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function parseYmdLocal(ymd: string): Date | null {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd.trim());
-  if (!m) return null;
-  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-  return Number.isNaN(d.getTime()) ? null : d;
-}
 
 export default function ProfileScreen() {
   const router = useRouter();

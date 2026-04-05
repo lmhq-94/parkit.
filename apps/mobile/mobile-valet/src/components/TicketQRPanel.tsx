@@ -7,10 +7,8 @@ import {
   ActivityIndicator,
   Dimensions,
   Share,
-  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import QRCode from 'qrcode';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@parkit/shared';
@@ -83,7 +81,8 @@ export function TicketQRPanel({
   onPrint,
 }: TicketQRPanelProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
-  const [generating, setGenerating] = useState(true);
+  const [_scanSuccess, _setScanSuccess] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const generateQR = useCallback(async () => {
