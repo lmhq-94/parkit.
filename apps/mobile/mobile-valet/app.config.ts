@@ -63,6 +63,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     '@react-native-community/datetimepicker',
     [
+      '@stripe/stripe-react-native',
+      {
+        merchantIdentifier: 'merchant.com.parkit.valet',
+      },
+    ],
+    [
       'expo-camera',
       {
         cameraPermission:

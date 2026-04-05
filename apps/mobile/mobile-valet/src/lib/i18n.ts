@@ -242,7 +242,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "profile.firstName": "Nombre",
     "profile.lastName": "Apellido",
     "profile.email": "Correo",
-    "profile.phone": "Teléfono (opcional)",
+    "profile.phone": "Teléfono",
     "profile.save": "Guardar cambios",
     "profile.loadError": "No se pudo cargar el perfil.",
     "profile.saveSuccess": "Perfil actualizado.",
@@ -375,9 +375,20 @@ const translations: Record<Locale, Record<string, string>> = {
       "Necesario para una recepción eficiente. Sigue las instrucciones de Stripe para verificar la tarjeta.",
     "receive.cardVerifyStartedHint":
       "Stripe ya está abierto para completar la verificación de forma segura. Cuando termines, regresa para seguir con el check-in.",
-    "receive.cardVerifyStarted":
-      "Se abrió Stripe para verificación de tarjeta.",
+    "receive.cardVerifyStarted": "Se abrió Stripe para verificación de tarjeta.",
     "receive.cardVerifyError": "No se pudo iniciar la verificación de tarjeta.",
+    "receive.cardNumberLabel": "Número de tarjeta",
+    "receive.cardSecureHint": "Procesado de forma segura por Stripe",
+    "receive.cardVerifyProcessing": "Verificando tarjeta...",
+    "receive.scanCardTitle": "Escanear tarjeta",
+    "receive.scanCardSubtitle": "Apunta la cámara a tu tarjeta de crédito",
+    "receive.scanCardGuide": "Alinea la tarjeta dentro del marco y presiona Escanear",
+    "receive.scanCardRetry": "No se pudo leer la tarjeta. Intenta de nuevo.",
+    "receive.scanCardError": "Error al escanear. Intenta de nuevo.",
+    "receive.scanningCard": "Escaneando...",
+    "receive.scanCardButton": "Escanear",
+    "receive.verifyCardButton": "Verificar",
+    "receive.cameraPermissionNeeded": "Se necesita acceso a la cámara para escanear la tarjeta",
     "receive.wizardQrTitle": "Reserva",
     "receive.wizardQrHelp":
       "Apunta la cámara al código QR de la reserva del huésped; la validación es automática.",
@@ -404,6 +415,15 @@ const translations: Record<Locale, Record<string, string>> = {
       "Escribe al menos 2 caracteres en cada código requerido.",
     "receive.errorTicketCodesFormat":
       "Solo se permiten letras, números, guiones y guiones bajos (sin espacios).",
+    "receive.ticketQrTitle": "Tiquete QR",
+    "receive.ticketQrShareTitle": "Tiquete Parkit",
+    "receive.ticketQrShareMessage": "Aquí está tu tiquete de estacionamiento",
+    "receive.ticketCodeLabel": "Código del tiquete",
+    "receive.keyCodeLabel": "Código de llaves",
+    "receive.qrGenerating": "Generando código QR...",
+    "receive.qrGenerateError": "Error al generar el QR. Intenta de nuevo.",
+    "receive.printTicket": "Imprimir tiquete",
+    "receive.shareTicket": "Compartir tiquete",
     "receive.wizardParkingTitle": "Parqueo",
     "receive.wizardParkingHelp":
       "Confirma el parqueo de ingreso. Puedes elegir otro en la lista.",
@@ -465,7 +485,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.placeholderFirst": "Nombre",
     "receive.placeholderLast": "Apellido",
     "receive.placeholderEmail": "Correo del conductor",
-    "receive.placeholderPhone": "Teléfono (opcional)",
+    "receive.placeholderPhone": "Teléfono",
     "receive.placeholderBrand": "Marca",
     "receive.placeholderModel": "Modelo",
     "receive.placeholderColor": "Color",
@@ -537,7 +557,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "returnPickup.title": "Devolución del vehículo",
     "returnPickup.subtitle":
       "Busca el vehículo por código de ticket y solicita la devolución. Puedes asignar un conductor valet.",
-    "returnPickup.filterPlaceholder": "Buscar por código de ticket",
+    "returnPickup.filterPlaceholder": "Buscar por código de tiquete",
     "returnPickup.empty": "No hay vehículos en parqueo o con devolución solicitada.",
     "returnPickup.assignDriver": "Conductor para la devolución",
     "returnPickup.assignHelp":
@@ -910,6 +930,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.wizardCardAck":
       "I confirm we are proceeding with the agreed card step with the customer",
     "receive.cardVerifyStart": "Verify card with Stripe",
+    "receive.verifyCardButton": "Verify",
     "receive.cardVerifyOptionalHint":
       "Required for an efficient reception. Follow Stripe's instructions to verify the card.",
     "receive.cardVerifyStartedHint":
@@ -1003,7 +1024,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.placeholderFirst": "First name",
     "receive.placeholderLast": "Last name",
     "receive.placeholderEmail": "Driver email",
-    "receive.placeholderPhone": "Phone (optional)",
+    "receive.placeholderPhone": "Phone",
     "receive.placeholderBrand": "Brand",
     "receive.placeholderModel": "Model",
     "receive.placeholderColor": "Color",

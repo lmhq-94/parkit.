@@ -136,7 +136,7 @@ export const translations = {
     auth: {
       signIn: "Iniciar sesión",
       signOut: "Cerrar sesión",
-      signInToContinue: "Ingresa tus credenciales para continuar con tu cuenta",
+      signInToContinue: "Ingresa tus credenciales para continuar",
       email: "Correo electrónico",
       password: "Contraseña",
       emailPlaceholder: "nombre@empresa.com",

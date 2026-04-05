@@ -40,6 +40,10 @@ import { createFeedback } from "@/lib/feedback";
 import { ValetBackButton } from "@/components/ValetBackButton";
 import { StickyFormFooter } from "@/components/StickyFormFooter";
 import { ReservationQrPanel, createQrStyles } from "@/components/ReservationQrPanel";
+import { CardVerification } from "@/components/CardVerification";
+import { VehiclePlateInput } from "@/components/VehiclePlateInput";
+import { DriverInfoForm } from "@/components/DriverInfoForm";
+import { TicketQRPanel } from "@/components/TicketQRPanel";
 import * as ImagePicker from "expo-image-picker";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import { LinearGradient } from "expo-linear-gradient";
@@ -266,7 +270,7 @@ export default function ReceiveScreen() {
   const [valetsRefreshing, setValetsRefreshing] = useState(false);
 
   const [wizardStep, setWizardStep] = useState(1);
-  const [cardVerificationOpening, setCardVerificationOpening] = useState(false);
+  const [_cardVerificationOpening, _setCardVerificationOpening] = useState(false);
   const [cardVerificationStarted, setCardVerificationStarted] = useState(false);
   const [ticketCodesAcknowledged, setTicketCodesAcknowledged] = useState(false);
   const [manualTicketCode, setManualTicketCode] = useState("");
@@ -294,9 +298,9 @@ export default function ReceiveScreen() {
   const M = ticketsA11y.minTouch;
   const feedback = useMemo(() => createFeedback(locale), [locale]);
 
-  const startCardVerification = useCallback(async () => {
+  const _startCardVerification = useCallback(async () => {
     try {
-      setCardVerificationOpening(true);
+      _setCardVerificationOpening(true);
       const res = await api.post<{ data?: { url?: string } }>("/payments/card-verification/session", {
         locale,
       });
@@ -315,7 +319,7 @@ export default function ReceiveScreen() {
           : msg || t(locale, "receive.cardVerifyError")
       );
     } finally {
-      setCardVerificationOpening(false);
+      _setCardVerificationOpening(false);
     }
   }, [feedback, locale]);
 
@@ -643,7 +647,7 @@ export default function ReceiveScreen() {
   };
 
   useEffect(() => {
-    if (wizardStep !== 2 || reservationFlow) return;
+    if (wizardStep !== plateStepNum || reservationFlow) return;
     const formatted = formatPlate(plate).trim();
     if (!isValidCrPlate(formatted)) {
       setVehicleResolved(false);
@@ -1837,206 +1841,106 @@ export default function ReceiveScreen() {
           )}
 
           {wizardStep === cardStepNum && !reservationFlow && (
-            <>
-              <Text style={styles.sectionLabel}>{t(locale, "receive.wizardCardTitle")}</Text>
-              <Text style={styles.stepExplain}>{t(locale, "receive.wizardCardHelp")}</Text>
-              <LinearGradient
-                colors={
-                  theme.isDark
-                    ? ["#38BDF8", "#6366F1", "#2DD4BF"]
-                    : ["#0EA5E9", "#4F46E5", "#10B981"]
-                }
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.cardVerifyPremiumShell}
-              >
-                <View
-                  style={styles.cardVerifyOnHold}
-                  accessible
-                  accessibilityLabel={`${t(locale, "receive.wizardCardTitle")}. ${t(locale, "receive.cardVerifyOnHoldTitle")}`}
-                >
-                  <View style={styles.cardVerifyOnHoldRow}>
-                    <View style={styles.cardVerifyIconBubble}>
-                      <Ionicons 
-                        name={cardVerificationStarted ? "checkmark-done-circle" : "card-outline"} 
-                        size={26} 
-                        color={cardVerificationStarted ? C.success : (theme.isDark ? "#38BDF8" : "#1D4ED8")} 
-                      />
-                    </View>
-                    <View style={styles.cardVerifyOnHoldTextCol}>
-                      <Text style={styles.cardVerifyOnHoldTitle}>
-                        {t(locale, "receive.cardVerifyOnHoldTitle")}
-                      </Text>
-                      <Text style={styles.cardVerifyOnHoldBody} maxFontSizeMultiplier={2}>
-                        {t(locale, "receive.cardVerifyOnHoldBody")}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.cardVerifyBadgeRow}>
-                    <View style={[styles.cardVerifyBadge, cardVerificationStarted && { backgroundColor: "rgba(16, 185, 129, 0.15)" }]}>
-                      <Text style={[styles.cardVerifyBadgeText, cardVerificationStarted && { color: C.success }]}>
-                        {cardVerificationStarted ? t(locale, "common.successTitle") : t(locale, "receive.cardVerifyBadge")}
-                      </Text>
-                    </View>
-                    {cardVerificationStarted ? (
-                      <View style={styles.cardVerifyStartedBadge}>
-                        <Ionicons name="shield-checkmark-outline" size={14} color={C.success} />
-                        <Text style={styles.cardVerifyStartedBadgeText}>{t(locale, "receive.cardVerifyStarted")}</Text>
-                      </View>
-                    ) : (
-                      <View style={[styles.cardVerifyBadge, { backgroundColor: "rgba(245, 158, 11, 0.15)" }]}>
-                        <Text style={[styles.cardVerifyBadgeText, { color: C.warning }]}>{t(locale, "common.loading")}</Text>
-                      </View>
-                    )}
-                  </View>
-                </View>
-              </LinearGradient>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.primaryBtn,
-                  styles.stepCardStripeBtn,
-                  cardVerificationOpening && styles.btnDisabled,
-                  pressed && styles.pressed,
-                ]}
-                onPress={startCardVerification}
-                disabled={cardVerificationOpening}
-                accessibilityLabel={t(locale, "receive.cardVerifyStart")}
-              >
-                <LinearGradient
-                  colors={theme.isDark ? ["#0EA5E9", "#2563EB"] : ["#0284C7", "#1D4ED8"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.stepCardStripeBtnBg}
-                >
-                  {cardVerificationOpening ? (
-                    <ActivityIndicator color="#FFFFFF" />
-                  ) : (
-                    <View style={styles.stepCardStripeBtnRow}>
-                      <Ionicons name="sparkles-outline" size={18} color="#FFFFFF" />
-                      <Text style={styles.primaryBtnText}>{t(locale, "receive.cardVerifyStart")}</Text>
-                    </View>
-                  )}
-                </LinearGradient>
-              </Pressable>
-              <Text style={styles.cardVerifyHintText}>
-                {cardVerificationStarted
-                  ? t(locale, "receive.cardVerifyStartedHint")
-                  : t(locale, "receive.cardVerifyOptionalHint")}
-              </Text>
-            </>
+            <CardVerification
+              locale={locale}
+              isDark={theme.isDark}
+              cardVerificationStarted={cardVerificationStarted}
+              onVerified={() => {
+                setCardVerificationStarted(true);
+                setWizardStep(plateStepNum);
+              }}
+              onCancel={() => setWizardStep(typeStepNum)}
+              colors={{
+                primary: C.primary,
+                success: C.success,
+                warning: C.warning,
+                textSubtle: C.textSubtle,
+                textMuted: C.textMuted,
+                card: C.card,
+                border: C.border,
+                text: C.text,
+              }}
+              fonts={{
+                secondary: ticketsA11y.font.secondary,
+                body: ticketsA11y.font.body,
+                button: ticketsA11y.font.button,
+              }}
+              space={{
+                sm: theme.space.sm,
+                md: theme.space.md,
+                xs: theme.space.xs,
+                lg: theme.space.lg,
+              }}
+            />
           )}
 
           {wizardStep === plateStepNum && !reservationFlow && (
-            <>
-              <Text style={styles.sectionLabel}>{t(locale, "receive.wizardPlateTitle")}</Text>
-              <Text style={styles.stepExplain}>{t(locale, "receive.wizardPlateHelp")}</Text>
-              <TextInput
-                style={styles.input}
-                value={plate}
-                onChangeText={(x) => {
-                  setPlate(formatPlate(x));
-                  setVehicleResolved(false);
-                  setLookupReadyForPlate("");
-                  setVehicle(null);
-                  setLoadedOwnerUserId(null);
-                  setLoadedDriverSnapshot(null);
-                  setLoadedVehicleSnapshot(null);
-                }}
-                placeholder={t(locale, "receive.placeholderPlate")}
-                placeholderTextColor={C.textSubtle}
-                autoCapitalize="characters"
-                maxFontSizeMultiplier={2}
-              />
-              {lookupLoading && (
-                <View style={styles.row}>
-                  <ActivityIndicator size="small" color={C.primary} />
-                  <Text style={styles.inlineLoadingText}>{t(locale, "receive.lookupInlineLoading")}</Text>
-                </View>
-              )}
-              {vehicleResolved && vehicle && (
-                <View style={[styles.card, styles.vehicleFoundCard]}>
-                  <View style={styles.vehicleFoundHeader}>
-                    <View style={styles.vehicleFoundBadge}>
-                      <Ionicons name="checkmark-circle" size={16} color={C.success} />
-                      <Text style={styles.vehicleFoundBadgeText}>{t(locale, "receive.foundVehicle")}</Text>
-                    </View>
-                  </View>
-                  <View style={styles.vehicleSummaryRow}>
-                    <Text style={styles.vehicleSummaryLabel}>{t(locale, "receive.wizardPlateTitle")}</Text>
-                    <Text style={styles.vehicleSummaryValue}>{formatPlate(vehicle.plate)}</Text>
-                  </View>
-                  <View style={styles.vehicleSummaryRow}>
-                    <Text style={styles.vehicleSummaryLabel}>{t(locale, "receive.wizardVehicleTitle")}</Text>
-                    <Text style={styles.vehicleSummaryValue}>
-                      {vehicle.brand} {vehicle.model}
-                    </Text>
-                  </View>
-                  {vehicle.owners?.length ? (
-                    <View style={[styles.vehicleSummaryRow, styles.vehicleSummaryRowLast]}>
-                      <Text style={styles.vehicleSummaryLabel}>{t(locale, "receive.foundOwner")}</Text>
-                      <Text style={styles.vehicleSummaryValue}>
-                        {vehicle.owners[0].client.user.firstName} {vehicle.owners[0].client.user.lastName}
-                      </Text>
-                    </View>
-                  ) : (
-                    <Text style={styles.cardHint}>{t(locale, "receive.noOwnerHint")}</Text>
-                  )}
-                </View>
-              )}
-              {vehicleResolved && !vehicle && plateLooksValid && (
-                <View style={[styles.card, styles.vehicleNotFoundCard]}>
-                  <View style={styles.vehicleFoundHeader}>
-                    <View style={styles.vehicleNotFoundBadge}>
-                      <Ionicons name="alert-circle-outline" size={16} color={C.warning} />
-                      <Text style={styles.vehicleNotFoundBadgeText}>{t(locale, "receive.newVehicleTitle")}</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.cardHint}>{t(locale, "receive.newVehicleHint")}</Text>
-                </View>
-              )}
-            </>
+            <VehiclePlateInput
+              locale={locale}
+              plate={plate}
+              onPlateChange={(value) => {
+                setPlate(value);
+                setVehicleResolved(false);
+                setLookupReadyForPlate('');
+                setVehicle(null);
+                setLoadedOwnerUserId(null);
+                setLoadedDriverSnapshot(null);
+                setLoadedVehicleSnapshot(null);
+              }}
+              lookupLoading={lookupLoading}
+              vehicleResolved={vehicleResolved}
+              vehicle={vehicle}
+              plateLooksValid={plateLooksValid}
+              colors={{
+                primary: C.primary,
+                success: C.success,
+                warning: C.warning,
+                textSubtle: C.textSubtle,
+                textMuted: C.textMuted,
+                card: C.card,
+                border: C.border,
+                text: C.text,
+              }}
+              fonts={{
+                secondary: ticketsA11y.font.secondary,
+                body: ticketsA11y.font.body,
+              }}
+              space={{
+                sm: theme.space.sm,
+                md: theme.space.md,
+                xs: theme.space.xs,
+              }}
+            />
           )}
 
           {wizardStep === driverStepNum && !reservationFlow && (
-            <>
-              <Text style={styles.sectionLabel}>{t(locale, "receive.wizardDriverTitle")}</Text>
-              <Text style={styles.stepExplain}>{t(locale, "receive.wizardDriverHelp")}</Text>
-              <TextInput
-                style={styles.input}
-                value={driverFirst}
-                onChangeText={setDriverFirst}
-                placeholder={t(locale, "receive.placeholderFirst")}
-                placeholderTextColor={C.textSubtle}
-                maxFontSizeMultiplier={2}
-              />
-              <TextInput
-                style={styles.input}
-                value={driverLast}
-                onChangeText={setDriverLast}
-                placeholder={t(locale, "receive.placeholderLast")}
-                placeholderTextColor={C.textSubtle}
-                maxFontSizeMultiplier={2}
-              />
-              <TextInput
-                style={styles.input}
-                value={driverEmail}
-                onChangeText={setDriverEmail}
-                placeholder={t(locale, "receive.placeholderEmail")}
-                placeholderTextColor={C.textSubtle}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                maxFontSizeMultiplier={2}
-              />
-              <TextInput
-                style={styles.input}
-                value={driverPhone}
-                onChangeText={(v) => setDriverPhone(formatPhoneWithCountryCode(v, getDeviceCountryCode()))}
-                placeholder={t(locale, "receive.placeholderPhone")}
-                placeholderTextColor={C.textSubtle}
-                keyboardType="phone-pad"
-                maxFontSizeMultiplier={2}
-              />
-            </>
+            <DriverInfoForm
+              locale={locale}
+              firstName={driverFirst}
+              lastName={driverLast}
+              email={driverEmail}
+              phone={driverPhone}
+              countryCode={getDeviceCountryCode()}
+              onFirstNameChange={setDriverFirst}
+              onLastNameChange={setDriverLast}
+              onEmailChange={setDriverEmail}
+              onPhoneChange={setDriverPhone}
+              colors={{
+                textSubtle: C.textSubtle,
+                textMuted: C.textMuted,
+                card: C.card,
+                border: C.border,
+                text: C.text,
+              }}
+              fonts={{
+                secondary: ticketsA11y.font.secondary,
+                body: ticketsA11y.font.body,
+              }}
+              space={{
+                sm: theme.space.sm,
+                md: theme.space.md,
+              }}
+            />
           )}
 
           {wizardStep === vehicleStepNum && !reservationFlow && (
@@ -2232,6 +2136,44 @@ export default function ReceiveScreen() {
                 />
                 <Text style={styles.ackRowText}>{t(locale, "receive.wizardTicketAck")}</Text>
               </Pressable>
+
+              {ticketCodesAcknowledged && manualTicketCode.length >= 2 && (
+                <View style={{ marginTop: S.lg, height: 400 }}>
+                  <TicketQRPanel
+                    locale={locale}
+                    isDark={theme.isDark}
+                    ticketCode={manualTicketCode}
+                    keyCode={keyCodesUnlinked ? manualKeyCode : manualTicketCode}
+                    vehiclePlate={plate}
+                    vehicleBrand={vehBrand}
+                    vehicleModel={vehModel}
+                    driverName={`${driverFirst} ${driverLast}`}
+                    parkingName={displayedReceiveParking?.parking.name}
+                    timestamp={new Date().toISOString()}
+                    colors={{
+                      primary: C.primary,
+                      success: C.success,
+                      text: C.text,
+                      textMuted: C.textMuted,
+                      textSubtle: C.textSubtle,
+                      card: C.card,
+                      border: C.border,
+                    }}
+                    fonts={{
+                      secondary: ticketsA11y.font.secondary,
+                      body: ticketsA11y.font.body,
+                      button: ticketsA11y.font.button,
+                      title: ticketsA11y.font.title,
+                    }}
+                    space={{
+                      sm: theme.space.sm,
+                      md: theme.space.md,
+                      lg: theme.space.lg,
+                      xs: theme.space.xs,
+                    }}
+                  />
+                </View>
+              )}
             </>
           )}
 

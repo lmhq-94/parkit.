@@ -2,11 +2,14 @@ import "@/lib/androidTextDefaults";
 import { Stack, SplashScreen } from 'expo-router';
 import { useEffect } from 'react';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { StripeProvider } from '@stripe/stripe-react-native';
 import { useAuthStore, useLocaleStore } from '@/lib/store';
 import { useThemeStore } from '@/lib/themeStore';
 import { getStoredUser } from '@/lib/auth';
 import { useFonts } from 'expo-font';
 import { FeedbackModal } from '@/components/FeedbackModal';
+
+const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_your_key_here';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -46,7 +49,7 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
       <KeyboardProvider preload={false}>
         <Stack
           screenOptions={{
@@ -82,6 +85,6 @@ export default function RootLayout() {
         </Stack>
       </KeyboardProvider>
       <FeedbackModal />
-    </>
+    </StripeProvider>
   );
 }

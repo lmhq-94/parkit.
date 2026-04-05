@@ -31,6 +31,8 @@ import { createFeedback } from "@/lib/feedback";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { LICENSE_TYPE_OPTIONS, LICENSE_TYPE_VALUES, labelForLicenseType } from "@/lib/licenseTypes";
 import {
+  COUNTRY_DIAL_CODES,
+  formatPhoneInternational,
   formatPhoneWithCountryCode,
   getDeviceCountryCode,
   isValidPhoneOptional,
@@ -660,7 +662,7 @@ export default function ProfileScreen() {
                 setPhone(formatPhoneWithCountryCode(v, getDeviceCountryCode()));
                 if (fieldErrors.phone) setFieldErrors((e) => ({ ...e, phone: undefined }));
               }}
-              placeholder={t(locale, "profile.placeholderPhoneIntl")}
+              placeholder={`+${COUNTRY_DIAL_CODES[getDeviceCountryCode()] || "1"}`}
               placeholderTextColor={C.textSubtle}
               keyboardType="default"
               autoComplete="tel"
