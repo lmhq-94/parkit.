@@ -273,7 +273,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-slate-200 dark:border-slate-700" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white/90 dark:bg-slate-900/70 px-2 text-slate-500 dark:text-slate-400">{t("auth.orContinueWithEmail")}</span>
+              <span className="bg-white/90 dark:bg-slate-900/70 px-2 text-slate-500 dark:text-slate-400">{t("auth.orContinueWith")}</span>
             </div>
           </div>
 
@@ -282,7 +282,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => handleOAuthLogin("google")}
-              className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+              className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               title={t("auth.continueWithGoogle")}
             >
               <FcGoogle className="h-6 w-6" />
@@ -290,7 +290,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => handleOAuthLogin("microsoft")}
-              className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+              className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               title={t("auth.continueWithMicrosoft")}
             >
               <FaMicrosoft className="h-6 w-6 text-blue-600" />
@@ -298,7 +298,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => handleOAuthLogin("apple")}
-              className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+              className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               title={t("auth.continueWithApple")}
             >
               <FaApple className="h-6 w-6" />
@@ -313,14 +313,14 @@ export default function LoginPage() {
         {/* Footer - Outside card, part of natural flow */}
         <div className="mt-8 mb-4 text-center">
           <div className="max-w-[480px] mx-auto space-y-3">
-            <p className="text-xs text-slate-600 dark:text-slate-400">
+            <p className="text-xs text-black dark:text-slate-400">
               {t("auth.supportHint")}{" "}
-              <a href="mailto:soporte@parkit.app" className="font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
+              <a href="mailto:soporte@parkit.app" className="font-bold text-black dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
                 {t("auth.supportLinkLabel")}
               </a>
             </p>
 
-            <div className="flex items-center justify-center gap-3 text-[11px] text-slate-500 dark:text-slate-500">
+            <div className="flex items-center justify-center gap-3 text-[11px] text-black dark:text-slate-500">
               <span>© {new Date().getFullYear()} Parkit</span>
               <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
               <Link href="/terms" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">

@@ -119,14 +119,14 @@ export default function ForgotPasswordPage() {
         {/* Footer - Outside card, part of natural flow */}
         <div className="mt-8 mb-4 text-center">
           <div className="max-w-[480px] mx-auto space-y-3">
-            <p className="text-xs text-slate-600 dark:text-slate-400">
+            <p className="text-xs text-black dark:text-slate-400">
               {t("auth.supportHint")}{" "}
-              <a href="mailto:soporte@parkit.app" className="font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
+              <a href="mailto:soporte@parkit.app" className="font-bold text-black dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
                 {t("auth.supportLinkLabel")}
               </a>
             </p>
 
-            <div className="flex items-center justify-center gap-3 text-[11px] text-slate-500 dark:text-slate-500">
+            <div className="flex items-center justify-center gap-3 text-[11px] text-black dark:text-slate-500">
               <span>© {new Date().getFullYear()} Parkit</span>
               <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
               <Link href="/terms" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">

@@ -434,7 +434,7 @@ export default function ProfilePage() {
                         setForm((p) => ({ ...p, phone: formatPhoneWithCountryCode(e.target.value, phoneCountry) }));
                         setErrors((prev) => ({ ...prev, phone: undefined }));
                       }}
-                      placeholder={`+${COUNTRY_DIAL_CODES[phoneCountry] || "506"} 6216-4040`}
+                      placeholder={`+${COUNTRY_DIAL_CODES[phoneCountry] || "1"}`}
                       className={IL}
                       aria-invalid={!!errors.phone}
                     />

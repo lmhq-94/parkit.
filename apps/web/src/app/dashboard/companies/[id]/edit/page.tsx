@@ -227,7 +227,7 @@ export default function EditCompanyPage() {
               <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} aria-invalid={!!errors.email} />
             </Field>
             <Field label={t("companies.contactPhone")} icon={Phone} error={errors.contactPhone}>
-              <input type="tel" value={form.contactPhone} onChange={(e) => setForm((p) => ({ ...p, contactPhone: formatPhoneWithCountryCode(e.target.value, form.countryCode) }))} placeholder={`+${COUNTRY_DIAL_CODES[form.countryCode] || "506"} 6216-4040`} className={IL} aria-invalid={!!errors.contactPhone} />
+              <input type="tel" value={form.contactPhone} onChange={(e) => setForm((p) => ({ ...p, contactPhone: formatPhoneWithCountryCode(e.target.value, form.countryCode) }))} placeholder={`+${COUNTRY_DIAL_CODES[form.countryCode] || "1"}`} className={IL} aria-invalid={!!errors.contactPhone} />
             </Field>
             <div className="sm:col-span-2 lg:col-span-3">
               <label className={LABEL}>{t("companies.legalAddress")}</label>
