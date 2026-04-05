@@ -10,6 +10,8 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { FcGoogle } from "react-icons/fc";
+import { FaApple, FaMicrosoft } from "react-icons/fa";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ThemeToggleSimple } from "@/components/ThemeToggleSimple";
 import { LocaleToggleSimple } from "@/components/LocaleToggleSimple";
@@ -28,6 +30,10 @@ export default function LoginPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const logoVariant = mounted && resolvedTheme === "dark" ? "onDark" : "default";
+
+  const handleOAuthLogin = (provider: string) => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/auth/${provider}`;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -219,6 +225,7 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {error && <p className="text-xs text-red-600 dark:text-red-400 text-center">{error}</p>}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5">{t("auth.email")}</label>
               <input
@@ -260,38 +267,69 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {error && <p className="mt-4 text-xs text-red-600 dark:text-red-400 text-center">{error}</p>}
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200 dark:border-slate-700" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-white/90 dark:bg-slate-900/70 px-2 text-slate-500 dark:text-slate-400">{t("auth.orContinueWithEmail")}</span>
+            </div>
+          </div>
+
+          {/* OAuth Providers - Horizontal row */}
+          <div className="flex items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => handleOAuthLogin("google")}
+              className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+              title={t("auth.continueWithGoogle")}
+            >
+              <FcGoogle className="h-6 w-6" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOAuthLogin("microsoft")}
+              className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+              title={t("auth.continueWithMicrosoft")}
+            >
+              <FaMicrosoft className="h-6 w-6 text-blue-600" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOAuthLogin("apple")}
+              className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+              title={t("auth.continueWithApple")}
+            >
+              <FaApple className="h-6 w-6" />
+            </button>
+          </div>
 
           <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 text-center">
             <p className="text-sm text-slate-500 dark:text-slate-400">{t("auth.dontHaveAccount")} <Link href="/register" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 underline-offset-2 hover:underline transition-colors">{t("auth.registerNow")}</Link></p>
           </div>
         </div>
 
-        {/* Bottom section - Fixed at bottom */}
-        <div className="fixed bottom-0 left-0 right-0 py-4 px-4 text-center z-20">
-          <div className="max-w-[480px] mx-auto space-y-2">
-            <p className="text-xs text-slate-700 dark:text-slate-400">
+        {/* Footer - Outside card, part of natural flow */}
+        <div className="mt-8 mb-4 text-center">
+          <div className="max-w-[480px] mx-auto space-y-3">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               {t("auth.supportHint")}{" "}
-              <a href="mailto:soporte@parkit.app" className="font-medium text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
+              <a href="mailto:soporte@parkit.app" className="font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
                 {t("auth.supportLinkLabel")}
               </a>
             </p>
 
-            <div className="flex flex-col items-center justify-center gap-2 text-[10px] text-slate-600 dark:text-slate-400">
-
-              <span className="font-medium">© {new Date().getFullYear()} Parkit. {t("privacy.footerRights")}</span>
-
-              <div className="flex items-center gap-2 sm:gap-3">
-                <Link href="/terms" className="hover:text-slate-900 dark:hover:text-slate-200 transition-colors font-medium">
-                  {t("privacy.footerTerms")}
-                </Link>
-
-                <span className="shrink-0 w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
-
-                <Link href="/privacy" className="hover:text-slate-900 dark:hover:text-slate-200 transition-colors font-medium">
-                  {t("privacy.footerPrivacy")}
-                </Link>
-              </div>
+            <div className="flex items-center justify-center gap-3 text-[11px] text-slate-500 dark:text-slate-500">
+              <span>© {new Date().getFullYear()} Parkit</span>
+              <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
+              <Link href="/terms" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
+                {t("privacy.footerTerms")}
+              </Link>
+              <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
+              <Link href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
+                {t("privacy.footerPrivacy")}
+              </Link>
             </div>
           </div>
         </div>

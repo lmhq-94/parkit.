@@ -17,6 +17,8 @@ import {
   Check,
   X,
 } from "lucide-react";
+import { FcGoogle } from "react-icons/fc";
+import { FaApple, FaMicrosoft } from "react-icons/fa";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageLoader } from "@/components/PageLoader";
 import { ThemeToggleSimple } from "@/components/ThemeToggleSimple";
@@ -61,6 +63,10 @@ function RegisterForm() {
 
   useEffect(() => setMounted(true), []);
   const logoVariant = mounted && resolvedTheme === "dark" ? "onDark" : "default";
+
+  const handleOAuthLogin = (provider: string) => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/auth/${provider}`;
+  };
 
   useEffect(() => {
     if (!success) return;
@@ -260,14 +266,13 @@ function RegisterForm() {
             </p>
           </div>
 
-          {error && (
-            <div className="mb-6 p-4 rounded-lg border border-red-500/20 bg-red-500/5 text-sm text-red-600 dark:text-red-400 flex items-center gap-3">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="p-4 rounded-lg border border-red-500/20 bg-red-500/5 text-sm text-red-600 dark:text-red-400 flex items-center gap-3">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="firstName" className={LABEL_BASE}>
@@ -318,41 +323,23 @@ function RegisterForm() {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
-                  aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
 
               {/* Password Requirements */}
               {password && (
-                <div className="mt-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 space-y-2">
-                  <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
-                    {t("auth.passwordRequirements")}
-                  </p>
-                  <div className="space-y-1.5">
-                    <PasswordRequirement
-                      label={t("auth.passwordReqMinLength")}
-                      met={req.minLength}
-                    />
-                    <PasswordRequirement
-                      label={t("auth.passwordReqUppercase")}
-                      met={req.hasUppercase}
-                    />
-                    <PasswordRequirement
-                      label={t("auth.passwordReqLowercase")}
-                      met={req.hasLowercase}
-                    />
-                    <PasswordRequirement
-                      label={t("auth.passwordReqNumber")}
-                      met={req.hasNumber}
-                    />
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <PasswordRequirement label={t("auth.passwordReqMinLength")} met={req.hasMinLength} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <PasswordRequirement label={t("auth.passwordReqUppercase")} met={req.hasUppercase} />
+                    <PasswordRequirement label={t("auth.passwordReqLowercase")} met={req.hasLowercase} />
+                    <PasswordRequirement label={t("auth.passwordReqNumber")} met={req.hasNumber} />
                   </div>
                 </div>
               )}
@@ -395,6 +382,44 @@ function RegisterForm() {
             </button>
           </form>
 
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200 dark:border-slate-700" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-white/90 dark:bg-slate-900/70 px-2 text-slate-500 dark:text-slate-400">{t("auth.orContinueWithEmail")}</span>
+            </div>
+          </div>
+
+          {/* OAuth Providers - Horizontal row */}
+          <div className="flex items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => handleOAuthLogin("google")}
+              className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+              title={t("auth.continueWithGoogle")}
+            >
+              <FcGoogle className="h-6 w-6" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOAuthLogin("microsoft")}
+              className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+              title={t("auth.continueWithMicrosoft")}
+            >
+              <FaMicrosoft className="h-6 w-6 text-blue-600" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOAuthLogin("apple")}
+              className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+              title={t("auth.continueWithApple")}
+            >
+              <FaApple className="h-6 w-6" />
+            </button>
+          </div>
+
           <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 text-center">
             <p className="text-sm text-slate-500 dark:text-slate-400">
               {t("auth.alreadyHaveAccount")}{" "}
@@ -405,31 +430,26 @@ function RegisterForm() {
           </div>
         </div>
 
-        {/* Bottom section - Fixed at bottom */}
-        <div className="fixed bottom-0 left-0 right-0 py-4 px-4 text-center z-20">
-          <div className="max-w-[480px] mx-auto space-y-2">
-            <p className="text-xs text-slate-700 dark:text-slate-400">
+        {/* Footer - Outside card, part of natural flow */}
+        <div className="mt-8 mb-4 text-center">
+          <div className="max-w-[480px] mx-auto space-y-3">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               {t("auth.supportHint")}{" "}
-              <a href="mailto:soporte@parkit.app" className="font-medium text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
+              <a href="mailto:soporte@parkit.app" className="font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
                 {t("auth.supportLinkLabel")}
               </a>
             </p>
 
-            <div className="flex flex-col items-center justify-center gap-2 text-[10px] text-slate-600 dark:text-slate-400">
-
-              <span className="font-medium">© {new Date().getFullYear()} Parkit. {t("privacy.footerRights")}</span>
-
-              <div className="flex items-center gap-2 sm:gap-3">
-                <Link href="/terms" className="hover:text-slate-900 dark:hover:text-slate-200 transition-colors font-medium">
-                  {t("privacy.footerTerms")}
-                </Link>
-
-                <span className="shrink-0 w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
-
-                <Link href="/privacy" className="hover:text-slate-900 dark:hover:text-slate-200 transition-colors font-medium">
-                  {t("privacy.footerPrivacy")}
-                </Link>
-              </div>
+            <div className="flex items-center justify-center gap-3 text-[11px] text-slate-500 dark:text-slate-500">
+              <span>© {new Date().getFullYear()} Parkit</span>
+              <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
+              <Link href="/terms" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
+                {t("privacy.footerTerms")}
+              </Link>
+              <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
+              <Link href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
+                {t("privacy.footerPrivacy")}
+              </Link>
             </div>
           </div>
         </div>
