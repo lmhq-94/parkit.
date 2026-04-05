@@ -408,25 +408,25 @@ function RegisterForm() {
         {/* Bottom section - Fixed at bottom */}
         <div className="fixed bottom-0 left-0 right-0 py-4 px-4 text-center z-20">
           <div className="max-w-[480px] mx-auto space-y-2">
-            <p className="text-xs text-slate-600 dark:text-slate-400">
+            <p className="text-xs text-slate-700 dark:text-slate-400">
               {t("auth.supportHint")}{" "}
-              <a href="mailto:soporte@parkit.app" className="font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
+              <a href="mailto:soporte@parkit.app" className="font-medium text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
                 {t("auth.supportLinkLabel")}
               </a>
             </p>
 
-            <div className="flex flex-col items-center justify-center gap-2 text-[10px] text-slate-500 dark:text-slate-400">
+            <div className="flex flex-col items-center justify-center gap-2 text-[10px] text-slate-600 dark:text-slate-400">
 
-              <span>© {new Date().getFullYear()} Parkit. {t("privacy.footerRights")}</span>
+              <span className="font-medium">© {new Date().getFullYear()} Parkit. {t("privacy.footerRights")}</span>
 
               <div className="flex items-center gap-2 sm:gap-3">
-                <Link href="/terms" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+                <Link href="/terms" className="hover:text-slate-900 dark:hover:text-slate-200 transition-colors font-medium">
                   {t("privacy.footerTerms")}
                 </Link>
 
                 <span className="shrink-0 w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
 
-                <Link href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+                <Link href="/privacy" className="hover:text-slate-900 dark:hover:text-slate-200 transition-colors font-medium">
                   {t("privacy.footerPrivacy")}
                 </Link>
               </div>

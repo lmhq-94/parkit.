@@ -563,23 +563,35 @@ body {
   animation: gradient-flow-reverse 15s ease-in-out infinite;
 }
 
-/* Lava morphing animations - organic irregular shapes */
+/* Lava morphing animations - MAXIMUM MOVEMENT */
 @keyframes lava-morph-1 {
   0%, 100% {
     border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
     transform: translate(0, 0) rotate(0deg) scale(1);
   }
-  25% {
+  15% {
     border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
-    transform: translate(30px, -20px) rotate(5deg) scale(1.1);
+    transform: translate(120px, -100px) rotate(25deg) scale(1.4);
   }
-  50% {
+  30% {
     border-radius: 50% 60% 40% 50% / 40% 40% 60% 50%;
-    transform: translate(-20px, 30px) rotate(-3deg) scale(0.95);
+    transform: translate(-100px, 120px) rotate(-20deg) scale(0.7);
+  }
+  45% {
+    border-radius: 40% 50% 60% 40% / 60% 50% 40% 60%;
+    transform: translate(80px, 60px) rotate(15deg) scale(1.3);
+  }
+  60% {
+    border-radius: 70% 30% 50% 60% / 50% 60% 40% 50%;
+    transform: translate(-60px, -80px) rotate(-12deg) scale(0.85);
   }
   75% {
-    border-radius: 40% 50% 60% 40% / 60% 50% 40% 60%;
-    transform: translate(20px, 20px) rotate(2deg) scale(1.05);
+    border-radius: 45% 55% 45% 55% / 55% 45% 55% 45%;
+    transform: translate(40px, -40px) rotate(8deg) scale(1.15);
+  }
+  90% {
+    border-radius: 55% 45% 55% 45% / 45% 55% 45% 55%;
+    transform: translate(-20px, 30px) rotate(-5deg) scale(0.95);
   }
 }
 
@@ -588,13 +600,21 @@ body {
     border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
     transform: translate(0, 0) rotate(0deg) scale(1);
   }
-  33% {
+  20% {
     border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%;
-    transform: translate(-40px, 40px) rotate(-8deg) scale(1.15);
+    transform: translate(-150px, 120px) rotate(-35deg) scale(1.5);
   }
-  66% {
+  40% {
     border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
-    transform: translate(30px, -30px) rotate(5deg) scale(0.9);
+    transform: translate(100px, -140px) rotate(20deg) scale(0.65);
+  }
+  60% {
+    border-radius: 40% 60% 60% 40% / 60% 40% 60% 40%;
+    transform: translate(-80px, 80px) rotate(-15deg) scale(1.35);
+  }
+  80% {
+    border-radius: 60% 40% 40% 60% / 40% 60% 60% 40%;
+    transform: translate(60px, -60px) rotate(10deg) scale(0.9);
   }
 }
 
@@ -603,17 +623,29 @@ body {
     border-radius: 70% 30% 50% 50% / 30% 50% 50% 70%;
     transform: translate(0, 0) rotate(0deg) scale(1);
   }
-  25% {
+  15% {
     border-radius: 40% 60% 60% 40% / 60% 40% 40% 60%;
-    transform: translate(50px, 50px) rotate(10deg) scale(1.1);
+    transform: translate(180px, 80px) rotate(40deg) scale(1.45);
   }
-  50% {
+  30% {
     border-radius: 60% 40% 40% 60% / 40% 60% 60% 40%;
-    transform: translate(-30px, -40px) rotate(-5deg) scale(0.95);
+    transform: translate(-120px, -140px) rotate(-30deg) scale(0.65);
+  }
+  45% {
+    border-radius: 50% 50% 60% 40% / 50% 40% 50% 50%;
+    transform: translate(90px, -60px) rotate(20deg) scale(1.3);
+  }
+  60% {
+    border-radius: 45% 55% 45% 55% / 55% 45% 55% 45%;
+    transform: translate(-70px, 50px) rotate(-15deg) scale(0.8);
   }
   75% {
-    border-radius: 50% 50% 60% 40% / 50% 40% 50% 50%;
-    transform: translate(20px, -20px) rotate(3deg) scale(1.02);
+    border-radius: 55% 45% 55% 45% / 45% 55% 45% 55%;
+    transform: translate(50px, -30px) rotate(10deg) scale(1.1);
+  }
+  90% {
+    border-radius: 65% 35% 45% 65% / 35% 65% 55% 45%;
+    transform: translate(-30px, 20px) rotate(-5deg) scale(0.95);
   }
 }
 
@@ -622,9 +654,17 @@ body {
     border-radius: 50% 60% 40% 50% / 40% 50% 60% 50%;
     transform: translate(-50%, -50%) rotate(0deg) scale(1);
   }
-  50% {
+  25% {
     border-radius: 40% 50% 50% 60% / 60% 40% 50% 40%;
-    transform: translate(-50%, -50%) rotate(180deg) scale(1.2);
+    transform: translate(-50%, -50%) rotate(180deg) scale(1.6);
+  }
+  50% {
+    border-radius: 60% 40% 60% 40% / 40% 60% 40% 60%;
+    transform: translate(-50%, -50%) rotate(360deg) scale(0.6);
+  }
+  75% {
+    border-radius: 45% 55% 45% 55% / 55% 45% 55% 45%;
+    transform: translate(-50%, -50%) rotate(540deg) scale(1.3);
   }
 }
 
@@ -633,13 +673,21 @@ body {
     border-radius: 40% 50% 60% 40% / 50% 40% 50% 60%;
     transform: translate(0, 0) rotate(0deg) scale(1);
   }
-  33% {
+  20% {
     border-radius: 60% 40% 40% 60% / 40% 60% 60% 40%;
-    transform: translate(20px, -30px) rotate(15deg) scale(1.1);
+    transform: translate(100px, -120px) rotate(30deg) scale(1.45);
   }
-  66% {
+  40% {
     border-radius: 50% 60% 40% 50% / 60% 50% 40% 50%;
-    transform: translate(-20px, 20px) rotate(-10deg) scale(0.95);
+    transform: translate(-120px, 100px) rotate(-25deg) scale(0.7);
+  }
+  60% {
+    border-radius: 70% 30% 50% 40% / 50% 60% 40% 60%;
+    transform: translate(80px, 60px) rotate(18deg) scale(1.3);
+  }
+  80% {
+    border-radius: 45% 55% 55% 45% / 55% 45% 45% 55%;
+    transform: translate(-50px, -70px) rotate(-12deg) scale(0.85);
   }
 }
 
@@ -668,17 +716,29 @@ body {
     border-radius: 60% 30% 40% 60% / 30% 60% 50% 40%;
     transform: translate(0, 0) rotate(0deg) scale(1);
   }
-  25% {
+  15% {
     border-radius: 40% 50% 60% 40% / 50% 40% 50% 60%;
-    transform: translate(40px, -40px) rotate(20deg) scale(1.2);
+    transform: translate(110px, -130px) rotate(45deg) scale(1.5);
   }
-  50% {
+  30% {
     border-radius: 50% 60% 40% 50% / 60% 50% 40% 50%;
-    transform: translate(-30px, 30px) rotate(-15deg) scale(0.9);
+    transform: translate(-140px, 80px) rotate(-35deg) scale(0.65);
+  }
+  45% {
+    border-radius: 70% 40% 50% 60% / 40% 50% 60% 50%;
+    transform: translate(80px, 50px) rotate(25deg) scale(1.4);
+  }
+  60% {
+    border-radius: 45% 55% 55% 45% / 55% 45% 45% 55%;
+    transform: translate(-60px, -100px) rotate(-18deg) scale(0.75);
   }
   75% {
-    border-radius: 70% 40% 50% 60% / 40% 50% 60% 50%;
-    transform: translate(20px, 10px) rotate(5deg) scale(1.1);
+    border-radius: 55% 45% 45% 55% / 45% 55% 55% 45%;
+    transform: translate(40px, 40px) rotate(12deg) scale(1.2);
+  }
+  90% {
+    border-radius: 65% 35% 55% 45% / 35% 65% 45% 55%;
+    transform: translate(-20px, -30px) rotate(-8deg) scale(0.9);
   }
 }
 
@@ -687,12 +747,20 @@ body {
     border-radius: 30% 60% 70% 40% / 60% 40% 30% 60%;
     transform: translate(0, 0) rotate(0deg) scale(1);
   }
-  33% {
+  20% {
     border-radius: 70% 30% 40% 70% / 30% 70% 60% 40%;
-    transform: translate(-50px, 25px) rotate(25deg) scale(1.15);
+    transform: translate(-120px, 80px) rotate(50deg) scale(1.55);
   }
-  66% {
+  40% {
     border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
-    transform: translate(25px, -50px) rotate(-20deg) scale(0.85);
+    transform: translate(90px, -120px) rotate(-40deg) scale(0.6);
+  }
+  60% {
+    border-radius: 60% 40% 60% 40% / 40% 60% 40% 60%;
+    transform: translate(-70px, -60px) rotate(25deg) scale(1.35);
+  }
+  80% {
+    border-radius: 45% 55% 45% 55% / 55% 45% 55% 45%;
+    transform: translate(50px, 40px) rotate(-15deg) scale(0.8);
   }
 }
