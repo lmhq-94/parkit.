@@ -19,10 +19,10 @@ import {
   LayoutAnimation,
   UIManager,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Logo } from "@parkit/shared";
+import { Logo, getTranslatedApiErrorMessage } from "@parkit/shared";
 import api, { setAuthToken } from "@/lib/api";
 import { saveUser } from "@/lib/auth";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
@@ -31,23 +31,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
-import { getTranslatedApiErrorMessage } from "@/lib/apiErrors";
 import { Users, Car } from "lucide-react-native";
 import { STAFF_ROLES, type StaffRole } from "@/lib/staffRoles";
-import { 
-  initializeGoogleSignIn, 
-  signInWithGoogle, 
-  signInWithFacebook, 
-  signInWithMicrosoft,
-  type OAuthResponse 
-} from "@/lib/oauth";
 
-const SUPPORT_EMAIL = "mailto:soporte@parkitcr.com";
+const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
 const LOGO_SIZE = 72;
 const CONTROL_HEIGHT = 56;
-
-// Check if OAuth is configured
-const isOAuthConfigured = !!process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -70,9 +59,8 @@ export default function LoginScreen() {
     () =>
       StyleSheet.create({
         heroStrip: {
-          backgroundColor: a.authHeroStripBg,
-          zIndex: 0,
-          overflow: "hidden",
+          flex: 1,
+          backgroundColor: 'transparent',
         },
         topBar: {
           flexDirection: "row",
@@ -83,6 +71,7 @@ export default function LoginScreen() {
           width: "100%",
           maxWidth: sheetMaxWidth,
           alignSelf: "center",
+          backgroundColor: 'transparent',
         },
         backBtn: {
           width: 44,
@@ -94,13 +83,11 @@ export default function LoginScreen() {
           marginLeft: -2,
         },
         hero: {
-          alignItems: "center",
+          flex: 1,
           justifyContent: "center",
-          paddingVertical: 12,
+          alignItems: "center",
           minHeight: heroMinHeight,
-        },
-        heroLogin: {
-          minHeight: Math.round(heroMinHeight * 0.74),
+          backgroundColor: 'transparent',
         },
         heroCompact: {
           minHeight: Math.round(heroMinHeight * 0.55),
@@ -126,6 +113,7 @@ export default function LoginScreen() {
           width: "100%",
           maxWidth: sheetMaxWidth,
           alignSelf: "center",
+          maxHeight: Math.round(height * 0.62),
         },
         bottomWrap: {
           flex: 1,
@@ -371,57 +359,8 @@ export default function LoginScreen() {
           marginTop: 2,
           lineHeight: 16,
         },
-        // OAuth Section Styles
-        oauthSection: {
-          marginTop: 24,
-          marginBottom: 16,
-        },
-        oauthDivider: {
-          flexDirection: "row",
-          alignItems: "center",
-          marginBottom: 16,
-        },
-        oauthDividerLine: {
-          flex: 1,
-          height: 1,
-          backgroundColor: a.inputBorder,
-        },
-        oauthDividerText: {
-          paddingHorizontal: 16,
-          fontSize: 12,
-          color: a.textMuted,
-          fontWeight: "600",
-        },
-        oauthButtonsRow: {
-          flexDirection: "row",
-          justifyContent: "center",
-          gap: 12,
-        },
-        oauthButton: {
-          width: 56,
-          height: 56,
-          borderRadius: 16,
-          borderWidth: 1,
-          borderColor: a.inputBorder,
-          backgroundColor: a.inputBg,
-          alignItems: "center",
-          justifyContent: "center",
-          ...Platform.select({
-            ios: {
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.05,
-              shadowRadius: 2,
-            },
-            android: { elevation: 1 },
-          }),
-        },
-        oauthButtonPressed: {
-          opacity: 0.8,
-          transform: [{ scale: 0.95 }],
-        },
       }),
-    [a, heroMinHeight, horizontalPadding, sheetMaxWidth, isDark]
+    [a, heroMinHeight, horizontalPadding, sheetMaxWidth, isDark, height]
   );
 
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -436,7 +375,6 @@ export default function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const [oauthLoading, setOAuthLoading] = useState<string | null>(null);
   const heroTranslateY = useRef(new Animated.Value(0)).current;
   const formTranslateY = useRef(new Animated.Value(22)).current;
   const formOpacity = useRef(new Animated.Value(0)).current;
@@ -446,11 +384,6 @@ export default function LoginScreen() {
     const next = raw === "signup" ? "signup" : "login";
     setMode(next);
   }, [params?.mode]);
-
-  useEffect(() => {
-    // Initialize Google Sign-In when component mounts
-    initializeGoogleSignIn();
-  }, []);
 
   useEffect(() => {
     formTranslateY.setValue(22);
@@ -575,41 +508,6 @@ export default function LoginScreen() {
     }
   };
 
-  const handleOAuthSignIn = async (provider: 'google' | 'facebook' | 'microsoft') => {
-    setError(null);
-    setOAuthLoading(provider);
-    
-    try {
-      let result: OAuthResponse;
-      
-      switch (provider) {
-        case 'google':
-          result = await signInWithGoogle();
-          break;
-        case 'facebook':
-          result = await signInWithFacebook();
-          break;
-        case 'microsoft':
-          result = await signInWithMicrosoft();
-          break;
-        default:
-          throw new Error('Unsupported provider');
-      }
-
-      if (result.success && result.user && result.token) {
-        await api.post("/valets/me/presence", { status: "AVAILABLE" }).catch(() => {});
-        setUser(result.user);
-        router.replace("/home");
-      } else {
-        setError(result.error || `${provider} sign-in failed`);
-      }
-    } catch (err: any) {
-      setError(err.message || `${provider} sign-in failed`);
-    } finally {
-      setOAuthLoading(null);
-    }
-  };
-
   const ph = a.placeholder;
   const keyboardInputsMaxHeight = Math.max(
     160,
@@ -617,14 +515,14 @@ export default function LoginScreen() {
   );
   const inputsMaxHeight = keyboardVisible
     ? keyboardInputsMaxHeight
-    : Math.round(height * (mode === "signup" ? 0.38 : 0.30));
+    : Math.round(height * 0.30);
 
   return (
-    <AnimatedAuthBackground isDark={isDark}>
+    <AnimatedAuthBackground isDark={theme.isDark}>
       <StatusBar barStyle={a.statusBarStyle} backgroundColor="transparent" />
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+      <KeyboardAvoidingView style={{ flex: 1, backgroundColor: 'transparent' }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <View style={styles.heroStrip}>
-          <SafeAreaView style={styles.topBar} edges={["top"]}>
+          <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 12) }]}>
             <TouchableOpacity
               onPress={() => {
                 if (Platform.OS === "android") {
@@ -641,17 +539,16 @@ export default function LoginScreen() {
             >
               <Ionicons name="chevron-back" size={24} color={a.authHeroBackBtnIcon} />
             </TouchableOpacity>
-          </SafeAreaView>
+          </View>
 
           <Animated.View
             style={[
               styles.hero,
-              mode === "signup" ? styles.heroCompact : styles.heroLogin,
               keyboardVisible ? { height: 0, opacity: 0, overflow: "hidden" } : null,
               { transform: [{ translateY: heroTranslateY }] },
             ]}
           >
-            <Logo size={LOGO_SIZE} style={styles.heroLogo} variant="onDark" />
+            <Logo size={LOGO_SIZE} style={styles.heroLogo} variant={isDark ? "onDark" : "onLight"} />
             <Text style={styles.heroBrand}>valet</Text>
           </Animated.View>
         </View>
@@ -933,72 +830,6 @@ export default function LoginScreen() {
                   </Text>
                 )}
               </Pressable>
-
-              {/* OAuth Section - only shown when configured */}
-              {isOAuthConfigured && (
-              <View style={styles.oauthSection}>
-                <View style={styles.oauthDivider}>
-                  <View style={styles.oauthDividerLine} />
-                  <Text style={styles.oauthDividerText}>
-                    {t(locale, "auth.orContinueWith")}
-                  </Text>
-                  <View style={styles.oauthDividerLine} />
-                </View>
-                
-                <View style={styles.oauthButtonsRow}>
-                  <Pressable
-                    onPress={() => handleOAuthSignIn('google')}
-                    disabled={oauthLoading !== null}
-                    style={({ pressed }) => [
-                      styles.oauthButton,
-                      pressed && styles.oauthButtonPressed,
-                      oauthLoading === 'google' && styles.btnDisabled,
-                    ]}
-                    hitSlop={8}
-                  >
-                    {oauthLoading === 'google' ? (
-                      <ActivityIndicator size="small" color={a.text} />
-                    ) : (
-                      <Text style={{ fontSize: 20, color: a.text }}>G</Text>
-                    )}
-                  </Pressable>
-                  
-                  <Pressable
-                    onPress={() => handleOAuthSignIn('facebook')}
-                    disabled={oauthLoading !== null}
-                    style={({ pressed }) => [
-                      styles.oauthButton,
-                      pressed && styles.oauthButtonPressed,
-                      oauthLoading === 'facebook' && styles.btnDisabled,
-                    ]}
-                    hitSlop={8}
-                  >
-                    {oauthLoading === 'facebook' ? (
-                      <ActivityIndicator size="small" color={a.text} />
-                    ) : (
-                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1877F2' }}>f</Text>
-                    )}
-                  </Pressable>
-                  
-                  <Pressable
-                    onPress={() => handleOAuthSignIn('microsoft')}
-                    disabled={oauthLoading !== null}
-                    style={({ pressed }) => [
-                      styles.oauthButton,
-                      pressed && styles.oauthButtonPressed,
-                      oauthLoading === 'microsoft' && styles.btnDisabled,
-                    ]}
-                    hitSlop={8}
-                  >
-                    {oauthLoading === 'microsoft' ? (
-                      <ActivityIndicator size="small" color={a.text} />
-                    ) : (
-                      <Text style={{ fontSize: 16, fontWeight: 'bold', color: a.text }}>M</Text>
-                    )}
-                  </Pressable>
-                </View>
-              </View>
-              )}
 
               <View
                 style={[

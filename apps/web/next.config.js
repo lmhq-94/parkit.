@@ -11,6 +11,8 @@ const nextConfig = {
       ...(config.resolve.alias || {}),
       'react-native$': 'react-native-web',
     };
+    // Exclude Expo native modules from webpack bundling (used only in mobile)
+    config.externals = [...(config.externals || []), 'expo-modules-core', 'expo-constants'];
     return config;
   },
 

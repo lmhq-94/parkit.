@@ -30,7 +30,7 @@ import type { ReactNode } from "react";
 import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import api from "@/lib/api";
-import { messageFromAxios } from "@/lib/apiErrors";
+import { messageFromAxios } from "@parkit/shared";
 import { useOnAppForeground } from "@/lib/useOnAppForeground";
 import { RECEIVE_META_POLL_MS } from "@/lib/syncConstants";
 import { useNearestParking, haversineKm } from "@/lib/useNearestParking";

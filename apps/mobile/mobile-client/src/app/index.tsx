@@ -3,9 +3,9 @@ import { View, StyleSheet, Animated, StatusBar } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/lib/store";
 import { getHasSeenOnboarding } from "@/lib/onboarding";
+import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
+import { useIsDark } from "@/lib/useIsDark";
 
-// Colors aligned with the web app (themeDefaults)
-const SPLASH_BG = "#020617"; // slate-900
 const LOGO_PARK = "#FFFFFF";
 const LOGO_IT = "#3B82F6"; // blue-500 (primary dark)
 
@@ -15,6 +15,7 @@ const LOGO_SIZE = 72;
 export default function SplashScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const isDark = useIsDark();
 
   const parkOpacity = useRef(new Animated.Value(0)).current;
   const parkTranslate = useRef(new Animated.Value(16)).current;
@@ -91,49 +92,51 @@ export default function SplashScreen() {
   }, [user, router]);
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={SPLASH_BG} />
-      <Animated.View style={[styles.logoWrap, { transform: [{ scale: breathScale }] }]}>
-        <View style={styles.logoRow}>
-          <Animated.Text
-            style={[
-              styles.logoPart,
-              styles.park,
-              {
-                opacity: parkOpacity,
-                transform: [{ translateX: parkTranslate }],
-              },
-            ]}
-          >
-            park
-          </Animated.Text>
-          <Animated.Text
-            style={[
-              styles.logoPart,
-              styles.it,
-              {
-                opacity: itOpacity,
-                transform: [
-                  { translateX: itTranslate },
-                  { scale: itScale },
-                ],
-              },
-            ]}
-          >
-            it.
-          </Animated.Text>
-        </View>
-      </Animated.View>
-    </View>
+    <AnimatedAuthBackground isDark={isDark}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor="transparent" />
+      <View style={styles.content}>
+        <Animated.View style={[styles.logoWrap, { transform: [{ scale: breathScale }] }]}>
+          <View style={styles.logoRow}>
+            <Animated.Text
+              style={[
+                styles.logoPart,
+                styles.park,
+                {
+                  opacity: parkOpacity,
+                  transform: [{ translateX: parkTranslate }],
+                },
+              ]}
+            >
+              park
+            </Animated.Text>
+            <Animated.Text
+              style={[
+                styles.logoPart,
+                styles.it,
+                {
+                  opacity: itOpacity,
+                  transform: [
+                    { translateX: itTranslate },
+                    { scale: itScale },
+                  ],
+                },
+              ]}
+            >
+              it.
+            </Animated.Text>
+          </View>
+        </Animated.View>
+      </View>
+    </AnimatedAuthBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  content: {
     flex: 1,
-    backgroundColor: SPLASH_BG,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: 'transparent',
   },
   logoWrap: {
     alignItems: "center",

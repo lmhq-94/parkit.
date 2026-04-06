@@ -13,7 +13,7 @@ import * as Linking from 'expo-linking';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@parkit/shared';
 import api from '@/lib/api';
-import { messageFromAxios } from '@/lib/apiErrors';
+import { messageFromAxios } from "@parkit/shared";
 import { CardScanner } from './CardScanner';
 
 interface CardVerificationProps {

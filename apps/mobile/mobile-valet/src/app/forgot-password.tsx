@@ -18,7 +18,7 @@ import {
   LayoutAnimation,
   UIManager,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import { Logo } from "@parkit/shared";
@@ -29,9 +29,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
-import { getTranslatedApiErrorMessage } from "@/lib/apiErrors";
+import { getTranslatedApiErrorMessage } from "@parkit/shared";
 
-const SUPPORT_EMAIL = "mailto:soporte@parkitcr.com";
+const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
 const LOGO_SIZE = 72;
 const CONTROL_HEIGHT = 56;
 
@@ -47,15 +47,14 @@ export default function ForgotPasswordScreen() {
   const isLandscape = width > height;
   const horizontalPadding = isTablet ? 36 : 28;
   const sheetMaxWidth = isTablet ? 640 : 560;
-  const heroMin = Math.round((isLandscape ? height * 0.2 : height * 0.22));
+  const heroMin = Math.round((isLandscape ? height * 0.24 : height * 0.32));
 
   const styles = useMemo(
     () =>
       StyleSheet.create({
         heroStrip: {
-          backgroundColor: a.authHeroStripBg,
-          zIndex: 0,
-          overflow: "hidden",
+          flex: 1,
+          backgroundColor: 'transparent',
         },
         topBar: {
           flexDirection: "row",
@@ -66,6 +65,7 @@ export default function ForgotPasswordScreen() {
           width: "100%",
           maxWidth: sheetMaxWidth,
           alignSelf: "center",
+          backgroundColor: 'transparent',
         },
         backBtn: {
           width: 44,
@@ -77,10 +77,11 @@ export default function ForgotPasswordScreen() {
           marginLeft: -2,
         },
         hero: {
-          alignItems: "center",
+          flex: 1,
           justifyContent: "center",
-          paddingVertical: 12,
+          alignItems: "center",
           minHeight: heroMin,
+          backgroundColor: 'transparent',
         },
         heroLogo: { marginBottom: 0 },
         heroBrand: {
@@ -274,9 +275,9 @@ export default function ForgotPasswordScreen() {
   return (
     <AnimatedAuthBackground isDark={theme.isDark}>
       <StatusBar barStyle={a.statusBarStyle} backgroundColor="transparent" />
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+      <KeyboardAvoidingView style={{ flex: 1, backgroundColor: 'transparent' }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <View style={styles.heroStrip}>
-          <SafeAreaView style={styles.topBar} edges={["top"]}>
+          <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 12) }]}>
             <TouchableOpacity
               onPress={() => {
                 if (Platform.OS === "android") {
@@ -293,7 +294,7 @@ export default function ForgotPasswordScreen() {
             >
               <Ionicons name="chevron-back" size={24} color={a.authHeroBackBtnIcon} />
             </TouchableOpacity>
-          </SafeAreaView>
+          </View>
 
           <Animated.View
             style={[
@@ -302,7 +303,7 @@ export default function ForgotPasswordScreen() {
               { transform: [{ translateY: heroTranslateY }] },
             ]}
           >
-            <Logo size={LOGO_SIZE} style={styles.heroLogo} variant="onDark" />
+            <Logo size={LOGO_SIZE} style={styles.heroLogo} variant={theme.isDark ? "onDark" : "onLight"} />
             <Text style={styles.heroBrand}>valet</Text>
           </Animated.View>
         </View>

@@ -25,7 +25,7 @@ import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTh
 import { ValetBackButton } from "@/components/ValetBackButton";
 import { StickyFormFooter } from "@/components/StickyFormFooter";
 import api from "@/lib/api";
-import { messageFromAxios } from "@/lib/apiErrors";
+import { messageFromAxios } from "@parkit/shared";
 import { saveUser } from "@/lib/auth";
 import { createFeedback } from "@/lib/feedback";
 import DateTimePicker from "@react-native-community/datetimepicker";

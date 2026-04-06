@@ -69,9 +69,9 @@ function authColors(isDark: boolean): AuthThemeColors {
   return {
     authScreenChromeBg: "#020617",
     authHeroStripBg: "#020617",
-    authHeroBackBtnBg: "rgba(248, 250, 252, 0.12)",
-    authHeroBackBtnIcon: "#F8FAFC",
-    authHeroValetLabel: "rgba(148, 163, 184, 0.58)",
+    authHeroBackBtnBg: isDark ? "rgba(248, 250, 252, 0.12)" : "rgba(15, 23, 42, 0.12)",
+    authHeroBackBtnIcon: isDark ? "#F8FAFC" : "#0F172A",
+    authHeroValetLabel: isDark ? "rgba(148, 163, 184, 0.58)" : "rgba(71, 85, 105, 0.9)",
     bottomSheet: isDark ? "#0F172A" : "#FFFFFF",
     text: isDark ? "#F8FAFC" : "#0F172A",
     textSecondary: isDark ? "#94A3B8" : "#475569",

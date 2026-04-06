@@ -7,11 +7,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "welcome.login": "INICIAR SESIÓN",
     "welcome.signup": "REGISTRARSE",
     "welcome.version": "v {{version}}",
-    "login.welcomeBack": "Bienvenido de nuevo a",
-    "login.brand": "Parkit",
-    "login.headline": "Bienvenido",
-    "login.tagline": "Ingresa con tu correo y contraseña",
-    "login.subtitle": "Inicia sesión para acceder al sistema valet",
     "login.email": "Correo electrónico",
     "login.password": "Contraseña",
     "login.placeholderEmail": "ejemplo@correo.com",
@@ -20,10 +15,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "login.submit": "INICIAR SESIÓN",
     "login.footer": "Acceso restringido. Solo personal. ",
     "login.contactSupport": "Contactar soporte",
-    "login.accountInactive":
-      "Tu cuenta está desactivada. Contacta al administrador.",
-    "login.errorInvalidCredentials": "Correo o contraseña incorrectos",
-    "forgot.headline": "¿Olvidaste tu contraseña?",
     "forgot.description":
       "Ingresa tu correo y te enviaremos un enlace para restablecerla (revisa también spam). Abre el enlace en el navegador para elegir una nueva contraseña.",
     "forgot.sent":
@@ -51,11 +42,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "signup.placeholderPassword": "********",
     "signup.placeholderLicenseNumber": "LIC-12345",
     "signup.placeholderLicenseExpiry": "YYYY-MM-DD",
-    "signup.errorEmailTaken": "Este correo ya está en uso",
-    "signup.submit": "REGISTRARSE",
-    "settings.title": "Ajustes",
-    "settings.intro":
-      "Personaliza la apariencia y el idioma. Los cambios se guardan en este dispositivo.",
     "settings.themeSection": "Tema",
     "settings.themeSystem": "Según el sistema",
     "settings.themeLight": "Claro",
@@ -64,47 +50,20 @@ const translations: Record<Locale, Record<string, string>> = {
     "settings.themeSystemHintDark": "Ahora el sistema está en modo oscuro.",
     "settings.languageSection": "Idioma",
     "settings.language": "Idioma",
-    "settings.helpHint":
-      "Elige el idioma de la aplicación. Los cambios se guardan solos.",
-    "common.back": "Volver",
-    "common.close": "Cerrar",
     "settings.spanish": "Español",
     "settings.english": "English",
     "common.loading": "Cargando…",
     "common.errorFillFields": "Completa todos los campos",
-    "common.loginFailed": "Error al iniciar sesión",
-    "common.networkError": "No se pudo conectar al servidor. Revisa tu conexión.",
-    "common.cancel": "Cancelar",
-    "common.ok": "Entendido",
-    "common.errorTitle": "Aviso",
-    "common.successTitle": "Listo",
-    "auth.errorCompanyInactive": "La empresa asociada a tu cuenta está inactiva.",
-    "auth.errorAccountPending": "Tu cuenta está pendiente de activación. Revisa el correo para configurar tu contraseña.",
-    "auth.errorInvalidInvite": "El enlace de invitación no es válido o ha expirado.",
-    "auth.errorInvalidReset": "El enlace para restablecimiento no es válido o ha expirado.",
-    "auth.errorInvalidCode": "El código ingresado no es válido o ya expiró.",
-    "tickets.plateLabel": "Matrícula del vehículo",
-    "tickets.title": "Mis vehículos asignados",
-    "tickets.subtitle": "Desliza hacia abajo en la lista para actualizar.",
     "tickets.settings": "Ajustes",
     "tickets.logout": "Cerrar sesión",
     "tickets.logoutConfirmTitle": "¿Salir de la aplicación?",
     "tickets.logoutConfirmMessage":
       "Tendrás que volver a iniciar sesión con tu correo y contraseña.",
-    "tickets.loading": "Cargando la lista…",
-    "tickets.emptyTitle": "No hay vehículos en este momento",
-    "tickets.emptyHint":
-      "Cuando te asignen uno, aparecerá aquí. Puedes deslizar hacia abajo para comprobar si hay novedades.",
     "tickets.locationLabel": "Ubicación",
     "tickets.ticketCodeLabel": "Tiquete",
     "tickets.keyCodeLabel": "Llaves",
     "tickets.vehicleLabel": "Vehículo",
     "tickets.colorLabel": "Color",
-    "tickets.createdAtLabel": "Creado: {{value}}",
-    "tickets.parkingNameLabel": "Parqueo: {{value}}",
-    "tickets.statusAssigned": "Esperando recogida",
-    "tickets.statusInTransit": "Vas camino al vehículo",
-    "tickets.statusCompleted": "Entregado",
     "tickets.actionStart": "Recoger vehículo",
     "tickets.actionComplete": "Ya entregué el coche",
     "tickets.completedLine": "Este servicio está terminado.",
@@ -116,27 +75,6 @@ const translations: Record<Locale, Record<string, string>> = {
       "Solo pulsa «Sí» cuando el cliente ya tenga el vehículo.",
     "tickets.yesContinue": "Sí, continuar",
     "tickets.successInTransit": "Listo. Indica que vas en camino.",
-    "tickets.successDelivered": "Perfecto. Quedó marcado como entregado.",
-    "tickets.errorUpdate":
-      "No se pudo actualizar. Comprueba la conexión e inténtalo de nuevo.",
-    "tickets.titleDriver": "Mis asignaciones",
-    "tickets.titleParkingQueue": "Cola de ingresos",
-    "tickets.titleDeliveryQueue": "Cola de devoluciones",
-    "tickets.subtitleDriver":
-      "Vehículos que te asignan para conducir o entregar. Desliza hacia abajo para actualizar.",
-    "tickets.subtitleDriverParking":
-      "Ingresos pendientes de parqueo en tu cola de trabajo.",
-    "tickets.subtitleDriverDelivery":
-      "Devoluciones solicitadas que debes entregar.",
-    "tickets.emptyDriver": "Nada asignado aún",
-    "tickets.emptyHintDriver":
-      "Cuando un recepcionista te asigne un vehículo, lo verás aquí.",
-    "tickets.titleReception": "Recepción",
-    "tickets.subtitleReception":
-      "Recibe y valida vehículos. Marca como parqueado cuando finalices el ingreso.",
-    "tickets.emptyReception": "No hay vehículos en tu cola",
-    "tickets.emptyHintReception":
-      "Los vehículos que te asignen como recepcionista aparecerán aquí.",
     "tickets.ticketStatusRequestedToPark": "Solicitud de parqueo",
     "tickets.ticketStatusParked": "En parqueo",
     "tickets.ticketStatusRequestedToDeliver": "Devolución solicitada",
@@ -145,10 +83,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "tickets.confirmGoParkTitle": "¿Ir a parquear?",
     "tickets.confirmGoParkMessage":
       "Confirma que vas a iniciar el proceso de parqueo. Aún quedan pasos antes de finalizar.",
-    "tickets.successGoPark": "Listo. Iniciaste el proceso de parqueo.",
-    "park.title": "Ir a parquear",
-    "park.loading": "Cargando datos del parqueo…",
-    "park.stepIndicator": "Paso {{current}} de {{total}}",
     "park.stepDamageTitle": "Estado del vehículo",
     "park.stepDamageHelp":
       "Toma fotos claras del vehículo antes de estacionarlo. Las fotos son requeridas.",
@@ -161,21 +95,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "park.photoRequiredError": "Agrega al menos una foto para continuar.",
     "park.photoLimit": "Máximo {{max}} fotos en este registro.",
     "park.next": "Siguiente",
-    "park.confirmPromptTitle": "¿Ya estás en el parqueo?",
-    "park.confirmPromptMessage": "Confirma cuando ya estás en el parqueo para continuar.",
-    "park.parkedTitle": "Parqueo completado",
-    "park.parkedMessage": "El vehículo ya se parqueó. Selecciona el espacio asignado.",
-    "park.slotFilterPlaceholder": "Buscar espacio por número…",
-    "park.selectSlotTitle": "Selecciona el espacio",
-    "park.selectSlotHelp": "Elige el espacio disponible en {{parking}}.",
-    "park.selectSlotHelpFallback": "Elige el espacio disponible para este parqueo.",
-    "park.selectSlotEmpty": "No hay espacios disponibles en este parqueo.",
-    "park.selectedSlotHint": "Seleccionado",
-    "park.tapSlotHint": "Toca para elegir",
-    "park.slotRequiredError": "Selecciona un espacio para continuar.",
-    "park.confirmCta": "Confirmar parqueo",
-    "park.successParked": "Listo. El vehículo quedó parqueado.",
-    "park.loadError": "No se pudo cargar el ticket. Intenta de nuevo.",
     "tickets.actionRequestReturn": "Solicitar devolución al cliente",
     "tickets.confirmRequestReturnTitle": "¿Solicitar devolución?",
     "tickets.confirmRequestReturnMessage":
@@ -186,21 +105,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "tickets.confirmMarkDeliveredMessage":
       "Confirma que el cliente ya recibió el vehículo.",
     "tickets.successMarkedDelivered": "Listo. El servicio quedó entregado.",
-    "tickets.roleHintDriver": "Solo ves lo que te asignan para manejar.",
-    "tickets.roleHintReception":
-      "Modo recepción: valida y coordina la devolución.",
-    "tickets.summaryTotal": "En cola",
-    "tickets.summaryRequested": "Solicitados",
-    "tickets.summaryParked": "Parqueados",
-    "tickets.home": "Inicio",
-    "home.greeting": "Hola, {{name}}",
-    "home.titleDriver": "Conductor",
-    "home.titleReception": "Recepción",
-    "home.bodyDriver":
-      "Aquí empieza tu jornada. El siguiente paso es abrir la lista de vehículos que te asignan para conducir o entregar al cliente.",
-    "home.bodyReception":
-      "Aquí empieza tu jornada. El siguiente paso es abrir la lista de vehículos que debes recibir en el parqueo y gestionar la devolución.",
-    "home.primaryCta": "Abrir mi lista de trabajo",
     "home.settings": "Ajustes",
     "home.roleBadgeDriver": "Tu función: conductor",
     "home.roleBadgeReception": "Tu función: recepción",
@@ -282,81 +186,22 @@ const translations: Record<Locale, Record<string, string>> = {
     "profile.placeholderEmail": "correo@ejemplo.com",
     "profile.placeholderPhone": "Opcional",
     "profile.placeholderPhoneIntl": "+1 234 567 8900",
-    "profile.phoneMaskHint":
-      "Mismo formato que en la web: código de país y número (ej. +506 6216-4040).",
-    "home.hello": "Hola,",
-    "home.nearestTitle": "Parqueo más cercano",
-    "home.nearestKm": "A ~{{km}} km de ti",
-    "home.nearestDenied": "Activa la ubicación para ver distancias.",
-    "home.nearestNoCoords":
-      "No hay parqueos con coordenadas para calcular distancia.",
-    "home.nearestLoading": "Calculando…",
-    "home.nearestNoCompany": "Sin empresa vinculada aún.",
-    "home.nearestCompany": "Empresa: {{name}}",
     "home.chooseParking": "Elegir parqueo",
     "home.parkingPickerTitle": "Parqueos disponibles",
     "home.useNearestParking": "Usar el más cercano",
     "home.manualParkingHint": "Elegido manualmente",
     "home.parkingPickerEmpty": "No hay parqueos en la lista.",
-    "help.title": "Ayuda",
-    "workflow.title": "Flujo de trabajo",
-    "workflow.empty": "Aquí aún no hay contenido.",
-    "workflow.subtitle": "Resumen del proceso en Parkit Valet.",
-    "workflow.receptionTitle": "Recepción",
-    "workflow.reception1":
-      "Recibe el vehículo: matrícula, datos y asignación de plaza.",
-    "workflow.reception2":
-      "Gestiona reservas con el código que trae el cliente.",
-    "workflow.receptionCondition":
-      "Antes de asignar al conductor valet, registra el estado del vehículo con fotos y una nota opcional (queda guardado en el ticket).",
-    "workflow.reception3":
-      "Cuando el cliente pide el coche, abre «Solicitar devolución» y coordina con conductor o entrega.",
-    "workflow.reception4":
-      "Cierra el ticket cuando el vehículo haya salido o la operación se cancele según protocolo.",
-    "workflow.driverTitle": "Conductor",
-    "workflow.driver1":
-      "Abre la cola de trabajo y revisa las asignaciones que te correspondan.",
-    "workflow.driver2":
-      "Actualiza el estado del servicio (traslado, en entrega, etc.) según lo vayas completando.",
-    "workflow.driver3":
-      "Coordina con recepción si hay dudas de plaza o cliente.",
-    "workflow.driver4":
-      "Marca el trabajo como completado cuando el cliente reciba el vehículo.",
     "receive.title": "Recepción de vehículo",
     "receive.titleReservation": "Reservación",
-    "receive.reservationIntro":
-      "Empieza escaneando el QR de la reserva: se cargan los datos del huésped y el vehículo. Luego elige parqueo, códigos de tiquete y valet para completar el ingreso.",
-    "receive.walkInIntroCardStep":
-      "Comienza con la verificación de tarjeta para brindar una recepción más ágil y segura. Luego registra la matrícula y completa el ingreso.",
     "receive.cardVerifyNext": "Siguiente",
     "receive.stepCardVerify": "1. Tarjeta del cliente",
-    "receive.cardVerifyOnHoldTitle": "Validación premium",
-    "receive.cardVerifyOnHoldBody":
-      "Verifica en segundos que el método de pago esté activo con una experiencia segura de Stripe. Este paso es necesario para completar el registro.",
-    "receive.cardVerifyBadge": "Requerido",
     "receive.stepReservationQr": "1. Reserva (QR)",
-    "receive.reservationQrHelp":
-      "Escanea el QR de la reserva; los datos del cliente y el vehículo se cargan solos.",
-    "receive.reservationQrManual": "ID de reserva (manual)",
     "receive.qrNext": "Siguiente",
     "receive.qrWebHint":
       "En web no hay cámara para QR: usa el campo de ID manual y Validar.",
-    "receive.qrPermissionExplain":
-      "Necesitamos acceso a la cámara para leer el código QR de la reserva.",
-    "receive.qrPermissionTitle": "Permiso de cámara",
-    "receive.qrPremiumKicker": "Cliente con reserva",
-    "receive.qrPremiumTitle": "Escanear QR de reserva",
-    "receive.qrPremiumSubtitle":
-      "Apunta la cámara al código QR de la reserva del huésped; la validación es automática.",
     "receive.qrValidating": "Validando reserva…",
     "receive.qrAllowCamera": "Permitir cámara",
     "receive.qrOpenSettings": "Abrir ajustes",
-    "receive.parkingSectionStep3": "2. Parqueo",
-    "receive.stepPlateReservation": "(Reserva) datos desde QR",
-    "receive.stepPlateWalkIn": "2. Matrícula",
-    "receive.errorParkingFirst":
-      "Selecciona primero el parqueo para validar la reserva.",
-    "receive.stepPlate": "1. Matrícula",
     "receive.placeholderPlate": "Ej. ABC-123",
     "receive.lookup": "Buscar placa",
     "receive.searchOnly": "Buscar",
@@ -368,30 +213,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.wizardCardTitle": "Verificación de Tarjeta",
     "receive.wizardCardHelp":
       "Ofrece una experiencia más profesional iniciando la verificación de tarjeta con Stripe.",
-    "receive.wizardCardAck":
-      "Confirmo que seguimos con el proceso de tarjeta acordado con el cliente",
-    "receive.cardVerifyStart": "Verificar tarjeta con Stripe",
-    "receive.cardVerifyOptionalHint":
-      "Necesario para una recepción eficiente. Sigue las instrucciones de Stripe para verificar la tarjeta.",
-    "receive.cardVerifyStartedHint":
-      "Stripe ya está abierto para completar la verificación de forma segura. Cuando termines, regresa para seguir con el check-in.",
-    "receive.cardVerifyStarted": "Se abrió Stripe para verificación de tarjeta.",
-    "receive.cardVerifyError": "No se pudo iniciar la verificación de tarjeta.",
-    "receive.cardNumberLabel": "Número de tarjeta",
-    "receive.cardSecureHint": "Procesado de forma segura por Stripe",
-    "receive.cardVerifyProcessing": "Verificando tarjeta...",
-    "receive.scanCardTitle": "Escanear tarjeta",
-    "receive.scanCardSubtitle": "Apunta la cámara a tu tarjeta de crédito",
-    "receive.scanCardGuide": "Alinea la tarjeta dentro del marco",
-    "receive.scanCardRetry": "No se pudo leer la tarjeta. Intenta de nuevo.",
-    "receive.scanCardError": "Error al escanear. Intenta de nuevo.",
-    "receive.scanningCard": "Escaneando...",
-    "receive.scanCardButton": "Escanear",
-    "receive.verifyCardButton": "Verificar",
-    "receive.cameraPermissionNeeded": "Se necesita acceso a la cámara para escanear la tarjeta",
     "receive.wizardQrTitle": "Reserva",
-    "receive.wizardQrHelp":
-      "Apunta la cámara al código QR de la reserva del huésped; la validación es automática.",
     "receive.wizardQrNoCompany":
       "No hay empresa de contexto para validar la reserva. Comprueba tu sesión o vuelve a intentar cuando carguen los parqueos.",
     "receive.wizardDriverTitle": "Datos del conductor",
@@ -415,21 +237,7 @@ const translations: Record<Locale, Record<string, string>> = {
       "Escribe al menos 2 caracteres en cada código requerido.",
     "receive.errorTicketCodesFormat":
       "Solo se permiten letras, números, guiones y guiones bajos (sin espacios).",
-    "receive.ticketQrTitle": "Tiquete QR",
-    "receive.ticketQrShareTitle": "Tiquete Parkit",
-    "receive.ticketQrShareMessage": "Aquí está tu tiquete de estacionamiento",
-    "receive.ticketCodeLabel": "Código del tiquete",
-    "receive.keyCodeLabel": "Código de llaves",
-    "receive.qrGenerating": "Generando código QR...",
-    "receive.qrGenerateError": "Error al generar el QR. Intenta de nuevo.",
-    "receive.printTicket": "Imprimir tiquete",
-    "receive.shareTicket": "Compartir tiquete",
     "receive.wizardParkingTitle": "Parqueo",
-    "receive.wizardParkingHelp":
-      "Confirma el parqueo de ingreso. Puedes elegir otro en la lista.",
-    "receive.wizardValetStepTitle": "Conductor valet",
-    "receive.wizardValetStepHelp":
-      "Asigna a un compañero conductor para que estacione el vehículo. Después pulsa crear tiquete.",
     "receive.valetDriversListHint":
       "Solo se listan conductores disponibles en este parqueo con la app abierta recientemente (latido cada ~30 s; si llevan más de 5 min sin usar la app, no aparecen).",
     "receive.valetDriversEmpty":
@@ -452,7 +260,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.valetEtaFootnote": "Selección: {{name}}.",
     "receive.wizardDamageTitle": "Estado del vehículo",
     "receive.damageHeroBadge": "Respaldo",
-    "receive.damageHeroTitle": "Estado del vehículo al ingreso",
     "receive.damageHeroSub":
       "Dejamos constancia en el sistema del aspecto del vehículo antes de estacionarlo. Las fotos son opcionales pero recomendadas.",
     "receive.damageSectionPhotos": "Fotografías",
@@ -481,11 +288,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.newVehicleHint":
       "No encontramos esta placa. Registra conductor y datos del auto.",
     "receive.driverSection": "Conductor",
-    "receive.vehicleSection": "Vehículo",
-    "receive.placeholderFirst": "Nombre",
-    "receive.placeholderLast": "Apellido",
-    "receive.placeholderEmail": "Correo del conductor",
-    "receive.placeholderPhone": "Teléfono",
     "receive.placeholderBrand": "Marca",
     "receive.placeholderModel": "Modelo",
     "receive.placeholderColor": "Color",
@@ -498,9 +300,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.noColorOption": "Sin color",
     "receive.vehicleDimensionsAuto":
       "Las dimensiones del vehículo son cargadas automáticamente desde catálogo.",
-    "receive.benefitSection": "Reserva / beneficio valet",
-    "receive.benefitHelp":
-      "Opcional: pega el ID de la reserva para validar el tiempo de cortesía en el parqueo.",
     "receive.placeholderBooking": "ID de reserva",
     "receive.validate": "Validar",
     "receive.benefitOk":
@@ -519,24 +318,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.typeDirectBody": "El cliente pagará el servicio completo sin usar tarjeta vinculada.",
     "receive.typeReservationTitle": "Registrar con reservación",
     "receive.typeReservationBody": "Cliente con código de reserva activa.",
-    "receive.cardVerifySkipCta": "Omitir verificación de tarjeta",
-    "receive.cardVerifySkipTitle": "Omitir verificación",
-    "receive.cardVerifySkipBody":
-      "Confirma solo si el cliente no tiene beneficio con su tarjeta y pagará el servicio de valet.",
-    "receive.cardVerifySkipConfirm": "Sí, omitir",
-    "receive.cardVerifySkipNote":
-      "Solo si el cliente no tiene beneficio con su tarjeta y pagará el servicio de valet.",
-    "receive.cardVerifySkippedHint":
-      "Verificación omitida. Usa este flujo solo si el cliente pagará el servicio.",
-    "receive.cardScannerTitle": "Escanear tarjeta",
-    "receive.cardScannerSubtitle": "Apunta la cámara a la tarjeta para capturar los datos",
-    "receive.parkingSection": "Parqueo",
-    "receive.driverValetSection": "Valet / Recepcionista",
-    "receive.driverValetHelp": "Asigna quién recibe el vehículo.",
-    "receive.valetSelectChoose": "Elegir valet",
-    "receive.valetSelectNoSelection": "Ningún valet seleccionado",
-    "receive.valetSelectPlaceholder": "Quién recibe el vehículo",
-    "receive.noDriver": "Sin asignar por ahora",
     "receive.submit": "Crear tiquete",
     "receive.success":
       "Tiquete creado con éxito. El conductor recibirá una notificación y continuará con el proceso.",
@@ -553,8 +334,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.errorBookingCompany":
       "No pudimos validar la reserva con el parqueo seleccionado. Revisa el ID o el parqueo.",
     "receive.errorSubmit": "No se pudo crear el ticket.",
-    "receive.warnNoCompany":
-      "No tenemos una empresa asociada aún. Trabaja en una ubicación donde ya tengas asignaciones o pide a un administrador que vincule tu cuenta.",
     "receive.driverBlockedTitle": "Modo conductor",
     "receive.driverBlockedBody":
       "La recepción de vehículos la gestiona personal de recepción. Usa la cola de trabajo para tus entregas.",
@@ -577,31 +356,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "welcome.login": "LOGIN",
     "welcome.signup": "SIGN UP",
     "welcome.version": "v {{version}}",
-    "login.welcomeBack": "Welcome back to",
-    "login.brand": "Parkit",
-    "login.headline": "Welcome",
-    "login.tagline": "Sign in with your email and password",
-    "login.subtitle": "Sign in to access the valet system",
-    "login.email": "Email",
-    "login.password": "Password",
-    "login.placeholderEmail": "example@email.com",
-    "login.placeholderPassword": "********",
-    "login.forgetPassword": "Forget password",
-    "login.submit": "LOGIN",
-    "login.footer": "Restricted access. Staff only. ",
-    "login.contactSupport": "Contact support",
-    "login.accountInactive":
-      "Your account is inactive. Contact your administrator.",
-    "login.errorInvalidCredentials": "Invalid email or password",
-    "forgot.headline": "Forgot your password?",
-    "forgot.description":
-      "Enter your email and we'll send you a reset link (check spam too). Open the link in your browser to choose a new password.",
-    "forgot.sent":
-      "If an account exists for {{email}}, you'll receive an email with the link.",
-    "forgot.placeholderEmail": "example@email.com",
-    "forgot.sendLink": "Send reset link",
-    "forgot.backToLogin": "Back to sign in",
-    "forgot.errorSend": "Could not send the request. Please try again.",
     "signup.headline": "Create your account",
     "signup.tagline": "Pick your role and you're set",
     "signup.firstName": "First name",
@@ -616,13 +370,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "signup.staffRoleHint": "Vehicle reception or driving",
     "signup.staffRoleReceptionist": "Receptionist",
     "signup.staffRoleDriver": "Driver",
-    "signup.staffRolePickerTitle": "Select your role",
-    "signup.placeholderEmail": "example@email.com",
-    "signup.placeholderPassword": "********",
-    "signup.placeholderLicenseNumber": "LIC-12345",
-    "signup.placeholderLicenseExpiry": "YYYY-MM-DD",
-    "signup.errorEmailTaken": "This email is already in use",
-    "signup.submit": "SIGN UP",
     "settings.title": "Settings",
     "settings.intro":
       "Customize appearance and language. Changes are saved on this device.",

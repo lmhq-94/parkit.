@@ -7,3 +7,5 @@ export * from "./phone";
 export * from "./vehicleColors";
 export { Logo } from "./components/Logo";
 export { formatPlate } from "./plate";
+export { messageFromAxios, getTranslatedApiErrorMessage } from "./apiErrors";
+export { getAppVersionString } from "./appVersion";

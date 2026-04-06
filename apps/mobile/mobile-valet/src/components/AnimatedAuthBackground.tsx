@@ -9,8 +9,41 @@ import {
   type ViewStyle,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import Svg, { Defs, RadialGradient, Stop, Ellipse } from "react-native-svg";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
+
+type BlobConfig = {
+  cx: number;
+  cy: number;
+  rx: number;
+  ry: number;
+  colors: [string, string];
+  opacity: number;
+  blur: number;
+  duration: number;
+  delay: number;
+};
+
+const getDarkBlobs = (): BlobConfig[] => [
+  { cx: -40, cy: -40, rx: 300, ry: 300, colors: ["#1e3a8a", "#312e81"], opacity: 0.6, blur: 80, duration: 20000, delay: 0 },
+  { cx: SCREEN_W - 100, cy: SCREEN_H * 0.2, rx: 250, ry: 250, colors: ["#3730a3", "#4338ca"], opacity: 0.5, blur: 70, duration: 25000, delay: 500 },
+  { cx: SCREEN_W * 0.2, cy: SCREEN_H * 0.6, rx: 225, ry: 225, colors: ["#312e81", "#1e1b4b"], opacity: 0.55, blur: 90, duration: 22000, delay: 1000 },
+  { cx: SCREEN_W * 0.6, cy: SCREEN_H * 0.4, rx: 200, ry: 200, colors: ["#4338ca", "#3730a3"], opacity: 0.45, blur: 75, duration: 18000, delay: 1500 },
+  { cx: 50, cy: SCREEN_H * 0.5, rx: 175, ry: 175, colors: ["#312e81", "#1e3a8a"], opacity: 0.4, blur: 65, duration: 24000, delay: 2000 },
+  { cx: SCREEN_W * 0.8, cy: SCREEN_H * 0.15, rx: 150, ry: 150, colors: ["#4c1d95", "#5b21b6"], opacity: 0.35, blur: 60, duration: 28000, delay: 2500 },
+  { cx: SCREEN_W * 0.4, cy: SCREEN_H * 0.75, rx: 140, ry: 140, colors: ["#1e3a8a", "#3730a3"], opacity: 0.3, blur: 55, duration: 30000, delay: 3000 },
+];
+
+const getLightBlobs = (): BlobConfig[] => [
+  { cx: -40, cy: -40, rx: 300, ry: 300, colors: ["#2563eb", "#3b82f6"], opacity: 0.7, blur: 80, duration: 20000, delay: 0 },
+  { cx: SCREEN_W - 100, cy: SCREEN_H * 0.2, rx: 250, ry: 250, colors: ["#4f46e5", "#6366f1"], opacity: 0.65, blur: 70, duration: 25000, delay: 500 },
+  { cx: SCREEN_W * 0.2, cy: SCREEN_H * 0.6, rx: 225, ry: 225, colors: ["#8b5cf6", "#7c3aed"], opacity: 0.75, blur: 90, duration: 22000, delay: 1000 },
+  { cx: SCREEN_W * 0.6, cy: SCREEN_H * 0.4, rx: 200, ry: 200, colors: ["#6366f1", "#4338ca"], opacity: 0.6, blur: 75, duration: 18000, delay: 1500 },
+  { cx: 50, cy: SCREEN_H * 0.5, rx: 175, ry: 175, colors: ["#60a5fa", "#3b82f6"], opacity: 0.6, blur: 65, duration: 24000, delay: 2000 },
+  { cx: SCREEN_W * 0.8, cy: SCREEN_H * 0.15, rx: 150, ry: 150, colors: ["#a78bfa", "#8b5cf6"], opacity: 0.65, blur: 60, duration: 28000, delay: 2500 },
+  { cx: SCREEN_W * 0.4, cy: SCREEN_H * 0.75, rx: 140, ry: 140, colors: ["#3b82f6", "#60a5fa"], opacity: 0.55, blur: 55, duration: 30000, delay: 3000 },
+];
 
 type Props = {
   isDark: boolean;
@@ -18,236 +51,68 @@ type Props = {
   children: ReactNode;
 };
 
-// Blob configuration with position, size, colors and animation params
-const createBlobConfig = (index: number, isDark: boolean) => {
-  const positions = [
-    { x: -120, y: -120, size: 500 }, // Top left
-    { x: SCREEN_WIDTH - 350, y: SCREEN_HEIGHT * 0.2, size: 420 }, // Right
-    { x: SCREEN_WIDTH * 0.15, y: SCREEN_HEIGHT * 0.55, size: 380 }, // Bottom left
-    { x: SCREEN_WIDTH * 0.45, y: SCREEN_HEIGHT * 0.35, size: 340 }, // Center right
-    { x: -50, y: SCREEN_HEIGHT * 0.4, size: 300 }, // Left middle
-    { x: SCREEN_WIDTH * 0.5, y: SCREEN_HEIGHT * 0.1, size: 260 }, // Top right
-    { x: SCREEN_WIDTH * 0.25, y: SCREEN_HEIGHT * 0.65, size: 240 }, // Bottom
-  ];
-
-  const darkColors = [
-    ["#1e3a8a", "#312e81", "#1e1b4b"],
-    ["#3730a3", "#4338ca", "#1e3a5f"],
-    ["#1e1b4b", "#312e81", "#1e3a8a"],
-    ["#4338ca", "#3730a3", "#312e81"],
-    ["#312e81", "#1e1b4b"],
-    ["#4c1d95", "#5b21b6", "#312e81"],
-    ["#1e3a8a", "#3730a3"],
-  ];
-
-  const lightColors = [
-    ["#2563eb", "#3b82f6", "#60a5fa"],
-    ["#4f46e5", "#6366f1", "#818cf8"],
-    ["#7c3aed", "#8b5cf6", "#a78bfa"],
-    ["#4338ca", "#4f46e5", "#6366f1"],
-    ["#3b82f6", "#60a5fa"],
-    ["#6d28d9", "#7c3aed", "#8b5cf6"],
-    ["#2563eb", "#3b82f6"],
-  ];
-
-  const pos = positions[index % positions.length];
-  const colors = isDark ? darkColors[index % darkColors.length] : lightColors[index % lightColors.length];
-  const opacity = isDark ? 0.5 - index * 0.06 : 0.65 - index * 0.05;
-
-  return {
-    ...pos,
-    size: pos.size,
-    colors,
-    opacity: Math.max(opacity, 0.25),
-    duration: 15000 + index * 3000,
-    delay: index * 500,
-  };
-};
-
-// Animated blob component
-const AnimatedBlob = ({
-  config,
-}: {
-  config: ReturnType<typeof createBlobConfig>;
-}) => {
+const LavaBlob = ({ config, index }: { config: BlobConfig; index: number }) => {
   const animatedValue = useMemo(() => new Animated.Value(0), []);
 
   useEffect(() => {
-    const animation = Animated.loop(
-      Animated.timing(animatedValue, {
-        toValue: 1,
-        duration: config.duration,
-        useNativeDriver: true,
-      })
+    const anim = Animated.loop(
+      Animated.timing(animatedValue, { toValue: 1, duration: config.duration, useNativeDriver: true })
     );
-
-    // Add delay before starting
-    const timeout = setTimeout(() => {
-      animation.start();
-    }, config.delay);
-
-    return () => {
-      clearTimeout(timeout);
-      animation.stop();
-    };
+    const t = setTimeout(() => anim.start(), config.delay);
+    return () => { clearTimeout(t); anim.stop(); };
   }, [animatedValue, config.duration, config.delay]);
 
-  // Interpolate animations for morphing effect
-  const translateX = animatedValue.interpolate({
-    inputRange: [0, 0.25, 0.5, 0.75, 1],
-    outputRange: [0, 60, -40, 30, 0],
-  });
-
-  const translateY = animatedValue.interpolate({
-    inputRange: [0, 0.25, 0.5, 0.75, 1],
-    outputRange: [0, -50, 40, -30, 0],
-  });
-
-  const scale = animatedValue.interpolate({
-    inputRange: [0, 0.25, 0.5, 0.75, 1],
-    outputRange: [1, 1.3, 0.8, 1.15, 1],
-  });
-
-  const rotate = animatedValue.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: ["0deg", "180deg", "360deg"],
-  });
-
-  // Border radius animation for organic shape morphing
-  const borderRadiusAnim = animatedValue.interpolate({
-    inputRange: [0, 0.2, 0.4, 0.6, 0.8, 1],
-    outputRange: ["50%", "45%", "55%", "40%", "60%", "50%"],
-  });
+  const tx = animatedValue.interpolate({ inputRange: [0, 0.25, 0.5, 0.75, 1], outputRange: [0, 50, -30, 25, 0] });
+  const ty = animatedValue.interpolate({ inputRange: [0, 0.25, 0.5, 0.75, 1], outputRange: [0, -40, 35, -20, 0] });
+  const scale = animatedValue.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1.15, 1] });
 
   return (
     <Animated.View
-      style={[
-        styles.blob,
-        {
-          left: config.x,
-          top: config.y,
-          width: config.size,
-          height: config.size,
-          opacity: config.opacity,
-          transform: [
-            { translateX },
-            { translateY },
-            { scale },
-            { rotate },
-          ],
-          borderRadius: borderRadiusAnim,
-        },
-      ]}
+      pointerEvents="none"
+      style={{
+        position: "absolute",
+        left: config.cx - config.rx,
+        top: config.cy - config.ry,
+        width: config.rx * 2,
+        height: config.ry * 2,
+        opacity: config.opacity,
+        transform: [{ translateX: tx }, { translateY: ty }, { scale }],
+      }}
     >
-      <LinearGradient
-        colors={config.colors as [string, string, ...string[]]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
+      <Svg width={config.rx * 2} height={config.ry * 2} viewBox={`0 0 ${config.rx * 2} ${config.ry * 2}`}>
+        <Defs>
+          {/* Main soft radial gradient with many stops for cloud effect */}
+          <RadialGradient id={`grad-${index}`} cx="50%" cy="50%" rx="50%" ry="50%">
+            <Stop offset="0%" stopColor={config.colors[0]} stopOpacity={1} />
+            <Stop offset="20%" stopColor={config.colors[0]} stopOpacity={0.9} />
+            <Stop offset="40%" stopColor={config.colors[1]} stopOpacity={0.6} />
+            <Stop offset="60%" stopColor={config.colors[1]} stopOpacity={0.3} />
+            <Stop offset="80%" stopColor={config.colors[1]} stopOpacity={0.1} />
+            <Stop offset="100%" stopColor={config.colors[1]} stopOpacity={0} />
+          </RadialGradient>
+        </Defs>
+        {/* Main soft ellipse */}
+        <Ellipse cx={config.rx} cy={config.ry} rx={config.rx} ry={config.ry} fill={`url(#grad-${index})`} />
+      </Svg>
     </Animated.View>
   );
 };
 
-/**
- * Animated background with lava-morphing blobs for auth screens.
- * Replicates the web's animated gradient background effect.
- */
 export function AnimatedAuthBackground({ isDark, style, children }: Props) {
-  const blobConfigs = useMemo(() => {
-    return Array.from({ length: 7 }, (_, i) => createBlobConfig(i, isDark));
-  }, [isDark]);
-
-  // Base gradient colors
-  const baseGradientColors = useMemo(() => {
-    return isDark
-      ? ["#0a0a1a", "#1a1a2e", "#16213e", "#1a1a2e", "#0a0a1a"]
-      : ["#f0f9ff", "#e0f2fe", "#dbeafe", "#e0f2fe", "#f0f9ff"];
-  }, [isDark]);
+  const blobs = useMemo(() => (isDark ? getDarkBlobs() : getLightBlobs()), [isDark]);
+  const baseColors = useMemo(() => (isDark ? ["#0a0a1a", "#1a1a2e", "#16213e", "#1a1a2e", "#0a0a1a"] : ["#f0f9ff", "#e0f2fe", "#dbeafe", "#e0f2fe", "#f0f9ff"]), [isDark]) as [string, string, ...string[]];
 
   return (
     <View style={[styles.container, style]}>
-      {/* Base gradient background */}
-      <LinearGradient
-        colors={baseGradientColors as [string, string, ...string[]]}
-        locations={[0, 0.25, 0.5, 0.75, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
-
-      {/* Animated blob layer */}
-      <View style={styles.blobContainer}>
-        {blobConfigs.map((config, index) => (
-          <AnimatedBlob key={index} config={config} />
-        ))}
+      <LinearGradient colors={baseColors} locations={[0, 0.25, 0.5, 0.75, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+      <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+        {blobs.map((b, i) => <LavaBlob key={i} config={b} index={i} />)}
       </View>
-
-      {/* Blur overlay using semi-transparent view */}
-      <View style={StyleSheet.absoluteFill}>
-        {blobConfigs.map((config, index) => (
-          <View
-            key={`blur-${index}`}
-            style={[
-              styles.blurBlob,
-              {
-                left: config.x,
-                top: config.y,
-                width: config.size,
-                height: config.size,
-                opacity: config.opacity * 0.8,
-              },
-            ]}
-          >
-            <LinearGradient
-              colors={config.colors as [string, string, ...string[]]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            />
-          </View>
-        ))}
-      </View>
-
-      {/* Radial overlay for depth */}
-      <View
-        style={[
-          StyleSheet.absoluteFill,
-          {
-            backgroundColor: isDark
-              ? "rgba(10, 10, 26, 0.3)"
-              : "rgba(255, 255, 255, 0.2)",
-          },
-        ]}
-      />
-
-      {/* Content */}
+      <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: isDark ? "rgba(10, 10, 26, 0.4)" : "rgba(255, 255, 255, 0.3)" }]} />
       {children}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-    overflow: "hidden",
-  },
-  blobContainer: {
-    ...StyleSheet.absoluteFillObject,
-    overflow: "hidden",
-  },
-  blob: {
-    position: "absolute",
-    overflow: "hidden",
-  },
-  blurBlob: {
-    position: "absolute",
-    borderRadius: 1000,
-    transform: [{ scale: 1.2 }],
-    opacity: 0.6,
-  },
-});
-
+const styles = StyleSheet.create({ container: { flex: 1, width: "100%", height: "100%", overflow: "hidden" } });
 export default AnimatedAuthBackground;

@@ -18,7 +18,7 @@ import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTh
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useCompanyContext } from "@/lib/useCompanyContext";
 import api from "@/lib/api";
-import { messageFromAxios } from "@/lib/apiErrors";
+import { messageFromAxios } from "@parkit/shared";
 import { createFeedback } from "@/lib/feedback";
 import { ValetBackButton } from "@/components/ValetBackButton";
 import { StickyFormFooter } from "@/components/StickyFormFooter";
