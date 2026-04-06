@@ -17,22 +17,34 @@ import { useRouter } from "expo-router";
 import { Logo } from "@parkit/shared";
 import apiClient, { setAuthToken } from "@/lib/api";
 import { saveUser } from "@/lib/auth";
-import { useAuthStore, useLocaleStore } from "@/lib/store";
+import { useAuthStore, useLocaleStore, usePreferencesStore } from "@/lib/store";
 import { getHasSeenOnboarding } from "@/lib/onboarding";
 import { t } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
+import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
+import { useColorScheme } from "react-native";
 
-const DARK_BG = "#0F172A";
 const PRIMARY = "#3B82F6";
 const DARK_BTN = "#1E293B";
 const BORDER_COLOR = "#E2E8F0";
 const TEXT_PRIMARY = "#0F172A";
 const TEXT_MUTED = "#64748B";
 
+function useIsDark() {
+  const systemScheme = useColorScheme();
+  const preference = usePreferencesStore((s) => s.theme);
+  return preference === "dark"
+    ? true
+    : preference === "light"
+      ? false
+      : systemScheme === "dark";
+}
+
 export default function SignupScreen() {
   const router = useRouter();
   const { setUser, setError } = useAuthStore();
   const locale = useLocaleStore((s) => s.locale);
+  const isDark = useIsDark();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -93,8 +105,8 @@ export default function SignupScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={DARK_BG} />
+    <AnimatedAuthBackground isDark={isDark}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" />
       <SafeAreaView style={styles.topBar} edges={["top"]}>
         <TouchableOpacity onPress={() => router.replace("/welcome")} style={styles.backBtn} hitSlop={12}>
           <Ionicons name="chevron-back" size={24} color="#F8FAFC" />
@@ -218,12 +230,11 @@ export default function SignupScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </View>
+    </AnimatedAuthBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: DARK_BG },
   topBar: {
     flexDirection: "row",
     alignItems: "center",

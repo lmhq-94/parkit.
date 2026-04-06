@@ -2,20 +2,32 @@ import { View, Text, StyleSheet, Pressable, StatusBar, Platform } from "react-na
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Logo } from "@parkit/shared";
-import { useLocaleStore } from "@/lib/store";
+import { useLocaleStore, usePreferencesStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { getAppVersionString } from "@/lib/appVersion";
+import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
+import { useColorScheme } from "react-native";
 
-const DARK_BG = "#0F172A";
 const ACCENT = "#3B82F6";
+
+function useIsDark() {
+  const systemScheme = useColorScheme();
+  const preference = usePreferencesStore((s) => s.theme);
+  return preference === "dark"
+    ? true
+    : preference === "light"
+      ? false
+      : systemScheme === "dark";
+}
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const locale = useLocaleStore((s) => s.locale);
+  const isDark = useIsDark();
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={DARK_BG} />
+    <AnimatedAuthBackground isDark={isDark}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" />
       <SafeAreaView style={styles.safe} edges={["top"]}>
         <View style={styles.hero}>
           <Logo size={56} style={styles.logo} darkBackground />
@@ -40,15 +52,11 @@ export default function WelcomeScreen() {
           {t(locale, "welcome.version", { version: getAppVersionString() || "—" })}
         </Text>
       </SafeAreaView>
-    </View>
+    </AnimatedAuthBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: DARK_BG,
-  },
   safe: {
     flex: 1,
   },

@@ -18,7 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
-import { FaApple, FaMicrosoft } from "react-icons/fa";
+import { FaSquareFacebook, FaMicrosoft } from "react-icons/fa6";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageLoader } from "@/components/PageLoader";
 import { ThemeToggleSimple } from "@/components/ThemeToggleSimple";
@@ -412,11 +412,11 @@ function RegisterForm() {
             </button>
             <button
               type="button"
-              onClick={() => handleOAuthLogin("apple")}
+              onClick={() => handleOAuthLogin("facebook")}
               className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
-              title={t("auth.continueWithApple")}
+              title={t("auth.continueWithFacebook")}
             >
-              <FaApple className="h-6 w-6" />
+              <FaSquareFacebook className="h-6 w-6 text-[#1877F2]" />
             </button>
           </div>
 
@@ -435,7 +435,7 @@ function RegisterForm() {
           <div className="max-w-[480px] mx-auto space-y-3">
             <p className="text-xs text-black dark:text-slate-400">
               {t("auth.supportHint")}{" "}
-              <a href="mailto:soporte@parkit.app" className="font-bold text-black dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
+              <a href="mailto:soporte@parkitcr.com" className="font-bold text-black dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
                 {t("auth.supportLinkLabel")}
               </a>
             </p>

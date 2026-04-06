@@ -17,28 +17,58 @@ import { Redirect, useRouter } from "expo-router";
 import { Logo } from "@parkit/shared";
 import apiClient, { setAuthToken } from "@/lib/api";
 import { saveUser } from "@/lib/auth";
-import { useAuthStore, useLocaleStore } from "@/lib/store";
+import { useAuthStore, useLocaleStore, usePreferencesStore } from "@/lib/store";
 import { getHasSeenOnboarding } from "@/lib/onboarding";
 import { t } from "@/lib/i18n";
 import { getTranslatedApiErrorMessage } from "@/lib/apiErrors";
 import { Ionicons } from "@expo/vector-icons";
+import {
+  initializeGoogleSignIn,
+  signInWithGoogle,
+  signInWithFacebook,
+  signInWithMicrosoft,
+  type OAuthResponse,
+} from "@/lib/oauth";
+import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
+import { useColorScheme } from "react-native";
 
-const DARK_BG = "#0F172A";
 const PRIMARY = "#3B82F6";
 const DARK_BTN = "#1E293B";
 const BORDER_COLOR = "#E2E8F0";
 const TEXT_PRIMARY = "#0F172A";
 const TEXT_MUTED = "#64748B";
 
+function useIsDark() {
+  const systemScheme = useColorScheme();
+  const preference = usePreferencesStore((s) => s.theme);
+  return preference === "dark"
+    ? true
+    : preference === "light"
+      ? false
+      : systemScheme === "dark";
+}
+
+// OAuth configuration check
+const isGoogleConfigured = () => !!process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+const isFacebookConfigured = () => !!process.env.EXPO_PUBLIC_FACEBOOK_APP_ID;
+const isMicrosoftConfigured = () => !!process.env.EXPO_PUBLIC_MICROSOFT_CLIENT_ID;
+
 export default function LoginScreen() {
   const router = useRouter();
   const { user, setUser, setError } = useAuthStore();
   const locale = useLocaleStore((s) => s.locale);
+  const isDark = useIsDark();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [error, setErrorState] = useState<string | null>(null);
+
+  // Initialize Google Sign-In on mount
+  useState(() => {
+    initializeGoogleSignIn();
+  });
 
   if (user) {
     return <Redirect href="/(tabs)" />;
@@ -76,9 +106,50 @@ export default function LoginScreen() {
     }
   };
 
+  const handleOAuthSignIn = async (provider: 'google' | 'facebook' | 'microsoft') => {
+    setOauthLoading(provider);
+    setErrorState(null);
+    setError(null);
+
+    let result: OAuthResponse;
+
+    try {
+      switch (provider) {
+        case 'google':
+          result = await signInWithGoogle();
+          break;
+        case 'facebook':
+          result = await signInWithFacebook();
+          break;
+        case 'microsoft':
+          result = await signInWithMicrosoft();
+          break;
+        default:
+          result = { success: false, error: 'Unknown provider' };
+      }
+
+      if (result.success && result.user && result.token) {
+        await saveUser(result.user as Parameters<typeof saveUser>[0], result.token);
+        setAuthToken(result.token);
+        setUser(result.user as Parameters<typeof setUser>[0], result.token);
+        const hasSeenOnboarding = await getHasSeenOnboarding();
+        router.replace(hasSeenOnboarding ? "/(tabs)" : "/onboarding");
+      } else {
+        setErrorState(result.error || `${provider} sign-in failed`);
+        setError(result.error || `${provider} sign-in failed`);
+      }
+    } catch (err: any) {
+      const msg = err.message || `${provider} sign-in failed`;
+      setErrorState(msg);
+      setError(msg);
+    } finally {
+      setOauthLoading(null);
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={DARK_BG} />
+    <AnimatedAuthBackground isDark={isDark}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" />
       <SafeAreaView style={styles.topBar} edges={["top"]}>
         <TouchableOpacity
           onPress={() => router.replace("/welcome")}
@@ -175,18 +246,88 @@ export default function LoginScreen() {
                 <Text style={styles.footerLink}>{t(locale, "login.signUp")}</Text>
               </Pressable>
             </View>
+
+            {/* OAuth Divider */}
+            <View style={styles.oauthDivider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>o</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            {/* OAuth Buttons */}
+            <View style={styles.oauthContainer}>
+              {isGoogleConfigured() && (
+                <Pressable
+                  onPress={() => handleOAuthSignIn('google')}
+                  disabled={oauthLoading !== null}
+                  style={({ pressed }) => [
+                    styles.oauthButton,
+                    pressed && styles.oauthButtonPressed,
+                    oauthLoading === 'google' && styles.oauthButtonDisabled,
+                  ]}
+                >
+                  {oauthLoading === 'google' ? (
+                    <ActivityIndicator size="small" color="#EA4335" />
+                  ) : (
+                    <View style={styles.googleIcon}>
+                      <View style={[styles.googleCircle, { backgroundColor: '#EA4335' }]} />
+                      <View style={[styles.googleCircle, { backgroundColor: '#FBBC05' }]} />
+                      <View style={[styles.googleCircle, { backgroundColor: '#34A853' }]} />
+                      <View style={[styles.googleCircle, { backgroundColor: '#4285F4' }]} />
+                    </View>
+                  )}
+                </Pressable>
+              )}
+
+              {isMicrosoftConfigured() && (
+                <Pressable
+                  onPress={() => handleOAuthSignIn('microsoft')}
+                  disabled={oauthLoading !== null}
+                  style={({ pressed }) => [
+                    styles.oauthButton,
+                    pressed && styles.oauthButtonPressed,
+                    oauthLoading === 'microsoft' && styles.oauthButtonDisabled,
+                  ]}
+                >
+                  {oauthLoading === 'microsoft' ? (
+                    <ActivityIndicator size="small" color="#0078D4" />
+                  ) : (
+                    <View style={styles.microsoftIcon}>
+                      <View style={[styles.microsoftSquare, { backgroundColor: '#F25022' }]} />
+                      <View style={[styles.microsoftSquare, { backgroundColor: '#7FBA00' }]} />
+                      <View style={[styles.microsoftSquare, { backgroundColor: '#00A4EF' }]} />
+                      <View style={[styles.microsoftSquare, { backgroundColor: '#FFB900' }]} />
+                    </View>
+                  )}
+                </Pressable>
+              )}
+
+              {isFacebookConfigured() && (
+                <Pressable
+                  onPress={() => handleOAuthSignIn('facebook')}
+                  disabled={oauthLoading !== null}
+                  style={({ pressed }) => [
+                    styles.oauthButton,
+                    pressed && styles.oauthButtonPressed,
+                    oauthLoading === 'facebook' && styles.oauthButtonDisabled,
+                  ]}
+                >
+                  {oauthLoading === 'facebook' ? (
+                    <ActivityIndicator size="small" color="#1877F2" />
+                  ) : (
+                    <Text style={styles.facebookIcon}>f</Text>
+                  )}
+                </Pressable>
+              )}
+            </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </View>
+    </AnimatedAuthBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: DARK_BG,
-  },
   topBar: {
     flexDirection: "row",
     alignItems: "center",
@@ -297,4 +438,75 @@ const styles = StyleSheet.create({
   },
   footerText: { fontSize: 14, color: TEXT_MUTED },
   footerLink: { fontSize: 14, fontWeight: "700", color: PRIMARY },
+
+  // OAuth Styles
+  oauthDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+    paddingHorizontal: 10,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E2E8F0',
+  },
+  dividerText: {
+    marginHorizontal: 10,
+    fontSize: 14,
+    color: TEXT_MUTED,
+    fontWeight: '500',
+  },
+  oauthContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginBottom: 10,
+  },
+  oauthButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  oauthButtonPressed: {
+    backgroundColor: '#F1F5F9',
+  },
+  oauthButtonDisabled: {
+    opacity: 0.6,
+  },
+  googleIcon: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    width: 24,
+    height: 24,
+    gap: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  googleCircle: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  microsoftIcon: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    width: 22,
+    height: 22,
+    gap: 2,
+  },
+  microsoftSquare: {
+    width: 10,
+    height: 10,
+  },
+  facebookIcon: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1877F2',
+  },
 });

@@ -5,8 +5,8 @@
 const FROM_EMAIL =
   process.env.TICKET_CHECKIN_FROM_EMAIL || "Parkit <onboarding@resend.dev>";
 const TICKET_CHECKIN_TEMPLATE_ID = process.env.TICKET_CHECKIN_TEMPLATE_ID || process.env.TICKET_CODE_TEMPLATE_ID || "";
-/** Support email for ticket-related inquiries (e.g. soporte@parkit.app). */
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "soporte@parkit.app";
+/** Support email for ticket-related inquiries (e.g. soporte@parkitcr.com). */
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "soporte@parkitcr.com";
 /** Optional privacy policy URL */
 const PRIVACY_URL = process.env.TICKET_CODE_PRIVACY_URL || "";
 /** Optional terms and conditions URL */

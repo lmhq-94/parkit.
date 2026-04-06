@@ -29,7 +29,7 @@ import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-import { AuthHeroGradient } from "@/components/AuthHeroGradient";
+import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
 import { getTranslatedApiErrorMessage } from "@/lib/apiErrors";
 import { Users, Car } from "lucide-react-native";
@@ -37,12 +37,12 @@ import { STAFF_ROLES, type StaffRole } from "@/lib/staffRoles";
 import { 
   initializeGoogleSignIn, 
   signInWithGoogle, 
-  signInWithApple, 
+  signInWithFacebook, 
   signInWithMicrosoft,
   type OAuthResponse 
 } from "@/lib/oauth";
 
-const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
+const SUPPORT_EMAIL = "mailto:soporte@parkitcr.com";
 const LOGO_SIZE = 72;
 const CONTROL_HEIGHT = 56;
 
@@ -575,7 +575,7 @@ export default function LoginScreen() {
     }
   };
 
-  const handleOAuthSignIn = async (provider: 'google' | 'apple' | 'microsoft') => {
+  const handleOAuthSignIn = async (provider: 'google' | 'facebook' | 'microsoft') => {
     setError(null);
     setOAuthLoading(provider);
     
@@ -586,8 +586,8 @@ export default function LoginScreen() {
         case 'google':
           result = await signInWithGoogle();
           break;
-        case 'apple':
-          result = await signInWithApple();
+        case 'facebook':
+          result = await signInWithFacebook();
           break;
         case 'microsoft':
           result = await signInWithMicrosoft();
@@ -620,8 +620,8 @@ export default function LoginScreen() {
     : Math.round(height * (mode === "signup" ? 0.38 : 0.30));
 
   return (
-    <AuthHeroGradient chromeBg={a.authScreenChromeBg}>
-      <StatusBar barStyle={a.statusBarStyle} backgroundColor={a.statusBarBg} />
+    <AnimatedAuthBackground isDark={isDark}>
+      <StatusBar barStyle={a.statusBarStyle} backgroundColor="transparent" />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <View style={styles.heroStrip}>
           <SafeAreaView style={styles.topBar} edges={["top"]}>
@@ -964,19 +964,19 @@ export default function LoginScreen() {
                   </Pressable>
                   
                   <Pressable
-                    onPress={() => handleOAuthSignIn('apple')}
-                    disabled={oauthLoading !== null || Platform.OS !== 'ios'}
+                    onPress={() => handleOAuthSignIn('facebook')}
+                    disabled={oauthLoading !== null}
                     style={({ pressed }) => [
                       styles.oauthButton,
                       pressed && styles.oauthButtonPressed,
-                      (oauthLoading !== null || Platform.OS !== 'ios') && styles.btnDisabled,
+                      oauthLoading === 'facebook' && styles.btnDisabled,
                     ]}
                     hitSlop={8}
                   >
-                    {oauthLoading === 'apple' ? (
+                    {oauthLoading === 'facebook' ? (
                       <ActivityIndicator size="small" color={a.text} />
                     ) : (
-                      <Ionicons name="logo-apple" size={20} color={a.text} />
+                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1877F2' }}>f</Text>
                     )}
                   </Pressable>
                   
@@ -1016,6 +1016,6 @@ export default function LoginScreen() {
           </Animated.View>
         </View>
       </KeyboardAvoidingView>
-    </AuthHeroGradient>
+    </AnimatedAuthBackground>
   );
 }

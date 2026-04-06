@@ -5,7 +5,7 @@ import { Logo } from "@parkit/shared";
 import { useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { useMemo } from "react";
-import { AuthHeroGradient } from "@/components/AuthHeroGradient";
+import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
 import { useValetTheme, ACCENT, useResponsiveLayout } from "@/theme/valetTheme";
 import { getAppVersionString } from "@/lib/appVersion";
 
@@ -125,8 +125,8 @@ export function WelcomeContent({
   });
 
   return (
-    <AuthHeroGradient chromeBg={a.authScreenChromeBg}>
-      <StatusBar barStyle={a.statusBarStyle} backgroundColor={a.statusBarBg} />
+    <AnimatedAuthBackground isDark={theme.isDark}>
+      <StatusBar barStyle={a.statusBarStyle} backgroundColor="transparent" />
       <View style={styles.rootColumn}>
         <View style={styles.heroStrip}>
           <View style={styles.hero}>
@@ -158,7 +158,7 @@ export function WelcomeContent({
           </View>
         </View>
       </View>
-    </AuthHeroGradient>
+    </AnimatedAuthBackground>
   );
 }
 

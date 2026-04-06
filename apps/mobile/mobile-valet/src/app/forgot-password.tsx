@@ -27,11 +27,11 @@ import { useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-import { AuthHeroGradient } from "@/components/AuthHeroGradient";
+import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
 import { getTranslatedApiErrorMessage } from "@/lib/apiErrors";
 
-const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
+const SUPPORT_EMAIL = "mailto:soporte@parkitcr.com";
 const LOGO_SIZE = 72;
 const CONTROL_HEIGHT = 56;
 
@@ -272,8 +272,8 @@ export default function ForgotPasswordScreen() {
   const inputsMaxHeight = keyboardVisible ? keyboardInputsMaxHeight : Math.round(height * 0.24);
 
   return (
-    <AuthHeroGradient chromeBg={a.authScreenChromeBg}>
-      <StatusBar barStyle={a.statusBarStyle} backgroundColor={a.statusBarBg} />
+    <AnimatedAuthBackground isDark={theme.isDark}>
+      <StatusBar barStyle={a.statusBarStyle} backgroundColor="transparent" />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <View style={styles.heroStrip}>
           <SafeAreaView style={styles.topBar} edges={["top"]}>
@@ -422,6 +422,6 @@ export default function ForgotPasswordScreen() {
           </View>
         </View>
       </KeyboardAvoidingView>
-    </AuthHeroGradient>
+    </AnimatedAuthBackground>
   );
 }

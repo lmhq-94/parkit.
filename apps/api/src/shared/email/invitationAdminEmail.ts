@@ -7,8 +7,8 @@ const INVITATION_BASE_URL =
 const FROM_EMAIL =
   process.env.INVITATION_FROM_EMAIL || "Parkit <onboarding@resend.dev>";
 const INVITATION_ADMIN_TEMPLATE_ID = process.env.INVITATION_ADMIN_TEMPLATE_ID || process.env.INVITATION_TEMPLATE_ID || "";
-/** Same support email as login/support link (e.g. soporte@parkit.app). */
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "soporte@parkit.app";
+/** Same support email as login/support link (e.g. soporte@parkitcr.com). */
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "soporte@parkitcr.com";
 /** Optional privacy policy URL */
 const PRIVACY_URL = process.env.INVITATION_PRIVACY_URL || "";
 /** Optional terms and conditions URL */

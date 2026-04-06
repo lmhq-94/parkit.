@@ -15,20 +15,32 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { Logo } from "@parkit/shared";
-import { useLocaleStore } from "@/lib/store";
+import { useLocaleStore, usePreferencesStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
 import api from "@/lib/api";
+import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
+import { useColorScheme } from "react-native";
 
-const DARK_BG = "#0F172A";
 const PRIMARY = "#3B82F6";
 const DARK_BTN = "#1E293B";
 const BORDER_COLOR = "#E2E8F0";
 const TEXT_PRIMARY = "#0F172A";
 
+function useIsDark() {
+  const systemScheme = useColorScheme();
+  const preference = usePreferencesStore((s) => s.theme);
+  return preference === "dark"
+    ? true
+    : preference === "light"
+      ? false
+      : systemScheme === "dark";
+}
+
 export default function ForgotPasswordScreen() {
   const router = useRouter();
   const locale = useLocaleStore((s) => s.locale);
+  const isDark = useIsDark();
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,8 +65,8 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={DARK_BG} />
+    <AnimatedAuthBackground isDark={isDark}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" />
       <SafeAreaView style={styles.topBar} edges={["top"]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
           <Ionicons name="chevron-back" size={24} color="#F8FAFC" />
@@ -146,12 +158,11 @@ export default function ForgotPasswordScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </View>
+    </AnimatedAuthBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: DARK_BG },
   topBar: {
     flexDirection: "row",
     alignItems: "center",

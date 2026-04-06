@@ -11,7 +11,7 @@ import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
-import { FaApple, FaMicrosoft } from "react-icons/fa";
+import { FaSquareFacebook, FaMicrosoft } from "react-icons/fa6";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ThemeToggleSimple } from "@/components/ThemeToggleSimple";
 import { LocaleToggleSimple } from "@/components/LocaleToggleSimple";
@@ -273,7 +273,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-slate-200 dark:border-slate-700" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white/90 dark:bg-slate-900/70 px-2 text-slate-500 dark:text-slate-400">{t("auth.orContinueWith")}</span>
+              <span className="bg-[#F2F3FE] dark:bg-[#161C3F] px-2 text-slate-500 dark:text-slate-400">{t("auth.orContinueWith")}</span>
             </div>
           </div>
 
@@ -297,11 +297,11 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => handleOAuthLogin("apple")}
+              onClick={() => handleOAuthLogin("facebook")}
               className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
-              title={t("auth.continueWithApple")}
+              title={t("auth.continueWithFacebook")}
             >
-              <FaApple className="h-6 w-6" />
+              <FaSquareFacebook className="h-6 w-6 text-[#1877F2]" />
             </button>
           </div>
 
@@ -315,7 +315,7 @@ export default function LoginPage() {
           <div className="max-w-[480px] mx-auto space-y-3">
             <p className="text-xs text-black dark:text-slate-400">
               {t("auth.supportHint")}{" "}
-              <a href="mailto:soporte@parkit.app" className="font-bold text-black dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
+              <a href="mailto:soporte@parkitcr.com" className="font-bold text-black dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
                 {t("auth.supportLinkLabel")}
               </a>
             </p>

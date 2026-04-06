@@ -7,7 +7,7 @@ import { getResendClient } from "./resendClient";
 
 const BASE_URL = process.env.INVITATION_BASE_URL || "http://localhost:3000";
 const FROM_EMAIL = process.env.INVITATION_FROM_EMAIL || "Parkit <onboarding@resend.dev>";
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "soporte@parkit.app";
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "soporte@parkitcr.com";
 const PARKIT_LOGO_URL = process.env.PARKIT_LOGO_URL || "";
 
 function buildResetLink(token: string): string {

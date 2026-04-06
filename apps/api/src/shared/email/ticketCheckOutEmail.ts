@@ -5,8 +5,8 @@
 const FROM_EMAIL =
   process.env.TICKET_CHECKOUT_FROM_EMAIL || "Parkit <onboarding@resend.dev>";
 const TICKET_CHECKOUT_TEMPLATE_ID = process.env.TICKET_CHECKOUT_TEMPLATE_ID || "";
-/** Support email for ticket-related inquiries (e.g. soporte@parkit.app). */
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "soporte@parkit.app";
+/** Support email for ticket-related inquiries (e.g. soporte@parkitcr.com). */
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "soporte@parkitcr.com";
 
 export interface SendTicketCheckOutParams {
   to: string;

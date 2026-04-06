@@ -78,6 +78,9 @@ export default function TermsPage() {
                   <li>{t("terms.section2Item5")}</li>
                   <li>{t("terms.section2Item6")}</li>
                   <li>{t("terms.section2Item7")}</li>
+                  <li>{t("terms.section2Item8")}</li>
+                  <li>{t("terms.section2Item9")}</li>
+                  <li>{t("terms.section2Item10")}</li>
                 </ul>
               </section>
 
@@ -91,6 +94,7 @@ export default function TermsPage() {
                   <li>{t("terms.section3Item2")}</li>
                   <li>{t("terms.section3Item3")}</li>
                   <li>{t("terms.section3Item4")}</li>
+                  <li>{t("terms.section3Item5")}</li>
                 </ul>
               </section>
 
@@ -104,6 +108,7 @@ export default function TermsPage() {
                   <li>{t("terms.section4Item2")}</li>
                   <li>{t("terms.section4Item3")}</li>
                   <li>{t("terms.section4Item4")}</li>
+                  <li>{t("terms.section4Item5")}</li>
                 </ul>
               </section>
 
@@ -145,7 +150,7 @@ export default function TermsPage() {
               <section>
                 <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("terms.section10Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm">
-                  {t("terms.section10Content")} <strong>legal@parkit.com</strong> o por correo a Parkit Technologies, Bogotá, Colombia.
+                  {t("terms.section10Content")}
                 </p>
               </section>
             </div>
