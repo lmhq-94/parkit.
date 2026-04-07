@@ -35,7 +35,7 @@ import {
   AVATAR_PRESENCE_RING,
 } from "@/lib/homeUtils";
 import { AnimatedGridTile } from "@/components/AnimatedGridTile";
-import { Animated, useHeaderEntranceAnimation, useAvatarPulseAnimation } from "@/lib/animations";
+import { HeaderAnimatedView, AvatarPulseView } from "@/components/ReanimatedWrappers";
 import { LinearGradient } from "expo-linear-gradient";
 
 class HomeErrorBoundary extends React.Component<
@@ -97,12 +97,8 @@ function HomeScreenContent() {
   const isDriverUi = user?.valetStaffRole === "DRIVER";
   const prevQueueAlertCountRef = useRef(0);
   const { textScale, reduceMotion } = useAccessibilityStore();
-
-  // Re-enabled animation hooks with Reanimated 4.1.2
-  const headerEntranceStyle = useHeaderEntranceAnimation(reduceMotion);
   const statusKey = user?.valetCurrentStatus;
   const isAvailable = statusKey === "AVAILABLE";
-  const pulseStyle = useAvatarPulseAnimation(isAvailable, reduceMotion);
 
   useEffect(() => {
     void hydrateParkingPreference();
@@ -260,7 +256,7 @@ function HomeScreenContent() {
       />
       <View style={styles.mainColumn}>
         <View style={styles.screenContent}>
-        <Animated.View style={[headerEntranceStyle, { flex: 1, minWidth: 0 }]}>
+        <HeaderAnimatedView reduceMotion={reduceMotion}>
         <LinearGradient
           colors={[...headerGradientSpec.colors]}
           locations={[...headerGradientSpec.locations]}
@@ -303,19 +299,12 @@ function HomeScreenContent() {
                     style={[styles.avatarPresenceOuter, { borderColor: avatarPresenceColor }]}
                     accessibilityLabel={`${t(locale, "home.profile")} — ${statusLabel}`}
                   >
-                    {isAvailable && (
-                      <Animated.View
-                        style={[
-                          StyleSheet.absoluteFill,
-                          pulseStyle,
-                          {
-                            borderRadius: (HEADER_AVATAR_SIZE + AVATAR_PRESENCE_RING * 2) / 2,
-                            backgroundColor: avatarPresenceColor,
-                          },
-                        ]}
-                        pointerEvents="none"
-                      />
-                    )}
+                  <AvatarPulseView
+                    isAvailable={isAvailable}
+                    color={avatarPresenceColor}
+                    size={HEADER_AVATAR_SIZE + AVATAR_PRESENCE_RING * 2}
+                    reduceMotion={reduceMotion}
+                  >
                     <View
                       style={[
                         styles.headerAvatarInner,
@@ -337,13 +326,14 @@ function HomeScreenContent() {
                         </Text>
                       )}
                     </View>
+                  </AvatarPulseView>
                   </View>
                 </View>
               </View>
             </View>
           </View>
         </LinearGradient>
-        </Animated.View>
+        </HeaderAnimatedView>
 
         <View style={styles.gridFlex}>
           {isDriverUi ? (
@@ -854,8 +844,8 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       flexShrink: 1,
     },
     tile: {
-      flex: 1,
-      minWidth: 0,
+      flex: 0,
+      width: "48%",
       minHeight: 0,
       position: "relative",
       borderRadius: R.card + 4,

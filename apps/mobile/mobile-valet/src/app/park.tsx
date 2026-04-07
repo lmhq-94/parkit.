@@ -3,6 +3,7 @@ import {
   Image,
   Platform,
   Pressable,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -10,7 +11,6 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
-import { KeyboardAwareScrollView, KeyboardStickyView } from "react-native-keyboard-controller";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -611,12 +611,11 @@ export default function ParkFlowScreen() {
               <Text style={styles.help}>{t(locale, "park.loading")}</Text>
             </View>
           ) : (
-            <KeyboardAwareScrollView
+            <ScrollView
               style={{ flex: 1 }}
               contentContainerStyle={styles.scroll}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
-              bottomOffset={96}
             >
               {step === "damage" ? (
                 <>
@@ -750,10 +749,10 @@ export default function ParkFlowScreen() {
 
                 </>
               )}
-            </KeyboardAwareScrollView>
+            </ScrollView>
           )}
         </View>
-        <KeyboardStickyView>{footer}</KeyboardStickyView>
+        <View style={{ paddingBottom: insets.bottom }}>{footer}</View>
       </View>
     </SafeAreaView>
   );

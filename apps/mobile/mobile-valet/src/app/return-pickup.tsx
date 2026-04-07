@@ -7,6 +7,7 @@ import {
   Platform,
   ActivityIndicator,
   StatusBar,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useRouter } from "expo-router";
@@ -23,10 +24,6 @@ import { createFeedback } from "@/lib/feedback";
 import { ValetBackButton } from "@/components/ValetBackButton";
 import { StickyFormFooter } from "@/components/StickyFormFooter";
 import { ValetChipAvatar } from "@/components/ValetChipAvatar";
-import {
-  KeyboardAwareScrollView,
-  KeyboardStickyView,
-} from "react-native-keyboard-controller";
 
 interface TicketRow {
   id: string;
@@ -182,12 +179,12 @@ export default function ReturnPickupScreen() {
         <View style={{ width: 44 }} />
       </View>
       <View style={{ flex: 1, minHeight: 0 }}>
-        <KeyboardAwareScrollView
+        <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
-          bottomOffset={96}
+          keyboardDismissMode="interactive"
         >
           <Text style={styles.sub}>{t(locale, "returnPickup.subtitle")}</Text>
 
@@ -266,10 +263,9 @@ export default function ReturnPickupScreen() {
               </View>
             </>
           ) : null}
-        </KeyboardAwareScrollView>
+        </ScrollView>
 
         {selectedTicketId ? (
-          <KeyboardStickyView>
           <StickyFormFooter keyboardPinned>
             <Pressable
               style={({ pressed }) => [
@@ -295,7 +291,6 @@ export default function ReturnPickupScreen() {
               )}
             </Pressable>
           </StickyFormFooter>
-          </KeyboardStickyView>
         ) : null}
       </View>
       </View>

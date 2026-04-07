@@ -28,7 +28,7 @@ import { saveUser } from "@/lib/auth";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { KeyboardAvoidingView } from "react-native";
 import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
 import { Users, Car } from "lucide-react-native";

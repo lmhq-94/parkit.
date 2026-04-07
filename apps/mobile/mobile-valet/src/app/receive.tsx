@@ -13,10 +13,6 @@ import {
   RefreshControl,
   StatusBar,
 } from "react-native";
-import {
-  KeyboardAwareScrollView,
-  KeyboardStickyView,
-} from "react-native-keyboard-controller";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useRouter, useLocalSearchParams } from "expo-router";
 import * as Linking from "expo-linking";
@@ -1647,7 +1643,7 @@ export default function ReceiveScreen() {
             )}
           </View>
         ) : (
-        <KeyboardAwareScrollView
+        <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
@@ -2373,10 +2369,10 @@ export default function ReceiveScreen() {
               ) : null}
             </>
           )}
-        </KeyboardAwareScrollView>
+        </ScrollView>
         )}
 
-        {footer ? <KeyboardStickyView>{footer}</KeyboardStickyView> : null}
+        {footer ? <View>{footer}</View> : null}
 
 
         <Modal

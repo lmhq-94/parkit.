@@ -1,8 +1,8 @@
-import { View, Text, Pressable, Platform, StyleSheet } from "react-native";
+import { View, Text, Pressable, Platform, StyleSheet, Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import type { ComponentType } from "react";
-import Animated from "react-native-reanimated";
+import { useEffect, useRef } from "react";
 import {
   parkitTilePalette,
   tileIconHex,
@@ -11,7 +11,6 @@ import {
   TILE_ICON_SIZE,
   type GridVariant,
 } from "@/lib/homeUtils";
-import { useTileEntranceAnimation, useTilePressAnimation } from "@/lib/animations";
 import { hapticTilePress } from "@/lib/haptics";
 
 export type TileLucideIcon = ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
@@ -73,21 +72,36 @@ export function AnimatedGridTile(props: AnimatedGridTileProps) {
   const iconBubbleBg = isDark ? TILE_ICON_BG_DARK[variant] : TILE_ICON_BG_LIGHT[variant];
   const glowColor = iconColor;
 
-  // Animaciones
-  const entranceStyle = useTileEntranceAnimation(index, true, reduceMotion);
-  const { glowStyle, animatePressIn, animatePressOut } = useTilePressAnimation(reduceMotion);
+  // Simple fade-in animation using React Native Animated
+  const fadeAnim = useRef(new Animated.Value(reduceMotion ? 1 : 0)).current;
+  const scaleAnim = useRef(new Animated.Value(reduceMotion ? 1 : 0.95)).current;
+  
+  useEffect(() => {
+    if (reduceMotion) return;
+    
+    const delay = index * 80;
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 8,
+          tension: 40,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, delay);
+    
+    return () => clearTimeout(timer);
+  }, [index, reduceMotion, fadeAnim, scaleAnim]);
 
   const handlePress = () => {
     void hapticTilePress(variant === "accent" || variant === "warm" ? "primary" : "secondary");
     onPress();
-  };
-
-  const handlePressIn = () => {
-    animatePressIn();
-  };
-
-  const handlePressOut = () => {
-    animatePressOut();
   };
 
   // Estilos para glow effect
@@ -101,8 +115,13 @@ export function AnimatedGridTile(props: AnimatedGridTileProps) {
     },
   ];
 
+  const animatedStyle = {
+    opacity: fadeAnim,
+    transform: [{ scale: scaleAnim }],
+  };
+
   return (
-    <Animated.View style={[entranceStyle, { flex: 1, minWidth: 0 }]}>
+    <Animated.View style={[animatedStyle, { width: "48%", minWidth: 0 }]}>
       <Pressable
         style={({ pressed }) => [
           styles.tile,
@@ -117,13 +136,11 @@ export function AnimatedGridTile(props: AnimatedGridTileProps) {
           textScale > 1 && { paddingVertical: 20 + (textScale - 1) * 10 },
         ]}
         onPress={handlePress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
         accessibilityRole="button"
         accessibilityLabel={`${title}. ${sub}`}
       >
         {/* Glow effect overlay */}
-        <Animated.View style={[glowContainerStyle, glowStyle]} pointerEvents="none" />
+        <View style={glowContainerStyle} pointerEvents="none" />
 
         {/* Glassmorphism background */}
         {(isDark || Platform.OS === "ios") && (

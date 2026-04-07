@@ -18,7 +18,6 @@ import { useMemo } from "react";
 import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
 import type { ThemePreference } from "@/lib/themeStore";
 import { ValetBackButton } from "@/components/ValetBackButton";
-import { hapticSuccess } from "@/lib/haptics";
 
 const MIN_ROW = 58;
 

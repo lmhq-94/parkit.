@@ -26,7 +26,7 @@ import api from "@/lib/api";
 import { useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { KeyboardAvoidingView } from "react-native";
 import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
 import { getTranslatedApiErrorMessage } from "@parkit/shared";
