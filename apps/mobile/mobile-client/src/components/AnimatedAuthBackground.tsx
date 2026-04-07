@@ -53,18 +53,45 @@ type Props = {
 
 const LavaBlob = ({ config, index }: { config: BlobConfig; index: number }) => {
   const animatedValue = useMemo(() => new Animated.Value(0), []);
+  const morphValue = useMemo(() => new Animated.Value(0), []);
 
   useEffect(() => {
     const anim = Animated.loop(
       Animated.timing(animatedValue, { toValue: 1, duration: config.duration, useNativeDriver: true })
     );
-    const t = setTimeout(() => anim.start(), config.delay);
-    return () => { clearTimeout(t); anim.stop(); };
-  }, [animatedValue, config.duration, config.delay]);
+    const morphAnim = Animated.loop(
+      Animated.timing(morphValue, { toValue: 1, duration: config.duration * 0.8, useNativeDriver: true })
+    );
+    const t = setTimeout(() => { anim.start(); morphAnim.start(); }, config.delay);
+    return () => { clearTimeout(t); anim.stop(); morphAnim.stop(); };
+  }, [animatedValue, morphValue, config.duration, config.delay]);
 
-  const tx = animatedValue.interpolate({ inputRange: [0, 0.25, 0.5, 0.75, 1], outputRange: [0, 50, -30, 25, 0] });
-  const ty = animatedValue.interpolate({ inputRange: [0, 0.25, 0.5, 0.75, 1], outputRange: [0, -40, 35, -20, 0] });
-  const scale = animatedValue.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1.15, 1] });
+  // Dramatic movement like web: large translations, rotation, scale
+  const tx = animatedValue.interpolate({ 
+    inputRange: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1], 
+    outputRange: [0, 120, -100, 80, -60, 40, -20, 0] 
+  });
+  const ty = animatedValue.interpolate({ 
+    inputRange: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1], 
+    outputRange: [0, -100, 120, 60, -80, -40, 30, 0] 
+  });
+  const scale = animatedValue.interpolate({ 
+    inputRange: [0, 0.25, 0.5, 0.75, 1], 
+    outputRange: [1, 1.4, 0.7, 1.3, 1] 
+  });
+  const rotate = animatedValue.interpolate({ 
+    inputRange: [0, 0.25, 0.5, 0.75, 1], 
+    outputRange: ["0deg", "25deg", "-20deg", "15deg", "0deg"] 
+  });
+  // Morphing effect for border radius simulation (via scaleX/scaleY)
+  const morphX = morphValue.interpolate({ 
+    inputRange: [0, 0.2, 0.4, 0.6, 0.8, 1], 
+    outputRange: [1, 1.3, 0.8, 1.2, 0.9, 1] 
+  });
+  const morphY = morphValue.interpolate({ 
+    inputRange: [0, 0.2, 0.4, 0.6, 0.8, 1], 
+    outputRange: [1, 0.7, 1.4, 0.8, 1.1, 1] 
+  });
 
   return (
     <Animated.View
@@ -76,7 +103,7 @@ const LavaBlob = ({ config, index }: { config: BlobConfig; index: number }) => {
         width: config.rx * 2,
         height: config.ry * 2,
         opacity: config.opacity,
-        transform: [{ translateX: tx }, { translateY: ty }, { scale }],
+        transform: [{ translateX: tx }, { translateY: ty }, { scale }, { rotate }, { scaleX: morphX }, { scaleY: morphY }],
       }}
     >
       <Svg width={config.rx * 2} height={config.ry * 2} viewBox={`0 0 ${config.rx * 2} ${config.ry * 2}`}>
