@@ -521,6 +521,20 @@ export default function LoginScreen() {
     <AnimatedAuthBackground isDark={theme.isDark}>
       <StatusBar barStyle={a.statusBarStyle} backgroundColor="transparent" />
       <KeyboardAvoidingView style={{ flex: 1, backgroundColor: 'transparent' }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        {/* Keyboard background color matching form */}
+        {keyboardVisible && (
+          <View
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: keyboardHeight,
+              backgroundColor: a.bottomSheet,
+              zIndex: 0,
+            }}
+          />
+        )}
         <View style={styles.heroStrip}>
           <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 12) }]}>
             <TouchableOpacity

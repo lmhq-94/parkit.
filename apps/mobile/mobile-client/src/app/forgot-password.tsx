@@ -321,6 +321,20 @@ export default function ForgotPasswordScreen() {
     <AnimatedAuthBackground isDark={isDark}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor="transparent" />
       <KeyboardAvoidingView style={{ flex: 1, backgroundColor: 'transparent' }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        {/* Keyboard background color matching form */}
+        {keyboardVisible && (
+          <View
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: keyboardHeight,
+              backgroundColor: "#FFFFFF",
+              zIndex: 0,
+            }}
+          />
+        )}
         <View style={styles.heroStrip}>
           <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 12) }]}>
             <TouchableOpacity
