@@ -427,7 +427,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderRadius: 11,
     },
     chipAvatarText: {
-      fontSize: 10,
+      fontSize: Math.round(F.secondary * 0.65),
       fontWeight: "800",
       letterSpacing: -0.2,
     },

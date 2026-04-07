@@ -111,7 +111,7 @@ export function CardScanner({
       ...StyleSheet.absoluteFillObject,
     },
     headerTitle: {
-      fontSize: 26,
+      fontSize: F.title,
       fontWeight: '800',
       color: '#F8FAFC',
       letterSpacing: -0.5,
@@ -186,13 +186,13 @@ export function CardScanner({
       alignItems: 'flex-end',
     },
     fakeCardLabel: {
-      fontSize: 10,
+      fontSize: Math.round(F.secondary * 0.65),
       color: isDark ? '#64748B' : '#94A3B8',
       textTransform: 'uppercase',
       marginBottom: 4,
     },
     fakeCardValue: {
-      fontSize: 14,
+      fontSize: Math.round(F.secondary * 0.8),
       fontWeight: '600',
       color: isDark ? '#94A3B8' : '#64748B',
     },
@@ -272,7 +272,7 @@ export function CardScanner({
       marginBottom: S.sm,
     },
     permissionTitle: {
-      fontSize: 20,
+      fontSize: F.body,
       fontWeight: '800',
       color: C.text,
       textAlign: 'center',

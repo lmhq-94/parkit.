@@ -42,6 +42,7 @@ export default function ForgotPasswordScreen() {
   const theme = useValetTheme();
   const { width, height } = useWindowDimensions();
   const a = theme.auth;
+  const F = theme.font;
   const shortestSide = Math.min(width, height);
   const isTablet = shortestSide >= 600;
   const isLandscape = width > height;
@@ -86,7 +87,7 @@ export default function ForgotPasswordScreen() {
         heroLogo: { marginBottom: 0 },
         heroBrand: {
           marginTop: 28,
-          fontSize: 15,
+          fontSize: F.secondary,
           fontWeight: "600",
           letterSpacing: 4,
           color: a.authHeroValetLabel,
@@ -119,15 +120,15 @@ export default function ForgotPasswordScreen() {
         inputsScroll: {},
         inputsScrollContent: { paddingBottom: 12 },
         cardHeadline: {
-          fontSize: 26,
+          fontSize: F.title,
           fontWeight: "700",
           color: a.text,
           marginBottom: 8,
           letterSpacing: -0.4,
         },
-        subtitle: { fontSize: 15, lineHeight: 22, color: a.textMuted, marginBottom: 40 },
+        subtitle: { fontSize: Math.round(F.secondary * 0.9), lineHeight: Math.round(F.secondary * 1.4), color: a.textMuted, marginBottom: 40 },
         inputBlock: { marginBottom: 14 },
-        label: { fontSize: 13, fontWeight: "600", color: a.textSecondary, marginBottom: 6 },
+        label: { fontSize: Math.round(F.secondary * 0.8), fontWeight: "600", color: a.textSecondary, marginBottom: 6 },
         inputRow: {
           flexDirection: "row",
           alignItems: "center",
@@ -139,7 +140,7 @@ export default function ForgotPasswordScreen() {
           paddingLeft: 16,
           paddingRight: 14,
         },
-        input: { flex: 1, paddingVertical: 12, fontSize: 15, color: a.text },
+        input: { flex: 1, paddingVertical: 12, fontSize: F.body, color: a.text },
         inputIconRight: { marginLeft: 10 },
         errorWrap: {
           flexDirection: "row",
@@ -151,7 +152,7 @@ export default function ForgotPasswordScreen() {
           borderRadius: 12,
           marginBottom: 12,
         },
-        errorText: { color: a.errorText, fontSize: 14, fontWeight: "500", flex: 1 },
+        errorText: { color: a.errorText, fontSize: F.secondary, fontWeight: "500", flex: 1 },
         submitBtn: {
           minHeight: CONTROL_HEIGHT,
           borderRadius: 16,
@@ -170,11 +171,11 @@ export default function ForgotPasswordScreen() {
             android: { elevation: 4 },
           }),
         },
-        submitBtnText: { fontSize: 16, fontWeight: "800", color: "#FFFFFF", letterSpacing: 0.5 },
+        submitBtnText: { fontSize: F.button, fontWeight: "800", color: "#FFFFFF", letterSpacing: 0.5 },
         btnPressed: { opacity: 0.92 },
         btnDisabled: { opacity: 0.6 },
         backToLoginBtn: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4, marginBottom: 8 },
-        backToLoginText: { fontSize: 15, fontWeight: "600", color: a.linkAccent },
+        backToLoginText: { fontSize: F.body, fontWeight: "600", color: a.linkAccent },
         footerLinkWrap: { alignItems: "center", marginBottom: 4 },
         footer: {
           flexDirection: "row",
@@ -186,11 +187,11 @@ export default function ForgotPasswordScreen() {
           paddingTop: 22,
           paddingBottom: 18,
         },
-        footerText: { fontSize: 12, color: a.textMuted },
-        footerLink: { fontSize: 14, fontWeight: "600", color: a.linkAccent },
-        footerLinkMuted: { fontSize: 13, fontWeight: "600", color: a.linkAccent },
+        footerText: { fontSize: Math.round(F.secondary * 0.75), color: a.textMuted },
+        footerLink: { fontSize: F.secondary, fontWeight: "600", color: a.linkAccent },
+        footerLinkMuted: { fontSize: Math.round(F.secondary * 0.8), fontWeight: "600", color: a.linkAccent },
       }),
-    [a, heroMin, horizontalPadding, sheetMaxWidth]
+    [a, heroMin, horizontalPadding, sheetMaxWidth, F]
   );
 
   const [email, setEmail] = useState("");

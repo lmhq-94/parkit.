@@ -2893,7 +2893,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       backgroundColor: theme.isDark ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.12)",
     },
     vehicleFoundBadgeText: {
-      fontSize: 12,
+      fontSize: Math.round(F.status * 0.7),
       fontWeight: "800",
       color: C.success,
       textTransform: "uppercase",
@@ -2914,7 +2914,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     vehicleSummaryLabel: {
       flexShrink: 1,
-      fontSize: 13,
+      fontSize: Math.round(F.secondary * 0.75),
       fontWeight: "700",
       color: C.textMuted,
       textTransform: "uppercase",
@@ -2941,7 +2941,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       backgroundColor: theme.isDark ? "rgba(249, 115, 22, 0.18)" : "rgba(249, 115, 22, 0.12)",
     },
     vehicleNotFoundBadgeText: {
-      fontSize: 12,
+      fontSize: Math.round(F.status * 0.7),
       fontWeight: "800",
       color: C.warning,
       textTransform: "uppercase",
@@ -3070,7 +3070,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       gap: 4,
     },
     reservationBookingErrorEyebrow: {
-      fontSize: 10,
+      fontSize: Math.round(F.status * 0.55),
       fontWeight: "700",
       letterSpacing: 3.2,
       color: "rgba(203, 213, 225, 0.65)",
@@ -3174,7 +3174,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       marginBottom: 4,
     },
     bottomTitle: {
-      fontSize: 11,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
       color: C.textMuted,
       textTransform: "uppercase",
@@ -3191,11 +3191,11 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       flexShrink: 0,
     },
     bottomChooseBtnText: {
-      fontSize: 12,
+      fontSize: Math.round(F.secondary * 0.7),
       fontWeight: "800",
     },
     bottomManualHint: {
-      fontSize: 11,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "700",
       marginBottom: 4,
     },
@@ -3205,7 +3205,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       paddingVertical: 4,
     },
     bottomUseNearestText: {
-      fontSize: 13,
+      fontSize: Math.round(F.secondary * 0.75),
       fontWeight: "800",
     },
     bottomName: {
@@ -3214,22 +3214,22 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       color: C.text,
     },
     bottomCompany: {
-      fontSize: 11,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "600",
       color: C.textMuted,
       marginTop: 2,
     },
     bottomMeta: {
-      fontSize: 12,
+      fontSize: Math.round(F.status * 0.7),
       fontWeight: "700",
       color: C.primary,
       marginTop: 2,
     },
     bottomAddr: {
-      fontSize: 11,
+      fontSize: Math.round(F.status * 0.65),
       color: C.textSubtle,
       marginTop: 4,
-      lineHeight: 16,
+      lineHeight: Math.round(F.status * 0.95),
     },
     bottomLoadingRow: {
       flexDirection: "row",
@@ -3273,9 +3273,9 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       fontWeight: "800",
     },
     parkingRowAddr: {
-      fontSize: 12,
+      fontSize: Math.round(F.status * 0.7),
       marginTop: 4,
-      lineHeight: 16,
+      lineHeight: Math.round(F.status * 0.95),
     },
     cardVerifyOnHold: {
       backgroundColor: theme.isDark ? "rgba(2, 6, 23, 0.82)" : "rgba(255, 255, 255, 0.96)",
@@ -3486,7 +3486,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       paddingHorizontal: S.sm,
     },
     valetStatusBadgeAvailableText: {
-      fontSize: 11,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
       color: theme.isDark ? "#86EFAC" : "#166534",
       textTransform: "uppercase",
@@ -3501,7 +3501,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       paddingHorizontal: S.sm,
     },
     valetStatusBadgeBusyText: {
-      fontSize: 11,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
       color: theme.isDark ? "#FCD34D" : "#92400E",
       textTransform: "uppercase",
@@ -3522,7 +3522,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderRadius: 24,
     },
     valetAvatarText: {
-      fontSize: 16,
+      fontSize: Math.round(F.secondary),
       fontWeight: "800",
       letterSpacing: -0.3,
     },
@@ -3573,7 +3573,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       gap: 4,
     },
     valetEtaKicker: {
-      fontSize: 11,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
       color: C.warning,
       textTransform: "uppercase",
@@ -3613,7 +3613,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       gap: S.sm,
     },
     damageCountMeta: {
-      fontSize: 13,
+      fontSize: Math.round(F.secondary * 0.75),
       fontWeight: "700",
       color: C.textMuted,
       marginBottom: S.md,

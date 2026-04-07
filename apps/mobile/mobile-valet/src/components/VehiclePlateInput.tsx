@@ -148,14 +148,14 @@ export function VehiclePlateInput({
       backgroundColor: 'rgba(249, 115, 22, 0.12)',
     },
     vehicleFoundBadgeText: {
-      fontSize: 12,
+      fontSize: Math.round(F.secondary * 0.75),
       fontWeight: '800',
       color: C.success,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
     },
     vehicleNotFoundBadgeText: {
-      fontSize: 12,
+      fontSize: Math.round(F.secondary * 0.75),
       fontWeight: '800',
       color: C.warning,
       textTransform: 'uppercase',
@@ -176,7 +176,7 @@ export function VehiclePlateInput({
     },
     vehicleSummaryLabel: {
       flexShrink: 1,
-      fontSize: 13,
+      fontSize: Math.round(F.secondary * 0.8),
       fontWeight: '700',
       color: C.textMuted,
       textTransform: 'uppercase',

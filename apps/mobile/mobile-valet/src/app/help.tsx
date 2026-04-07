@@ -81,7 +81,7 @@ export default function HelpScreen() {
         },
         stepBadgeText: {
           color: "#fff",
-          fontSize: 14,
+          fontSize: Fa.status,
           fontWeight: "800",
         },
         stepText: {

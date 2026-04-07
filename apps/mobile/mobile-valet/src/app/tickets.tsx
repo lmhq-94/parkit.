@@ -128,7 +128,7 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
     },
     queueBannerBadgeText: {
       color: "#fff",
-      fontSize: 12,
+      fontSize: Math.round(F.status * 0.7),
       fontWeight: "800",
     },
     introSecondary: {

@@ -77,7 +77,7 @@ export const useAccessibilityStore = create<AccessibilityStore>()(
     (set) => ({
       textScale: 1,
       reduceMotion: false,
-      setTextScale: (scale) => set({ textScale: Math.max(1, Math.min(1.4, scale)) }),
+      setTextScale: (scale) => set({ textScale: Math.max(1, Math.min(1.25, scale)) }),
       setReduceMotion: (enabled) => set({ reduceMotion: enabled }),
     }),
     {

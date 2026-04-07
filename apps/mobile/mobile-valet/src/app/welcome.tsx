@@ -25,6 +25,7 @@ export function WelcomeContent({
   const theme = useValetTheme();
   const responsive = useResponsiveLayout();
   const { auth: a } = theme;
+  const F = theme.font;
   const [oauthLoading, _setOauthLoading] = useState<string | null>(null);
   const heroMinHeight = Math.round(
     (responsive.isLandscape ? responsive.height * 0.24 : responsive.height * 0.32)
@@ -58,7 +59,7 @@ export function WelcomeContent({
         logo: { marginBottom: 0 },
         valetLabel: {
           marginTop: 28,
-          fontSize: 15,
+          fontSize: F.secondary,
           fontWeight: "600",
           letterSpacing: 4,
           color: a.authHeroValetLabel,
@@ -78,7 +79,7 @@ export function WelcomeContent({
           alignSelf: "center",
         },
         ctaText: {
-          fontSize: 20,
+          fontSize: F.hero,
           fontWeight: "600",
           color: a.text,
           marginBottom: 20,
@@ -98,7 +99,7 @@ export function WelcomeContent({
           elevation: 4,
         },
         btnPrimaryText: {
-          fontSize: 16,
+          fontSize: F.button,
           fontWeight: "800",
           color: a.btnLoginText,
           letterSpacing: 0.5,
@@ -112,7 +113,7 @@ export function WelcomeContent({
           marginBottom: 0,
         },
         btnSecondaryText: {
-          fontSize: 16,
+          fontSize: F.button,
           fontWeight: "800",
           color: a.btnSignupText,
           letterSpacing: 0.5,
@@ -120,7 +121,7 @@ export function WelcomeContent({
         btnPressed: { opacity: 0.9 },
         versionLabel: {
           marginTop: 24,
-          fontSize: 11,
+          fontSize: Math.round(F.secondary * 0.7),
           fontWeight: "500",
           color: a.textMuted,
           textAlign: "center",
@@ -138,7 +139,7 @@ export function WelcomeContent({
         },
         dividerText: {
           marginHorizontal: 10,
-          fontSize: 14,
+          fontSize: F.secondary,
           color: a.textMuted,
           fontWeight: '500',
         },
@@ -165,7 +166,7 @@ export function WelcomeContent({
           opacity: 0.6,
         },
       }),
-    [a, heroMinHeight, responsive.formMaxWidth, responsive.horizontalPadding]
+    [a, heroMinHeight, responsive.formMaxWidth, responsive.horizontalPadding, F]
   );
 
   const versionLabel = t(locale, "welcome.version", {

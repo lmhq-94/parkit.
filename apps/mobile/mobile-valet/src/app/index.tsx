@@ -1,16 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { View, StyleSheet, Animated, StatusBar, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/lib/store";
 import { WelcomeContent } from "./welcome";
 import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
 import { useIsDark } from "@/lib/useIsDark";
+import { useValetTheme } from "@/theme/valetTheme";
 
 const SPLASH_DURATION_MS = 2600;
 const LOGO_SIZE = 72;
 
-export default function SplashScreen() {
+export default function Index() {
   const isDark = useIsDark();
+  const theme = useValetTheme();
+  const F = theme.font;
+  const styles = useMemo(() => createStyles(F), [F]);
   const parkColor = isDark ? "#FFFFFF" : "#0F172A";
   const itColor = isDark ? "#7DD3FC" : "#2563EB";
   const valetColor = isDark ? "rgba(148, 163, 184, 0.58)" : "rgba(100, 116, 139, 0.8)";
@@ -153,34 +157,36 @@ export default function SplashScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: 'transparent',
-  },
-  logoWrap: {
-    alignItems: "center",
-  },
-  logoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  logoPart: {
-    fontFamily: "CalSans",
-    fontSize: LOGO_SIZE,
-    fontWeight: Platform.OS === "android" ? "normal" : "700",
-    letterSpacing: -1.5,
-  },
-  valetLabel: {
-    marginTop: 28,
-    fontSize: 15,
-    fontWeight: "600",
-    letterSpacing: 4,
-    textTransform: "lowercase",
-  },
-  welcomeOverlay: {
-    ...StyleSheet.absoluteFillObject,
-  },
-});
+function createStyles(F: { secondary: number }) {
+  return StyleSheet.create({
+    content: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: 'transparent',
+    },
+    logoWrap: {
+      alignItems: "center",
+    },
+    logoRow: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    logoPart: {
+      fontFamily: "CalSans",
+      fontSize: LOGO_SIZE,
+      fontWeight: Platform.OS === "android" ? "normal" : "700",
+      letterSpacing: -1.5,
+    },
+    valetLabel: {
+      marginTop: 28,
+      fontSize: F.secondary,
+      fontWeight: "600",
+      letterSpacing: 4,
+      textTransform: "lowercase",
+    },
+    welcomeOverlay: {
+      ...StyleSheet.absoluteFillObject,
+    },
+  });
+}

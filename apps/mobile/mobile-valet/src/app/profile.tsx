@@ -1001,7 +1001,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       backgroundColor: theme.isDark ? "rgba(148,163,184,0.12)" : "rgba(15,23,42,0.06)",
     },
     avatarInitials: {
-      fontSize: 44,
+      fontSize: Math.round(F.hero * 1.6),
       fontWeight: "800",
       color: C.text,
       letterSpacing: 1,
@@ -1014,7 +1014,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     dangerText: { color: C.logout },
     label: {
-      fontSize: 12,
+      fontSize: Math.round(F.secondary * 0.75),
       fontWeight: "800",
       color: C.textMuted,
       textTransform: "uppercase",
@@ -1081,9 +1081,9 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       fontWeight: "800",
     },
     roleRowAddr: {
-      fontSize: 12,
+      fontSize: Math.round(F.secondary * 0.75),
       marginTop: 4,
-      lineHeight: 16,
+      lineHeight: Math.round(F.secondary),
     },
     input: {
       backgroundColor: C.card,
@@ -1097,7 +1097,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       marginBottom: S.xs,
     },
     fieldError: {
-      fontSize: 12,
+      fontSize: Math.round(F.secondary * 0.75),
       fontWeight: "600",
       color: C.logout,
       marginBottom: S.sm,

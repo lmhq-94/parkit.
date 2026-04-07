@@ -15,7 +15,7 @@ import { useLocaleStore, useThemeStore, useAccessibilityStore } from "@/lib/stor
 import { t } from "@/lib/i18n";
 import type { Locale } from "@parkit/shared";
 import { useMemo } from "react";
-import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
+import { useValetTheme, useResponsiveLayout } from "@/theme/valetTheme";
 import type { ThemePreference } from "@/lib/themeStore";
 import { ValetBackButton } from "@/components/ValetBackButton";
 
@@ -71,7 +71,7 @@ function AccessibilitySection() {
         color: C.text,
       },
       hint: {
-        fontSize: 12,
+        fontSize: Math.round(F.secondary * 0.75),
         color: C.textSubtle,
         marginTop: 2,
         maxWidth: responsive.contentMaxWidth - 120,
@@ -110,8 +110,35 @@ function AccessibilitySection() {
         justifyContent: "center",
         minWidth: 80,
       },
+      progressBarContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: S.sm,
+        marginTop: S.sm,
+      },
+      progressBarTrack: {
+        flex: 1,
+        height: 8,
+        backgroundColor: theme.isDark ? 'rgba(148, 163, 184, 0.3)' : '#E2E8F0',
+        borderRadius: 4,
+        overflow: 'hidden',
+      },
+      progressBarFill: {
+        height: '100%',
+        backgroundColor: C.primary,
+        borderRadius: 4,
+      },
+      progressLabel: {
+        fontSize: F.secondary,
+        fontWeight: '700',
+        color: C.primary,
+        minWidth: 40,
+        textAlign: 'right',
+      },
     });
   }, [theme, responsive.contentMaxWidth]);
+
+  const progressPercent = Math.round(((textScale - 1) / 0.25) * 100);
 
   return (
     <>
@@ -120,33 +147,37 @@ function AccessibilitySection() {
           <Text style={styles.label}>{t(locale, "settings.textScale")}</Text>
           <Text style={styles.hint}>{t(locale, "settings.textScaleDesc")}</Text>
         </View>
-        <View style={styles.sliderControls}>
+        <View style={styles.progressBarContainer}>
           <Pressable
             style={({ pressed }) => [
               styles.sliderButton,
               pressed && styles.sliderButtonPressed,
               textScale <= 1 && { opacity: 0.4 },
             ]}
-            onPress={() => textScale > 1 && setTextScale(textScale - 0.1)}
+            onPress={() => textScale > 1 && setTextScale(textScale - 0.05)}
             disabled={textScale <= 1}
           >
-            <Ionicons name="remove" size={24} color="#fff" />
+            <Ionicons name="remove" size={20} color="#fff" />
           </Pressable>
-          <View style={styles.sliderValueBox}>
-            <Text style={[styles.label, { fontSize: 20 }]}>
-              {Math.round((textScale - 1) * 100)}%
-            </Text>
+          <View style={styles.progressBarTrack}>
+            <View
+              style={[
+                styles.progressBarFill,
+                { width: `${progressPercent}%` },
+              ]}
+            />
           </View>
+          <Text style={styles.progressLabel}>{Math.round((textScale - 1) * 100)}%</Text>
           <Pressable
             style={({ pressed }) => [
               styles.sliderButton,
               pressed && styles.sliderButtonPressed,
-              textScale >= 1.4 && { opacity: 0.4 },
+              textScale >= 1.25 && { opacity: 0.4 },
             ]}
-            onPress={() => textScale < 1.4 && setTextScale(textScale + 0.1)}
-            disabled={textScale >= 1.4}
+            onPress={() => textScale < 1.25 && setTextScale(textScale + 0.05)}
+            disabled={textScale >= 1.25}
           >
-            <Ionicons name="add" size={24} color="#fff" />
+            <Ionicons name="add" size={20} color="#fff" />
           </Pressable>
         </View>
       </View>
@@ -180,7 +211,6 @@ function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadd
   const C = theme.colors;
   const S = theme.space;
   const F = theme.font;
-  const Fa = ticketsA11y.font;
   const R = theme.radius;
 
   return StyleSheet.create({
@@ -212,7 +242,7 @@ function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadd
       width: 44,
     },
     title: {
-      fontSize: Fa.title - 4,
+      fontSize: F.title,
       fontWeight: "800",
       color: C.text,
       flex: 1,
@@ -228,7 +258,7 @@ function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadd
     },
     /** Misma jerarquía visual que `receive` / tickets (legible en ES/EN). */
     sectionTitle: {
-      fontSize: Fa.secondary - 3,
+      fontSize: Math.round(F.subtitle * 0.85),
       fontWeight: "800",
       color: C.textMuted,
       textTransform: "uppercase",
@@ -276,7 +306,7 @@ function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadd
       color: C.text,
     },
     localeHint: {
-      fontSize: 12,
+      fontSize: Math.round(F.secondary * 0.75),
       color: C.textSubtle,
       marginTop: 2,
     },

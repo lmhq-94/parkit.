@@ -47,6 +47,7 @@ export default function LoginScreen() {
   const theme = useValetTheme();
   const { width, height } = useWindowDimensions();
   const a = theme.auth;
+  const F = theme.font;
   const shortestSide = Math.min(width, height);
   const isTablet = shortestSide >= 600;
   const isLandscape = width > height;
@@ -96,7 +97,7 @@ export default function LoginScreen() {
         heroLogo: { marginBottom: 0 },
         heroBrand: {
           marginTop: 28,
-          fontSize: 15,
+          fontSize: F.secondary,
           fontWeight: "600",
           letterSpacing: 4,
           color: a.authHeroValetLabel,
@@ -138,21 +139,21 @@ export default function LoginScreen() {
           justifyContent: "flex-start",
         },
         cardHeadline: {
-          fontSize: 26,
+          fontSize: F.title,
           fontWeight: "700",
           color: a.text,
           marginBottom: 4,
           letterSpacing: -0.4,
         },
         cardTagline: {
-          fontSize: 15,
-          lineHeight: 21,
+          fontSize: Math.round(F.secondary * 0.9),
+          lineHeight: Math.round(F.secondary * 1.4),
           fontWeight: "500",
           color: a.textMuted,
           marginBottom: 40,
         },
         inputBlock: { marginBottom: 12 },
-        label: { fontSize: 13, fontWeight: "600", color: a.textSecondary, marginBottom: 6 },
+        label: { fontSize: Math.round(F.secondary * 0.8), fontWeight: "600", color: a.textSecondary, marginBottom: 6 },
         inputRow: {
           flexDirection: "row",
           alignItems: "center",
@@ -164,12 +165,12 @@ export default function LoginScreen() {
           paddingLeft: 16,
           paddingRight: 14,
         },
-        input: { flex: 1, paddingVertical: 12, fontSize: 15, color: a.text },
+        input: { flex: 1, paddingVertical: 12, fontSize: F.body, color: a.text },
         passwordInput: { paddingRight: 10 },
         inputIconRight: { marginLeft: 10 },
         eyeWrap: { padding: 4, marginLeft: 6 },
         forgotWrap: { alignSelf: "flex-end", marginTop: 8, marginBottom: 20 },
-        forgot: { fontSize: 12, fontWeight: "600", color: a.linkAccent },
+        forgot: { fontSize: Math.round(F.secondary * 0.75), fontWeight: "600", color: a.linkAccent },
         errorWrap: {
           flexDirection: "row",
           alignItems: "center",
@@ -180,7 +181,7 @@ export default function LoginScreen() {
           borderRadius: 12,
           marginBottom: 12,
         },
-        errorText: { color: a.errorText, fontSize: 14, fontWeight: "500" },
+        errorText: { color: a.errorText, fontSize: F.secondary, fontWeight: "500" },
         loginBtn: {
           minHeight: CONTROL_HEIGHT,
           borderRadius: 16,
@@ -213,7 +214,7 @@ export default function LoginScreen() {
             android: { elevation: 0 },
           }),
         },
-        loginBtnText: { fontSize: 16, fontWeight: "800", color: "#FFFFFF", letterSpacing: 0.5 },
+        loginBtnText: { fontSize: F.button, fontWeight: "800", color: "#FFFFFF", letterSpacing: 0.5 },
         btnPressed: { opacity: 0.92 },
         btnDisabled: { opacity: 0.7 },
         footer: {
@@ -226,8 +227,8 @@ export default function LoginScreen() {
           paddingTop: 22,
           paddingBottom: 18,
         },
-        footerText: { fontSize: 12, color: a.textMuted },
-        footerLink: { fontSize: 13, fontWeight: "600", color: a.linkAccent },
+        footerText: { fontSize: Math.round(F.secondary * 0.75), color: a.textMuted },
+        footerLink: { fontSize: Math.round(F.secondary * 0.8), fontWeight: "600", color: a.linkAccent },
         modalOverlay: {
           flex: 1,
           justifyContent: "flex-end",
@@ -246,7 +247,7 @@ export default function LoginScreen() {
           paddingBottom: 12,
         },
         modalTitle: {
-          fontSize: 16,
+          fontSize: F.body,
           fontWeight: "800",
           textAlign: "center",
           marginBottom: 10,
@@ -263,7 +264,7 @@ export default function LoginScreen() {
           borderBottomWidth: StyleSheet.hairlineWidth,
         },
         optionText: {
-          fontSize: 16,
+          fontSize: F.body,
           color: a.text,
           fontWeight: "600",
         },
@@ -306,7 +307,7 @@ export default function LoginScreen() {
           marginBottom: 4,
         },
         roleTitle: {
-          fontSize: 11,
+          fontSize: Math.round(F.secondary * 0.7),
           fontWeight: "800",
           color: a.textMuted,
           textTransform: "uppercase",
@@ -321,20 +322,20 @@ export default function LoginScreen() {
           paddingHorizontal: 8,
         },
         roleChooseBtnText: {
-          fontSize: 12,
+          fontSize: Math.round(F.secondary * 0.75),
           fontWeight: "800",
           color: a.linkAccent,
         },
         roleName: {
-          fontSize: 16,
+          fontSize: F.body,
           fontWeight: "800",
           color: a.text,
         },
         roleDescription: {
-          fontSize: 12,
+          fontSize: Math.round(F.secondary * 0.75),
           color: a.textSecondary,
           marginTop: 4,
-          lineHeight: 16,
+          lineHeight: Math.round(F.secondary),
         },
         // Role Modal List Styles
         roleRow: {
@@ -349,18 +350,18 @@ export default function LoginScreen() {
           marginRight: 12,
         },
         roleRowName: {
-          fontSize: 16,
+          fontSize: F.body,
           fontWeight: "800",
           color: a.text,
         },
         roleRowDescription: {
-          fontSize: 12,
+          fontSize: Math.round(F.secondary * 0.75),
           color: a.textMuted,
           marginTop: 2,
-          lineHeight: 16,
+          lineHeight: Math.round(F.secondary),
         },
       }),
-    [a, heroMinHeight, horizontalPadding, sheetMaxWidth, isDark, height]
+    [a, heroMinHeight, horizontalPadding, sheetMaxWidth, isDark, height, F]
   );
 
   const [mode, setMode] = useState<"login" | "signup">("login");

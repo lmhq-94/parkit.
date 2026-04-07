@@ -6,6 +6,7 @@ import type { ViewStyle } from "react-native";
 import { Platform, useColorScheme, useWindowDimensions } from "react-native";
 import { useMemo } from "react";
 import { useThemeStore } from "@/lib/themeStore";
+import { useAccessibilityStore } from '@/lib/store';
 
 /** Mismo azul que welcome.btnPrimary */
 export const ACCENT = "#3B82F6";
@@ -139,6 +140,19 @@ function homeColors(isDark: boolean): HomeThemeColors {
 const ANDROID_FONT_DELTA = Platform.OS === "android" ? -4 : 0;
 const fontSize = (value: number) => Math.max(10, value + ANDROID_FONT_DELTA);
 
+/** Aplica el factor de escala de accesibilidad a todos los tamaños de fuente */
+function applyTextScale(fonts: typeof valetStaticTokens.font, scale: number) {
+  return {
+    title: Math.round(fonts.title * scale),
+    subtitle: Math.round(fonts.subtitle * scale),
+    hero: Math.round(fonts.hero * scale),
+    body: Math.round(fonts.body * scale),
+    secondary: Math.round(fonts.secondary * scale),
+    button: Math.round(fonts.button * scale),
+    status: Math.round(fonts.status * scale),
+  };
+}
+
 export const valetStaticTokens = {
   minTouch: 56,
   radius: { card: 16, button: 14 },
@@ -174,6 +188,7 @@ export const ticketsA11y = {
 export function useValetTheme() {
   const systemScheme = useColorScheme();
   const preference = useThemeStore((s) => s.preference);
+  const { textScale } = useAccessibilityStore();
   const isDark =
     preference === "dark"
       ? true
@@ -187,8 +202,10 @@ export function useValetTheme() {
       auth: authColors(isDark),
       colors: homeColors(isDark),
       ...valetStaticTokens,
+      font: applyTextScale(valetStaticTokens.font, textScale),
+      a11yFont: applyTextScale(ticketsA11y.font, textScale),
     }),
-    [isDark]
+    [isDark, textScale]
   );
 }
 

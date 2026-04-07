@@ -184,7 +184,7 @@ export function createValetRowStyles(theme: Theme) {
       paddingHorizontal: S.sm,
     },
     valetStatusBadgeAvailableText: {
-      fontSize: 11,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
       color: theme.isDark ? "#86EFAC" : "#166534",
       textTransform: "uppercase",
@@ -199,7 +199,7 @@ export function createValetRowStyles(theme: Theme) {
       paddingHorizontal: S.sm,
     },
     valetStatusBadgeBusyText: {
-      fontSize: 11,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
       color: theme.isDark ? "#FCD34D" : "#92400E",
       textTransform: "uppercase",
@@ -220,7 +220,7 @@ export function createValetRowStyles(theme: Theme) {
       borderRadius: 24,
     },
     valetAvatarText: {
-      fontSize: 16,
+      fontSize: Math.round(F.secondary),
       fontWeight: "800",
       letterSpacing: -0.3,
     },

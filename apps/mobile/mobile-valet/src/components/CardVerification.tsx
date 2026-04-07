@@ -204,7 +204,7 @@ export function CardVerification({
       backgroundColor: 'rgba(245, 158, 11, 0.15)',
     },
     badgeText: {
-      fontSize: 12,
+      fontSize: Math.round(F.secondary * 0.75),
       fontWeight: '800',
       color: '#2563EB',
       textTransform: 'uppercase',
@@ -222,7 +222,7 @@ export function CardVerification({
       gap: 4,
     },
     verifiedText: {
-      fontSize: 12,
+      fontSize: Math.round(F.secondary * 0.75),
       color: '#059669',
       fontWeight: '800',
     },

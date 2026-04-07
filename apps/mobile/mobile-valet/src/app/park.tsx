@@ -167,7 +167,7 @@ function createParkStyles(theme: ReturnType<typeof useValetTheme>, contentMaxWid
       gap: S.sm,
     },
     damageCountMeta: {
-      fontSize: 13,
+      fontSize: Math.round(F.secondary * 0.8),
       fontWeight: "700",
       color: C.textMuted,
       marginBottom: S.md,
@@ -230,7 +230,7 @@ function createParkStyles(theme: ReturnType<typeof useValetTheme>, contentMaxWid
     },
     slotCard: {
       minWidth: 110,
-      borderRadius: R.md,
+      borderRadius: R.card,
       borderWidth: 1.5,
       borderColor: theme.isDark ? "rgba(148, 163, 184, 0.35)" : "#CBD5F5",
       backgroundColor: theme.isDark ? "rgba(30, 41, 59, 0.7)" : "#F8FAFF",
