@@ -10,6 +10,7 @@ import {
   Platform,
   StatusBar,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -86,6 +87,38 @@ export default function ProfileScreen() {
     Partial<Record<"firstName" | "lastName" | "email" | "phone", string>>
   >({});
 
+  // Estados para valores originales (para detectar cambios)
+  const [originalFirstName, setOriginalFirstName] = useState("");
+  const [originalLastName, setOriginalLastName] = useState("");
+  const [originalEmail, setOriginalEmail] = useState("");
+  const [originalPhone, setOriginalPhone] = useState("");
+  const [originalStaffRole, setOriginalStaffRole] = useState<ValetStaffRole>(
+    user?.valetStaffRole === "DRIVER" ? "DRIVER" : "RECEPTIONIST"
+  );
+  const [originalLicenseTypes, setOriginalLicenseTypes] = useState<string[]>([]);
+  const [originalLicenseExpiryYmd, setOriginalLicenseExpiryYmd] = useState("");
+  const [originalAvatarRemoved, setOriginalAvatarRemoved] = useState(false);
+
+  const hasChanges = useMemo(() => {
+    if (saving) return false;
+    return (
+      firstName !== originalFirstName ||
+      lastName !== originalLastName ||
+      email !== originalEmail ||
+      phone !== originalPhone ||
+      staffRole !== originalStaffRole ||
+      licenseExpiryYmd !== originalLicenseExpiryYmd ||
+      avatarRemoved !== originalAvatarRemoved ||
+      localAvatar !== undefined ||
+      JSON.stringify([...licenseTypes].sort()) !== JSON.stringify([...originalLicenseTypes].sort())
+    );
+  }, [
+    firstName, lastName, email, phone, staffRole, licenseExpiryYmd,
+    avatarRemoved, localAvatar, licenseTypes, saving,
+    originalFirstName, originalLastName, originalEmail, originalPhone,
+    originalStaffRole, originalLicenseExpiryYmd, originalAvatarRemoved, originalLicenseTypes
+  ]);
+
   useEffect(() => {
     const r = user?.valetStaffRole;
     if (r === "DRIVER" || r === "RECEPTIONIST") {
@@ -110,10 +143,19 @@ export default function ProfileScreen() {
       ]);
       const d = uRes.data?.data;
       if (d) {
-        setFirstName(String(d.firstName ?? ""));
-        setLastName(String(d.lastName ?? ""));
-        setEmail(String(d.email ?? ""));
-        setPhone(formatPhoneWithCountryCode(d.phone != null ? String(d.phone) : "", getDeviceCountryCode()));
+        const fn = String(d.firstName ?? "");
+        const ln = String(d.lastName ?? "");
+        const em = String(d.email ?? "");
+        const ph = formatPhoneWithCountryCode(d.phone != null ? String(d.phone) : "", getDeviceCountryCode());
+        setFirstName(fn);
+        setLastName(ln);
+        setEmail(em);
+        setPhone(ph);
+        setOriginalFirstName(fn);
+        setOriginalLastName(ln);
+        setOriginalEmail(em);
+        setOriginalPhone(ph);
+        setOriginalAvatarRemoved(false);
         setLocalAvatar(undefined);
         setAvatarRemoved(false);
       }
@@ -121,21 +163,29 @@ export default function ProfileScreen() {
       if (vd) {
         if (vd.staffRole === "DRIVER" || vd.staffRole === "RECEPTIONIST") {
           setStaffRole(vd.staffRole);
+          setOriginalStaffRole(vd.staffRole);
         }
         if (vd.staffRole === "DRIVER") {
           const raw = String(vd.licenseNumber ?? "");
           const parts = raw ? raw.split(",").map((s) => s.trim()).filter(Boolean) : [];
           const allowed = new Set<string>([...LICENSE_TYPE_VALUES]);
-          setLicenseTypes(parts.filter((p) => allowed.has(p)));
+          const filteredTypes = parts.filter((p) => allowed.has(p));
+          setLicenseTypes(filteredTypes);
+          setOriginalLicenseTypes(filteredTypes);
           if (vd.licenseExpiry) {
             const dt = new Date(String(vd.licenseExpiry));
-            setLicenseExpiryYmd(Number.isNaN(dt.getTime()) ? "" : formatYmdLocal(dt));
+            const ymd = Number.isNaN(dt.getTime()) ? "" : formatYmdLocal(dt);
+            setLicenseExpiryYmd(ymd);
+            setOriginalLicenseExpiryYmd(ymd);
           } else {
             setLicenseExpiryYmd("");
+            setOriginalLicenseExpiryYmd("");
           }
         } else {
           setLicenseTypes([]);
+          setOriginalLicenseTypes([]);
           setLicenseExpiryYmd("");
+          setOriginalLicenseExpiryYmd("");
         }
       }
     } catch {
@@ -418,12 +468,11 @@ export default function ProfileScreen() {
           </View>
         ) : (
           <View style={styles.bodyColumn}>
-            <KeyboardAwareScrollView
+            <ScrollView
               style={styles.scroll}
               contentContainerStyle={styles.scrollContent}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
-              bottomOffset={96}
             >
               <Text style={styles.intro}>{t(locale, "profile.intro")}</Text>
 
@@ -820,19 +869,19 @@ export default function ProfileScreen() {
                 ) : null}
               </>
             )}
-            </KeyboardAwareScrollView>
+            </ScrollView>
 
-            <KeyboardStickyView>
+            <View>
               <StickyFormFooter keyboardPinned>
                 <Pressable
                   style={({ pressed }) => [
                     styles.primaryBtnFooter,
                     { backgroundColor: C.primary },
-                    saving && styles.btnDisabled,
-                    pressed && !saving && styles.pressed,
+                    (!hasChanges || saving) && styles.btnDisabled,
+                    pressed && hasChanges && !saving && styles.pressed,
                   ]}
                   onPress={handleSave}
-                  disabled={saving}
+                  disabled={!hasChanges || saving}
                 >
                   {saving ? (
                     <ActivityIndicator color="#fff" />
@@ -841,7 +890,7 @@ export default function ProfileScreen() {
                   )}
                 </Pressable>
               </StickyFormFooter>
-            </KeyboardStickyView>
+            </View>
           </View>
         )}
       </View>

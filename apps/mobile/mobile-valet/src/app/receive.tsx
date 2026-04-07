@@ -12,6 +12,7 @@ import {
   useWindowDimensions,
   RefreshControl,
   StatusBar,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useRouter, useLocalSearchParams } from "expo-router";
@@ -1648,7 +1649,6 @@ export default function ReceiveScreen() {
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
-          bottomOffset={96}
           refreshControl={
             <RefreshControl
               refreshing={wizardStep === valetStepNum && valetsRefreshing}

@@ -649,7 +649,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "profile.firstName": "First name",
     "profile.lastName": "Last name",
     "profile.email": "Email",
-    "profile.phone": "Phone (optional)",
+    "profile.phone": "Phone",
     "profile.save": "Save changes",
     "profile.loadError": "Could not load profile.",
     "profile.saveSuccess": "Profile updated.",
