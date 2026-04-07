@@ -844,8 +844,8 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       flexShrink: 1,
     },
     tile: {
-      flex: 0,
-      width: "48%",
+      flex: 1,
+      minWidth: 0,
       minHeight: 0,
       position: "relative",
       borderRadius: R.card + 4,

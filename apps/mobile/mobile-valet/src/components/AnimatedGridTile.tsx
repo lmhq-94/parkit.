@@ -121,7 +121,7 @@ export function AnimatedGridTile(props: AnimatedGridTileProps) {
   };
 
   return (
-    <Animated.View style={[animatedStyle, { width: "48%", minWidth: 0 }]}>
+    <Animated.View style={[animatedStyle, { flex: 1, minWidth: 0 }]}>
       <Pressable
         style={({ pressed }) => [
           styles.tile,
