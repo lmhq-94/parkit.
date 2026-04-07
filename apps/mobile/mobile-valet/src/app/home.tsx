@@ -15,10 +15,11 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { Redirect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useEffect, useState, useCallback, useRef } from "react";
+import React from "react";
 import { SquareParking } from "lucide-react-native";
 import { Logo } from "@parkit/shared";
 import api, { clearAuthToken } from "@/lib/api";
-import { useAuthStore, useLocaleStore, useCompanyStore, useParkingPreferenceStore } from "@/lib/store";
+import { useAuthStore, useLocaleStore, useCompanyStore, useParkingPreferenceStore, useAccessibilityStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { useValetTheme, ticketsA11y } from "@/theme/valetTheme";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
@@ -33,10 +34,45 @@ import {
   HEADER_AVATAR_SIZE,
   AVATAR_PRESENCE_RING,
 } from "@/lib/homeUtils";
-import { GridTile } from "@/components/GridTile";
+import { AnimatedGridTile } from "@/components/AnimatedGridTile";
+import { Animated, useHeaderEntranceAnimation, useAvatarPulseAnimation } from "@/lib/animations";
 import { LinearGradient } from "expo-linear-gradient";
 
+class HomeErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: '#fee2e2' }}>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#dc2626', marginBottom: 10 }}>Error en Home</Text>
+          <Text style={{ fontSize: 12, color: '#7f1d1d', textAlign: 'center' }}>{this.state.error?.message}</Text>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function HomeScreen() {
+  return (
+    <HomeErrorBoundary>
+      <HomeScreenContent />
+    </HomeErrorBoundary>
+  );
+}
+
+function HomeScreenContent() {
   const router = useRouter();
   const { user, setUser } = useAuthStore();
   const setCompanyId = useCompanyStore((s) => s.setCompanyId);
@@ -60,6 +96,13 @@ export default function HomeScreen() {
   const [queueAlertCount, setQueueAlertCount] = useState(0);
   const isDriverUi = user?.valetStaffRole === "DRIVER";
   const prevQueueAlertCountRef = useRef(0);
+  const { textScale, reduceMotion } = useAccessibilityStore();
+
+  // Re-enabled animation hooks with Reanimated 4.1.2
+  const headerEntranceStyle = useHeaderEntranceAnimation(reduceMotion);
+  const statusKey = user?.valetCurrentStatus;
+  const isAvailable = statusKey === "AVAILABLE";
+  const pulseStyle = useAvatarPulseAnimation(isAvailable, reduceMotion);
 
   useEffect(() => {
     void hydrateParkingPreference();
@@ -159,7 +202,8 @@ export default function HomeScreen() {
   const initials = `${(firstName[0] || user.email?.[0] || "?").toUpperCase()}${(lastName[0] || user.email?.[1] || "").toUpperCase()}`;
   const avatarUri = user.avatarUrl?.trim() || null;
 
-  const statusKey = user.valetCurrentStatus;
+  const avatarPresenceColor = avatarPresenceRingColor(theme, statusKey);
+
   const statusLabel =
     statusKey === "AVAILABLE"
       ? t(locale, "home.statusAvailable")
@@ -168,8 +212,6 @@ export default function HomeScreen() {
         : statusKey === "AWAY"
           ? t(locale, "home.statusAway")
           : t(locale, "home.statusSyncing");
-
-  const avatarPresenceColor = avatarPresenceRingColor(theme, statusKey);
 
   const handleLogout = () => {
     feedback.confirm({
@@ -218,6 +260,7 @@ export default function HomeScreen() {
       />
       <View style={styles.mainColumn}>
         <View style={styles.screenContent}>
+        <Animated.View style={[headerEntranceStyle, { flex: 1, minWidth: 0 }]}>
         <LinearGradient
           colors={[...headerGradientSpec.colors]}
           locations={[...headerGradientSpec.locations]}
@@ -260,6 +303,19 @@ export default function HomeScreen() {
                     style={[styles.avatarPresenceOuter, { borderColor: avatarPresenceColor }]}
                     accessibilityLabel={`${t(locale, "home.profile")} — ${statusLabel}`}
                   >
+                    {isAvailable && (
+                      <Animated.View
+                        style={[
+                          StyleSheet.absoluteFill,
+                          pulseStyle,
+                          {
+                            borderRadius: (HEADER_AVATAR_SIZE + AVATAR_PRESENCE_RING * 2) / 2,
+                            backgroundColor: avatarPresenceColor,
+                          },
+                        ]}
+                        pointerEvents="none"
+                      />
+                    )}
                     <View
                       style={[
                         styles.headerAvatarInner,
@@ -287,12 +343,13 @@ export default function HomeScreen() {
             </View>
           </View>
         </LinearGradient>
+        </Animated.View>
 
         <View style={styles.gridFlex}>
           {isDriverUi ? (
             <>
               <View style={styles.gridRowFill}>
-                <GridTile
+                <AnimatedGridTile
                   variant="queue"
                   lucideIcon={SquareParking}
                   title={t(locale, "home.actionParkingQueue")}
@@ -300,8 +357,11 @@ export default function HomeScreen() {
                   onPress={() => router.push({ pathname: "/tickets", params: { queue: "parking" } })}
                   styles={styles}
                   isDark={theme.isDark}
+                  index={0}
+                  textScale={textScale}
+                  reduceMotion={reduceMotion}
                 />
-                <GridTile
+                <AnimatedGridTile
                   variant="queue"
                   icon="arrow-undo-outline"
                   title={t(locale, "home.actionDeliveryQueue")}
@@ -310,10 +370,13 @@ export default function HomeScreen() {
                   onPress={() => router.push({ pathname: "/tickets", params: { queue: "delivery" } })}
                   styles={styles}
                   isDark={theme.isDark}
+                  index={1}
+                  textScale={textScale}
+                  reduceMotion={reduceMotion}
                 />
               </View>
               <View style={styles.gridRowFill}>
-                <GridTile
+                <AnimatedGridTile
                   variant="workflow"
                   icon="git-branch-outline"
                   title={t(locale, "home.actionWorkflow")}
@@ -321,8 +384,11 @@ export default function HomeScreen() {
                   onPress={() => router.push("/workflow")}
                   styles={styles}
                   isDark={theme.isDark}
+                  index={2}
+                  textScale={textScale}
+                  reduceMotion={reduceMotion}
                 />
-                <GridTile
+                <AnimatedGridTile
                   variant="profile"
                   icon="person-circle-outline"
                   title={t(locale, "home.profile")}
@@ -330,10 +396,13 @@ export default function HomeScreen() {
                   onPress={() => router.push("/profile")}
                   styles={styles}
                   isDark={theme.isDark}
+                  index={3}
+                  textScale={textScale}
+                  reduceMotion={reduceMotion}
                 />
               </View>
               <View style={styles.gridRowFill}>
-                <GridTile
+                <AnimatedGridTile
                   variant="settings"
                   icon="settings-outline"
                   title={t(locale, "home.settings")}
@@ -341,14 +410,19 @@ export default function HomeScreen() {
                   onPress={() => router.push("/settings")}
                   styles={styles}
                   isDark={theme.isDark}
+                  index={4}
+                  textScale={textScale}
+                  reduceMotion={reduceMotion}
                 />
-                <View style={[styles.tile, styles.tileGhost]} pointerEvents="none" />
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <View style={[styles.tile, styles.tileGhost]} pointerEvents="none" />
+                </View>
               </View>
             </>
           ) : (
             <>
               <View style={styles.gridRowFill}>
-                <GridTile
+                <AnimatedGridTile
                   variant="accent"
                   lucideIcon={SquareParking}
                   title={t(locale, "home.actionReceive")}
@@ -356,8 +430,11 @@ export default function HomeScreen() {
                   onPress={() => router.push("/receive")}
                   styles={styles}
                   isDark={theme.isDark}
+                  index={0}
+                  textScale={textScale}
+                  reduceMotion={reduceMotion}
                 />
-                <GridTile
+                <AnimatedGridTile
                   variant="warm"
                   icon="arrow-undo-outline"
                   title={t(locale, "home.actionReturn")}
@@ -365,10 +442,13 @@ export default function HomeScreen() {
                   onPress={() => router.push("/return-pickup")}
                   styles={styles}
                   isDark={theme.isDark}
+                  index={1}
+                  textScale={textScale}
+                  reduceMotion={reduceMotion}
                 />
               </View>
               <View style={styles.gridRowFill}>
-                <GridTile
+                <AnimatedGridTile
                   variant="workflow"
                   icon="git-branch-outline"
                   title={t(locale, "home.actionWorkflow")}
@@ -376,8 +456,11 @@ export default function HomeScreen() {
                   onPress={() => router.push("/workflow")}
                   styles={styles}
                   isDark={theme.isDark}
+                  index={2}
+                  textScale={textScale}
+                  reduceMotion={reduceMotion}
                 />
-                <GridTile
+                <AnimatedGridTile
                   variant="profile"
                   icon="person-circle-outline"
                   title={t(locale, "home.profile")}
@@ -385,10 +468,13 @@ export default function HomeScreen() {
                   onPress={() => router.push("/profile")}
                   styles={styles}
                   isDark={theme.isDark}
+                  index={3}
+                  textScale={textScale}
+                  reduceMotion={reduceMotion}
                 />
               </View>
               <View style={styles.gridRowFill}>
-                <GridTile
+                <AnimatedGridTile
                   variant="settings"
                   icon="settings-outline"
                   title={t(locale, "home.settings")}
@@ -396,8 +482,13 @@ export default function HomeScreen() {
                   onPress={() => router.push("/settings")}
                   styles={styles}
                   isDark={theme.isDark}
+                  index={4}
+                  textScale={textScale}
+                  reduceMotion={reduceMotion}
                 />
-                <View style={[styles.tile, styles.tileGhost]} pointerEvents="none" />
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <View style={[styles.tile, styles.tileGhost]} pointerEvents="none" />
+                </View>
               </View>
             </>
           )}
@@ -599,7 +690,6 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       flex: 1,
       minHeight: 0,
       width: "100%",
-      maxWidth: isTablet ? 1100 : 860,
       alignSelf: "center",
     },
     heroPlain: {

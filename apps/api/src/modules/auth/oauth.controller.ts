@@ -179,13 +179,13 @@ export class OAuthController {
    */
   static async handleMobileGoogleAuth(req: Request, res: Response) {
     try {
-      const { idToken, accessToken } = req.body;
+      const { idToken } = req.body;
 
       if (!idToken) {
         return fail(res, 400, "ID token is required");
       }
 
-      const result = await OAuthService.verifyGoogleTokenAndGetUser(idToken, accessToken);
+      const result = await OAuthService.verifyGoogleTokenAndGetUser(idToken);
       return ok(res, result);
     } catch (error: unknown) {
       return fail(

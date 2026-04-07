@@ -50,7 +50,7 @@ export default function SignupScreen() {
   const isTablet = shortestSide >= 600;
   const isLandscape = width > height;
   const horizontalPadding = isTablet ? 36 : 28;
-  const sheetMaxWidth = isTablet ? 640 : 560;
+  const sheetMaxWidth = width;
   const heroMinHeight = Math.round((isLandscape ? height * 0.24 : height * 0.32));
 
   const styles = useMemo(

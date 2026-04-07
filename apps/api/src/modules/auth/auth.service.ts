@@ -274,12 +274,6 @@ export class AuthService {
 
     const user = otc.user;
 
-    if (!user) {
-      throw new Error(
-        "Invalid or expired reset link. Request a new one from the login page."
-      );
-    }
-
     if (user.isActive === false) {
       throw new Error("USER_INACTIVE");
     }

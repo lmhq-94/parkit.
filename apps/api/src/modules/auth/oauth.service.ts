@@ -99,7 +99,7 @@ export class OAuthService {
   /**
    * Verify Google ID token (for mobile apps)
    */
-  static async verifyGoogleTokenAndGetUser(idToken: string, _accessToken?: string): Promise<{ user: AuthUserResponse; token: string }> {
+  static async verifyGoogleTokenAndGetUser(idToken: string): Promise<{ user: AuthUserResponse; token: string }> {
     if (!GOOGLE_CLIENT_ID) {
       throw new Error("Google OAuth not configured");
     }
