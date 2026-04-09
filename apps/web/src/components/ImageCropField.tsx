@@ -180,8 +180,8 @@ export function ImageCropField({
           <button type="button" onClick={() => setPendingCrop(value)} className="text-sm font-medium text-company-primary hover:text-company-primary/90 transition-colors whitespace-nowrap">
             {t("settings.changeImage")}
           </button>
-          <button type="button" onClick={onClear} className="flex items-center gap-1.5 text-sm font-medium text-company-tertiary hover:text-red-500 dark:hover:text-red-400 transition-colors whitespace-nowrap">
-            <X className="w-4 h-4 shrink-0" />
+          <button type="button" onClick={onClear} className="group flex items-center gap-1.5 text-sm font-medium text-company-tertiary hover:text-red-500 dark:hover:text-red-400 transition-colors whitespace-nowrap">
+            <X className="w-4 h-4 shrink-0 transition-transform duration-300 group-hover:rotate-90" />
             {t("settings.removeImage")}
           </button>
         </div>

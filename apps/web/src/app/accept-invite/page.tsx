@@ -233,14 +233,14 @@ function AcceptInviteForm() {
               </div>
             </div>
 
-            <button type="submit" disabled={isSubmitting} className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:pointer-events-none transition-all">
-              {isSubmitting ? <LoadingSpinner size="sm" variant="white" /> : <>{t("auth.setPassword")}<ArrowRight className="w-4 h-4" /></>}
+            <button type="submit" disabled={isSubmitting} className="group w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:pointer-events-none transition-all">
+              {isSubmitting ? <LoadingSpinner size="sm" variant="white" /> : <>{t("auth.setPassword")}<ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" /></>}
             </button>
 
             <p className="text-center">
-              <Link href="/login" className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 inline-flex items-center gap-1">
+              <Link href="/login" className="group text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 inline-flex items-center gap-1">
                 {t("auth.backToSignIn")}
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </p>
           </form>

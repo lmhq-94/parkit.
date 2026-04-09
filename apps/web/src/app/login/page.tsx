@@ -262,8 +262,8 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <button type="submit" disabled={isSubmitting} className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:pointer-events-none transition-all">
-              {isSubmitting ? <LoadingSpinner size="sm" variant="white" /> : <>{t("auth.signIn")}<ArrowRight className="h-4 w-4" /></>}
+            <button type="submit" disabled={isSubmitting} className="group w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:pointer-events-none transition-all">
+              {isSubmitting ? <LoadingSpinner size="sm" variant="white" /> : <>{t("auth.signIn")}<ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" /></>}
             </button>
           </form>
 

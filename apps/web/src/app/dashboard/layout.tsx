@@ -10,15 +10,16 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LocaleToggle } from "@/components/LocaleToggle";
+import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import type { CompanyBranding } from "@/lib/store";
-import { getAvatarColor, getFullName, getInitials, getShortName, isSuperAdmin } from "@/lib/auth";
+import { getAvatarHSLColors, getFullName, getShortName, isSuperAdmin } from "@/lib/auth";
 import { useTheme } from "next-themes";
 import { useLocaleStore } from "@/lib/store";
 import { Sun, Moon, Globe } from "lucide-react";
 import { apiClient } from "@/lib/api";
-import { ArrowLeft, ChevronDown, Menu, UserRound, LogOut } from "lucide-react";
+import { ArrowLeft, ChevronDown, Menu, UserRound, LogOut, User } from "lucide-react";
 
 const HeaderActionContext = createContext<((node: React.ReactNode) => void) | null>(null);
 export function useHeaderAction() {
@@ -98,6 +99,7 @@ function DashboardLayoutInner({
     (pathname ?? "") === "/dashboard/companies/new" && searchParams?.get("first") === "1";
   const isNewPage = Boolean(header.backHref) && !isFirstCompanyFlow;
   const isCompaniesPage = (pathname ?? "") === "/dashboard/companies";
+  const isNoCompaniesPage = (pathname ?? "") === "/dashboard/no-companies";
   const useMyCompany = isCompaniesPage && !isSuperAdmin(user);
   let titleKey = useMyCompany && header.titleMyCompany ? header.titleMyCompany : header.title;
   let descriptionKey = useMyCompany && header.descriptionMyCompany ? header.descriptionMyCompany : header.description;
@@ -267,13 +269,19 @@ function DashboardLayoutInner({
                       </h1>
                     </div>
                   ) : (
-                    <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-text-primary tracking-tight truncate">
-                      {t(titleKey)}
-                    </h1>
+                    isNoCompaniesPage ? (
+                      <Logo className="text-3xl" />
+                    ) : (
+                      <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-text-primary tracking-tight truncate">
+                        {t(titleKey)}
+                      </h1>
+                    )
                   )}
-                  <p className="text-text-secondary text-sm md:text-base mt-1 md:mt-2 font-medium max-w-2xl truncate opacity-90 hidden sm:block">
-                    {descriptionText}
-                  </p>
+                  {!isNoCompaniesPage && (
+                    <p className="text-text-secondary text-sm md:text-base mt-1 md:mt-2 font-medium max-w-2xl truncate opacity-90 hidden sm:block">
+                      {descriptionText}
+                    </p>
+                  )}
                 </div>
               </div>
             <div className="flex items-center gap-3 shrink-0 ml-auto">
@@ -308,28 +316,34 @@ function DashboardLayoutInner({
                       aria-expanded={userMenuOpen}
                       title={getFullName(user) || user.email}
                     >
-                      <div className="relative w-12 h-12 rounded-full overflow-hidden bg-input-bg flex items-center justify-center border border-card-border shrink-0">
-                        {(user.avatarUrl ?? user.avatar)?.trim() ? (
-                          <Image
-                            src={user.avatarUrl ?? user.avatar}
-                            alt=""
-                            fill
-                            className="object-cover"
-                            sizes="48px"
-                            unoptimized
-                          />
-                        ) : (
-                          <span
-                            className="w-full h-full flex items-center justify-center text-xs font-semibold text-white"
+                      {(() => {
+                        const avatarColors = getAvatarHSLColors(user.id, theme === "dark");
+                        return (
+                          <div 
+                            className="relative w-12 h-12 rounded-full overflow-hidden flex items-center justify-center shrink-0"
                             style={{
-                              backgroundColor: getAvatarColor(user.id) ?? "var(--input-bg)",
-                              color: getAvatarColor(user.id) ? "white" : "var(--text-muted)",
+                              backgroundColor: avatarColors.bg,
+                              border: `2px solid ${avatarColors.border}`,
                             }}
                           >
-                            {user.id ? getInitials(user) : "?"}
-                          </span>
-                        )}
-                      </div>
+                            {(user.avatarUrl ?? user.avatar)?.trim() ? (
+                              <Image
+                                src={user.avatarUrl ?? user.avatar}
+                                alt=""
+                                fill
+                                className="object-cover"
+                                sizes="48px"
+                                unoptimized
+                              />
+                            ) : (
+                              <User 
+                                className="w-6 h-6"
+                                style={{ color: avatarColors.fg }}
+                              />
+                            )}
+                          </div>
+                        );
+                      })()}
                       <div className="hidden sm:flex flex-col items-start max-w-[140px] min-w-0">
                         <span className="text-xs font-medium text-text-primary truncate">
                           {getShortName(user) || getFullName(user) || user.email}
@@ -356,17 +370,20 @@ function DashboardLayoutInner({
                         }}
                       >
                         <div className="overflow-y-auto overscroll-contain min-h-0 flex-1">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setUserMenuOpen(false);
-                              router.push("/dashboard/profile");
-                            }}
-                            className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"
-                          >
-                            <UserRound className="w-4 h-4" />
-                            {t("sidebar.profile")}
-                          </button>
+                          {/* Only show My Profile when a company is selected */}
+                          {selectedCompanyId && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setUserMenuOpen(false);
+                                router.push("/dashboard/profile");
+                              }}
+                              className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"
+                            >
+                              <UserRound className="w-4 h-4" />
+                              {t("sidebar.profile")}
+                            </button>
+                          )}
                           <div className="px-3 py-1 md:hidden">
                             <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                               {t("settings.theme")}
@@ -465,7 +482,7 @@ function DashboardLayoutInner({
                               </div>
                             </div>
                           </div>
-                          <hr className="my-1 border-slate-200 dark:border-slate-700" />
+                          {selectedCompanyId && <hr className="my-1 border-slate-200 dark:border-slate-700" />}
                           <button
                             type="button"
                             onClick={() => {

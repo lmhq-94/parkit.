@@ -535,6 +535,11 @@ export function DashboardSidebar() {
     ];
   }, [t, hasBookableParkings, admin, superAdmin]);
 
+  // Don't render sidebar if no companies exist
+  if (!hasCompanies) {
+    return null;
+  }
+
   return (
     <>
       {/* Mobile overlay */}
@@ -754,38 +759,66 @@ export function DashboardSidebar() {
         <div className="flex-1" />
       )}
 
-      {/* Footer: help + version on one row (minimum height to prevent sidebar scroll) */}
-      <footer className="border-t border-card-border bg-card/40 dark:bg-card/20 px-2 py-1.5 shrink-0">
+      {/* Footer: Ultra-premium minimal footer */}
+      <footer className="border-t border-card-border/40 bg-gradient-to-b from-transparent to-card/30 dark:to-card/20 backdrop-blur-sm px-3 py-2 shrink-0">
         {!collapsed ? (
-          <div className="flex flex-row items-center gap-2 min-h-0">
-            <a
-              href="mailto:soporte@parkit.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 rounded-lg py-1 px-1.5 -mx-0.5 text-[11px] font-medium text-text-muted hover:text-text-secondary hover:bg-input-bg/80 transition-colors shrink-0"
-            >
-              <HelpCircle className="w-3 h-3 shrink-0 text-company-tertiary" aria-hidden />
-              <span className="truncate">{t("sidebar.help")}</span>
-            </a>
-            <span
-              className="text-[10px] text-text-muted/70 font-medium tabular-nums shrink-0"
-              title={t("sidebar.version")}
-            >
-              {process.env.NEXT_PUBLIC_APP_VERSION ? `v${process.env.NEXT_PUBLIC_APP_VERSION}` : "v1.0.0"}
-            </span>
+          <div className="flex flex-col gap-1.5">
+            {/* Help & Version Row - Compact */}
+            <div className="flex items-center justify-between">
+              <a
+                href="mailto:soporte@parkit.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-1 rounded-md py-1 px-1.5 -mx-1 text-[10px] font-medium text-text-muted/70 hover:text-company-primary transition-all duration-200"
+              >
+                <HelpCircle className="w-3 h-3 shrink-0 text-text-muted/50 group-hover:text-company-primary transition-colors" aria-hidden />
+                <span className="whitespace-nowrap">{t("sidebar.help")}</span>
+              </a>
+              <span
+                className="text-[9px] font-medium text-text-muted/30 tabular-nums tracking-widest uppercase whitespace-nowrap"
+                title={t("sidebar.version")}
+              >
+                {process.env.NEXT_PUBLIC_APP_VERSION ? `v${process.env.NEXT_PUBLIC_APP_VERSION}` : "v1.0.0"}
+              </span>
+            </div>
+            
+            {/* Subtle hairline divider */}
+            <div className="h-px bg-gradient-to-r from-transparent via-text-muted/10 to-transparent" />
+            
+            {/* Legal Links Row - Micro text */}
+            <div className="flex items-center justify-center gap-2 text-[9px] tracking-wide">
+              <Link
+                href="/privacy"
+                className="text-text-muted/40 hover:text-company-primary/80 transition-colors duration-200 whitespace-nowrap"
+              >
+                {t("sidebar.privacyPolicy")}
+              </Link>
+              <span className="w-0.5 h-0.5 rounded-full bg-text-muted/20 shrink-0" />
+              <Link
+                href="/terms"
+                className="text-text-muted/40 hover:text-company-primary/80 transition-colors duration-200 whitespace-nowrap"
+              >
+                {t("sidebar.terms")}
+              </Link>
+            </div>
           </div>
         ) : (
-          <SidebarTooltip show label={t("sidebar.help")}>
-            <a
-              href="mailto:soporte@parkit.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex justify-center p-1.5 rounded-lg text-text-muted hover:text-text-secondary hover:bg-input-bg transition-colors"
-              aria-label={t("sidebar.help")}
-            >
-              <HelpCircle className="w-4 h-4" aria-hidden />
-            </a>
-          </SidebarTooltip>
+          <div className="flex flex-col items-center gap-2">
+            <SidebarTooltip show label={t("sidebar.help")}>
+              <a
+                href="mailto:soporte@parkit.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex justify-center p-2 rounded-xl text-text-muted hover:text-company-primary hover:bg-company-primary/10 transition-all duration-200"
+                aria-label={t("sidebar.help")}
+              >
+                <HelpCircle className="w-4 h-4" aria-hidden />
+              </a>
+            </SidebarTooltip>
+            <span className="text-[9px] font-medium text-text-muted/40 tabular-nums">
+              {process.env.NEXT_PUBLIC_APP_VERSION ? `v${process.env.NEXT_PUBLIC_APP_VERSION}` : "v1"}
+            </span>
+          </div>
         )}
       </footer>
     </aside>

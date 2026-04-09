@@ -6,8 +6,7 @@ import {
   ValetStatus,
   ValetStaffRole,
   NotificationType,
-  BankIssuer,
-  BankCardType,
+  CardType,
 } from "@prisma/client";
 import type { CreateTicketDTO } from "./tickets.types";
 import { sendTicketCheckInEmail } from "../../shared/email/ticketCheckInEmail";
@@ -244,9 +243,11 @@ export class TicketsService {
       if (data.bankCard) {
         await tx.bankCard.create({
           data: {
-            clientId: data.clientId,
-            issuer: data.bankCard.issuer as BankIssuer,
-            type: data.bankCard.type as BankCardType,
+            code: data.bankCard.code,
+            name: data.bankCard.name,
+            type: data.bankCard.type as CardType,
+            bankId: data.bankCard.bankId,
+            clients: { connect: { id: data.clientId } },
           },
         });
       }
