@@ -96,8 +96,8 @@ export default function PrivacyPage() {
         />
       </div>
 
-      {/* Top Toggles */}
-      <div className="absolute top-4 right-4 z-30 hidden md:flex items-center gap-3">
+      {/* Top Toggles - Sticky */}
+      <div className="fixed top-4 right-4 z-30 hidden md:flex items-center gap-3">
         <ThemeToggleSimple />
         <LocaleToggleSimple />
       </div>

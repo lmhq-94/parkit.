@@ -103,64 +103,77 @@ export default function LoginPage() {
             // Silence preference errors; they should not block login.
           });
 
-        // Load branding during loading so dashboard does not flash defaults before company theme.
-        const loadBranding = async () => {
+        // Load branding and check companies during loading so dashboard does not flash before redirect.
+        const superAdminUser = isSuperAdmin(response.user);
+        const selectedId =
+          typeof window !== "undefined" ? localStorage.getItem("parkit_selected_company_id") : null;
+
+        // For super admins without selected company, check if any companies exist to avoid dashboard flicker
+        let hasCompanies = true;
+        if (superAdminUser && !selectedId) {
           try {
-            const superAdminUser = isSuperAdmin(response.user);
-            if (superAdminUser) {
-              const selectedId =
-                typeof window !== "undefined" ? localStorage.getItem("parkit_selected_company_id") : null;
-              if (selectedId) {
-                const data = await apiClient.get<{
-                  brandingConfig?: Record<string, string | null | undefined> | null;
-                }>(`/companies/${selectedId}/branding`);
-                const bc = data?.brandingConfig && typeof data.brandingConfig === "object" ? data.brandingConfig : null;
-                const branding = bc
-                  ? {
-                    bannerImageUrl: bc.bannerImageUrl ?? null,
-                    logoImageUrl: bc.logoImageUrl ?? null,
-                    primaryColor: bc.primaryColor ?? null,
-                    primaryColorDark: bc.primaryColorDark ?? null,
-                    secondaryColor: bc.secondaryColor ?? null,
-                    secondaryColorDark: bc.secondaryColorDark ?? null,
-                    tertiaryColor: bc.tertiaryColor ?? null,
-                    tertiaryColorDark: bc.tertiaryColorDark ?? null,
-                  }
-                  : null;
-                setCompanyBranding(branding);
-                if (branding) setBrandingInCache(selectedId, branding);
-              } else {
-                setCompanyBranding(null);
-              }
-            } else {
-              const data = await apiClient.get<{
-                brandingConfig?: Record<string, string | null | undefined> | null;
-              }>("/companies/me/branding");
-              const bc = data?.brandingConfig && typeof data.brandingConfig === "object" ? data.brandingConfig : null;
-              const branding = bc
-                ? {
-                  bannerImageUrl: bc.bannerImageUrl ?? null,
-                  logoImageUrl: bc.logoImageUrl ?? null,
-                  primaryColor: bc.primaryColor ?? null,
-                  primaryColorDark: bc.primaryColorDark ?? null,
-                  secondaryColor: bc.secondaryColor ?? null,
-                  secondaryColorDark: bc.secondaryColorDark ?? null,
-                  tertiaryColor: bc.tertiaryColor ?? null,
-                  tertiaryColorDark: bc.tertiaryColorDark ?? null,
-                }
-                : null;
-              setCompanyBranding(branding);
-            }
+            const companiesData = await apiClient.get<{ id: string }[]>("/companies");
+            hasCompanies = Array.isArray(companiesData) && companiesData.length > 0;
           } catch {
+            hasCompanies = true; // Assume has companies on error to show dashboard
+          }
+        }
+
+        // Load branding
+        try {
+          if (superAdminUser && selectedId) {
+            const data = await apiClient.get<{
+              brandingConfig?: Record<string, string | null | undefined> | null;
+            }>(`/companies/${selectedId}/branding`);
+            const bc = data?.brandingConfig && typeof data.brandingConfig === "object" ? data.brandingConfig : null;
+            const branding = bc
+              ? {
+                bannerImageUrl: bc.bannerImageUrl ?? null,
+                logoImageUrl: bc.logoImageUrl ?? null,
+                primaryColor: bc.primaryColor ?? null,
+                primaryColorDark: bc.primaryColorDark ?? null,
+                secondaryColor: bc.secondaryColor ?? null,
+                secondaryColorDark: bc.secondaryColorDark ?? null,
+                tertiaryColor: bc.tertiaryColor ?? null,
+                tertiaryColorDark: bc.tertiaryColorDark ?? null,
+              }
+              : null;
+            setCompanyBranding(branding);
+            if (branding) setBrandingInCache(selectedId, branding);
+          } else if (!superAdminUser) {
+            const data = await apiClient.get<{
+              brandingConfig?: Record<string, string | null | undefined> | null;
+            }>("/companies/me/branding");
+            const bc = data?.brandingConfig && typeof data.brandingConfig === "object" ? data.brandingConfig : null;
+            const branding = bc
+              ? {
+                bannerImageUrl: bc.bannerImageUrl ?? null,
+                logoImageUrl: bc.logoImageUrl ?? null,
+                primaryColor: bc.primaryColor ?? null,
+                primaryColorDark: bc.primaryColorDark ?? null,
+                secondaryColor: bc.secondaryColor ?? null,
+                secondaryColorDark: bc.secondaryColorDark ?? null,
+                tertiaryColor: bc.tertiaryColor ?? null,
+                tertiaryColorDark: bc.tertiaryColorDark ?? null,
+              }
+              : null;
+            setCompanyBranding(branding);
+          } else {
             setCompanyBranding(null);
           }
-        };
-        await loadBranding();
+        } catch {
+          setCompanyBranding(null);
+        }
 
         // Keep spinner active while navigation happens -
         // setIsSubmitting(false) is NOT called on successful path to avoid
         // form flash before dashboard loads.
-        router.push("/dashboard");
+        // Navigate directly to no-companies if super admin with no companies.
+        if (superAdminUser && !selectedId && !hasCompanies) {
+          router.push("/dashboard/no-companies");
+        } else {
+          router.push("/dashboard");
+        }
         return;
       }
     } catch (err: unknown) {

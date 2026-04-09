@@ -946,6 +946,10 @@ export const translations = {
         confirmDeleteItem: "¿Eliminar la empresa \"{{item}}\"? Solo se puede si no tiene usuarios ni estacionamientos. Esta acción no se puede deshacer.",
       },
     },
+    footer: {
+      privacyPolicy: "Política de Privacidad",
+      terms: "Términos y Condiciones",
+    },
   },
   en: {
     grid: {
@@ -1890,6 +1894,10 @@ export const translations = {
         confirmDeleteItem: "Delete company \"{{item}}\"? Only allowed if it has no users or parkings. This action cannot be undone.",
       },
     },
+    footer: {
+      privacyPolicy: "Privacy Policy",
+      terms: "Terms and Conditions",
+    },
   },
 } as const;
 
@@ -1907,6 +1915,13 @@ export function setStoredLocale(locale: Locale): void {
   if (typeof window !== "undefined") {
     localStorage.setItem(LOCALE_KEY, locale);
   }
+}
+
+/** Detect device locale from browser; returns 'en' for English, 'es' otherwise (including as default). */
+export function detectDeviceLocale(): Locale {
+  if (typeof navigator === "undefined") return "es";
+  const lang = (navigator.language || navigator.languages?.[0] || "es").toLowerCase();
+  return lang.startsWith("en") ? "en" : "es";
 }
 
 export function t(locale: Locale, key: string, vars?: Record<string, string | number>): string {

@@ -3,7 +3,7 @@
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { useEffect } from "react";
 import { useLocaleStore } from "@/lib/store";
-import { getStoredLocale } from "@/lib/i18n";
+import { getStoredLocale, detectDeviceLocale } from "@/lib/i18n";
 import { CompanyThemeSync } from "@/components/CompanyThemeSync";
 import { Toaster } from "@/components/Toaster";
 
@@ -12,7 +12,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = getStoredLocale();
-    setLocale(stored);
+    // If no stored locale, detect from device; otherwise use stored
+    const locale = stored || detectDeviceLocale();
+    setLocale(locale);
   }, [setLocale]);
 
   return (

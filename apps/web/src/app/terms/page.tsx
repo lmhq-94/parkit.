@@ -34,8 +34,8 @@ export default function TermsPage() {
         <div className="absolute inset-0 transition-all duration-700" style={{ background: isDark ? 'radial-gradient(ellipse at center, transparent 0%, rgba(10,10,26,0.4) 100%)' : 'radial-gradient(ellipse at center, transparent 0%, rgba(255,255,255,0.3) 100%)' }} />
       </div>
 
-      {/* Top Toggles */}
-      <div className="absolute top-4 right-4 z-30 hidden md:flex items-center gap-3">
+      {/* Top Toggles - Sticky */}
+      <div className="fixed top-4 right-4 z-30 hidden md:flex items-center gap-3">
         <ThemeToggleSimple />
         <LocaleToggleSimple />
       </div>
