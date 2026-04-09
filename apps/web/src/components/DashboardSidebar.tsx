@@ -28,7 +28,6 @@ import {
   ChevronRight,
   ChevronDown,
   Building2,
-  HelpCircle,
 } from "lucide-react";
 
 function SidebarTooltip({
@@ -157,7 +156,6 @@ function CompanySelector({
   onSelect,
   placeholder,
   allCompaniesLabel,
-  addCompanyLabel,
   emptyLabel,
   isDark = false,
   logoImageUrl,
@@ -170,7 +168,6 @@ function CompanySelector({
   onSelect: (id: string, name: string, requiresCustomerApp?: boolean) => void;
   placeholder: string;
   allCompaniesLabel: string;
-  addCompanyLabel: string;
   emptyLabel: string;
   isDark?: boolean;
   logoImageUrl?: string | null;
@@ -239,16 +236,16 @@ function CompanySelector({
   const dropdown = open && typeof document !== "undefined" && createPortal(
     <div
       data-company-dropdown
-      className="fixed z-[99999] flex flex-col rounded-xl shadow-2xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl py-1.5 pl-3 pr-1.5"
+      className="fixed z-[99999] flex flex-col rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/50 dark:border-white/10 py-2 px-2"
       style={{
         top: position.top,
         bottom: position.bottom,
         left: position.left,
-        width: Math.max(position.width, 220),
-        maxHeight: "min(70vh, 400px)",
+        width: Math.max(position.width, 240),
+        maxHeight: "min(70vh, 420px)",
       }}
     >
-      <div className="overflow-y-auto overscroll-contain min-h-0 flex-1">
+      <div className="overflow-y-auto overscroll-contain min-h-0 flex-1 space-y-0.5">
         {companies.map((c) => {
           const name = c.commercialName || c.legalName || c.id;
           return (
@@ -256,13 +253,16 @@ function CompanySelector({
               key={c.id}
               type="button"
               onClick={() => { onSelect(c.id, name, c.requiresCustomerApp); setOpen(false); }}
-              className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg truncate ${
+              className={`w-full px-3 py-2.5 text-left text-sm transition-all duration-200 rounded-xl truncate flex items-center gap-2 ${
                 selectedCompanyId === c.id
-                  ? "bg-company-primary-muted text-company-primary font-medium"
-                  : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  ? "bg-company-primary/10 dark:bg-company-primary/20 text-company-primary font-medium shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
+                  : "text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:translate-x-0.5"
               }`}
             >
-              {name}
+              {selectedCompanyId === c.id && (
+                <span className="w-1.5 h-1.5 rounded-full bg-company-primary shrink-0" />
+              )}
+              <span className="truncate">{name}</span>
             </button>
           );
         })}
@@ -270,21 +270,13 @@ function CompanySelector({
           <p className="px-3 py-3 text-sm text-slate-400 text-center">{emptyLabel}</p>
         )}
       </div>
-      <div className="border-t border-slate-200 dark:border-slate-700 mt-1 pt-1 flex gap-1.5">
+      <div className="border-t border-slate-200 dark:border-slate-700 mt-1 pt-1">
         <Link
           href="/dashboard/companies"
           onClick={() => setOpen(false)}
-          className="flex-1 px-3 py-2 text-left text-sm text-company-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg"
+          className="block px-3 py-2 text-left text-sm text-company-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg"
         >
           {allCompaniesLabel}
-        </Link>
-        <Link
-          href="/dashboard/companies/new"
-          onClick={() => setOpen(false)}
-          className="flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium text-white bg-company-primary hover:bg-company-primary/90 transition-colors"
-          title={addCompanyLabel}
-        >
-          +
         </Link>
       </div>
     </div>,
@@ -322,26 +314,26 @@ function CompanySelector({
           ref={triggerRef}
           type="button"
           onClick={() => { if (!open) updatePosition(); setOpen((o) => !o); }}
-          className={`flex-1 flex items-center min-w-0 ${hideAvatar ? "pl-3" : "pl-2"} pr-8 py-2.5 rounded-xl text-left text-sm transition-colors ${
+          className={`flex-1 flex items-center min-w-0 ${hideAvatar ? "pl-3" : "pl-2"} pr-8 py-2.5 rounded-xl text-left text-sm transition-all duration-200 ${
             highContrast
-              ? "bg-black/65 hover:bg-black/75 text-white placeholder:text-white/75 border border-white/20 shadow-[0_6px_16px_rgba(0,0,0,0.35)]"
+              ? "bg-black/40 hover:bg-black/50 text-white border border-white/25 shadow-[0_4px_20px_rgba(0,0,0,0.25)] backdrop-blur-md hover:shadow-[0_6px_24px_rgba(0,0,0,0.35)] hover:border-white/35"
               : isDark
-                ? "bg-white/15 hover:bg-white/25 text-white placeholder:text-white/60"
-                : "bg-black/10 hover:bg-black/15 text-slate-900 placeholder:text-slate-600"
-          } ${open ? "ring-2 ring-white/60" : ""} ${highContrast ? "max-w-[220px] justify-center text-center" : ""}`}
+                ? "bg-white/10 hover:bg-white/20 text-white border border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.2)] backdrop-blur-sm hover:shadow-[0_4px_16px_rgba(0,0,0,0.3)]"
+                : "bg-white/25 text-slate-800 border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.06),0_1px_2px_rgba(255,255,255,0.4)_inset,0_8px_16px_rgba(255,255,255,0.1)_inset] backdrop-blur-2xl hover:shadow-[0_8px_32px_rgba(0,0,0,0.1),0_1px_2px_rgba(255,255,255,0.5)_inset] hover:bg-white/35 hover:border-white/90"
+          } ${open ? "ring-2 ring-company-primary/30" : ""} ${highContrast ? "max-w-[220px] justify-center text-center" : ""}`}
         >
-          <span className="truncate flex-1">
+          <span className="truncate flex-1 font-medium">
             {selectedCompanyName || (
-              <span className={highContrast ? "text-white/85" : isDark ? "text-white/70" : "text-slate-500"}>
+              <span className={highContrast ? "text-white/80" : isDark ? "text-white/60" : "text-slate-500"}>
                 {placeholder}
               </span>
             )}
           </span>
         </button>
         <ChevronDown
-          className={`absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-transform duration-200 ${
+          className={`absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-transform duration-300 ease-out ${
             open ? "rotate-180" : ""
-          } ${highContrast ? "text-white/85" : isDark ? "text-white/80" : "text-slate-600"}`}
+          } ${highContrast ? "text-white/90" : isDark ? "text-white/70" : "text-slate-500"}`}
         />
       </div>
       {dropdown}
@@ -625,7 +617,6 @@ export function DashboardSidebar() {
                           onSelect={handleSelectCompany}
                           placeholder={t("sidebar.selectCompany")}
                           allCompaniesLabel={t("sidebar.allCompanies")}
-                          addCompanyLabel={t("sidebar.addCompany")}
                           emptyLabel={t("companies.noCompanies")}
                           isDark={hasCustomBanner ? bannerVariant : isDark}
                           logoImageUrl={companyBranding?.logoImageUrl}
@@ -759,65 +750,33 @@ export function DashboardSidebar() {
         <div className="flex-1" />
       )}
 
-      {/* Footer: Ultra-premium minimal footer */}
-      <footer className="border-t border-card-border/40 bg-gradient-to-b from-transparent to-card/30 dark:to-card/20 backdrop-blur-sm px-3 py-2 shrink-0">
+      {/* Footer: Minimal legal links only */}
+      <footer className="border-t border-card-border/40 bg-gradient-to-b from-transparent to-card/30 dark:to-card/20 backdrop-blur-sm px-3 py-3 shrink-0">
         {!collapsed ? (
-          <div className="flex flex-col gap-1.5">
-            {/* Help & Version Row - Compact */}
-            <div className="flex items-center justify-between">
-              <a
-                href="mailto:soporte@parkit.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center gap-1 rounded-md py-1 px-1.5 -mx-1 text-[10px] font-medium text-text-muted/70 hover:text-company-primary transition-all duration-200"
-              >
-                <HelpCircle className="w-3 h-3 shrink-0 text-text-muted/50 group-hover:text-company-primary transition-colors" aria-hidden />
-                <span className="whitespace-nowrap">{t("sidebar.help")}</span>
-              </a>
-              <span
-                className="text-[9px] font-medium text-text-muted/30 tabular-nums tracking-widest uppercase whitespace-nowrap"
-                title={t("sidebar.version")}
-              >
-                {process.env.NEXT_PUBLIC_APP_VERSION ? `v${process.env.NEXT_PUBLIC_APP_VERSION}` : "v1.0.0"}
-              </span>
-            </div>
-            
-            {/* Subtle hairline divider */}
-            <div className="h-px bg-gradient-to-r from-transparent via-text-muted/10 to-transparent" />
-            
-            {/* Legal Links Row - Micro text */}
-            <div className="flex items-center justify-center gap-2 text-[9px] tracking-wide">
-              <Link
-                href="/privacy"
-                className="text-text-muted/40 hover:text-company-primary/80 transition-colors duration-200 whitespace-nowrap"
-              >
-                {t("sidebar.privacyPolicy")}
-              </Link>
-              <span className="w-0.5 h-0.5 rounded-full bg-text-muted/20 shrink-0" />
-              <Link
-                href="/terms"
-                className="text-text-muted/40 hover:text-company-primary/80 transition-colors duration-200 whitespace-nowrap"
-              >
-                {t("sidebar.terms")}
-              </Link>
-            </div>
+          <div className="flex items-center justify-center gap-1.5 text-[9px] tracking-wide">
+            <Link
+              href="/privacy"
+              className="text-text-muted hover:text-company-primary transition-colors duration-200 whitespace-nowrap"
+            >
+              {t("sidebar.privacyPolicy")}
+            </Link>
+            <span className="w-0.5 h-0.5 rounded-full bg-text-muted/40 shrink-0" />
+            <Link
+              href="/terms"
+              className="text-text-muted hover:text-company-primary transition-colors duration-200 whitespace-nowrap"
+            >
+              {t("sidebar.terms")}
+            </Link>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-2">
-            <SidebarTooltip show label={t("sidebar.help")}>
-              <a
-                href="mailto:soporte@parkit.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex justify-center p-2 rounded-xl text-text-muted hover:text-company-primary hover:bg-company-primary/10 transition-all duration-200"
-                aria-label={t("sidebar.help")}
-              >
-                <HelpCircle className="w-4 h-4" aria-hidden />
-              </a>
-            </SidebarTooltip>
-            <span className="text-[9px] font-medium text-text-muted/40 tabular-nums">
-              {process.env.NEXT_PUBLIC_APP_VERSION ? `v${process.env.NEXT_PUBLIC_APP_VERSION}` : "v1"}
-            </span>
+          <div className="flex justify-center">
+            <Link
+              href="/privacy"
+              className="p-2 rounded-xl text-text-muted hover:text-company-primary hover:bg-company-primary/10 transition-all duration-200"
+              aria-label={t("sidebar.privacyPolicy")}
+            >
+              <span className="text-[10px] font-medium">P</span>
+            </Link>
           </div>
         )}
       </footer>

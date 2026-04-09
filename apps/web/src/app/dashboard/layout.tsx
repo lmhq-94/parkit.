@@ -11,6 +11,7 @@ import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LocaleToggle } from "@/components/LocaleToggle";
 import { Logo } from "@/components/Logo";
+import { HelpModal } from "@/components/HelpModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import type { CompanyBranding } from "@/lib/store";
@@ -19,7 +20,7 @@ import { useTheme } from "next-themes";
 import { useLocaleStore } from "@/lib/store";
 import { Sun, Moon, Globe } from "lucide-react";
 import { apiClient } from "@/lib/api";
-import { ArrowLeft, ChevronDown, Menu, UserRound, LogOut, User } from "lucide-react";
+import { ArrowLeft, ChevronDown, Menu, UserRound, LogOut, User, HelpCircle } from "lucide-react";
 
 const HeaderActionContext = createContext<((node: React.ReactNode) => void) | null>(null);
 export function useHeaderAction() {
@@ -125,6 +126,7 @@ function DashboardLayoutInner({
   const [headerShadow, setHeaderShadow] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [userMenuPosition, setUserMenuPosition] = useState({ top: 0, right: 0 });
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -487,6 +489,17 @@ function DashboardLayoutInner({
                             type="button"
                             onClick={() => {
                               setUserMenuOpen(false);
+                              setHelpModalOpen(true);
+                            }}
+                            className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"
+                          >
+                            <HelpCircle className="w-4 h-4" />
+                            {t("sidebar.help")}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUserMenuOpen(false);
                               logout();
                               if (typeof window !== "undefined") {
                                 window.location.href = "/login";
@@ -519,6 +532,7 @@ function DashboardLayoutInner({
         </main>
       </div>
       </HeaderActionContext.Provider>
+      <HelpModal open={helpModalOpen} onClose={() => setHelpModalOpen(false)} />
     </ProtectedRoute>
   );
 }

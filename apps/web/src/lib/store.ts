@@ -56,15 +56,25 @@ export const useAuthStore = create<AuthStore>((set) => ({
 // Locale (i18n)
 const LOCALE_KEY = "parkit_locale";
 
+// Detect device locale on client for initial state
+const getInitialLocale = (): Locale => {
+  if (typeof window === "undefined") return "es";
+  const stored = localStorage.getItem(LOCALE_KEY) as Locale | null;
+  if (stored === "en" || stored === "es") return stored;
+  // Detect from browser
+  const lang = (navigator.language || (navigator as unknown as { languages?: readonly string[] }).languages?.[0] || "es").toLowerCase();
+  return lang.startsWith("en") ? "en" : "es";
+};
+
 interface LocaleStore {
   locale: Locale;
   setLocale: (locale: Locale) => void;
 }
 
-// Always initialize to "es" so SSR and first client paint match (avoids hydration mismatch).
-// Actual value is restored in Providers with getStoredLocale() in useEffect.
+// Initialize with stored or detected locale on client to avoid flicker.
+// SSR always uses "es" to avoid hydration mismatch.
 export const useLocaleStore = create<LocaleStore>((set) => ({
-  locale: "es",
+  locale: getInitialLocale(),
   setLocale: (locale: Locale) => {
     if (typeof window !== "undefined") {
       localStorage.setItem(LOCALE_KEY, locale);
