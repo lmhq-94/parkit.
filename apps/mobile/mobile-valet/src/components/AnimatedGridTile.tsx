@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import type { ComponentType } from "react";
 import { useEffect, useRef } from "react";
+import { useValetTheme } from "@/theme/valetTheme";
 import {
   parkitTilePalette,
   tileIconHex,
@@ -66,6 +67,9 @@ export function AnimatedGridTile(props: AnimatedGridTileProps) {
     textScale = 1,
     reduceMotion = false,
   } = props;
+
+  const theme = useValetTheme();
+  const Fonts = theme.fontFamily;
 
   const P = parkitTilePalette(isDark);
   const iconColor = tileIconHex(variant, P);
@@ -164,7 +168,7 @@ export function AnimatedGridTile(props: AnimatedGridTileProps) {
           style={[
             styles.tileIconWrap,
             { backgroundColor: iconBubbleBg },
-            textScale > 1 && { width: 52 + (textScale - 1) * 20, height: 52 + (textScale - 1) * 20, borderRadius: 16 + (textScale - 1) * 6 },
+            textScale > 1 && { width: 56 + (textScale - 1) * 20, height: 56 + (textScale - 1) * 20, borderRadius: 28 + (textScale - 1) * 10 },
           ]}
         >
           {LucideCmp ? (
@@ -185,8 +189,8 @@ export function AnimatedGridTile(props: AnimatedGridTileProps) {
         <Text
           style={[
             styles.tileTitle,
-            { fontFamily: "CalSans" },
-            textScale > 1 && { fontSize: 16 + (textScale - 1) * 8 },
+            { fontFamily: Fonts.primary },
+            textScale > 1 && { fontSize: Math.round(12 * textScale) },
           ]}
           numberOfLines={2}
           maxFontSizeMultiplier={1.5 + (textScale - 1) * 1}
@@ -194,7 +198,11 @@ export function AnimatedGridTile(props: AnimatedGridTileProps) {
           {title}
         </Text>
         <Text
-          style={[styles.tileSub, textScale > 1 && { fontSize: 13 + (textScale - 1) * 5, lineHeight: 18 + (textScale - 1) * 6 }]}
+          style={[
+            styles.tileSub,
+            { fontFamily: Fonts.primary },
+            textScale > 1 && { fontSize: Math.round(12 * textScale), lineHeight: Math.round(15 * textScale) }
+          ]}
           numberOfLines={2}
           maxFontSizeMultiplier={1.4 + (textScale - 1) * 0.9}
         >

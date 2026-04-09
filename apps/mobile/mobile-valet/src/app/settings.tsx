@@ -34,6 +34,7 @@ function AccessibilitySection() {
     const C = theme.colors;
     const S = theme.space;
     const F = theme.font;
+    const Fonts = theme.fontFamily;
 
     return StyleSheet.create({
       sliderRow: {
@@ -66,12 +67,14 @@ function AccessibilitySection() {
         backgroundColor: theme.isDark ? "rgba(148, 163, 184, 0.12)" : "#E2E8F0",
       },
       label: {
-        fontSize: F.body,
+        fontSize: Math.round(F.status * 0.65),
         fontWeight: "700",
+        fontFamily: Fonts.primary,
         color: C.text,
       },
       hint: {
-        fontSize: Math.round(F.secondary * 0.75),
+        fontSize: Math.round(F.status * 0.65),
+        fontFamily: Fonts.primary,
         color: C.textSubtle,
         marginTop: 2,
         maxWidth: responsive.contentMaxWidth - 120,
@@ -83,8 +86,9 @@ function AccessibilitySection() {
         marginBottom: S.sm,
       },
       sliderValue: {
-        fontSize: F.body,
+        fontSize: Math.round(F.status * 0.65),
         fontWeight: "800",
+        fontFamily: Fonts.primary,
         color: C.primary,
       },
       sliderControls: {
@@ -94,9 +98,9 @@ function AccessibilitySection() {
         marginTop: S.sm,
       },
       sliderButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
+        width: 28 * textScale,
+        height: 28 * textScale,
+        borderRadius: 14 * textScale,
         backgroundColor: C.primary,
         alignItems: "center",
         justifyContent: "center",
@@ -129,14 +133,15 @@ function AccessibilitySection() {
         borderRadius: 4,
       },
       progressLabel: {
-        fontSize: F.secondary,
+        fontSize: Math.round(F.status * 0.65),
         fontWeight: '700',
+        fontFamily: Fonts.primary,
         color: C.primary,
         minWidth: 40,
         textAlign: 'right',
       },
     });
-  }, [theme, responsive.contentMaxWidth]);
+  }, [theme, responsive.contentMaxWidth, textScale]);
 
   const progressPercent = Math.round(((textScale - 1) / 0.25) * 100);
 
@@ -157,7 +162,7 @@ function AccessibilitySection() {
             onPress={() => textScale > 1 && setTextScale(textScale - 0.05)}
             disabled={textScale <= 1}
           >
-            <Ionicons name="remove" size={20} color="#fff" />
+            <Ionicons name="remove" size={28 * textScale} color="#fff" />
           </Pressable>
           <View style={styles.progressBarTrack}>
             <View
@@ -177,7 +182,7 @@ function AccessibilitySection() {
             onPress={() => textScale < 1.25 && setTextScale(textScale + 0.05)}
             disabled={textScale >= 1.25}
           >
-            <Ionicons name="add" size={20} color="#fff" />
+            <Ionicons name="add" size={28 * textScale} color="#fff" />
           </Pressable>
         </View>
       </View>
@@ -200,7 +205,7 @@ function AccessibilitySection() {
           <Text style={styles.hint}>{t(locale, "settings.reduceMotionDesc")}</Text>
         </View>
         {reduceMotion && (
-          <Ionicons name="checkmark-circle" size={28} color={theme.colors.primary} />
+          <Ionicons name="checkmark-circle" size={28 * textScale} color={theme.colors.primary} />
         )}
       </Pressable>
     </>
@@ -212,6 +217,7 @@ function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadd
   const S = theme.space;
   const F = theme.font;
   const R = theme.radius;
+  const Fonts = theme.fontFamily;
 
   return StyleSheet.create({
     safe: {
@@ -242,8 +248,9 @@ function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadd
       width: 44,
     },
     title: {
-      fontSize: F.title,
+      fontSize: Math.round(F.secondary * 0.85),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.text,
       flex: 1,
       textAlign: "center",
@@ -258,17 +265,18 @@ function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadd
     },
     /** Misma jerarquía visual que `receive` / tickets (legible en ES/EN). */
     sectionTitle: {
-      fontSize: Math.round(F.subtitle * 0.85),
+      fontSize: Math.round(F.secondary * 0.85),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.textMuted,
-      textTransform: "uppercase",
       letterSpacing: 0.65,
       marginBottom: S.sm,
       marginTop: S.md,
     },
     helpText: {
-      fontSize: F.secondary,
-      lineHeight: 24,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
+      lineHeight: 18,
       color: C.textMuted,
       fontWeight: "600",
       marginBottom: S.md,
@@ -301,12 +309,14 @@ function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadd
       backgroundColor: theme.isDark ? "rgba(148, 163, 184, 0.12)" : "#E2E8F0",
     },
     localeLabel: {
-      fontSize: F.body,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "700",
+      fontFamily: Fonts.primary,
       color: C.text,
     },
     localeHint: {
-      fontSize: Math.round(F.secondary * 0.75),
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       color: C.textSubtle,
       marginTop: 2,
     },
@@ -317,6 +327,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { locale, setLocale } = useLocaleStore();
   const { preference, setPreference } = useThemeStore();
+  const { textScale } = useAccessibilityStore();
   const theme = useValetTheme();
   const responsive = useResponsiveLayout();
   const insets = useSafeAreaInsets();
@@ -397,7 +408,7 @@ export default function SettingsScreen() {
                   )}
                 </View>
                 {isThemeActive(pref) && (
-                  <Ionicons name="checkmark-circle" size={28} color={theme.colors.primary} />
+                  <Ionicons name="checkmark-circle" size={28 * textScale} color={theme.colors.primary} />
                 )}
               </Pressable>
             ))}
@@ -417,7 +428,7 @@ export default function SettingsScreen() {
             >
               <Text style={styles.localeLabel}>{t(locale, "settings.spanish")}</Text>
               {locale === "es" && (
-                <Ionicons name="checkmark-circle" size={28} color={theme.colors.primary} />
+                <Ionicons name="checkmark-circle" size={28 * textScale} color={theme.colors.primary} />
               )}
             </Pressable>
             <Pressable
@@ -433,7 +444,7 @@ export default function SettingsScreen() {
             >
               <Text style={styles.localeLabel}>{t(locale, "settings.english")}</Text>
               {locale === "en" && (
-                <Ionicons name="checkmark-circle" size={28} color={theme.colors.primary} />
+                <Ionicons name="checkmark-circle" size={28 * textScale} color={theme.colors.primary} />
               )}
             </Pressable>
           </View>

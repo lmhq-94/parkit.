@@ -12,13 +12,14 @@ interface BaseModalProps {
 
 export function BaseModal({ visible, onClose, title, children, theme }: BaseModalProps) {
   const C = theme.colors;
+  const Fonts = theme.fontFamily;
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <Pressable style={styles.modalBackdropPress} onPress={onClose} accessibilityLabel="Cancel" />
         <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
-          <Text style={[styles.modalTitle, { color: C.text }]}>{title}</Text>
+          <Text style={[styles.modalTitle, { color: C.text, fontFamily: Fonts.primary }]}>{title}</Text>
           {children}
         </View>
       </View>
@@ -49,7 +50,6 @@ export const modalStyles = StyleSheet.create({
     fontWeight: Platform.OS === "android" ? "normal" : "800",
     textAlign: "center",
     marginBottom: 12,
-    fontFamily: "CalSans",
   },
   modalList: {
     maxHeight: 300,

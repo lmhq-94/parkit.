@@ -153,7 +153,7 @@ export function TicketQRPanel({
       paddingTop: S.sm,
     },
     headerTitle: {
-      fontSize: F.title,
+      fontSize: F.secondary - 1,
       fontWeight: '800',
       color: C.text,
     },
@@ -241,12 +241,12 @@ export function TicketQRPanel({
       borderColor: C.border,
     },
     primaryBtnText: {
-      fontSize: F.button,
+      fontSize: F.secondary - 1,
       fontWeight: '800',
       color: '#FFFFFF',
     },
     secondaryBtnText: {
-      fontSize: F.button,
+      fontSize: F.secondary - 1,
       fontWeight: '800',
       color: isDark ? '#CBD5E1' : '#475569',
     },
@@ -270,7 +270,7 @@ export function TicketQRPanel({
       borderRadius: 12,
     },
     retryText: {
-      fontSize: F.secondary,
+      fontSize: F.secondary - 1,
       fontWeight: '700',
       color: '#FFFFFF',
     },

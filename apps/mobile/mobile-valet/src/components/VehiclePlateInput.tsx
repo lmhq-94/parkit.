@@ -70,16 +70,17 @@ export function VehiclePlateInput({
 
   const styles = StyleSheet.create({
     sectionLabel: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.secondary * 0.85),
       fontWeight: '800',
-      color: C.textMuted,
+      color: C.text,
       marginBottom: S.sm,
       textTransform: 'uppercase',
       letterSpacing: 0.6,
     },
     stepExplain: {
-      fontSize: F.secondary,
-      color: C.textSubtle,
+      fontSize: Math.round(F.secondary * 0.65),
+      fontWeight: '600',
+      color: C.textMuted,
       marginTop: -4,
       marginBottom: S.md,
       lineHeight: 22,
@@ -91,7 +92,8 @@ export function VehiclePlateInput({
       borderRadius: 14,
       paddingHorizontal: S.md,
       paddingVertical: 14,
-      fontSize: F.body,
+      fontSize: Math.round(F.secondary * 0.65),
+      fontWeight: '600',
       color: C.text,
       marginBottom: S.sm,
     },
@@ -102,7 +104,7 @@ export function VehiclePlateInput({
       marginBottom: S.md,
     },
     inlineLoadingText: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.secondary * 0.65),
       color: C.textSubtle,
       lineHeight: 20,
       marginBottom: 0,
@@ -138,14 +140,12 @@ export function VehiclePlateInput({
       paddingHorizontal: S.sm,
       backgroundColor: 'rgba(16, 185, 129, 0.12)',
     },
-    vehicleNotFoundBadge: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-      borderRadius: 999,
-      paddingVertical: 4,
-      paddingHorizontal: S.sm,
-      backgroundColor: 'rgba(249, 115, 22, 0.12)',
+    vehicleNotFoundTitle: {
+      fontSize: Math.round(F.secondary * 0.65),
+      fontWeight: '700',
+      color: C.warning,
+      letterSpacing: 0.2,
+      marginBottom: S.xs,
     },
     vehicleFoundBadgeText: {
       fontSize: Math.round(F.secondary * 0.75),
@@ -154,12 +154,11 @@ export function VehiclePlateInput({
       textTransform: 'uppercase',
       letterSpacing: 0.5,
     },
-    vehicleNotFoundBadgeText: {
-      fontSize: Math.round(F.secondary * 0.75),
-      fontWeight: '800',
-      color: C.warning,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
+    vehicleNotFoundMessage: {
+      fontSize: Math.round(F.secondary * 0.65),
+      fontWeight: '500',
+      color: C.textMuted,
+      lineHeight: 22,
     },
     vehicleSummaryRow: {
       flexDirection: 'row',
@@ -185,12 +184,12 @@ export function VehiclePlateInput({
     vehicleSummaryValue: {
       flex: 1,
       textAlign: 'right',
-      fontSize: F.secondary,
+      fontSize: Math.round(F.secondary * 0.85),
       fontWeight: '800',
       color: C.text,
     },
     cardHint: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.body * 0.9),
       color: C.textMuted,
       marginTop: S.sm,
       lineHeight: 22,
@@ -199,7 +198,6 @@ export function VehiclePlateInput({
 
   return (
     <>
-      <Text style={styles.sectionLabel}>{t(locale, 'receive.wizardPlateTitle')}</Text>
       <Text style={styles.stepExplain}>{t(locale, 'receive.wizardPlateHelp')}</Text>
 
       <TextInput
@@ -252,13 +250,8 @@ export function VehiclePlateInput({
 
       {vehicleResolved && !vehicle && plateLooksValid && (
         <View style={[styles.card, styles.vehicleNotFoundCard]}>
-          <View style={styles.vehicleFoundHeader}>
-            <View style={styles.vehicleNotFoundBadge}>
-              <Ionicons name="alert-circle-outline" size={16} color={C.warning} />
-              <Text style={styles.vehicleNotFoundBadgeText}>{t(locale, 'receive.newVehicleTitle')}</Text>
-            </View>
-          </View>
-          <Text style={styles.cardHint}>{t(locale, 'receive.newVehicleHint')}</Text>
+          <Text style={styles.vehicleNotFoundTitle}>{t(locale, 'receive.newVehicleTitle')}</Text>
+          <Text style={styles.vehicleNotFoundMessage}>{t(locale, 'receive.newVehicleHint')}</Text>
         </View>
       )}
     </>

@@ -206,14 +206,7 @@ export default function ProfileScreen() {
     return user?.avatarUrl?.trim() || null;
   }, [avatarRemoved, localAvatar, user?.avatarUrl]);
 
-  const initials = useMemo(() => {
-    const fn = firstName.trim();
-    const ln = lastName.trim();
-    const em = email.trim();
-    const a = (fn[0] || em[0] || "?").toUpperCase();
-    const b = (ln[0] || em[1] || "").toUpperCase();
-    return `${a}${b}`;
-  }, [firstName, lastName, email]);
+  const hasPhotoPending = typeof localAvatar === "string" && localAvatar.length > 0;
 
   const processPickedUri = async (uri: string) => {
     try {
@@ -260,11 +253,6 @@ export default function ProfileScreen() {
     });
     if (result.canceled || !result.assets?.[0]?.uri) return;
     await processPickedUri(result.assets[0].uri);
-  };
-
-  const clearLocalPhoto = () => {
-    setLocalAvatar(undefined);
-    setAvatarRemoved(true);
   };
 
   const validate = useCallback((): boolean => {
@@ -393,10 +381,6 @@ export default function ProfileScreen() {
     }
   };
 
-  const canRemovePhoto =
-    !avatarRemoved &&
-    ((typeof localAvatar === "string" && localAvatar.length > 0) || !!user?.avatarUrl?.trim());
-
   const staffRoleLabel =
     staffRole === "RECEPTIONIST"
       ? t(locale, "signup.staffRoleReceptionist")
@@ -474,71 +458,28 @@ export default function ProfileScreen() {
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
-              <Text style={styles.intro}>{t(locale, "profile.intro")}</Text>
-
               <View style={styles.avatarBlock}>
                 <Pressable
                   onPress={openPhotoChooser}
-                  style={({ pressed }) => [styles.avatarRing, pressed && styles.pressed]}
+                  style={({ pressed }) => [
+                    styles.avatarRing,
+                    { borderColor: hasPhotoPending ? "#F59E0B" : C.primary },
+                    pressed && styles.pressed,
+                  ]}
                   accessibilityRole="button"
                   accessibilityLabel={t(locale, "profile.changePhoto")}
                 >
                   {displayAvatarUri ? (
                     <Image source={{ uri: displayAvatarUri }} style={styles.avatarImage} />
                   ) : (
-                    <View style={styles.avatarPlaceholder}>
-                      <Text style={styles.avatarInitials} maxFontSizeMultiplier={2}>
-                        {initials}
-                      </Text>
+                    <View style={[styles.avatarPlaceholder, { backgroundColor: theme.isDark ? "rgba(148,163,184,0.15)" : "rgba(100,116,139,0.15)" }]}>
+                      <Ionicons name="person" size={60} color={C.textMuted} />
                     </View>
                   )}
                 </Pressable>
-                <Text style={[styles.avatarHint, { color: C.textMuted }]}>
-                  {Platform.OS === "web"
-                    ? t(locale, "profile.avatarHintWeb")
-                    : t(locale, "profile.avatarHintNative")}
+                <Text style={[styles.avatarSub, { color: C.textMuted }]}>
+                  {t(locale, "profile.tapToChangePhoto")}
                 </Text>
-                <View style={styles.avatarActionsRow}>
-                  <Pressable
-                    onPress={pickImage}
-                    style={({ pressed }) => [
-                      styles.avatarChip,
-                      { borderColor: C.border, backgroundColor: C.card },
-                      pressed && styles.pressed,
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel={t(locale, "profile.photoFromLibrary")}
-                  >
-                    <Ionicons name="images-outline" size={22} color={C.primary} />
-                    <Text style={[styles.avatarChipText, { color: C.text }]}>
-                      {t(locale, "profile.photoFromLibrary")}
-                    </Text>
-                  </Pressable>
-                  {Platform.OS !== "web" ? (
-                    <Pressable
-                      onPress={takePhoto}
-                      style={({ pressed }) => [
-                        styles.avatarChip,
-                        { borderColor: C.border, backgroundColor: C.card },
-                        pressed && styles.pressed,
-                      ]}
-                      accessibilityRole="button"
-                      accessibilityLabel={t(locale, "profile.photoFromCamera")}
-                    >
-                      <Ionicons name="camera-outline" size={22} color={C.primary} />
-                      <Text style={[styles.avatarChipText, { color: C.text }]}>
-                        {t(locale, "profile.photoFromCamera")}
-                      </Text>
-                    </Pressable>
-                  ) : null}
-                </View>
-                {canRemovePhoto ? (
-                  <Pressable onPress={clearLocalPhoto} style={styles.secondaryLink}>
-                    <Text style={[styles.secondaryLinkText, styles.dangerText]}>
-                      {t(locale, "profile.removePhoto")}
-                    </Text>
-                  </Pressable>
-                ) : null}
               </View>
 
             <Text style={styles.label}>{t(locale, "profile.staffRoleLabel")}</Text>
@@ -707,8 +648,7 @@ export default function ProfileScreen() {
             {staffRole === "DRIVER" && (
               <>
                 <View style={styles.licenseDivider} />
-                <Text style={styles.sectionDriver}>{t(locale, "profile.licenseSectionDriver")}</Text>
-
+                
                 <Text style={styles.label}>{t(locale, "profile.licenseTypesLabel")}</Text>
                 <Text style={[styles.helper, { color: C.textMuted }]}>{t(locale, "profile.licenseTypesHint")}</Text>
                 <Pressable
@@ -906,6 +846,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
   const S = theme.space;
   const F = ticketsA11y.font;
   const R = theme.radius;
+  const Fonts = theme.fontFamily;
 
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: C.bg, alignItems: "center" },
@@ -930,8 +871,9 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     headerTitle: {
       flex: 1,
       textAlign: "center",
-      fontSize: F.title - 4,
+      fontSize: Math.round(F.secondary * 0.85),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.text,
     },
     centered: {
@@ -940,7 +882,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       alignItems: "center",
       gap: S.md,
     },
-    loadingText: { fontSize: F.secondary, color: C.textMuted },
+    loadingText: { fontSize: Math.round(F.status * 0.65), fontFamily: Fonts.primary, color: C.textMuted },
     scroll: { flex: 1 },
     scrollContent: {
       paddingHorizontal: sectionPadding,
@@ -948,20 +890,29 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       paddingBottom: S.xl,
     },
     intro: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       color: C.textMuted,
       lineHeight: 24,
       marginBottom: S.md,
       fontWeight: "600",
     },
     avatarBlock: { alignItems: "center", marginBottom: S.lg },
+    avatarSub: {
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
+      textAlign: "center",
+      marginTop: S.sm,
+      fontWeight: "500",
+    },
     avatarHint: {
-      fontSize: F.secondary - 1,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       textAlign: "center",
       marginTop: S.sm,
       marginBottom: S.md,
       fontWeight: "600",
-      lineHeight: 20,
+      lineHeight: 18,
       paddingHorizontal: S.md,
     },
     avatarActionsRow: {
@@ -981,13 +932,14 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderWidth: 2,
     },
     avatarChipText: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
     },
     avatarRing: {
-      width: 120,
-      height: 120,
-      borderRadius: 60,
+      width: 80,
+      height: 80,
+      borderRadius: 40,
       overflow: "hidden",
       borderWidth: 3,
       borderColor: C.primary,
@@ -1001,23 +953,25 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       backgroundColor: theme.isDark ? "rgba(148,163,184,0.12)" : "rgba(15,23,42,0.06)",
     },
     avatarInitials: {
-      fontSize: Math.round(F.hero * 1.6),
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.text,
       letterSpacing: 1,
     },
     secondaryLink: { paddingVertical: S.xs },
     secondaryLinkText: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "700",
+      fontFamily: Fonts.primary,
       color: C.primary,
     },
     dangerText: { color: C.logout },
     label: {
-      fontSize: Math.round(F.secondary * 0.75),
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.textMuted,
-      textTransform: "uppercase",
       letterSpacing: 0.6,
       marginBottom: S.xs,
     },
@@ -1033,14 +987,16 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     pickerRowText: { flex: 1, minWidth: 0 },
     pickerRowTitle: {
-      fontSize: F.body,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
     },
     pickerRowSub: {
-      fontSize: F.secondary - 1,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "600",
+      fontFamily: Fonts.primary,
       marginTop: 4,
-      lineHeight: 20,
+      lineHeight: 18,
     },
     modalOverlay: {
       flex: 1,
@@ -1060,8 +1016,9 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       paddingBottom: S.lg,
     },
     modalTitle: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       textAlign: "center",
       marginBottom: S.sm,
     },
@@ -1071,19 +1028,22 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     roleRow: {
       flexDirection: "row",
       alignItems: "center",
-      paddingVertical: S.md,
+      paddingVertical: S.sm,
       borderBottomWidth: StyleSheet.hairlineWidth,
       gap: S.sm,
+      minHeight: 52,
     },
     roleRowText: { flex: 1, minWidth: 0 },
     roleRowName: {
-      fontSize: F.secondary - 1,
-      fontWeight: "800",
+      fontSize: Math.round(F.status * 0.65),
+      fontWeight: "500",
+      fontFamily: Fonts.primary,
     },
     roleRowAddr: {
-      fontSize: Math.round(F.secondary * 0.75),
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       marginTop: 4,
-      lineHeight: Math.round(F.secondary),
+      lineHeight: Math.round(F.status * 0.85),
     },
     input: {
       backgroundColor: C.card,
@@ -1092,13 +1052,15 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderRadius: R.button,
       paddingHorizontal: S.md,
       paddingVertical: 14,
-      fontSize: F.body,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       color: C.text,
       marginBottom: S.xs,
     },
     fieldError: {
-      fontSize: Math.round(F.secondary * 0.75),
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "600",
+      fontFamily: Fonts.primary,
       color: C.logout,
       marginBottom: S.sm,
     },
@@ -1114,7 +1076,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       justifyContent: "center",
       minHeight: 52,
     },
-    primaryBtnText: { color: "#fff", fontWeight: "800", fontSize: F.button },
+    primaryBtnText: { color: "#fff", fontWeight: "800", fontSize: Math.round(F.status * 0.65), fontFamily: Fonts.primary },
     btnDisabled: { opacity: 0.55 },
     pressed: { opacity: 0.9 },
     licenseDivider: {
@@ -1123,14 +1085,16 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       marginVertical: S.lg,
     },
     sectionDriver: {
-      fontSize: F.body,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.text,
       marginBottom: S.sm,
     },
     helper: {
-      fontSize: F.secondary - 1,
-      lineHeight: 20,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
+      lineHeight: 18,
       marginBottom: S.sm,
       fontWeight: "500",
     },
@@ -1149,19 +1113,23 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     licenseOptionRow: {
       flexDirection: "row",
       alignItems: "center",
-      paddingVertical: S.md,
+      paddingVertical: S.sm,
       borderBottomWidth: StyleSheet.hairlineWidth,
       gap: S.md,
+      minHeight: 52,
     },
     licenseOptionText: { flex: 1, minWidth: 0 },
     modalDoneBtn: {
       alignItems: "center",
-      paddingVertical: S.md,
+      paddingVertical: S.sm,
       marginTop: S.xs,
+      minHeight: 48,
+      justifyContent: "center",
     },
     modalDoneBtnText: {
-      fontSize: F.body,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
     },
     clearExpiryLink: {
       alignSelf: "flex-start",
@@ -1188,8 +1156,9 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderBottomColor: C.border,
     },
     iosExpiryToolbarBtn: {
-      fontSize: F.body,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "600",
+      fontFamily: Fonts.primary,
     },
   });
 }

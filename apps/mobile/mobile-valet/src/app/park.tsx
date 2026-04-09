@@ -44,6 +44,7 @@ function createParkStyles(theme: ReturnType<typeof useValetTheme>, contentMaxWid
   const S = theme.space;
   const R = theme.radius;
   const F = ticketsA11y.font;
+  const Fonts = theme.fontFamily;
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: C.bg, alignItems: "center" },
     frame: {
@@ -63,35 +64,40 @@ function createParkStyles(theme: ReturnType<typeof useValetTheme>, contentMaxWid
     },
     scroll: { padding: sectionPadding, paddingBottom: S.xl },
     screenTitle: {
-      fontSize: F.title - 2,
+      fontSize: Math.round(F.secondary * 0.85),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.text,
       flex: 1,
       textAlign: "center",
     },
     sectionLabel: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.textMuted,
       marginBottom: S.sm,
       textTransform: "uppercase",
       letterSpacing: 0.6,
     },
     stepExplain: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       color: C.textSubtle,
       marginTop: -4,
       marginBottom: S.md,
       lineHeight: 22,
     },
     inputFieldLabel: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "700",
+      fontFamily: Fonts.primary,
       color: C.textMuted,
       marginBottom: S.xs,
     },
     help: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       color: C.textSubtle,
       marginBottom: S.md,
       lineHeight: 22,
@@ -120,7 +126,8 @@ function createParkStyles(theme: ReturnType<typeof useValetTheme>, contentMaxWid
     primaryBtnText: {
       color: "#fff",
       fontWeight: "800",
-      fontSize: F.button,
+      fontFamily: Fonts.primary,
+      fontSize: Math.round(F.status * 0.65),
     },
     primaryBtnSticky: { marginTop: 0, marginBottom: 0 },
     footerSecondaryBtn: {
@@ -136,7 +143,8 @@ function createParkStyles(theme: ReturnType<typeof useValetTheme>, contentMaxWid
     footerSecondaryBtnText: {
       color: C.text,
       fontWeight: "800",
-      fontSize: F.button,
+      fontFamily: Fonts.primary,
+      fontSize: Math.round(F.status * 0.65),
     },
     input: {
       backgroundColor: C.card,
@@ -145,7 +153,8 @@ function createParkStyles(theme: ReturnType<typeof useValetTheme>, contentMaxWid
       borderRadius: R.button,
       paddingHorizontal: S.md,
       paddingVertical: 14,
-      fontSize: F.body,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       color: C.text,
       marginBottom: S.sm,
     },
@@ -206,7 +215,7 @@ function createParkStyles(theme: ReturnType<typeof useValetTheme>, contentMaxWid
       paddingTop: 12,
     },
     sectionTitle: {
-      fontSize: F.title - 2,
+      fontSize: F.secondary - 1,
       fontWeight: "800",
       color: C.text,
       marginBottom: S.xs,
@@ -242,7 +251,7 @@ function createParkStyles(theme: ReturnType<typeof useValetTheme>, contentMaxWid
       backgroundColor: theme.isDark ? "rgba(37, 99, 235, 0.2)" : "#DBEAFE",
     },
     slotLabel: {
-      fontSize: F.body,
+      fontSize: F.secondary - 1,
       fontWeight: "800",
       color: C.text,
     },

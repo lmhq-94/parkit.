@@ -59,7 +59,7 @@ export function WelcomeContent({
         logo: { marginBottom: 0 },
         valetLabel: {
           marginTop: 28,
-          fontSize: F.secondary,
+          fontSize: Math.round(F.status * 0.65),
           fontWeight: "600",
           letterSpacing: 4,
           color: a.authHeroValetLabel,
@@ -79,8 +79,8 @@ export function WelcomeContent({
           alignSelf: "center",
         },
         ctaText: {
-          fontSize: F.hero,
-          fontWeight: "600",
+          fontSize: Math.round(F.status * 0.65),
+          fontWeight: "800",
           color: a.text,
           marginBottom: 20,
           textAlign: "center",
@@ -99,7 +99,7 @@ export function WelcomeContent({
           elevation: 4,
         },
         btnPrimaryText: {
-          fontSize: F.button,
+          fontSize: Math.round(F.status * 0.65),
           fontWeight: "800",
           color: a.btnLoginText,
           letterSpacing: 0.5,
@@ -113,7 +113,7 @@ export function WelcomeContent({
           marginBottom: 0,
         },
         btnSecondaryText: {
-          fontSize: F.button,
+          fontSize: Math.round(F.status * 0.65),
           fontWeight: "800",
           color: a.btnSignupText,
           letterSpacing: 0.5,
@@ -121,7 +121,7 @@ export function WelcomeContent({
         btnPressed: { opacity: 0.9 },
         versionLabel: {
           marginTop: 24,
-          fontSize: Math.round(F.secondary * 0.7),
+          fontSize: Math.round(F.status * 0.65),
           fontWeight: "500",
           color: a.textMuted,
           textAlign: "center",
@@ -139,7 +139,7 @@ export function WelcomeContent({
         },
         dividerText: {
           marginHorizontal: 10,
-          fontSize: F.secondary,
+          fontSize: Math.round(F.status * 0.65),
           color: a.textMuted,
           fontWeight: '500',
         },

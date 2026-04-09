@@ -16,7 +16,6 @@ import { Redirect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useEffect, useState, useCallback, useRef } from "react";
 import React from "react";
-import { SquareParking } from "lucide-react-native";
 import { Logo } from "@parkit/shared";
 import api, { clearAuthToken } from "@/lib/api";
 import { useAuthStore, useLocaleStore, useCompanyStore, useParkingPreferenceStore, useAccessibilityStore } from "@/lib/store";
@@ -195,9 +194,7 @@ function HomeScreenContent() {
 
   const C = theme.colors;
   const firstName = user.firstName?.trim() || "";
-  const lastName = user.lastName?.trim() || "";
   const displayName = firstName || user.email?.split("@")[0]?.trim() || "—";
-  const initials = `${(firstName[0] || user.email?.[0] || "?").toUpperCase()}${(lastName[0] || user.email?.[1] || "").toUpperCase()}`;
   const avatarUri = user.avatarUrl?.trim() || null;
 
   const avatarPresenceColor = avatarPresenceRingColor(theme, statusKey);
@@ -275,7 +272,7 @@ function HomeScreenContent() {
           <View style={styles.heroToolbarWrap}>
             <View style={styles.heroToolbar}>
               <Logo
-                size={46}
+                size={32}
                 variant={theme.isDark ? "onDark" : "onLight"}
                 style={styles.heroLogo}
               />
@@ -298,7 +295,10 @@ function HomeScreenContent() {
                     </Text>
                   </View>
                   <Pressable
-                    style={styles.avatarWrapper}
+                    style={({ pressed }) => [
+                      styles.avatarWrapper,
+                      pressed && styles.avatarPressed,
+                    ]}
                     accessibilityLabel={`${t(locale, "home.profile")} — ${statusLabel}`}
                     accessibilityRole="button"
                     onPress={() => router.push("/profile")}
@@ -322,12 +322,16 @@ function HomeScreenContent() {
                             resizeMode="cover"
                           />
                         ) : (
-                          <Text
-                            style={[styles.headerAvatarInitials, { color: headerTextPrimary }]}
-                            maxFontSizeMultiplier={2}
-                          >
-                            {initials}
-                          </Text>
+                          <View style={{ 
+                            width: HEADER_AVATAR_SIZE, 
+                            height: HEADER_AVATAR_SIZE, 
+                            borderRadius: HEADER_AVATAR_SIZE / 2,
+                            backgroundColor: theme.isDark ? "rgba(148,163,184,0.15)" : "rgba(100,116,139,0.15)",
+                            alignItems: "center",
+                            justifyContent: "center"
+                          }}>
+                            <Ionicons name="person" size={HEADER_AVATAR_SIZE * 0.5} color={C.textMuted} />
+                          </View>
                         )}
                       </View>
                     </AvatarPulseView>
@@ -338,6 +342,13 @@ function HomeScreenContent() {
                     ]}>
                       {isAvailable && <View style={styles.statusDotInner} />}
                     </View>
+                    {(queueAlertCount ?? 0) > 0 && (
+                      <View style={styles.headerBadge}>
+                        <Text style={styles.headerBadgeText}>
+                          {queueAlertCount > 99 ? "99+" : queueAlertCount}
+                        </Text>
+                      </View>
+                    )}
                   </Pressable>
                 </View>
               </View>
@@ -352,7 +363,7 @@ function HomeScreenContent() {
               <View style={[styles.gridRowFill, { flex: 1 }]}>
                 <AnimatedGridTile
                   variant="queue"
-                  lucideIcon={SquareParking}
+                  icon="car-outline"
                   title={t(locale, "home.actionParkingQueue")}
                   sub={t(locale, "home.actionParkingQueueSub")}
                   onPress={() => router.push({ pathname: "/tickets", params: { queue: "parking" } })}
@@ -389,7 +400,7 @@ function HomeScreenContent() {
               <View style={[styles.gridRowFill, { flex: 1 }]}>
                 <AnimatedGridTile
                   variant="accent"
-                  lucideIcon={SquareParking}
+                  icon="car-outline"
                   title={t(locale, "home.actionReceive")}
                   sub={t(locale, "home.actionReceiveSub")}
                   onPress={() => router.push("/receive")}
@@ -602,7 +613,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
   const S = theme.space;
   const F = ticketsA11y.font;
   const R = theme.radius;
-  const compact = shortestSide < 380;
+  const Fonts = theme.fontFamily;
 
   return StyleSheet.create({
     safe: {
@@ -630,11 +641,11 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       ...Platform.select({
         ios: {
           shadowColor: "#0F172A",
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: theme.isDark ? 0.35 : 0.08,
-          shadowRadius: 16,
+          shadowOffset: { width: 0, height: 12 },
+          shadowOpacity: theme.isDark ? 0.45 : 0.12,
+          shadowRadius: 24,
         },
-        android: { elevation: theme.isDark ? 6 : 3 },
+        android: { elevation: theme.isDark ? 8 : 4 },
       }),
     },
     heroToolbarWrap: {
@@ -674,10 +685,11 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       maxWidth: "58%",
     },
     headerRoleBelow: {
-      fontSize: compact ? Math.round(F.secondary * 0.8) : Math.round(F.secondary * 0.85),
-      fontWeight: Platform.OS === "android" ? "normal" : "800",
-      fontFamily: "CalSans",
+      fontSize: Math.round(F.status * 0.65),
+      fontWeight: Platform.OS === "android" ? "normal" : "600",
+      fontFamily: Fonts.primary,
       textAlign: "right",
+      letterSpacing: 0.2,
     },
     /** Contenedor del avatar con dot de status */
     avatarWrapper: {
@@ -687,6 +699,9 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       alignItems: "center",
       justifyContent: "center",
       flexShrink: 0,
+    },
+    avatarPressed: {
+      transform: [{ scale: 0.96 }],
     },
     statusDotBadge: {
       position: "absolute",
@@ -734,15 +749,46 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       height: HEADER_AVATAR_SIZE,
     },
     headerAvatarInitials: {
-      fontSize: Math.round(F.secondary),
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
     },
     headerDisplayName: {
-      fontSize: compact ? Math.round(F.secondary) : Math.round(F.secondary * 1.1),
-      fontWeight: Platform.OS === "android" ? "normal" : "800",
-      fontFamily: "CalSans",
+      fontSize: Math.round(F.secondary * 0.85),
+      fontWeight: Platform.OS === "android" ? "normal" : "700",
+      fontFamily: Fonts.primary,
       textAlign: "right",
-      lineHeight: compact ? Math.round(F.secondary * 1.25) : Math.round(F.secondary * 1.4),
+      lineHeight: Math.round(F.secondary * 1.1),
+      letterSpacing: -0.3,
+    },
+    headerBadge: {
+      position: "absolute",
+      top: -4,
+      right: -4,
+      minWidth: 18,
+      height: 18,
+      borderRadius: 9,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 4,
+      backgroundColor: theme.isDark ? "#EF4444" : "#DC2626",
+      borderWidth: 1,
+      borderColor: theme.isDark ? "rgba(254, 202, 202, 0.45)" : "rgba(255,255,255,0.7)",
+      ...Platform.select({
+        ios: {
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.2,
+          shadowRadius: 1,
+        },
+        android: { elevation: 2 },
+      }),
+    },
+    headerBadgeText: {
+      color: "#fff",
+      fontSize: Math.round(F.status * 0.65),
+      fontWeight: "900",
+      fontFamily: Fonts.primary,
     },
     gridFlex: {
       flex: 1,
@@ -798,8 +844,9 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       }),
     },
     helpLogoutBtnText: {
-      fontSize: F.secondary - 1,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       textAlign: "center",
       flexShrink: 1,
     },
@@ -808,33 +855,58 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       minWidth: 0,
       minHeight: 0,
       position: "relative",
-      borderRadius: R.card + 4,
-      borderWidth: 2,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: theme.isDark ? "rgba(148, 163, 184, 0.12)" : "rgba(226, 232, 240, 0.9)",
       paddingVertical: isTablet ? S.lg : S.md + 2,
       paddingHorizontal: isTablet ? S.md : S.sm + 2,
       justifyContent: "center",
       alignItems: "center",
+      backgroundColor: theme.isDark ? "rgba(30, 41, 59, 0.5)" : "rgba(255, 255, 255, 0.85)",
       ...Platform.select({
         ios: {
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 3 },
-          shadowOpacity: theme.isDark ? 0.35 : 0.12,
-          shadowRadius: 10,
+          shadowColor: "#0F172A",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: theme.isDark ? 0.35 : 0.08,
+          shadowRadius: 14,
         },
-        android: { elevation: theme.isDark ? 5 : 4 },
+        android: {
+          elevation: theme.isDark ? 5 : 3,
+        },
       }),
     },
-    tileAccent: { backgroundColor: C.card, borderColor: C.border, borderWidth: 2 },
-    tileWarm: { backgroundColor: C.card, borderColor: C.border, borderWidth: 2 },
-    tileQueue: { backgroundColor: C.card, borderColor: C.border, borderWidth: 2 },
-    tileBooking: { backgroundColor: C.card, borderColor: C.border, borderWidth: 2 },
-    tileProfile: { backgroundColor: C.card, borderColor: C.border, borderWidth: 2 },
-    tileSettings: { backgroundColor: C.card, borderColor: C.border, borderWidth: 2 },
-    tileWorkflow: { backgroundColor: C.card, borderColor: C.border, borderWidth: 1 },
+    tileAccent: {
+      backgroundColor: theme.isDark ? "rgba(30, 41, 59, 0.55)" : "rgba(255, 255, 255, 0.9)",
+      borderColor: theme.isDark ? "rgba(37, 99, 235, 0.3)" : "rgba(29, 78, 216, 0.15)",
+    },
+    tileWarm: {
+      backgroundColor: theme.isDark ? "rgba(30, 41, 59, 0.55)" : "rgba(255, 255, 255, 0.9)",
+      borderColor: theme.isDark ? "rgba(249, 115, 22, 0.3)" : "rgba(194, 65, 12, 0.15)",
+    },
+    tileQueue: {
+      backgroundColor: theme.isDark ? "rgba(30, 41, 59, 0.55)" : "rgba(255, 255, 255, 0.9)",
+      borderColor: theme.isDark ? "rgba(129, 140, 248, 0.3)" : "rgba(67, 56, 202, 0.15)",
+    },
+    tileBooking: {
+      backgroundColor: theme.isDark ? "rgba(30, 41, 59, 0.55)" : "rgba(255, 255, 255, 0.9)",
+      borderColor: theme.isDark ? "rgba(45, 212, 191, 0.3)" : "rgba(13, 148, 136, 0.15)",
+    },
+    tileProfile: {
+      backgroundColor: theme.isDark ? "rgba(30, 41, 59, 0.55)" : "rgba(255, 255, 255, 0.9)",
+      borderColor: theme.isDark ? "rgba(192, 132, 252, 0.3)" : "rgba(124, 58, 237, 0.15)",
+    },
+    tileSettings: {
+      backgroundColor: theme.isDark ? "rgba(30, 41, 59, 0.55)" : "rgba(255, 255, 255, 0.9)",
+      borderColor: theme.isDark ? "rgba(148, 163, 184, 0.25)" : "rgba(51, 65, 85, 0.15)",
+    },
+    tileWorkflow: {
+      backgroundColor: theme.isDark ? "rgba(30, 41, 59, 0.45)" : "rgba(255, 255, 255, 0.8)",
+      borderColor: theme.isDark ? "rgba(6, 182, 212, 0.25)" : "rgba(14, 116, 144, 0.15)",
+    },
     tileIconWrap: {
-      width: 52,
-      height: 52,
-      borderRadius: 16,
+      width: 56,
+      height: 56,
+      borderRadius: 28,
       alignItems: "center",
       justifyContent: "center",
       marginBottom: S.sm + 2,
@@ -870,18 +942,20 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       letterSpacing: 0.2,
     },
     tileTitle: {
-      fontSize: compact ? F.secondary + 2 : isTablet ? F.body + 1 : F.body,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: Platform.OS === "android" ? "normal" : "800",
+      fontFamily: Fonts.primary,
       color: C.text,
       marginBottom: 4,
       textAlign: "center",
       width: "100%",
     },
     tileSub: {
-      fontSize: compact ? Math.round(F.secondary * 0.75) : isTablet ? Math.round(F.secondary * 0.85) : Math.round(F.secondary * 0.8),
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "600",
+      fontFamily: Fonts.primary,
       color: C.textMuted,
-      lineHeight: compact ? Math.round(F.secondary * 0.95) : isTablet ? Math.round(F.secondary * 1.15) : Math.round(F.secondary * 1.05),
+      lineHeight: Math.round(F.status * 0.85),
       textAlign: "center",
       width: "100%",
     },
@@ -931,8 +1005,8 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     bottomTitle: {
       fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.textMuted,
-      textTransform: "uppercase",
       letterSpacing: 0.6,
       flex: 1,
       minWidth: 0,
@@ -946,12 +1020,14 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       flexShrink: 0,
     },
     bottomChooseBtnText: {
-      fontSize: Math.round(F.secondary * 0.7),
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
     },
     bottomManualHint: {
       fontSize: Math.round(F.status * 0.65),
       fontWeight: "700",
+      fontFamily: Fonts.primary,
       marginBottom: 4,
     },
     bottomUseNearestBtn: {
@@ -960,28 +1036,33 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       paddingVertical: 4,
     },
     bottomUseNearestText: {
-      fontSize: Math.round(F.secondary * 0.75),
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
     },
     bottomName: {
-      fontSize: F.secondary - 1,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.text,
     },
     bottomCompany: {
       fontSize: Math.round(F.status * 0.65),
       fontWeight: "600",
+      fontFamily: Fonts.primary,
       color: C.textMuted,
       marginTop: 2,
     },
     bottomMeta: {
-      fontSize: Math.round(F.status * 0.7),
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "700",
+      fontFamily: Fonts.primary,
       color: C.primary,
       marginTop: 2,
     },
     bottomAddr: {
       fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       color: C.textSubtle,
       marginTop: 4,
       lineHeight: Math.round(F.status * 0.95),
@@ -1010,11 +1091,11 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       paddingBottom: S.lg,
     },
     modalTitle: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: Platform.OS === "android" ? "normal" : "800",
+      fontFamily: Fonts.primary,
       textAlign: "center",
       marginBottom: S.sm,
-      fontFamily: "CalSans",
     },
     modalList: {
       maxHeight: 300,
@@ -1024,11 +1105,13 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       borderBottomWidth: StyleSheet.hairlineWidth,
     },
     parkingRowName: {
-      fontSize: F.secondary - 1,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
     },
     parkingRowAddr: {
-      fontSize: Math.round(F.status * 0.7),
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       marginTop: 4,
       lineHeight: Math.round(F.status * 0.95),
     },

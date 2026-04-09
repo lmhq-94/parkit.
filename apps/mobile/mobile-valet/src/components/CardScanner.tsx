@@ -7,9 +7,9 @@ import {
   ActivityIndicator,
   useWindowDimensions,
   Platform,
+  Modal,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
@@ -21,12 +21,15 @@ import { ValetBackButton } from '@/components/ValetBackButton';
 interface CardScannerProps {
   locale: Locale;
   isDark: boolean;
+  visible: boolean;
+  onClose: () => void;
   onCardScanned: (cardData: {
     number: string;
     expiryMonth: string;
     expiryYear: string;
   }) => void;
   onCancel: () => void;
+  embedded?: boolean;
   colors: {
     primary: string;
     text: string;
@@ -39,6 +42,7 @@ interface CardScannerProps {
     body: number;
     button: number;
     title: number;
+    status: number;
   };
   space: {
     sm: number;
@@ -50,9 +54,11 @@ interface CardScannerProps {
 export function CardScanner({
   locale,
   isDark,
+  visible,
+  onClose,
   onCardScanned,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onCancel,
+  embedded = false,
   colors: C,
   fonts: F,
   space: S,
@@ -83,13 +89,13 @@ export function CardScanner({
       paddingHorizontal: S.lg,
       paddingVertical: S.md,
       borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: C.border,
-      backgroundColor: C.card,
+      borderBottomColor: 'rgba(255,255,255,0.1)',
+      backgroundColor: '#020617',
     },
     screenTitle: {
-      fontSize: F.title - 2,
+      fontSize: F.secondary - 1,
       fontWeight: '800',
-      color: C.text,
+      color: '#F8FAFC',
       flex: 1,
       textAlign: 'center',
     },
@@ -111,7 +117,7 @@ export function CardScanner({
       ...StyleSheet.absoluteFillObject,
     },
     headerTitle: {
-      fontSize: F.title,
+      fontSize: F.secondary - 1,
       fontWeight: '800',
       color: '#F8FAFC',
       letterSpacing: -0.5,
@@ -250,54 +256,77 @@ export function CardScanner({
     primaryBtnText: {
       color: '#fff',
       fontWeight: '800',
-      fontSize: F.button,
+      fontSize: F.secondary - 1,
     },
     pressed: {
       opacity: 0.9,
     },
-    permissionContainer: {
+    permissionOverlay: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: S.lg,
-      backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+      justifyContent: 'flex-end',
     },
-    permissionIconWrap: {
-      width: 72,
-      height: 72,
-      borderRadius: 36,
-      overflow: 'hidden',
+    permissionSheet: {
+      backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      paddingTop: S.md,
+      paddingHorizontal: S.md,
+      paddingBottom: Math.max(S.lg, safeInsets.bottom + S.md),
+      ...Platform.select({
+        ios: {
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 20,
+        },
+        android: { elevation: 16 },
+      }),
+    },
+    permissionSheetHeader: {
       alignItems: 'center',
-      justifyContent: 'center',
+      paddingVertical: S.md,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: isDark ? 'rgba(148, 163, 184, 0.2)' : 'rgba(203, 213, 225, 0.5)',
       marginBottom: S.sm,
     },
-    permissionTitle: {
-      fontSize: F.body,
+    permissionSheetTitle: {
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: '800',
       color: C.text,
-      textAlign: 'center',
+    },
+    permissionCancelBtn: {
+      backgroundColor: isDark ? 'rgba(148, 163, 184, 0.15)' : 'rgba(241, 245, 249, 0.8)',
+      borderRadius: 14,
+      paddingVertical: S.md,
+      alignItems: 'center',
       marginBottom: S.sm,
     },
-    permissionText: {
-      fontSize: F.body,
-      color: C.textMuted,
-      textAlign: 'center',
-      marginBottom: S.md,
-      lineHeight: 22,
-    },
-    permissionBtn: {
-      position: 'relative',
-      paddingVertical: S.md,
-      paddingHorizontal: S.lg * 2,
-      borderRadius: 14,
-      overflow: 'hidden',
-      minWidth: 200,
-      alignItems: 'center',
-    },
-    permissionBtnText: {
-      color: '#fff',
+    permissionCancelText: {
+      fontSize: Math.round(F.status * 0.6),
       fontWeight: '800',
-      fontSize: F.secondary,
+      color: C.text,
+    },
+    permissionActionBtn: {
+      backgroundColor: C.primary,
+      borderRadius: 14,
+      paddingVertical: S.md,
+      alignItems: 'center',
+      marginBottom: S.sm,
+    },
+    permissionActionText: {
+      fontSize: Math.round(F.status * 0.6),
+      fontWeight: '800',
+      color: '#fff',
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'flex-end',
+    },
+    modalContent: {
+      flex: 1,
+      overflow: 'hidden',
     },
   });
 
@@ -386,11 +415,17 @@ export function CardScanner({
     }
   }, [cameraRef, scanning, extractCardData, locale]);
 
+  const handleCancel = useCallback(() => {
+    onCancel();
+    onClose();
+  }, [onCancel, onClose]);
+
   const handleVerify = useCallback(() => {
     if (scannedCardData) {
       onCardScanned(scannedCardData);
+      onClose();
     }
-  }, [scannedCardData, onCardScanned]);
+  }, [scannedCardData, onCardScanned, onClose]);
 
   // Auto-scan effect: escanea automáticamente cada 2 segundos
   useEffect(() => {
@@ -403,56 +438,52 @@ export function CardScanner({
     return () => clearInterval(interval);
   }, [permission?.granted, scanning, scannedCardData, handleScan]);
 
-  if (!permission?.granted) {
-    return (
-      <View style={styles.permissionContainer}>
-        <View style={styles.permissionIconWrap}>
-          <LinearGradient
-            colors={['rgba(59, 130, 246, 0.35)', 'rgba(59, 130, 246, 0.15)']}
-            style={StyleSheet.absoluteFill}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          />
-          <Ionicons name="camera-outline" size={36} color={C.primary} />
+  if (!visible) return null;
+
+  const permissionContent = !permission?.granted ? (
+    <View style={styles.permissionOverlay}>
+      <View style={styles.permissionSheet}>
+        <View style={styles.permissionSheetHeader}>
+          <Text style={styles.permissionSheetTitle}>
+            {t(locale, 'receive.cameraPermissionNeeded')}
+          </Text>
         </View>
-        <Text style={styles.permissionTitle}>
-          {t(locale, 'receive.cameraPermissionNeeded')}
-        </Text>
-        <Text style={styles.permissionText}>
-          {t(locale, 'receive.qrPermissionExplain')}
-        </Text>
         <Pressable
-          style={({ pressed }) => [styles.permissionBtn, pressed && { opacity: 0.92 }]}
+          style={({ pressed }) => [styles.permissionActionBtn, pressed && { opacity: 0.9 }]}
           onPress={requestPermission}
         >
-          <LinearGradient
-            colors={[C.primary, C.primary]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFill}
-          />
-          <Text style={styles.permissionBtnText}>
+          <Text style={styles.permissionActionText}>
             {t(locale, 'common.allow')}
           </Text>
         </Pressable>
+        <Pressable
+          style={({ pressed }) => [styles.permissionCancelBtn, pressed && { opacity: 0.8 }]}
+          onPress={handleCancel}
+        >
+          <Text style={styles.permissionCancelText}>
+            {t(locale, 'common.cancel')}
+          </Text>
+        </Pressable>
       </View>
-    );
-  }
+    </View>
+  ) : null;
 
-  return (
-    <View style={styles.container}>
-      <View style={[styles.screenHeader, { paddingTop: safeInsets.top + S.md }]}>
-        <ValetBackButton
-          onPress={onCancel}
-          accessibilityLabel={t(locale, 'common.back')}
-        />
-        <Text style={styles.screenTitle}>
-          {t(locale, 'receive.wizardCardTitle')}
-        </Text>
-        <View style={{ width: 44 }} />
-      </View>
+  const scannerContent = permission?.granted ? (
+    <View style={[styles.container, embedded && { backgroundColor: isDark ? '#0F172A' : '#FFFFFF' }]}>
+      {!embedded && (
+        <View style={[styles.screenHeader, { paddingTop: safeInsets.top + S.md }]}>
+          <ValetBackButton
+            onPress={handleCancel}
+            accessibilityLabel={t(locale, 'common.back')}
+          />
+          <Text style={styles.screenTitle}>
+            {t(locale, 'receive.wizardCardTitle')}
+          </Text>
+          <View style={{ width: 44 }} />
+        </View>
+      )}
 
-      <View style={styles.cameraArea}>
+      <View style={[styles.cameraArea, embedded && { borderRadius: 16, overflow: 'hidden', margin: S.md }]}>
         <CameraView
           ref={cameraRef}
           style={StyleSheet.absoluteFill}
@@ -467,25 +498,29 @@ export function CardScanner({
           pointerEvents="none"
         />
 
-        {/* Header con título y subtítulo */}
-        <View style={styles.headerOverlay} pointerEvents="none">
-          <LinearGradient
-            colors={['rgba(2,6,23,0.92)', 'rgba(2,6,23,0)']}
-            style={styles.headerGradient}
-            pointerEvents="none"
-          />
-          <Text style={styles.headerTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>
-            {t(locale, 'receive.cardScannerTitle')}
-          </Text>
-          <Text style={styles.headerSubtitle} numberOfLines={2}>
-            {t(locale, 'receive.cardScannerSubtitle')}
-          </Text>
-        </View>
+        {!embedded && (
+          <>
+            {/* Header con título y subtítulo */}
+            <View style={styles.headerOverlay} pointerEvents="none">
+              <LinearGradient
+                colors={['rgba(2,6,23,0.92)', 'rgba(2,6,23,0)']}
+                style={styles.headerGradient}
+                pointerEvents="none"
+              />
+              <Text style={styles.headerTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>
+                {t(locale, 'receive.cardScannerTitle')}
+              </Text>
+              <Text style={styles.headerSubtitle} numberOfLines={2}>
+                {t(locale, 'receive.cardScannerSubtitle')}
+              </Text>
+            </View>
 
-        {/* Scanner frame - solo silueta de tarjeta */}
-        <View style={styles.scannerContainer} pointerEvents="none">
-          <View style={styles.cardFrame} />
-        </View>
+            {/* Scanner frame - solo silueta de tarjeta */}
+            <View style={styles.scannerContainer} pointerEvents="none">
+              <View style={styles.cardFrame} />
+            </View>
+          </>
+        )}
 
         {/* Fake card preview - solo aparece después de escanear */}
         {scannedCardData && (
@@ -497,13 +532,13 @@ export function CardScanner({
               </Text>
               <View style={styles.fakeCardRow}>
                 <View>
-                  <Text style={styles.fakeCardLabel}>Titular</Text>
+                  <Text style={styles.fakeCardLabel}>{t(locale, 'receive.cardHolderLabel')}</Text>
                   <Text style={[styles.fakeCardValue, styles.fakeCardValueScanned]}>
-                    NOMBRE APELLIDO
+                    {t(locale, 'receive.cardHolderPlaceholder')}
                   </Text>
                 </View>
                 <View>
-                  <Text style={styles.fakeCardLabel}>Vence</Text>
+                  <Text style={styles.fakeCardLabel}>{t(locale, 'receive.cardExpiresLabel')}</Text>
                   <Text style={[styles.fakeCardValue, styles.fakeCardValueScanned]}>
                     {scannedCardData.expiryMonth}/{scannedCardData.expiryYear.slice(-2)}
                   </Text>
@@ -519,38 +554,61 @@ export function CardScanner({
           </View>
         )}
 
-        <View style={styles.guideTextContainer} pointerEvents="none">
+        <View style={[styles.guideTextContainer, embedded && { top: '65%' }]} pointerEvents="none">
           <Text style={styles.guideText}>
             {guideText}
           </Text>
         </View>
       </View>
 
-      <StickyFormFooter keyboardPinned>
-        <View style={styles.footerRow}>
-          <Pressable
-            style={({ pressed }) => [
-              styles.primaryBtn,
-              styles.footerPrimaryBtn,
-              (!scannedCardData || scanning) && styles.primaryBtnDisabled,
-              pressed && styles.pressed,
-            ]}
-            onPress={handleVerify}
-            disabled={!scannedCardData || scanning}
-            accessibilityLabel={t(locale, 'receive.verifyCardButton')}
-          >
-            <LinearGradient
-              colors={[C.primary, C.primary]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            />
-            <Text style={styles.primaryBtnText}>
-              {t(locale, 'receive.verifyCardButton')}
-            </Text>
-          </Pressable>
-        </View>
-      </StickyFormFooter>
+      {!embedded && (
+        <StickyFormFooter keyboardPinned backgroundColor="#020617" borderColor="rgba(255,255,255,0.1)">
+          <View style={styles.footerRow}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.primaryBtn,
+                styles.footerPrimaryBtn,
+                (!scannedCardData || scanning) && styles.primaryBtnDisabled,
+                pressed && styles.pressed,
+              ]}
+              onPress={handleVerify}
+              disabled={!scannedCardData || scanning}
+              accessibilityLabel={t(locale, 'receive.verifyCardButton')}
+            >
+              <LinearGradient
+                colors={[C.primary, C.primary]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <Text style={styles.primaryBtnText}>
+                {t(locale, 'receive.verifyCardButton')}
+              </Text>
+            </Pressable>
+          </View>
+        </StickyFormFooter>
+      )}
     </View>
+  ) : null;
+
+  if (embedded) {
+    if (!visible) return null;
+    return permissionContent || scannerContent;
+  }
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={handleCancel}
+      statusBarTranslucent
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          {permissionContent || scannerContent}
+        </View>
+      </View>
+    </Modal>
   );
 }

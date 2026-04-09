@@ -166,12 +166,13 @@ export const valetStaticTokens = {
     button: fontSize(19),
     status: fontSize(16),
   },
+  fontFamily: {
+    primary: "CalSans",
+    secondary: "System",
+  } as const,
 } as const;
 
-/**
- * Pantalla de trabajo (tickets): botones y texto más grandes para reducir errores
- * (personas con menos práctica con el móvil o visión reducida).
- */
+
 export const ticketsA11y = {
   minTouch: 60,
   font: {
@@ -231,7 +232,6 @@ export function useResponsiveLayout() {
   );
 }
 
-/** Píldoras de estado en tickets: variantes por tema */
 export function statusVisuals(
   status: "assigned" | "in-transit" | "completed",
   isDark: boolean

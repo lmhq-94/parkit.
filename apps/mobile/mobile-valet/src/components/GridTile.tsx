@@ -1,5 +1,6 @@
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useValetTheme } from "@/theme/valetTheme";
 import type { ComponentType } from "react";
 import {
   parkitTilePalette,
@@ -57,6 +58,8 @@ export function GridTile(props: GridTileProps) {
     styles,
     isDark,
   } = props;
+  const theme = useValetTheme();
+  const Fonts = theme.fontFamily;
   const P = parkitTilePalette(isDark);
   const iconColor = tileIconHex(variant, P);
   const iconBubbleBg = isDark ? TILE_ICON_BG_DARK[variant] : TILE_ICON_BG_LIGHT[variant];
@@ -95,7 +98,7 @@ export function GridTile(props: GridTileProps) {
         style={[
           styles.tileTitle,
           {
-            fontFamily: "CalSans",
+            fontFamily: Fonts.primary,
           },
         ]}
         numberOfLines={2}

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useValetTheme, ticketsA11y } from "@/theme/valetTheme";
 import { useLocaleStore } from "@/lib/store";
@@ -29,10 +29,10 @@ export function WorkflowTile({ styles: parentStyles, isDark, textScale }: Workfl
   const locale = useLocaleStore((s) => s.locale);
   const C = theme.colors;
   const F = ticketsA11y.font;
+  const Fonts = theme.fontFamily;
   const P = parkitTilePalette(isDark);
 
   const [status, setStatus] = useState<WorkflowStatus | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -48,7 +48,7 @@ export function WorkflowTile({ styles: parentStyles, isDark, textScale }: Workfl
           lastUpdated: new Date().toISOString(),
         });
       } finally {
-        setLoading(false);
+        // No loading indicator needed
       }
     };
 
@@ -58,27 +58,25 @@ export function WorkflowTile({ styles: parentStyles, isDark, textScale }: Workfl
     return () => clearInterval(interval);
   }, []);
 
-  const fontSize = Math.round(F.secondary * textScale);
-  const smallFont = Math.round(F.status * 0.75 * textScale);
+  const baseFontSize = Math.round(F.status * 0.65 * textScale);
 
   return (
     <View style={[parentStyles.tile, parentStyles.tileWorkflow, localStyles.container]}>
       <View style={localStyles.header}>
         <View style={[localStyles.iconWrap, { backgroundColor: isDark ? "#1E293B" : "#F1F5F9" }]}>
-          <Ionicons name="git-branch-outline" size={20} color={P.workflow} />
+          <Ionicons name="pulse" size={20} color={P.workflow} />
         </View>
-        <Text style={[localStyles.title, { color: C.text, fontSize }]} numberOfLines={1}>
+        <Text style={[localStyles.title, { color: C.text, fontSize: baseFontSize, fontFamily: Fonts.primary }]} numberOfLines={1}>
           {t(locale, "home.workflowTitle")}
         </Text>
-        {loading && <ActivityIndicator size="small" color={C.primary} style={localStyles.loader} />}
       </View>
 
       <View style={localStyles.statsRow}>
         <View style={localStyles.stat}>
-          <Text style={[localStyles.statValue, { color: P.workflow }]}>
+          <Text style={[localStyles.statValue, { color: P.workflow, fontSize: baseFontSize }]}>
             {status?.activeProcesses ?? "—"}
           </Text>
-          <Text style={[localStyles.statLabel, { color: C.textMuted, fontSize: smallFont }]}>
+          <Text style={[localStyles.statLabel, { color: C.textMuted, fontSize: baseFontSize }]}>
             {t(locale, "home.active")}
           </Text>
         </View>
@@ -86,10 +84,10 @@ export function WorkflowTile({ styles: parentStyles, isDark, textScale }: Workfl
         <View style={[localStyles.divider, { backgroundColor: C.border }]} />
 
         <View style={localStyles.stat}>
-          <Text style={[localStyles.statValue, { color: C.text }]}>
+          <Text style={[localStyles.statValue, { color: C.text, fontSize: baseFontSize }]}>
             {status?.completedToday ?? "—"}
           </Text>
-          <Text style={[localStyles.statLabel, { color: C.textMuted, fontSize: smallFont }]}>
+          <Text style={[localStyles.statLabel, { color: C.textMuted, fontSize: baseFontSize }]}>
             {t(locale, "home.completed")}
           </Text>
         </View>
@@ -97,17 +95,17 @@ export function WorkflowTile({ styles: parentStyles, isDark, textScale }: Workfl
         <View style={[localStyles.divider, { backgroundColor: C.border }]} />
 
         <View style={localStyles.stat}>
-          <Text style={[localStyles.statValue, { color: C.primary }]}>
+          <Text style={[localStyles.statValue, { color: C.primary, fontSize: baseFontSize }]}>
             {status?.pendingTasks ?? "—"}
           </Text>
-          <Text style={[localStyles.statLabel, { color: C.textMuted, fontSize: smallFont }]}>
+          <Text style={[localStyles.statLabel, { color: C.textMuted, fontSize: baseFontSize }]}>
             {t(locale, "home.pending")}
           </Text>
         </View>
       </View>
 
       <View style={[localStyles.footer, { borderTopColor: C.border }]}>
-        <Text style={[localStyles.footerText, { color: C.textMuted, fontSize: smallFont }]}>
+        <Text style={[localStyles.footerText, { color: C.textMuted, fontSize: baseFontSize }]}>
           {status?.lastUpdated
             ? `${t(locale, "home.lastUpdate")}: ${new Date(status.lastUpdated).toLocaleTimeString()}`
             : t(locale, "home.workflowEmpty")}
@@ -156,7 +154,6 @@ const localStyles = StyleSheet.create({
     minWidth: 60,
   },
   statValue: {
-    fontSize: 24,
     fontWeight: "800",
   },
   statLabel: {

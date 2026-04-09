@@ -85,7 +85,7 @@ export function TicketCodeForm({
 const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '800',
     color: '#64748B',
     marginBottom: 8,
     textTransform: 'uppercase',

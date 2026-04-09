@@ -31,7 +31,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native";
 import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
-import { Users, Car } from "lucide-react-native";
 import { STAFF_ROLES, type StaffRole } from "@/lib/staffRoles";
 
 const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
@@ -139,8 +138,8 @@ export default function LoginScreen() {
           justifyContent: "flex-start",
         },
         cardHeadline: {
-          fontSize: F.title,
-          fontWeight: "700",
+          fontSize: Math.round(F.secondary * 0.85),
+          fontWeight: "800",
           color: a.text,
           marginBottom: 4,
           letterSpacing: -0.4,
@@ -153,7 +152,7 @@ export default function LoginScreen() {
           marginBottom: 40,
         },
         inputBlock: { marginBottom: 12 },
-        label: { fontSize: Math.round(F.secondary * 0.8), fontWeight: "600", color: a.textSecondary, marginBottom: 6 },
+        label: { fontSize: Math.round(F.status * 0.65), fontWeight: "800", color: a.textSecondary, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.6 },
         inputRow: {
           flexDirection: "row",
           alignItems: "center",
@@ -165,12 +164,12 @@ export default function LoginScreen() {
           paddingLeft: 16,
           paddingRight: 14,
         },
-        input: { flex: 1, paddingVertical: 12, fontSize: F.body, color: a.text },
+        input: { flex: 1, paddingVertical: 12, fontSize: Math.round(F.status * 0.65), color: a.text },
         passwordInput: { paddingRight: 10 },
         inputIconRight: { marginLeft: 10 },
         eyeWrap: { padding: 4, marginLeft: 6 },
         forgotWrap: { alignSelf: "flex-end", marginTop: 8, marginBottom: 20 },
-        forgot: { fontSize: Math.round(F.secondary * 0.75), fontWeight: "600", color: a.linkAccent },
+        forgot: { fontSize: Math.round(F.status * 0.65), fontWeight: "600", color: a.linkAccent },
         errorWrap: {
           flexDirection: "row",
           alignItems: "center",
@@ -181,7 +180,7 @@ export default function LoginScreen() {
           borderRadius: 12,
           marginBottom: 12,
         },
-        errorText: { color: a.errorText, fontSize: F.secondary, fontWeight: "500" },
+        errorText: { color: a.errorText, fontSize: Math.round(F.status * 0.65), fontWeight: "500" },
         loginBtn: {
           minHeight: CONTROL_HEIGHT,
           borderRadius: 16,
@@ -214,7 +213,7 @@ export default function LoginScreen() {
             android: { elevation: 0 },
           }),
         },
-        loginBtnText: { fontSize: F.button, fontWeight: "800", color: "#FFFFFF", letterSpacing: 0.5 },
+        loginBtnText: { fontSize: Math.round(F.status * 0.65), fontWeight: "800", color: "#FFFFFF", letterSpacing: 0.5 },
         btnPressed: { opacity: 0.92 },
         btnDisabled: { opacity: 0.7 },
         footer: {
@@ -227,8 +226,8 @@ export default function LoginScreen() {
           paddingTop: 22,
           paddingBottom: 18,
         },
-        footerText: { fontSize: Math.round(F.secondary * 0.75), color: a.textMuted },
-        footerLink: { fontSize: Math.round(F.secondary * 0.8), fontWeight: "600", color: a.linkAccent },
+        footerText: { fontSize: Math.round(F.status * 0.65), color: a.textMuted },
+        footerLink: { fontSize: Math.round(F.status * 0.65), fontWeight: "800", color: a.linkAccent },
         modalOverlay: {
           flex: 1,
           justifyContent: "flex-end",
@@ -247,7 +246,7 @@ export default function LoginScreen() {
           paddingBottom: 12,
         },
         modalTitle: {
-          fontSize: F.body,
+          fontSize: Math.round(F.status * 0.65),
           fontWeight: "800",
           textAlign: "center",
           marginBottom: 10,
@@ -264,7 +263,7 @@ export default function LoginScreen() {
           borderBottomWidth: StyleSheet.hairlineWidth,
         },
         optionText: {
-          fontSize: F.body,
+          fontSize: Math.round(F.status * 0.65),
           color: a.text,
           fontWeight: "600",
         },
@@ -307,7 +306,7 @@ export default function LoginScreen() {
           marginBottom: 4,
         },
         roleTitle: {
-          fontSize: Math.round(F.secondary * 0.7),
+          fontSize: Math.round(F.status * 0.65),
           fontWeight: "800",
           color: a.textMuted,
           textTransform: "uppercase",
@@ -322,20 +321,20 @@ export default function LoginScreen() {
           paddingHorizontal: 8,
         },
         roleChooseBtnText: {
-          fontSize: Math.round(F.secondary * 0.75),
+          fontSize: Math.round(F.status * 0.7),
           fontWeight: "800",
           color: a.linkAccent,
         },
         roleName: {
-          fontSize: F.body,
+          fontSize: Math.round(F.status * 0.65),
           fontWeight: "800",
           color: a.text,
         },
         roleDescription: {
-          fontSize: Math.round(F.secondary * 0.75),
+          fontSize: Math.round(F.status * 0.7),
           color: a.textSecondary,
           marginTop: 4,
-          lineHeight: Math.round(F.secondary),
+          lineHeight: Math.round(F.status * 0.95),
         },
         // Role Modal List Styles
         roleRow: {
@@ -350,15 +349,15 @@ export default function LoginScreen() {
           marginRight: 12,
         },
         roleRowName: {
-          fontSize: F.body,
+          fontSize: Math.round(F.status * 0.65),
           fontWeight: "800",
           color: a.text,
         },
         roleRowDescription: {
-          fontSize: Math.round(F.secondary * 0.75),
+          fontSize: Math.round(F.status * 0.7),
           color: a.textMuted,
           marginTop: 2,
-          lineHeight: Math.round(F.secondary),
+          lineHeight: Math.round(F.status * 0.95),
         },
       }),
     [a, heroMinHeight, horizontalPadding, sheetMaxWidth, isDark, height, F]
@@ -552,7 +551,7 @@ export default function LoginScreen() {
               style={styles.backBtn}
               hitSlop={12}
             >
-              <Ionicons name="chevron-back" size={24} color={a.authHeroBackBtnIcon} />
+              <Ionicons name="chevron-back" size={20} color={a.authHeroBackBtnIcon} />
             </TouchableOpacity>
           </View>
 
@@ -672,7 +671,7 @@ export default function LoginScreen() {
                       autoCorrect={false}
                       autoComplete="email"
                     />
-                    <Ionicons name="mail-outline" size={20} color={ph} style={styles.inputIconRight} />
+                    <Ionicons name="mail-outline" size={16} color={ph} style={styles.inputIconRight} />
                   </View>
                 </View>
 
@@ -699,7 +698,7 @@ export default function LoginScreen() {
                       autoComplete="password"
                     />
                     <TouchableOpacity onPress={() => setShowPassword((v) => !v)} hitSlop={8} style={styles.eyeWrap}>
-                      <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={22} color={ph} />
+                      <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={18} color={ph} />
                     </TouchableOpacity>
                   </View>
                   {mode === "login" ? (
@@ -727,9 +726,9 @@ export default function LoginScreen() {
                       <View style={styles.roleCardInner}>
                         <View style={styles.roleIconWrap}>
                           {staffRole === "RECEPTIONIST" ? (
-                            <Users size={22} color={a.linkAccent} strokeWidth={2.5} />
+                            <Ionicons name="people-outline" size={18} color={a.linkAccent} />
                           ) : (
-                            <Car size={22} color={a.linkAccent} strokeWidth={2.5} />
+                            <Ionicons name="car-outline" size={18} color={a.linkAccent} />
                           )}
                         </View>
                         <View style={styles.roleTextCol}>
@@ -750,7 +749,7 @@ export default function LoginScreen() {
                           </Text>
                         </View>
                         <View style={{ alignSelf: "center", marginLeft: 8 }}>
-                          <Ionicons name="chevron-forward" size={20} color={a.textMuted} />
+                          <Ionicons name="chevron-forward" size={16} color={a.textMuted} />
                         </View>
                       </View>
                     </Pressable>
@@ -806,7 +805,7 @@ export default function LoginScreen() {
                                     </Text>
                                   </View>
                                   {active ? (
-                                    <Ionicons name="checkmark-circle" size={24} color={a.linkAccent} />
+                                    <Ionicons name="checkmark-circle" size={20} color={a.linkAccent} />
                                   ) : null}
                                 </Pressable>
                               );
@@ -820,7 +819,7 @@ export default function LoginScreen() {
 
                 {error ? (
                   <View style={styles.errorWrap}>
-                    <Ionicons name="alert-circle" size={18} color={a.errorText} />
+                    <Ionicons name="alert-circle" size={14} color={a.errorText} />
                     <Text style={styles.errorText}>{error}</Text>
                   </View>
                 ) : null}

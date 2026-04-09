@@ -19,6 +19,17 @@ interface VehicleInfoFormProps {
   onColorPress?: () => void;
   colors: {
     textSubtle: string;
+    textMuted: string;
+    card: string;
+    border: string;
+    text: string;
+  };
+  fonts: {
+    secondary: number;
+  };
+  space: {
+    sm: number;
+    md: number;
   };
 }
 
@@ -36,10 +47,53 @@ export function VehicleInfoForm({
   onModelPress,
   onColorPress,
   colors: C,
+  fonts: F,
+  space: S,
 }: VehicleInfoFormProps) {
+  const styles = StyleSheet.create({
+    stepExplain: {
+      fontSize: Math.round(F.secondary * 0.65),
+      fontWeight: '600',
+      color: C.textMuted,
+      marginBottom: S.md,
+      lineHeight: 22,
+    },
+    input: {
+      backgroundColor: C.card,
+      borderRadius: 14,
+      paddingHorizontal: S.md,
+      paddingVertical: 14,
+      fontSize: Math.round(F.secondary * 0.65),
+      color: C.text,
+      borderWidth: 2,
+      borderColor: C.border,
+      marginBottom: S.sm,
+    },
+    selectInputContainer: {
+      position: 'relative',
+      marginBottom: S.sm,
+    },
+    selectInput: {
+      backgroundColor: C.card,
+      borderRadius: 14,
+      paddingHorizontal: S.md,
+      paddingVertical: 14,
+      fontSize: Math.round(F.secondary * 0.65),
+      color: C.text,
+      borderWidth: 2,
+      borderColor: C.border,
+      paddingRight: 40,
+    },
+    selectIcon: {
+      position: 'absolute',
+      right: S.md,
+      top: '50%',
+      transform: [{ translateY: -10 }],
+    },
+  });
+
   return (
     <>
-      <Text style={styles.sectionLabel}>{t(locale, 'receive.wizardVehicleTitle')}</Text>
       <Text style={styles.stepExplain}>{t(locale, 'receive.wizardVehicleHelp')}</Text>
 
       {/* Brand */}
@@ -107,50 +161,3 @@ export function VehicleInfoForm({
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#64748B',
-    marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  stepExplain: {
-    fontSize: 14,
-    color: '#94A3B8',
-    marginBottom: 16,
-    lineHeight: 20,
-  },
-  input: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#0F172A',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    marginBottom: 12,
-  },
-  selectInputContainer: {
-    position: 'relative',
-    marginBottom: 12,
-  },
-  selectInput: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#0F172A',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    paddingRight: 40,
-  },
-  selectIcon: {
-    position: 'absolute',
-    right: 16,
-    top: '50%',
-    transform: [{ translateY: -10 }],
-  },
-});

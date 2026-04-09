@@ -14,7 +14,8 @@ export default function Index() {
   const isDark = useIsDark();
   const theme = useValetTheme();
   const F = theme.font;
-  const styles = useMemo(() => createStyles(F), [F]);
+  const Fonts = theme.fontFamily;
+  const styles = useMemo(() => createStyles(F, Fonts), [F, Fonts]);
   const parkColor = isDark ? "#FFFFFF" : "#0F172A";
   const itColor = isDark ? "#7DD3FC" : "#2563EB";
   const valetColor = isDark ? "rgba(148, 163, 184, 0.58)" : "rgba(100, 116, 139, 0.8)";
@@ -157,7 +158,7 @@ export default function Index() {
   );
 }
 
-function createStyles(F: { secondary: number }) {
+function createStyles(F: { secondary: number }, Fonts: { primary: string }) {
   return StyleSheet.create({
     content: {
       flex: 1,
@@ -173,7 +174,7 @@ function createStyles(F: { secondary: number }) {
       alignItems: "center",
     },
     logoPart: {
-      fontFamily: "CalSans",
+      fontFamily: Fonts.primary,
       fontSize: LOGO_SIZE,
       fontWeight: Platform.OS === "android" ? "normal" : "700",
       letterSpacing: -1.5,

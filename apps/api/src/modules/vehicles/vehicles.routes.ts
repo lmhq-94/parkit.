@@ -18,7 +18,10 @@ router.get(
 );
 router.get("/by-plate", requireAuth, requireCompany, requireRole("ADMIN", "STAFF", "CUSTOMER"), VehiclesController.getByPlate);
 router.get("/catalog/makes", requireAuth, VehiclesController.catalogMakes);
+router.post("/catalog/makes", requireAuth, requireRole("ADMIN", "STAFF"), VehiclesController.createMake);
 router.get("/catalog/models", requireAuth, VehiclesController.catalogModels);
+router.post("/catalog/models", requireAuth, requireRole("ADMIN", "STAFF"), VehiclesController.createModel);
+router.post("/catalog/auto-create", requireAuth, requireRole("ADMIN", "STAFF"), VehiclesController.autoCreateMakeModel);
 router.get("/catalog/dimensions", requireAuth, VehiclesController.catalogDimensions);
 router.get("/:id", requireAuth, requireCompany, requireRole("ADMIN", "STAFF", "CUSTOMER"), VehiclesController.getById);
 router.patch("/:id", validateRequest(UpdateVehicleSchema), requireAuth, requireCompany, requireRole("ADMIN", "STAFF", "CUSTOMER"), VehiclesController.update);

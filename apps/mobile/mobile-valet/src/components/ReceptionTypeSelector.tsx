@@ -73,7 +73,7 @@ export function ReceptionTypeSelector({
 const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '800',
     color: '#64748B',
     marginBottom: 8,
     textTransform: 'uppercase',
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   },
   typeCardTitle: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#0F172A',
     marginBottom: 4,
     textAlign: 'center',

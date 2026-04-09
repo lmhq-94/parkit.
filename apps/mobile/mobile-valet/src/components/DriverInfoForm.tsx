@@ -53,17 +53,10 @@ export function DriverInfoForm({
   };
 
   const styles = StyleSheet.create({
-    sectionLabel: {
-      fontSize: F.secondary,
-      fontWeight: '800',
-      color: C.textMuted,
-      marginBottom: S.sm,
-      textTransform: 'uppercase',
-      letterSpacing: 0.6,
-    },
     stepExplain: {
-      fontSize: F.secondary,
-      color: C.textSubtle,
+      fontSize: Math.round(F.secondary * 0.65),
+      fontWeight: '600',
+      color: C.textMuted,
       marginTop: -4,
       marginBottom: S.md,
       lineHeight: 22,
@@ -75,7 +68,7 @@ export function DriverInfoForm({
       borderRadius: 14,
       paddingHorizontal: S.md,
       paddingVertical: 14,
-      fontSize: F.body,
+      fontSize: Math.round(F.secondary * 0.65),
       color: C.text,
       marginBottom: S.sm,
     },
@@ -83,7 +76,6 @@ export function DriverInfoForm({
 
   return (
     <>
-      <Text style={styles.sectionLabel}>{t(locale, 'receive.wizardDriverTitle')}</Text>
       <Text style={styles.stepExplain}>{t(locale, 'receive.wizardDriverHelp')}</Text>
 
       <TextInput

@@ -353,6 +353,61 @@ model ClientVehicle {
 }
 
 /**
+ * Vehicle Catalog - Makes and Models for the vehicle selector
+ */
+model VehicleMake {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relations
+  models VehicleModel[]
+
+  @@index([isActive, sortOrder])
+}
+
+model VehicleModel {
+  id          String   @id @default(uuid())
+  makeId      String
+  name        String
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relations
+  make      VehicleMake           @relation(fields: [makeId], references: [id], onDelete: Cascade)
+  variants  VehicleModelVariant[]
+
+  @@unique([makeId, name])
+  @@index([isActive, sortOrder])
+}
+
+model VehicleModelVariant {
+  id          String   @id @default(uuid())
+  modelId     String
+  yearStart   Int
+  yearEnd     Int
+  lengthCm    Int?
+  widthCm     Int?
+  heightCm    Int?
+  isActive    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relations
+  model VehicleModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@index([modelId, yearStart, yearEnd])
+}
+
+/**
  * |--------------------------------------------------------------------------
  * | OPERATIONS
  * |--------------------------------------------------------------------------

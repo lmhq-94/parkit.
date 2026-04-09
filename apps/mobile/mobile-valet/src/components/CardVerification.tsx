@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Pressable,
   ActivityIndicator,
-  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -37,6 +36,7 @@ interface CardVerificationProps {
     body: number;
     button: number;
     title: number;
+    status: number;
   };
   space: {
     sm: number;
@@ -58,7 +58,7 @@ export function CardVerification({
 }: CardVerificationProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showScanner, setShowScanner] = useState(true);
+  const [showScanner, setShowScanner] = useState(false);
   const [_scanSuccess, setScanSuccess] = useState(false);
 
   const startVerification = useCallback(async () => {
@@ -100,10 +100,17 @@ export function CardVerification({
     void startVerification();
   }, [startVerification]);
 
+  const handleStartScan = useCallback(() => {
+    setShowScanner(true);
+  }, []);
+
+  const handleScannerClose = useCallback(() => {
+    setShowScanner(false);
+  }, []);
+
   const handleScannerCancel = useCallback(() => {
     setShowScanner(false);
-    onCancel();
-  }, [onCancel]);
+  }, []);
 
   const scanGradient = isDark
     ? (['#10B981', '#059669'] as [string, string])
@@ -111,25 +118,26 @@ export function CardVerification({
 
   if (showScanner) {
     return (
-      <Modal animationType="slide" presentationStyle="fullScreen">
-        <View style={{ flex: 1, backgroundColor: isDark ? '#0F172A' : '#FFFFFF' }}>
-          <CardScanner
-            locale={locale}
-            isDark={isDark}
-            onCardScanned={handleCardScanned}
-            onCancel={handleScannerCancel}
-            colors={{
-              primary: C.primary,
-              text: C.text,
-              textMuted: C.textMuted,
-              card: C.card,
-              border: C.border,
-            }}
-            fonts={{ secondary: F.secondary, body: F.body, button: F.button, title: F.title }}
-            space={{ sm: S.sm, md: S.md, lg: S.lg }}
-          />
-        </View>
-      </Modal>
+      <View style={{ flex: 1, backgroundColor: isDark ? '#0F172A' : '#FFFFFF' }}>
+        <CardScanner
+          locale={locale}
+          isDark={isDark}
+          visible={showScanner}
+          embedded={true}
+          onClose={handleScannerClose}
+          onCardScanned={handleCardScanned}
+          onCancel={handleScannerCancel}
+          colors={{
+            primary: C.primary,
+            text: C.text,
+            textMuted: C.textMuted,
+            card: C.card,
+            border: C.border,
+          }}
+          fonts={{ secondary: F.secondary, body: F.body, button: F.button, title: F.title, status: F.status }}
+          space={{ sm: S.sm, md: S.md, lg: S.lg }}
+        />
+      </View>
     );
   }
 
@@ -177,7 +185,7 @@ export function CardVerification({
       flex: 1,
     },
     cardTitle: {
-      fontSize: F.body,
+      fontSize: F.secondary - 1,
       fontWeight: '800',
       color: C.text,
       marginBottom: 4,
@@ -256,7 +264,7 @@ export function CardVerification({
       borderColor: C.border,
     },
     cancelBtnText: {
-      fontSize: F.secondary,
+      fontSize: F.secondary - 1,
       fontWeight: '800',
       color: isDark ? '#CBD5E1' : '#475569',
     },
@@ -280,7 +288,7 @@ export function CardVerification({
       gap: S.sm,
     },
     primaryBtnText: {
-      fontSize: F.button,
+      fontSize: F.secondary - 1,
       fontWeight: '800',
       color: '#FFFFFF',
     },
@@ -384,7 +392,7 @@ export function CardVerification({
           <>
             <Pressable
               style={({ pressed }) => [styles.primaryBtn, { flex: 1 }, loading && styles.btnDisabled, pressed && styles.pressed]}
-              onPress={() => setShowScanner(true)}
+              onPress={handleStartScan}
               disabled={loading}
             >
               <LinearGradient
@@ -394,7 +402,7 @@ export function CardVerification({
                 style={styles.primaryBtnBg}
               >
                 <Ionicons name="scan-outline" size={18} color="#FFFFFF" />
-                <Text style={styles.primaryBtnText}>Escanear</Text>
+                <Text style={styles.primaryBtnText}>{t(locale, 'receive.cardScanButton')}</Text>
               </LinearGradient>
             </Pressable>
 

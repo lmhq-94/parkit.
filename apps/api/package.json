@@ -15,7 +15,7 @@
     "db:seed": "prisma db seed",
     "db:reset": "npm run env:dev && prisma db push --force-reset && npm run db:seed",
     "db:prepare:dev": "npm run db:reset",
-    "db:prepare:prod": "npm run env:prod && prisma migrate deploy && npm run db:seed",
+    "db:prepare:prod": "npm run env:prod && prisma db push --force-reset && npm run db:seed",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:prod": "prisma migrate deploy",
     "db:deploy": "prisma migrate deploy",

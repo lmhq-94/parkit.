@@ -17,7 +17,6 @@ import { t } from "@/lib/i18n";
 import { formatVehicleColorLabel } from "@parkit/shared/src/vehicleColors";
 import api from "@/lib/api";
 import { ValetBackButton } from "@/components/ValetBackButton";
-import { SquareParkingOff, TrafficCone } from "lucide-react-native";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useOnAppForeground } from "@/lib/useOnAppForeground";
 import { TICKETS_POLL_MS } from "@/lib/syncConstants";
@@ -39,6 +38,7 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
   const F = ticketsA11y.font;
   const R = theme.radius;
   const M = ticketsA11y.minTouch;
+  const Fonts = theme.fontFamily;
 
   return StyleSheet.create({
     safe: {
@@ -69,16 +69,18 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
       paddingBottom: S.md,
     },
     screenTitle: {
-      fontSize: F.title - 2,
+      fontSize: Math.round(F.secondary * 0.85),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.text,
       flex: 1,
       textAlign: "center",
     },
     intro: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       color: C.textMuted,
-      lineHeight: 24,
+      lineHeight: 20,
       fontWeight: "600",
       textAlign: "left",
     },
@@ -107,14 +109,16 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
       gap: 2,
     },
     queueBannerTitle: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.text,
     },
     queueBannerBody: {
-      fontSize: F.secondary - 1,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       color: C.textMuted,
-      lineHeight: 20,
+      lineHeight: 18,
       fontWeight: "600",
     },
     queueBannerBadge: {
@@ -128,14 +132,16 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
     },
     queueBannerBadgeText: {
       color: "#fff",
-      fontSize: Math.round(F.status * 0.7),
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
     },
     introSecondary: {
       marginTop: S.xs,
-      fontSize: F.secondary - 1,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       color: C.textSubtle,
-      lineHeight: 20,
+      lineHeight: 18,
       fontWeight: "600",
       textAlign: "left",
     },
@@ -182,16 +188,17 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
       height: 3,
     },
     plateLabel: {
-      fontSize: F.secondary - 2,
-      fontWeight: "700",
-      color: C.textSubtle,
-      textTransform: "uppercase",
-      letterSpacing: 1.1,
+      fontSize: Math.round(F.status * 0.65),
+      fontWeight: "800",
+      fontFamily: Fonts.primary,
+      color: C.textMuted,
+      letterSpacing: 0.6,
       marginBottom: 4,
     },
     vehiclePlate: {
-      fontSize: F.title + 2,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.text,
       letterSpacing: 0.8,
       fontVariant: ["tabular-nums"],
@@ -214,13 +221,16 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
       borderRadius: 12,
     },
     statusPillText: {
-      fontSize: F.secondary - 1,
-      fontWeight: "700",
+      fontSize: Math.round(F.status * 0.65),
+      fontWeight: "800",
+      fontFamily: Fonts.primary,
     },
     locationLabel: {
-      fontSize: F.secondary - 1,
-      fontWeight: "700",
+      fontSize: Math.round(F.status * 0.65),
+      fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.textMuted,
+      letterSpacing: 0.6,
       marginBottom: 4,
     },
     locationRow: {
@@ -235,8 +245,9 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
     },
     location: {
       flex: 1,
-      fontSize: F.body - 1,
-      lineHeight: 24,
+      fontSize: Math.round(F.status * 0.65),
+      lineHeight: 18,
+      fontFamily: Fonts.primary,
       color: C.text,
       fontWeight: "600",
     },
@@ -261,13 +272,15 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
     },
     metaKey: {
       minWidth: 84,
-      fontSize: F.secondary - 2,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       color: C.textMuted,
       fontWeight: "600",
     },
     metaValue: {
       flex: 1,
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       color: C.text,
       fontWeight: "700",
       textAlign: "right",
@@ -297,7 +310,8 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
     btnText: {
       color: C.white,
       fontWeight: "800",
-      fontSize: F.button,
+      fontFamily: Fonts.primary,
+      fontSize: Math.round(F.status * 0.65),
       textAlign: "center",
       flexShrink: 1,
     },
@@ -315,12 +329,14 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
     },
     completedText: {
       flex: 1,
-      fontSize: F.body,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "700",
+      fontFamily: Fonts.primary,
       color: C.success,
       textAlign: "center",
     },
     centerBox: {
+      flex: 1,
       alignItems: "center",
       justifyContent: "center",
       paddingVertical: S.xxl,
@@ -331,20 +347,23 @@ function createTicketStyles(theme: Theme, contentMaxWidth: number, sectionPaddin
       flex: 1,
     },
     loadingText: {
-      fontSize: F.body,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       color: C.textMuted,
       fontWeight: "600",
       textAlign: "center",
     },
     emptyTitle: {
-      fontSize: F.title - 2,
+      fontSize: Math.round(F.secondary * 0.85),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.text,
       textAlign: "center",
     },
     emptyHint: {
-      fontSize: F.secondary,
-      lineHeight: 24,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
+      lineHeight: 18,
       color: C.textMuted,
       textAlign: "center",
       fontWeight: "500",
@@ -670,7 +689,7 @@ export default function TicketsScreen() {
                 accessibilityHint={t(locale, "tickets.confirmGoParkMessage")}
               >
                 <View style={styles.btnIcon}>
-                  <TrafficCone size={26} color={C.white} strokeWidth={2.2} />
+                  <Ionicons name="warning-outline" size={26} color={C.white} />
                 </View>
                 <Text style={styles.btnText} maxFontSizeMultiplier={2}>
                   {t(locale, "tickets.actionGoPark")}
@@ -822,7 +841,7 @@ export default function TicketsScreen() {
     }
     return (
       <View style={[styles.centerBox, styles.centerBoxEmpty]}>
-        <SquareParkingOff size={72} color={C.textSubtle} strokeWidth={2} />
+        <Ionicons name="car-outline" size={72} color={C.primary} />
         <Text style={styles.emptyTitle}>
           {isDriverUi ? t(locale, "tickets.emptyDriver") : t(locale, "tickets.emptyReception")}
         </Text>
@@ -894,7 +913,7 @@ export default function TicketsScreen() {
               </Text>
             </View>
           }
-          refreshing={loading && !initialLoad}
+          refreshing={loading && !initialLoad && tickets.length > 0}
           onRefresh={() => void loadTickets()}
           contentContainerStyle={filteredTickets.length === 0 ? styles.listEmptyGrow : styles.list}
           ListEmptyComponent={listEmpty}

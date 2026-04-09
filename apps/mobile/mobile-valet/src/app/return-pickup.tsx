@@ -153,7 +153,7 @@ export default function ReturnPickupScreen() {
           <View style={{ width: 44 }} />
         </View>
         <View style={styles.blocked}>
-          <Ionicons name="hand-left-outline" size={56} color={C.textMuted} />
+          <Ionicons name="hand-left" size={56} color={C.textMuted} />
           <Text style={styles.blockedTitle}>{t(locale, "receive.driverBlockedTitle")}</Text>
           <Text style={styles.blockedBody}>{t(locale, "receive.driverBlockedBody")}</Text>
         </View>
@@ -200,9 +200,10 @@ export default function ReturnPickupScreen() {
           {companyLoading || loading ? (
             <ActivityIndicator style={{ marginVertical: 24 }} color={C.primary} size="large" />
           ) : filtered.length === 0 ? (
-            <View style={styles.empty}>
-              <Ionicons name="car-outline" size={48} color={C.textSubtle} />
-              <Text style={styles.emptyText}>{t(locale, "returnPickup.empty")}</Text>
+            <View style={[styles.empty, { flex: 1, justifyContent: "center" }]}>
+              <Ionicons name="car" size={72} color={C.primary} />
+              <Text style={styles.emptyTitle}>{t(locale, "returnPickup.emptyTitle")}</Text>
+              <Text style={styles.emptyHint}>{t(locale, "returnPickup.empty")}</Text>
             </View>
           ) : (
             filtered.map((tk) => {
@@ -281,7 +282,7 @@ export default function ReturnPickupScreen() {
                 <ActivityIndicator color="#fff" />
               ) : (
                 <>
-                  <Ionicons name="arrow-undo-circle-outline" size={24} color="#fff" />
+                  <Ionicons name="arrow-undo-circle" size={24} color="#fff" />
                   <Text style={styles.primaryBtnText}>
                     {selectedTicket?.status === "REQUEST_DELIVERY"
                       ? t(locale, "returnPickup.ctaMarkDelivered")
@@ -303,8 +304,9 @@ type Theme = ReturnType<typeof useValetTheme>;
 function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: number) {
   const C = theme.colors;
   const S = theme.space;
-  const F = ticketsA11y.font;
+  const F = theme.a11yFont;
   const R = theme.radius;
+  const Fonts = theme.fontFamily;
 
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: C.bg },
@@ -330,14 +332,15 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       paddingBottom: S.xl,
     },
     screenTitle: {
-      fontSize: F.title - 2,
+      fontSize: Math.round(F.secondary * 0.85),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.text,
       flex: 1,
       textAlign: "center",
     },
     sub: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
       color: C.textMuted,
       marginBottom: S.md,
       lineHeight: 22,
@@ -349,7 +352,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderRadius: R.button,
       paddingHorizontal: S.md,
       paddingVertical: 14,
-      fontSize: F.body,
+      fontSize: Math.round(F.status * 0.65),
       color: C.text,
       marginBottom: S.lg,
     },
@@ -366,22 +369,24 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       backgroundColor: theme.isDark ? "rgba(59, 130, 246, 0.12)" : "rgba(59, 130, 246, 0.08)",
     },
     plate: {
-      fontSize: F.title,
+      fontSize: Math.round(F.status * 0.85),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.text,
       letterSpacing: 1,
     },
-    meta: { fontSize: F.secondary, color: C.textMuted, marginTop: 4 },
-    metaStrong: { fontSize: F.secondary, color: C.primary, fontWeight: "800", marginBottom: 4 },
+    meta: { fontSize: Math.round(F.status * 0.65), fontFamily: Fonts.primary, color: C.textMuted, marginTop: 4 },
+    metaStrong: { fontSize: Math.round(F.status * 0.65), fontFamily: Fonts.primary, color: C.primary, fontWeight: "800", marginBottom: 4 },
     sectionLabel: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.textMuted,
       marginTop: S.lg,
       marginBottom: S.sm,
       textTransform: "uppercase",
     },
-    help: { fontSize: F.secondary, color: C.textSubtle, marginBottom: S.md },
+    help: { fontSize: Math.round(F.status * 0.65), fontFamily: Fonts.primary, color: C.textSubtle, marginBottom: S.md },
     chips: {
       flexDirection: "row",
       flexWrap: "wrap",
@@ -405,7 +410,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderColor: C.primary,
       backgroundColor: theme.isDark ? "rgba(59, 130, 246, 0.2)" : "rgba(59, 130, 246, 0.12)",
     },
-    chipText: { fontSize: F.secondary, fontWeight: "700", color: C.text },
+    chipText: { fontSize: Math.round(F.status * 0.65), fontWeight: "700", fontFamily: Fonts.primary, color: C.text },
     chipTextOn: { color: C.primary },
     chipRow: {
       flexDirection: "row",
@@ -427,7 +432,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderRadius: 11,
     },
     chipAvatarText: {
-      fontSize: Math.round(F.secondary * 0.65),
+      fontSize: Math.round(F.status * 0.45),
       fontWeight: "800",
       letterSpacing: -0.2,
     },
@@ -450,11 +455,32 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
         android: { elevation: 3 },
       }),
     },
-    primaryBtnText: { color: "#fff", fontWeight: "800", fontSize: F.button },
+    primaryBtnText: { color: "#fff", fontWeight: "800", fontFamily: Fonts.primary, fontSize: Math.round(F.status * 0.65) },
     btnDisabled: { opacity: 0.55 },
     pressed: { opacity: 0.9 },
-    empty: { alignItems: "center", paddingVertical: S.xxl, gap: S.md },
-    emptyText: { fontSize: F.body, color: C.textMuted, textAlign: "center" },
+    empty: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: S.xxl,
+      gap: S.md,
+      flexGrow: 1,
+      minHeight: 400,
+    },
+    emptyTitle: {
+      fontSize: Math.round(F.status * 0.65),
+      fontWeight: "800",
+      fontFamily: Fonts.primary,
+      color: C.text,
+      textAlign: "center",
+    },
+    emptyHint: {
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
+      color: C.textMuted,
+      textAlign: "center",
+      lineHeight: 24,
+      paddingHorizontal: S.lg,
+    },
     blocked: {
       flex: 1,
       padding: S.xl,
@@ -462,8 +488,8 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       alignItems: "center",
       gap: S.md,
     },
-    blockedTitle: { fontSize: F.title, fontWeight: "800", color: C.text, textAlign: "center" },
-    blockedBody: { fontSize: F.body, color: C.textMuted, textAlign: "center", lineHeight: 26 },
+    blockedTitle: { fontSize: Math.round(F.status * 0.85), fontWeight: "800", fontFamily: Fonts.primary, color: C.text, textAlign: "center" },
+    blockedBody: { fontSize: Math.round(F.status * 0.65), fontFamily: Fonts.primary, color: C.textMuted, textAlign: "center", lineHeight: 26 },
     backBtn: {
       marginTop: S.lg,
       paddingVertical: S.md,
@@ -471,6 +497,6 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       backgroundColor: C.primary,
       borderRadius: R.button,
     },
-    backBtnText: { color: "#fff", fontWeight: "800" },
+    backBtnText: { color: "#fff", fontWeight: "800", fontFamily: Fonts.primary },
   });
 }

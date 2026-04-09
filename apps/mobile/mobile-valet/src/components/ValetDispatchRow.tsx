@@ -166,7 +166,7 @@ export function createValetRowStyles(theme: Theme) {
       minWidth: 0,
     },
     valetDriverRowText: {
-      fontSize: F.body,
+      fontSize: F.secondary - 1,
       fontWeight: "700",
       color: C.text,
     },
