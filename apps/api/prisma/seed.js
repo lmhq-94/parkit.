@@ -3502,8 +3502,69 @@ async function main() {
     },
   });
 
+  // Seed banks and cards
+  await seedBanksAndCards();
+
   // Seed vehicle catalog
   await seedVehicleCatalog();
+}
+
+async function seedBanksAndCards() {
+  console.log("Seeding banks and cards...");
+
+  // Banks
+  const banks = [
+    { code: "BAC_CREDOMATIC", name: "BAC Credomatic", sortOrder: 0 },
+    { code: "PROMERICA", name: "Promerica", sortOrder: 1 },
+  ];
+
+  await prisma.bank.createMany({
+    data: banks,
+    skipDuplicates: true,
+  });
+
+  // Get bank IDs
+  const dbBanks = await prisma.bank.findMany();
+  const bankIdMap = new Map(dbBanks.map(b => [b.code, b.id]));
+  const bacId = bankIdMap.get("BAC_CREDOMATIC");
+
+  // Bank cards with fees based on user requirements
+  // bankId: null = generic/no bank (courtesy, cash payment, corporate benefit)
+  const cards = [
+    // BAC Credomatic cards
+    { bankId: bacId, code: "AMEX_THE_PLATINUM_CARD", name: "American Express The Platinum Card", type: "AMEX", feeCrc: 5000 },
+    { bankId: bacId, code: "AMEX_CASHBACK_PREMIUM", name: "American Express Cashback Premium", type: "AMEX", feeCrc: 2500 },
+    { bankId: bacId, code: "AMEX_MILLAS_PLUS_BLACK", name: "American Express Millas Plus Black", type: "AMEX", feeCrc: 0 },
+    { bankId: bacId, code: "AMEX_PLATINUM", name: "American Express Platinum", type: "AMEX", feeCrc: 2500 },
+    { bankId: bacId, code: "AMEX_INCAE", name: "American Express INCAE", type: "AMEX", feeCrc: 5000 },
+    { bankId: bacId, code: "AMEX_AADVANTAGE_PRESTIGE", name: "American Express AAdvantage Prestige", type: "AMEX", feeCrc: 5000 },
+    { bankId: bacId, code: "AMEX_LIFEMILES_ELITE", name: "American Express LifeMiles Elite", type: "AMEX", feeCrc: 5000 },
+    { bankId: bacId, code: "MASTERCARD_BLACK", name: "Mastercard Black", type: "MASTERCARD", feeCrc: 0 },
+    { bankId: bacId, code: "MASTERCARD_PLATINUM", name: "Mastercard Platinum", type: "MASTERCARD", feeCrc: 2500 },
+    { bankId: bacId, code: "MASTERCARD_BLACK_MILLAS_PLUS", name: "Mastercard Black Millas Plus", type: "MASTERCARD", feeCrc: 0 },
+    { bankId: bacId, code: "MASTERCARD_CASHBACK_PREMIUM", name: "Mastercard Cashback Premium", type: "MASTERCARD", feeCrc: 2500 },
+    { bankId: bacId, code: "MASTERCARD_BLACK_AADVANTAGE", name: "Mastercard Black AAdvantage", type: "MASTERCARD", feeCrc: 0 },
+    { bankId: bacId, code: "VISA_INFINITE", name: "Visa Infinite", type: "VISA", feeCrc: 0 },
+    { bankId: bacId, code: "VISA_INFINITE_IBERIA", name: "Visa Infinite Iberia", type: "VISA", feeCrc: 0 },
+    { bankId: bacId, code: "VISA_INFINITE_EMERALD", name: "Visa Infinite Emerald", type: "VISA", feeCrc: 0 },
+    { bankId: bacId, code: "VISA_INFINITE_CONNECT_MILES", name: "Visa Infinite Connect Miles", type: "VISA", feeCrc: 0 },
+    { bankId: bacId, code: "VISA_INFINITE_MILLAS_PLUS", name: "Visa Infinite Millas Plus", type: "VISA", feeCrc: 0 },
+    { bankId: bacId, code: "VISA_PLATINO", name: "Visa Platino", type: "VISA", feeCrc: 2500 },
+    { bankId: bacId, code: "LINCOLN_PLAZA", name: "Lincoln Plaza", type: "OTHER", feeCrc: 0 },
+    { bankId: bacId, code: "CORPORATE_BENEFICIARY", name: "Corporate Beneficiary", type: "OTHER", feeCrc: 0 },
+    // No bank required (courtesy, cash payment, etc.)
+    { bankId: null, code: "OTHER_PAYMENT", name: "Otras / Pagos", type: "OTHER", feeCrc: 5000 },
+    { bankId: null, code: "OTHER_PAYMENT_BLACK", name: "Otras Pago/Black", type: "OTHER", feeCrc: 2500 },
+    { bankId: null, code: "COURTESY", name: "Cortesía", type: "OTHER", feeCrc: 0 },
+  ];
+
+  // Insert all cards (bankId can be null for generic/courtesy cards)
+  await prisma.bankCard.createMany({
+    data: cards.map((c, i) => ({ ...c, sortOrder: i })),
+    skipDuplicates: true,
+  });
+
+  console.log(`Seeded ${banks.length} banks and ${cards.length} cards.`);
 }
 
 main()
