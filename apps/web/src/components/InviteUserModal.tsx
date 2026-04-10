@@ -142,7 +142,7 @@ export function InviteUserModal({
                     }
                   }}
                   placeholder={t("common.placeholderEmail")}
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary transition-colors"
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-all duration-200 ease-out focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary/20 focus:ring-inset"
                 />
               </div>
               <button

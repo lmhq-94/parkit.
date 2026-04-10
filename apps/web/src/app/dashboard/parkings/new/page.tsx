@@ -11,9 +11,9 @@ import { apiClient } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 
-const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
+const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-all duration-200 ease-out focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary/20 focus:ring-inset placeholder:text-text-muted";
 /** Input sin icono (mismo estilo que IL en otros formularios). */
-const INPUT = "w-full px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
+const INPUT = "w-full px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-all duration-200 ease-out focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary/20 focus:ring-inset placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
 const PARKING_TYPES = ["OPEN", "COVERED", "TOWER", "UNDERGROUND", "ELEVATOR"] as const;
@@ -312,7 +312,7 @@ export default function NewParkingPage() {
                   role="switch"
                   aria-checked={chargesParking}
                   onClick={() => setChargesParking((v) => !v)}
-                  className={`relative w-10 h-6 rounded-full shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page ${
+                  className={`relative w-10 h-6 rounded-full shrink-0 transition-colors focus:outline-none focus:ring-1 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page ${
                     chargesParking ? "bg-company-primary" : "bg-input-border"
                   }`}
                 >
@@ -445,7 +445,7 @@ export default function NewParkingPage() {
             <button
               type="button"
               onClick={addSlotsBatch}
-              className="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2"
+              className="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:opacity-95 focus:outline-none focus:ring-1 focus:ring-company-primary focus:ring-offset-2"
             >
               <Plus className="w-4 h-4" />
               {t("parkings.addSlotsBatch")}

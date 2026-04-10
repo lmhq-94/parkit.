@@ -181,7 +181,7 @@ export function SelectField({ value, onChange, icon: Icon, children, className, 
           className={[
             "w-full py-3 rounded-lg border bg-input-bg text-sm text-left transition-colors cursor-pointer",
             open
-              ? "border-company-primary ring-1 ring-company-primary-full text-text-primary"
+              ? "border-company-primary ring-1 ring-company-primary/20 ring-inset text-text-primary"
               : "border-input-border text-text-primary hover:border-company-primary-muted",
             Icon ? "pl-10 pr-9" : "pl-4 pr-9",
             !value ? "text-text-muted" : "",

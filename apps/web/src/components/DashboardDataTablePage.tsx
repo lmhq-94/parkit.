@@ -1053,7 +1053,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
         type="button"
         onClick={startCreate}
         disabled={draftRow != null}
-        className="inline-flex items-center gap-2 px-4 min-h-[42px] rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+        className="inline-flex items-center gap-2 px-4 min-h-[42px] rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
       >
         <Plus className="w-4 h-4" strokeWidth={2.25} />
         {t(locale, "common.add")}
@@ -1073,7 +1073,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                       value={quickFilter}
                       onChange={(e) => setQuickFilter(e.target.value)}
                       placeholder={t(locale, "grid.filterOoo")}
-                      className="w-full min-h-[42px] pl-9 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-sm text-text-primary placeholder:text-text-muted transition-colors focus:outline-none focus:ring-1 focus:ring-company-primary focus:border-company-primary"
+                      className="w-full min-h-[42px] pl-9 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-sm text-text-primary placeholder:text-text-muted transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-company-primary/20 focus:ring-inset focus:border-company-primary"
                     />
                   </div>
                 </div>
@@ -1086,7 +1086,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
                     value={quickFilter}
                     onChange={(e) => setQuickFilter(e.target.value)}
                     placeholder={t(locale, "grid.filterOoo")}
-                    className="w-full min-h-[42px] pl-9 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-sm text-text-primary placeholder:text-text-muted transition-colors focus:outline-none focus:ring-1 focus:ring-company-primary focus:border-company-primary"
+                    className="w-full min-h-[42px] pl-9 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-sm text-text-primary placeholder:text-text-muted transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-company-primary/20 focus:ring-inset focus:border-company-primary"
                   />
                 </div>
                 {(toolbarRight != null || addButtonNode != null) && (

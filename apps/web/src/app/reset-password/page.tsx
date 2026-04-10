@@ -184,7 +184,7 @@ function ResetPasswordForm() {
                 required
                 minLength={8}
                 autoComplete="new-password"
-                className="w-full pl-10 pr-10 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary"
+                className="w-full pl-10 pr-10 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-all duration-200 ease-out focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary/20 focus:ring-inset"
               />
               <button
                 type="button"
@@ -231,7 +231,7 @@ function ResetPasswordForm() {
                 required
                 minLength={8}
                 autoComplete="new-password"
-                className="w-full pl-10 pr-10 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary"
+                className="w-full pl-10 pr-10 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-all duration-200 ease-out focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary/20 focus:ring-inset"
               />
               <button
                 type="button"
@@ -247,7 +247,7 @@ function ResetPasswordForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="group w-full flex items-center justify-center gap-2 rounded-lg bg-company-primary py-3 text-sm font-medium text-white hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none"
+            className="group w-full flex items-center justify-center gap-2 rounded-lg bg-company-primary py-3 text-sm font-medium text-white hover:bg-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none"
           >
             {isSubmitting ? (
               <LoadingSpinner size="sm" variant="white" />

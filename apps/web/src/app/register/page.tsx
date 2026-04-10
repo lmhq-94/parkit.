@@ -27,7 +27,7 @@ import { LocaleToggle } from "@/components/LocaleToggle";
 
 const REDIRECT_DELAY_SECONDS = 3;
 
-const INPUT_BASE = "w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-slate-900 dark:text-white text-sm transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500";
+const INPUT_BASE = "w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-slate-900 dark:text-white text-sm transition-all duration-200 ease-out focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/20 focus:ring-inset placeholder:text-slate-400 dark:placeholder:text-slate-500";
 const LABEL_BASE = "block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5";
 
 function PasswordRequirement({ label, met }: { label: string; met: boolean }) {
@@ -366,7 +366,7 @@ function RegisterForm() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="group w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:pointer-events-none transition-all"
+              className="group w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:pointer-events-none transition-all"
             >
               {isSubmitting ? (
                 <LoadingSpinner size="sm" variant="white" />
