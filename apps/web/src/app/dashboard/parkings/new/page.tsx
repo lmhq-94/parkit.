@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Plus, Tag, Navigation, Radius, Trash2, Clock, Coins } from "lucide-react";
+import { MapPin, Plus, Tag, Navigation, Radius, Trash, Clock, Coins } from "@/lib/premiumIcons";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
@@ -490,7 +490,7 @@ export default function NewParkingPage() {
                     className="p-2 rounded-lg text-text-muted hover:text-red-600 hover:bg-red-500/10 transition-colors"
                     aria-label={t("parkings.removeSlot")}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash className="w-4 h-4" />
                   </button>
                 </li>
               ))}

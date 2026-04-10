@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MapPin } from "lucide-react";
+import { MapPin } from "@/lib/premiumIcons";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 
 interface AddressCellEditorProps {

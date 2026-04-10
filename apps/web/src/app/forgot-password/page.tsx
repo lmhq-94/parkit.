@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTheme } from "next-themes";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@/lib/premiumIcons";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ThemeToggleSimple } from "@/components/ThemeToggleSimple";
@@ -73,8 +73,8 @@ export default function ForgotPasswordPage() {
           {/* Logo and Title */}
           <div className="flex flex-col items-center mb-10">
             <Logo variant={logoVariant} className="text-5xl mb-5" />
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">{t("auth.resetPasswordTitle")}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 text-center">{submitted ? t("auth.resetSubmittedMessage").replace("{{email}}", email) : t("auth.resetPasswordDescription")}</p>
+            <h1 className="text-[1.75rem] leading-tight premium-title premium-title-glow mb-2">{t("auth.resetPasswordTitle")}</h1>
+            <p className="premium-subtitle text-sm text-center">{submitted ? t("auth.resetSubmittedMessage").replace("{{email}}", email) : t("auth.resetPasswordDescription")}</p>
           </div>
 
           {submitted ? (

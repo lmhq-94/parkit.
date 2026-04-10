@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { Mail, UserPlus } from "lucide-react";
+import { MailOpen, UserPlus } from "@/lib/premiumIcons";
 import { useRouter } from "next/navigation";
 import type { ICellRendererParams } from "ag-grid-community";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
@@ -210,7 +210,7 @@ export default function CustomersPage() {
                     onClick={() => handleResendInvitation(user)}
                     className="group inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors"
                   >
-                    <Mail className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
+                    <MailOpen className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
                     {t("tables.employees.resendInvitation")}
                   </button>
                 </div>

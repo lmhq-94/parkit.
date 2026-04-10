@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Car, Hash, Globe, Users, Ruler, Weight } from "lucide-react";
+import { Car, Hash, Globe, Users, Ruler, Weight } from "@/lib/premiumIcons";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { BrandModelComboField } from "@/components/BrandModelComboField";

@@ -5,7 +5,7 @@ import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@/lib/premiumIcons";
 import { ThemeToggleSimple } from "@/components/ThemeToggleSimple";
 import { LocaleToggleSimple } from "@/components/LocaleToggleSimple";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -52,21 +52,21 @@ export default function TermsPage() {
                 {t("terms.backToHome")}
               </button>
               <Logo variant={isDark ? 'onDark' : 'default'} className="text-3xl mb-4" />
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-white mb-2">{t("terms.title")}</h1>
-              <p className="text-slate-500 dark:text-slate-400 text-sm">{t("terms.updatedAt")}: {new Date().toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <h1 className="text-[2rem] md:text-[2.25rem] leading-tight premium-title premium-title-glow mb-2">{t("terms.title")}</h1>
+              <p className="premium-subtitle text-sm">{t("terms.updatedAt")}: {new Date().toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
             </div>
 
             {/* Content */}
             <div className="prose prose-slate dark:prose-invert max-w-none space-y-8">
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("terms.section1Title")}</h2>
+                <h2 className="text-lg premium-section-title mb-3">{t("terms.section1Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm">
                   {t("terms.section1Content")}
                 </p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("terms.section2Title")}</h2>
+                <h2 className="text-lg premium-section-title mb-3">{t("terms.section2Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm mb-3">
                   {t("terms.section2Intro")}
                 </p>
@@ -85,7 +85,7 @@ export default function TermsPage() {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("terms.section3Title")}</h2>
+                <h2 className="text-lg premium-section-title mb-3">{t("terms.section3Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm">
                   {t("terms.section3Content")}
                 </p>
@@ -99,7 +99,7 @@ export default function TermsPage() {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("terms.section4Title")}</h2>
+                <h2 className="text-lg premium-section-title mb-3">{t("terms.section4Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm mb-3">
                   {t("terms.section4Content")}
                 </p>
@@ -113,42 +113,42 @@ export default function TermsPage() {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("terms.section5Title")}</h2>
+                <h2 className="text-lg premium-section-title mb-3">{t("terms.section5Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm mb-3">
                   {t("terms.section5Content")}
                 </p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("terms.section6Title")}</h2>
+                <h2 className="text-lg premium-section-title mb-3">{t("terms.section6Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm">
                   {t("terms.section6Content")}
                 </p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("terms.section7Title")}</h2>
+                <h2 className="text-lg premium-section-title mb-3">{t("terms.section7Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm">
                   {t("terms.section7Content")}
                 </p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("terms.section8Title")}</h2>
+                <h2 className="text-lg premium-section-title mb-3">{t("terms.section8Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm">
                   {t("terms.section8Content")}
                 </p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("terms.section9Title")}</h2>
+                <h2 className="text-lg premium-section-title mb-3">{t("terms.section9Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm">
                   {t("terms.section9Content")}
                 </p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">{t("terms.section10Title")}</h2>
+                <h2 className="text-lg premium-section-title mb-3">{t("terms.section10Title")}</h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm">
                   {t("terms.section10Content")}
                 </p>

@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Plus } from "@/lib/premiumIcons";
 import { PageLoader } from "@/components/PageLoader";
 
 const DashboardDataTablePage = dynamic(

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Bell, Check, Trash2 } from "lucide-react";
+import { Bell, Check, Trash } from "@/lib/premiumIcons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/lib/toastStore";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
@@ -161,7 +161,7 @@ export default function NotificationsPage() {
                   onClick={() => setPendingDelete(n)}
                   className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash className="w-4 h-4" />
                   {t("common.delete")}
                 </button>
               </div>

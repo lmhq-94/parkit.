@@ -17,7 +17,7 @@ import {
   Settings2,
   SlidersHorizontal,
   RotateCcw,
-} from "lucide-react";
+} from "@/lib/premiumIcons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useAuthStore, useDashboardStore, useLocaleStore } from "@/lib/store";
@@ -335,7 +335,7 @@ export default function ProfilePage() {
               : "text-text-muted hover:text-text-secondary"
           }`}
         >
-          <Settings2 className="w-4 h-4" />
+          <User className="w-4 h-4" />
           {t("profile.tabInfo")}
         </button>
         <button
@@ -385,11 +385,11 @@ export default function ProfilePage() {
                   <Settings2 className="w-5 h-5 text-company-primary" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-base font-semibold text-text-primary flex items-center gap-2">
+                  <h2 className="text-base premium-section-title flex items-center gap-2">
                     {t("profile.sectionInfo")}
                     <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">{t("common.requiredBadge")}</span>
                   </h2>
-                  <p className="text-sm text-text-muted">{t("profile.sectionInfoDesc")}</p>
+                  <p className="text-sm premium-subtitle">{t("profile.sectionInfoDesc")}</p>
                 </div>
               </div>
               <div className="pl-1">
@@ -512,11 +512,11 @@ export default function ProfilePage() {
                   <Camera className="w-5 h-5 text-company-primary" />
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-text-primary flex items-center gap-2">
+                  <h2 className="text-base premium-section-title flex items-center gap-2">
                     {t("profile.sectionAvatar")}
                     <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-text-muted/10 text-text-muted">{t("common.optionalBadge")}</span>
                   </h2>
-                  <p className="text-sm text-text-muted">{t("profile.sectionAvatarDesc")}</p>
+                  <p className="text-sm premium-subtitle">{t("profile.sectionAvatarDesc")}</p>
                 </div>
               </div>
               <div className="pl-1">
@@ -546,10 +546,10 @@ export default function ProfilePage() {
                   <SlidersHorizontal className="w-5 h-5 text-company-primary" />
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-text-primary">
+                  <h2 className="text-base premium-section-title">
                     {t("profile.sectionPreferences")}
                   </h2>
-                  <p className="text-sm text-text-muted">{t("profile.sectionPreferencesDesc")}</p>
+                  <p className="text-sm premium-subtitle">{t("profile.sectionPreferencesDesc")}</p>
                 </div>
               </div>
               <div className="pl-1">
@@ -661,7 +661,7 @@ export default function ProfilePage() {
               setTimeout(() => setReverting(false), 300);
             }}
             disabled={!isDirty || submitting || reverting}
-            className="group flex items-center gap-2 px-4 py-2.5 rounded-lg border border-card-border text-sm font-medium text-text-secondary hover:text-red-500 hover:border-red-200 hover:bg-red-50/50 dark:hover:bg-red-500/10 transition-all disabled:opacity-50"
+            className="group flex items-center gap-2 px-4 py-2.5 rounded-lg border border-card-border text-sm font-medium text-text-secondary hover:text-red-500 hover:border-red-200 hover:bg-red-50/50 dark:hover:bg-red-500/10 transition-all disabled:opacity-50 disabled:pointer-events-none disabled:hover:text-text-secondary disabled:hover:border-card-border disabled:hover:bg-transparent dark:disabled:hover:bg-transparent"
           >
             {reverting ? (
               <LoadingSpinner size="sm" />
@@ -755,13 +755,13 @@ function SuperAdminTab({
           <Shield className="w-5 h-5 text-company-primary" />
         </div>
         <div>
-          <h2 className="text-base font-semibold text-text-primary flex items-center gap-2">
+          <h2 className="text-base premium-section-title flex items-center gap-2">
             {t("profile.sectionSuperAdmin")}
             <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">
               {t("common.requiredBadge")}
             </span>
           </h2>
-          <p className="text-sm text-text-muted">{t("profile.sectionSuperAdminDesc")}</p>
+          <p className="text-sm premium-subtitle">{t("profile.sectionSuperAdminDesc")}</p>
         </div>
       </div>
 

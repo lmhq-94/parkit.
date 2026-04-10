@@ -8,7 +8,7 @@ import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "@/app/ag-grid-parkit-overrides.css";
-import { Check, ChevronDown, ChevronRight, Eye, Pencil, Plus, Trash2, X, Search } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Eye, Pencil, Plus, Trash, XCircle, Search } from "@/lib/premiumIcons";
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useDashboardStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
@@ -429,7 +429,7 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
             title={cancelLabel}
             aria-label={cancelLabel}
           >
-            <X className="w-4 h-4" />
+            <XCircle className="w-4 h-4" />
           </button>
         </>
       )}
@@ -487,7 +487,7 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
           title={deleteLabel}
           aria-label={deleteLabel}
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash className="w-4 h-4" />
         </button>
       )}
     </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useToastStore } from "@/lib/toastStore";
-import { Check, AlertCircle, Info, X } from "lucide-react";
+import { Check, AlertOctagon, Info, XCircle } from "@/lib/premiumIcons";
 
 export function Toaster() {
   const toasts = useToastStore((s) => s.toasts);
@@ -33,7 +33,7 @@ export function Toaster() {
           )}
           {toast.type === "error" && (
             <span className="shrink-0 w-8 h-8 rounded-full bg-red-500/15 flex items-center justify-center">
-              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" strokeWidth={2} />
+              <AlertOctagon className="w-4 h-4 text-red-600 dark:text-red-400" strokeWidth={1.5} />
             </span>
           )}
           {toast.type === "info" && (
@@ -50,7 +50,7 @@ export function Toaster() {
             className="shrink-0 p-1 rounded-lg text-text-muted hover:text-text-primary hover:bg-input-bg transition-colors"
             aria-label="Cerrar"
           >
-            <X className="w-4 h-4" />
+            <XCircle className="w-4 h-4" />
           </button>
         </div>
       ))}

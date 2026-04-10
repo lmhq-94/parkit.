@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, Check } from "lucide-react";
+import { ChevronDown, Check } from "@/lib/premiumIcons";
 
 interface MultiSelectOption {
   value: string;

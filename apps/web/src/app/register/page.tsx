@@ -12,11 +12,11 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  CheckCircle2,
-  AlertCircle,
+  CheckCircle,
+  AlertOctagon,
   Check,
   X,
-} from "lucide-react";
+} from "@/lib/premiumIcons";
 import { FcGoogle } from "react-icons/fc";
 import { FaSquareFacebook, FaMicrosoft } from "react-icons/fa6";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -110,11 +110,11 @@ function RegisterForm() {
         <div className="w-full max-w-[360px] text-center">
           <div className="mb-8 flex justify-center">
             <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center">
-              <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+              <CheckCircle className="w-8 h-8 text-emerald-500" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{t("auth.registrationComplete")}</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{t("auth.redirectingToLogin", { seconds: redirectSeconds })}</p>
+          <h1 className="text-[1.75rem] leading-tight premium-title premium-title-glow mb-2">{t("auth.registrationComplete")}</h1>
+          <p className="premium-subtitle text-sm mb-4">{t("auth.redirectingToLogin", { seconds: redirectSeconds })}</p>
           <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
             <div
               className="bg-emerald-500 h-full transition-all duration-1000 ease-linear"
@@ -256,12 +256,12 @@ function RegisterForm() {
       {/* MAIN: Centered Form with Logo */}
       <main className="w-full max-w-[480px] relative z-10">
         {/* Premium Glass Card Container */}
-        <div className="bg-white/90 dark:bg-slate-900/70 backdrop-blur-2xl rounded-3xl border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-8 md:p-10">
+        <div className="bg-white/90 dark:bg-slate-900/70 backdrop-blur-2xl rounded-lg border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-8 md:p-10">
           {/* Logo and Title */}
           <div className="flex flex-col items-center mb-10">
             <Logo variant={logoVariant} className="text-5xl mb-5" />
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">{t("auth.completeProfile")}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 text-center max-w-[280px]">
+            <h1 className="text-[1.75rem] leading-tight premium-title premium-title-glow mb-2">{t("auth.completeProfile")}</h1>
+            <p className="premium-subtitle text-sm text-center max-w-[280px]">
               {t("auth.completeProfileDescription")}
             </p>
           </div>
@@ -269,7 +269,7 @@ function RegisterForm() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
               <div className="p-4 rounded-lg border border-red-500/20 bg-red-500/5 text-sm text-red-600 dark:text-red-400 flex items-center gap-3">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <AlertOctagon className="w-4 h-4 flex-shrink-0" />
                 <span>{error}</span>
               </div>
             )}
@@ -321,12 +321,8 @@ function RegisterForm() {
                   placeholder={t("auth.passwordFieldPlaceholder")}
                   autoComplete="new-password"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">
+                  {showPassword ? <EyeOff className="w-4 h-4 strokeWidth={1.5}" /> : <Eye className="w-4 h-4 strokeWidth={1.5}" />}
                 </button>
               </div>
 

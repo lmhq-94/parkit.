@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Mail, CreditCard, Activity, ArrowRight, Briefcase } from "lucide-react";
+import { User, MailOpen, CreditCard, Activity, ArrowRight, Briefcase } from "@/lib/premiumIcons";
 import { MultiSelectField } from "@/components/MultiSelectField";
 import { DatePickerField } from "@/components/DatePickerField";
 import { SelectField } from "@/components/SelectField";
@@ -134,10 +134,10 @@ export default function EditValetPage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-text-primary">{t("valets.sectionEmployee")}</p>
+            <p className="text-sm premium-section-title">{t("valets.sectionEmployee")}</p>
             <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
           </div>
-          <p className="text-xs text-text-muted mt-1">{t("valets.sectionEmployeeDesc")}</p>
+          <p className="text-xs premium-subtitle mt-1">{t("valets.sectionEmployeeDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -158,7 +158,7 @@ export default function EditValetPage() {
             <div>
               <label className={LABEL}>{t("users.email")} <span className="text-red-500">*</span></label>
               <div className="relative group">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                <MailOpen className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                 <input type="email" value={form.email} onChange={set("email")} className={IL} />
               </div>
             </div>
@@ -170,7 +170,7 @@ export default function EditValetPage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4 flex items-center gap-3">
           <div>
-            <p className="text-sm font-semibold text-text-primary">{t("valets.sectionLicense")}</p>
+            <p className="text-sm premium-section-title">{t("valets.sectionLicense")}</p>
             <p className="text-xs text-text-muted">{t("valets.sectionLicenseDesc")}</p>
           </div>
         </div>
@@ -201,10 +201,10 @@ export default function EditValetPage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-text-primary">{t("valets.sectionStatusEdit")}</p>
+            <p className="text-sm premium-section-title">{t("valets.sectionStatusEdit")}</p>
             <span className="text-[11px] font-medium text-text-muted">{t("common.optionalBadge")}</span>
           </div>
-          <p className="text-xs text-text-muted mt-1">{t("valets.sectionStatusEditDesc")}</p>
+          <p className="text-xs premium-subtitle mt-1">{t("valets.sectionStatusEditDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

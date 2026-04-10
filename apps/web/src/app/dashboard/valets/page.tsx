@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { Mail, Plus } from "lucide-react";
+import { MailOpen, Plus } from "@/lib/premiumIcons";
 import { useRouter } from "next/navigation";
 import type { ICellRendererParams } from "ag-grid-community";
 import { PageLoader } from "@/components/PageLoader";
@@ -265,7 +265,7 @@ export default function ValetsPage() {
                           onClick={() => handleResendInvitation(valet)}
                           className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors"
                         >
-                          <Mail className="w-4 h-4" />
+                          <MailOpen className="w-4 h-4" />
                           {t("tables.employees.resendInvitation")}
                         </button>
                       </div>

@@ -16,11 +16,10 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import type { CompanyBranding } from "@/lib/store";
 import { getAvatarHSLColors, getFullName, getShortName, isSuperAdmin } from "@/lib/auth";
+import { apiClient } from "@/lib/api";
 import { useTheme } from "next-themes";
 import { useLocaleStore } from "@/lib/store";
-import { Sun, Moon } from "lucide-react";
-import { apiClient } from "@/lib/api";
-import { ArrowLeft, ChevronDown, Menu, UserRound, LogOut, User, HelpCircle, Settings } from "lucide-react";
+import { Sun, Moon, ArrowLeft, ChevronDown, Menu, User, LogOut, HelpCircle } from "@/lib/premiumIcons";
 
 const HeaderActionContext = createContext<((node: React.ReactNode) => void) | null>(null);
 export function useHeaderAction() {
@@ -90,7 +89,8 @@ function DashboardLayoutInner({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { t, tWithCompany } = useTranslation();
+  const { t, tEnum, tWithCompany, locale } = useTranslation();
+  const { setLocale } = useLocaleStore();
   const selectedCompanyName = useDashboardStore((s: any) => s.selectedCompanyName);
   const toggleSidebar = useDashboardStore((s: any) => s.toggleSidebar);
   const user = useAuthStore((s: any) => s.user);
@@ -188,7 +188,6 @@ function DashboardLayoutInner({
   const getBrandingFromCache = useDashboardStore((s: any) => s.getBrandingFromCache);
   const setBrandingInCache = useDashboardStore((s: any) => s.setBrandingInCache);
   const { theme, setTheme } = useTheme();
-  const { locale, setLocale } = useLocaleStore();
 
   // Load branding (logo, banner, colors) for dashboard and sidebar. It may already be preloaded on login.
   useEffect(() => {
@@ -267,7 +266,7 @@ function DashboardLayoutInner({
                       >
                         <ArrowLeft className="w-4 h-4 md:w-4 md:h-4 group-hover:-translate-x-1 transition-transform duration-150" />
                       </Link>
-                      <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-text-primary tracking-tight truncate">
+                      <h1 className="text-xl md:text-2xl lg:text-[1.75rem] premium-title truncate">
                         {t(titleKey)}
                       </h1>
                     </div>
@@ -275,13 +274,13 @@ function DashboardLayoutInner({
                     isNoCompaniesPage ? (
                       <Logo className="text-3xl" />
                     ) : (
-                      <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-text-primary tracking-tight truncate">
+                      <h1 className="text-xl md:text-2xl lg:text-[1.75rem] premium-title truncate">
                         {t(titleKey)}
                       </h1>
                     )
                   )}
                   {!isNoCompaniesPage && (
-                    <p className="text-text-secondary text-sm md:text-base mt-1 md:mt-2 font-medium max-w-2xl truncate opacity-90 hidden sm:block">
+                    <p className="premium-subtitle text-sm md:text-[0.95rem] mt-1.5 md:mt-2 max-w-2xl truncate hidden sm:block">
                       {descriptionText}
                     </p>
                   )}
@@ -311,9 +310,17 @@ function DashboardLayoutInner({
                     <button
                       type="button"
                       onClick={() => {
+                        // Pre-calculate position before opening to avoid initial jump
+                        if (!userMenuOpen && userMenuRef.current) {
+                          const rect = userMenuRef.current.getBoundingClientRect();
+                          setUserMenuPosition({
+                            top: rect.bottom + 4,
+                            right: window.innerWidth - rect.right,
+                          });
+                        }
                         setUserMenuOpen((open) => !open);
                       }}
-                      className={`group relative h-11 pl-1 pr-3 flex items-center gap-2.5 rounded-full transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] ${
+                      className={`group relative h-11 pl-1 pr-3 flex items-center gap-2.5 rounded-xl transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] ${
                         userMenuOpen
                           ? "bg-white/80 dark:bg-slate-800/80 shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),0_2px_8px_rgba(0,0,0,0.3)] ring-2 ring-company-primary/20"
                           : "bg-white/60 dark:bg-slate-900/60 hover:bg-white/90 dark:hover:bg-slate-800/90 shadow-[0_4px_20px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3),0_1px_3px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_28px_rgba(0,0,0,0.12),0_2px_6px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_28px_rgba(0,0,0,0.4),0_2px_6px_rgba(0,0,0,0.3)] backdrop-blur-xl border border-white/40 dark:border-white/10"
@@ -327,7 +334,7 @@ function DashboardLayoutInner({
                         const hasAvatar = (user.avatarUrl ?? user.avatar)?.trim();
                         return (
                           <div 
-                            className={`relative w-9 h-9 rounded-full overflow-hidden flex items-center justify-center shrink-0 transition-transform duration-300 ease-out ${
+                            className={`relative w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center shrink-0 transition-transform duration-300 ease-out ${
                               userMenuOpen ? "scale-95" : "group-hover:scale-105"
                             }`}
                             style={{
@@ -362,7 +369,7 @@ function DashboardLayoutInner({
                           {user.email}
                         </span>
                       </div>
-                      <div className={`ml-1 flex items-center justify-center w-5 h-5 rounded-full bg-slate-100/80 dark:bg-slate-800/80 transition-all duration-300 ${
+                      <div className={`ml-1 flex items-center justify-center w-5 h-5 rounded-md bg-slate-100/80 dark:bg-slate-800/80 transition-all duration-300 ${
                         userMenuOpen ? "rotate-180 bg-company-primary/10" : "group-hover:bg-slate-200/80 dark:group-hover:bg-slate-700/80"
                       }`}>
                         <ChevronDown
@@ -391,20 +398,16 @@ function DashboardLayoutInner({
                           backdropFilter: "blur(24px) saturate(180%)",
                         }}
                       >
-                        {/* Header con info del usuario */}
-                        <div className="px-4 py-3.5 border-b border-slate-200/60 dark:border-slate-700/60">
-                          <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                            {t("sidebar.signedInAs")}
-                          </p>
-                          <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 mt-0.5 truncate">
-                            {getFullName(user) || user.email}
-                          </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                            {user.email}
-                          </p>
-                        </div>
+                        <div className="p-1 overflow-y-auto overscroll-contain min-h-0 flex-1">
+                          {/* Context: Role */}
+                          <div className="px-3 py-2">
+                            <span className="text-[10px] font-medium text-company-primary uppercase tracking-wider">
+                              {tEnum("systemRole", user.systemRole)}
+                            </span>
+                          </div>
 
-                        <div className="p-1.5 overflow-y-auto overscroll-contain min-h-0 flex-1 space-y-0.5">
+                          <div className="h-px mx-3 bg-slate-100 dark:bg-slate-800" />
+
                           {/* Only show My Profile when a company is selected */}
                           {selectedCompanyId && (
                             <button
@@ -413,29 +416,12 @@ function DashboardLayoutInner({
                                 setUserMenuOpen(false);
                                 router.push("/dashboard/profile");
                               }}
-                              className="group w-full px-3 py-2.5 text-left text-sm rounded-xl transition-all duration-200 text-slate-700 dark:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 flex items-center gap-3"
+                              className="group w-full px-3 py-2 text-left text-[13px] rounded-lg transition-colors text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5"
                             >
-                              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-white dark:group-hover:bg-slate-700 group-hover:text-company-primary transition-all duration-200 shadow-sm">
-                                <UserRound className="w-4 h-4" />
-                              </span>
-                              <span className="font-medium">{t("sidebar.profile")}</span>
+                              <User className="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300" />
+                              <span>{t("sidebar.profile")}</span>
                             </button>
                           )}
-
-                          {/* Settings */}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setUserMenuOpen(false);
-                              router.push("/dashboard/settings");
-                            }}
-                            className="group w-full px-3 py-2.5 text-left text-sm rounded-xl transition-all duration-200 text-slate-700 dark:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 flex items-center gap-3"
-                          >
-                            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-white dark:group-hover:bg-slate-700 group-hover:text-company-primary transition-all duration-200 shadow-sm">
-                              <Settings className="w-4 h-4" />
-                            </span>
-                            <span className="font-medium">{t("sidebar.settings")}</span>
-                          </button>
 
                           {/* Mobile theme & language - more compact */}
                           <div className="md:hidden px-2 py-2 space-y-3">
@@ -491,8 +477,7 @@ function DashboardLayoutInner({
                             </div>
                           </div>
 
-                          {/* Divider */}
-                          <div className="h-px mx-3 my-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent" />
+                          <div className="h-px mx-3 my-1 bg-slate-100 dark:bg-slate-800" />
 
                           {/* Help */}
                           <button
@@ -501,16 +486,13 @@ function DashboardLayoutInner({
                               setUserMenuOpen(false);
                               setHelpModalOpen(true);
                             }}
-                            className="group w-full px-3 py-2.5 text-left text-sm rounded-xl transition-all duration-200 text-slate-700 dark:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 flex items-center gap-3"
+                            className="group w-full px-3 py-2 text-left text-[13px] rounded-lg transition-colors text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5"
                           >
-                            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-white dark:group-hover:bg-slate-700 group-hover:text-company-primary transition-all duration-200 shadow-sm">
-                              <HelpCircle className="w-4 h-4" />
-                            </span>
-                            <span className="font-medium">{t("sidebar.help")}</span>
+                            <HelpCircle className="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300" />
+                            <span>{t("sidebar.help")}</span>
                           </button>
 
-                          {/* Divider before logout */}
-                          <div className="h-px mx-3 my-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent" />
+                          <div className="h-px mx-3 my-1 bg-slate-100 dark:bg-slate-800" />
 
                           {/* Logout */}
                           <button
@@ -524,12 +506,10 @@ function DashboardLayoutInner({
                                 router.replace("/login");
                               }
                             }}
-                            className="group w-full px-3 py-2.5 text-left text-sm rounded-xl transition-all duration-200 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-3"
+                            className="group w-full px-3 py-2 text-left text-[13px] rounded-lg transition-colors text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2.5"
                           >
-                            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 group-hover:bg-red-100 dark:group-hover:bg-red-500/20 transition-all duration-200">
-                              <LogOut className="w-4 h-4" />
-                            </span>
-                            <span className="font-medium">{t("auth.signOut")}</span>
+                            <LogOut className="w-4 h-4" />
+                            <span>{t("auth.signOut")}</span>
                           </button>
                         </div>
                       </div>,

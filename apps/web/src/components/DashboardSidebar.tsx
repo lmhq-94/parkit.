@@ -7,7 +7,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore, useDashboardStore, SIDEBAR_COLLAPSED_KEY } from "@/lib/store";
-import { getAvatarColor, isSuperAdmin, isAdmin } from "@/lib/auth";
+import { isSuperAdmin, isAdmin } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
 import { DefaultBanner } from "@/components/DefaultBanner";
 import { apiClient } from "@/lib/api";
@@ -16,19 +16,19 @@ import {
   LayoutDashboard,
   Users,
   Shield,
-  UserRound,
+  User,
   Car,
   MapPin,
-  CalendarCheck,
-  Ticket,
+  Calendar,
+  TicketCheck,
   Bell,
   Settings,
-  PanelLeftClose,
-  PanelLeft,
+  ChevronsRight,
+  ChevronsLeft,
   ChevronRight,
   ChevronDown,
-  Building2,
-} from "lucide-react";
+  Building,
+} from "@/lib/premiumIcons";
 
 function SidebarTooltip({
   show,
@@ -246,7 +246,7 @@ function CompanySelector({
   const dropdown = open && typeof document !== "undefined" && createPortal(
     <div
       data-company-dropdown
-      className="fixed z-[99999] flex flex-col rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+      className="fixed z-[99999] flex flex-col rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200"
       style={{
         ...dropdownStyles,
         top: position.top,
@@ -264,7 +264,7 @@ function CompanySelector({
               key={c.id}
               type="button"
               onClick={() => { onSelect(c.id, name, c.requiresCustomerApp); setOpen(false); }}
-              className={`group w-full px-3 py-2.5 text-left text-sm transition-all duration-200 rounded-xl truncate flex items-center gap-3 ${
+              className={`group w-full px-3 py-2.5 text-left text-sm transition-all duration-200 rounded-lg truncate flex items-center gap-3 ${
                 selectedCompanyId === c.id
                   ? "bg-company-primary/10 dark:bg-company-primary/20 text-slate-800 dark:text-white font-medium"
                   : "text-slate-700 dark:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/80"
@@ -285,7 +285,7 @@ function CompanySelector({
         <Link
           href="/dashboard/companies"
           onClick={() => setOpen(false)}
-          className="block px-3 py-2.5 text-left text-sm text-company-primary hover:bg-company-primary/10 dark:hover:bg-company-primary/20 transition-all rounded-xl font-medium"
+          className="block px-3 py-2.5 text-left text-sm text-company-primary hover:bg-company-primary/10 dark:hover:bg-company-primary/20 transition-all rounded-lg font-medium"
         >
           {allCompaniesLabel}
         </Link>
@@ -302,22 +302,26 @@ function CompanySelector({
       <div className="relative flex items-center gap-3">
         {!hideAvatar && (
           <div
-            className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold border border-white/20 overflow-hidden bg-input-bg"
+            className="w-9 h-9 rounded-lg shrink-0 flex items-center justify-center text-xs font-semibold overflow-hidden"
             style={
               !logoImageUrl?.trim()
                 ? {
-                    backgroundColor: selectedCompanyId ? (getAvatarColor(selectedCompanyId) ?? "var(--input-bg)") : "transparent",
-                    color: "white",
+                    backgroundColor: selectedCompanyId ? (isDark ? "hsla(220, 10%, 35%, 1)" : "hsla(220, 10%, 88%, 1)") : "transparent",
+                    color: isDark ? "hsla(220, 10%, 85%, 1)" : "hsla(220, 10%, 45%, 1)",
+                    border: `2px solid ${selectedCompanyId ? (isDark ? "hsla(220, 15%, 45%, 0.4)" : "hsla(220, 15%, 75%, 0.6)") : "transparent"}`,
                   }
-                : undefined
+                : {
+                    border: "2px solid transparent",
+                    boxShadow: "inset 0 2px 4px rgba(0,0,0,0.1)",
+                  }
             }
           >
             {logoImageUrl?.trim() ? (
-              <Image src={logoImageUrl} alt="" width={40} height={40} className="w-full h-full object-cover object-center" key={logoImageUrl} />
+              <Image src={logoImageUrl} alt="" width={36} height={36} className="w-full h-full object-cover object-center" key={logoImageUrl} />
             ) : selectedCompanyId ? (
               selectedInitials
             ) : (
-              <Building2 className={`w-4 h-4 ${isDark ? "text-white/60" : "text-slate-500"}`} />
+              <Building className={`w-[18px] h-[18px] ${isDark ? "text-white/60" : "text-slate-500"}`} />
             )}
           </div>
         )}
@@ -325,7 +329,7 @@ function CompanySelector({
           ref={triggerRef}
           type="button"
           onClick={() => { if (!open) updatePosition(); setOpen((o) => !o); }}
-          className={`flex-1 flex items-center min-w-0 ${hideAvatar ? "pl-4" : "pl-3"} pr-9 py-2.5 rounded-xl text-left text-sm transition-all duration-300 ease-out ${
+          className={`flex-1 flex items-center min-w-0 ${hideAvatar ? "pl-4" : "pl-3"} pr-9 py-2.5 rounded-lg text-left text-sm transition-all duration-300 ease-out ${
             highContrast
               ? `bg-white/25 hover:bg-white/35 ${isDark ? "text-white" : "text-slate-800"} border border-white/30 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.08),0_1px_2px_rgba(255,255,255,0.3)_inset] backdrop-blur-xl hover:shadow-[0_6px_20px_-4px_rgba(0,0,0,0.1)] hover:border-white/50 hover:scale-[1.02]`
               : isDark
@@ -501,13 +505,13 @@ export function DashboardSidebar() {
     const mainItems = [
       { label: t("sidebar.overview"), href: "/dashboard", icon: LayoutDashboard },
       { label: t("sidebar.parkings"), href: "/dashboard/parkings", icon: MapPin },
-      ...(hasBookableParkings ? [{ label: t("sidebar.bookings"), href: "/dashboard/bookings", icon: CalendarCheck }] : []),
-      { label: t("sidebar.tickets"), href: "/dashboard/tickets", icon: Ticket },
+      ...(hasBookableParkings ? [{ label: t("sidebar.bookings"), href: "/dashboard/bookings", icon: Calendar }] : []),
+      { label: t("sidebar.tickets"), href: "/dashboard/tickets", icon: TicketCheck },
     ];
 
     const teamItems = [
       ...(admin ? [{ label: t("sidebar.employees"), href: "/dashboard/users", icon: Shield }] : []),
-      ...(superAdmin ? [{ label: t("sidebar.valets"), href: "/dashboard/valets", icon: UserRound }] : []),
+      ...(superAdmin ? [{ label: t("sidebar.valets"), href: "/dashboard/valets", icon: User }] : []),
     ];
 
     const clientsItems = [
@@ -578,10 +582,10 @@ export function DashboardSidebar() {
           <SidebarTooltip show label={t("sidebar.expand")}>
             <button
               onClick={toggleCollapsed}
-              className="p-2.5 rounded-xl text-text-muted hover:text-company-primary hover:bg-company-primary/10 transition-all duration-300 ease-out w-full flex justify-center group"
+              className="p-2.5 rounded-lg text-text-muted hover:text-company-primary hover:bg-company-primary/10 transition-all duration-300 ease-out w-full flex justify-center group"
               aria-label="Expand sidebar"
             >
-              <PanelLeft className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+              <ChevronsLeft className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
             </button>
           </SidebarTooltip>
         ) : (
@@ -593,10 +597,10 @@ export function DashboardSidebar() {
               {/* Collapse button: only visible on md+ */}
               <button
                 onClick={toggleCollapsed}
-                className="hidden md:flex p-2 rounded-xl text-text-muted hover:text-company-primary hover:bg-company-primary/10 transition-all duration-300 ease-out shrink-0 group"
+                className="hidden md:flex p-2 rounded-lg text-text-muted hover:text-company-primary hover:bg-company-primary/10 transition-all duration-300 ease-out shrink-0 group"
                 aria-label="Collapse sidebar"
               >
-                <PanelLeftClose className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+                <ChevronsRight className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
               </button>
             </div>
           </>
@@ -653,10 +657,10 @@ export function DashboardSidebar() {
             <div className="border-b border-card-border/25 dark:border-white/[0.04] px-3 py-3 shrink-0">
               <Link
                 href="/dashboard/companies/new?first=1"
-                className="group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-text-muted hover:bg-input-bg hover:text-text-secondary"
+                className="group relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-text-muted hover:bg-input-bg hover:text-text-secondary"
               >
-                <span className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0 transition-all duration-200 bg-company-primary/10 text-company-primary group-hover:bg-company-primary/15">
-                  <Building2 className="w-5 h-5" />
+                <span className="flex items-center justify-center w-9 h-9 rounded-lg shrink-0 transition-all duration-200 bg-company-primary/10 text-company-primary group-hover:bg-company-primary/15">
+                  <Building className="w-5 h-5" />
                 </span>
                 <span className="font-medium truncate">
                   {t("companies.createCompany")}
@@ -688,7 +692,7 @@ export function DashboardSidebar() {
                           isActive ? "opacity-100 h-7" : "opacity-0 h-0"
                         }`}
                       />
-                      <span className={`flex items-center justify-center w-10 h-10 rounded-xl shrink-0 transition-all duration-300 ease-out ${
+                      <span className={`flex items-center justify-center w-10 h-10 rounded-lg shrink-0 transition-all duration-300 ease-out ${
                           isActive 
                             ? "bg-gradient-to-br from-company-primary/20 to-company-primary/5 shadow-[0_2px_8px_-2px_rgba(var(--company-primary-rgb),0.2)]" 
                             : "group-hover:bg-input-bg/50"
@@ -734,7 +738,7 @@ export function DashboardSidebar() {
                           onClick={() => {
                             handleNavClick();
                           }}
-                          className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] ${
+                          className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] ${
                             collapsed ? "justify-center mx-1" : "mx-1"
                           } ${
                             isActive
@@ -757,16 +761,16 @@ export function DashboardSidebar() {
       )}
 
       {/* Footer: Copyright */}
-      <footer className="border-t border-card-border/20 dark:border-white/[0.03] bg-gradient-to-b from-transparent via-page/50 to-page px-3 py-3.5 shrink-0">
+      <footer className="bg-gradient-to-b from-transparent via-page/50 to-page px-3 py-3.5 shrink-0">
         {!collapsed ? (
-          <div className="flex flex-col items-center gap-1">
-            <p className="text-[9px] text-text-muted/60 text-center leading-tight">
+          <div className="flex flex-col items-start gap-1 px-3">
+            <p className="text-[9px] text-text-muted dark:text-company-tertiary/60 text-left leading-tight">
               © {new Date().getFullYear()} Parkit. {t("sidebar.allRightsReserved")}
             </p>
           </div>
         ) : (
           <div className="flex justify-center">
-            <span className="text-[8px] text-text-muted/40">©{String(new Date().getFullYear()).slice(-2)}</span>
+            <span className="text-[8px] text-text-muted dark:text-company-tertiary/40">©{String(new Date().getFullYear()).slice(-2)}</span>
           </div>
         )}
       </footer>

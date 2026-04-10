@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Car, Hash, Globe, ArrowRight, Users } from "lucide-react";
+import { Car, Hash, Globe, ArrowRight, Users } from "@/lib/premiumIcons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
@@ -271,10 +271,10 @@ export default function EditVehiclePage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-text-primary">{t("vehicles.sectionMain")}</p>
+            <p className="text-sm premium-section-title">{t("vehicles.sectionMain")}</p>
             <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
           </div>
-          <p className="text-xs text-text-muted mt-1">{t("vehicles.sectionMainDesc")}</p>
+          <p className="text-xs premium-subtitle mt-1">{t("vehicles.sectionMainDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -365,10 +365,10 @@ export default function EditVehiclePage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-text-primary">{t("vehicles.sectionExtra")}</p>
+            <p className="text-sm premium-section-title">{t("vehicles.sectionExtra")}</p>
             <span className="text-[11px] font-medium text-text-muted">{t("common.optionalBadge")}</span>
           </div>
-          <p className="text-xs text-text-muted mt-1">{t("vehicles.sectionExtraDesc")}</p>
+          <p className="text-xs premium-subtitle mt-1">{t("vehicles.sectionExtraDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

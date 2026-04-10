@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Users, Car, MapPin } from "lucide-react";
+import { Users, Car, MapPin } from "@/lib/premiumIcons";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { DateTimePickerField } from "@/components/DateTimePickerField";

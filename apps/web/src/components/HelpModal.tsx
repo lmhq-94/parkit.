@@ -2,7 +2,7 @@
 
 import { createPortal } from "react-dom";
 import { useState } from "react";
-import { HelpCircle, X, Mail, MessageSquare, FileText, ExternalLink, Shield, Scale, ChevronDown } from "lucide-react";
+import { HelpCircle, XCircle, MailOpen, MessageSquare, BookOpen, ExternalLink, Shield, Gavel, ChevronDown } from "@/lib/premiumIcons";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface HelpModalProps {
@@ -30,11 +30,11 @@ export function HelpModal({ open, onClose }: HelpModalProps) {
         onClick={onClose}
       />
       <div
-        className="relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-2xl border border-card-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-lg border border-card-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-card-border shrink-0">
-          <h2 id="help-modal-title" className="text-sm font-semibold text-text-primary flex items-center gap-2">
+          <h2 id="help-modal-title" className="text-sm premium-section-title flex items-center gap-2">
             <HelpCircle className="w-4 h-4 text-company-primary" />
             {t("help.title")}
           </h2>
@@ -44,14 +44,14 @@ export function HelpModal({ open, onClose }: HelpModalProps) {
             className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-input-bg transition-colors"
             aria-label={t("common.close")}
           >
-            <X className="w-5 h-5" />
+            <XCircle className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-6 space-y-6 overflow-auto">
           {/* Contact Support Section */}
           <div className="space-y-3">
-            <h3 className="text-sm font-medium text-text-secondary">
+            <h3 className="premium-label text-text-secondary">
               {t("help.contactSupport")}
             </h3>
             <a
@@ -59,7 +59,7 @@ export function HelpModal({ open, onClose }: HelpModalProps) {
               className="flex items-center gap-3 p-4 rounded-lg border border-input-border bg-input-bg hover:bg-company-primary-subtle transition-colors group"
             >
               <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-company-primary/10 text-company-primary group-hover:bg-company-primary group-hover:text-white transition-colors">
-                <Mail className="w-5 h-5" />
+                <MailOpen className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-text-primary">{t("help.emailSupport")}</p>
@@ -71,7 +71,7 @@ export function HelpModal({ open, onClose }: HelpModalProps) {
 
           {/* Resources Section */}
           <div className="space-y-3">
-            <h3 className="text-sm font-medium text-text-secondary">
+            <h3 className="premium-label text-text-secondary">
               {t("help.resources")}
             </h3>
             <div className="space-y-2">
@@ -82,7 +82,7 @@ export function HelpModal({ open, onClose }: HelpModalProps) {
                 className="flex items-center gap-3 p-3 rounded-lg border border-input-border bg-input-bg hover:bg-company-primary-subtle transition-colors group"
               >
                 <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-company-secondary/10 text-company-secondary group-hover:bg-company-primary group-hover:text-white transition-colors">
-                  <FileText className="w-4 h-4" />
+                  <BookOpen className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-text-primary">{t("help.documentation")}</p>
@@ -124,7 +124,7 @@ export function HelpModal({ open, onClose }: HelpModalProps) {
                 className="flex items-center gap-3 p-3 rounded-lg border border-input-border bg-input-bg hover:bg-company-primary-subtle transition-colors group"
               >
                 <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-company-secondary/10 text-company-secondary group-hover:bg-company-primary group-hover:text-white transition-colors">
-                  <Scale className="w-4 h-4" />
+                  <Gavel className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-text-primary">{t("help.terms")}</p>

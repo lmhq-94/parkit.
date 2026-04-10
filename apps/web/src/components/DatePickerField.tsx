@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { Calendar, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, XCircle } from "@/lib/premiumIcons";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface DatePickerFieldProps {
@@ -290,7 +290,7 @@ export function DatePickerField({
               onClick={() => { onChange(""); setOpen(false); }}
               className="text-xs text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center gap-1"
             >
-              <X className="w-3 h-3" />
+              <XCircle className="w-3 h-3" />
               {t("datepicker.clear")}
             </button>
           </div>
@@ -303,7 +303,7 @@ export function DatePickerField({
 
   const triggerClasses = compact
     ? [
-        "w-full py-2 pl-8 pr-3 rounded-md border text-sm text-left transition-colors cursor-pointer",
+        "w-full py-2 pl-8 pr-3 rounded-lg border text-sm text-left transition-colors cursor-pointer",
         open
           ? "border-company-primary ring-1 ring-company-primary-full"
           : "border-transparent hover:border-company-primary-muted bg-transparent",

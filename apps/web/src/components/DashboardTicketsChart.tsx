@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   AreaChart,
   Area,
@@ -22,9 +23,19 @@ interface DashboardTicketsChartProps {
 }
 
 export function DashboardTicketsChart({ data, ticketsLabel }: DashboardTicketsChartProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  if (!mounted) {
+    return <div className="w-full h-full" />;
+  }
+
   return (
-    <ResponsiveContainer width="100%" height="100%" minHeight={240} minWidth={0}>
-      <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+    <div className="w-full h-full">
+      <ResponsiveContainer width="100%" height="100%" debounce={50}>
+        <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="ticketsGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="var(--company-primary, #2563eb)" stopOpacity={0.4} />
@@ -56,7 +67,7 @@ export function DashboardTicketsChart({ data, ticketsLabel }: DashboardTicketsCh
             fontSize: "12px",
           }}
           labelStyle={{ color: "var(--text-primary)" }}
-          formatter={(value: number | undefined) => [value ?? 0, ticketsLabel]}
+          formatter={(value) => [Number(value ?? 0), ticketsLabel]}
           labelFormatter={(label) => label}
         />
         <Area
@@ -67,6 +78,7 @@ export function DashboardTicketsChart({ data, ticketsLabel }: DashboardTicketsCh
           fill="url(#ticketsGradient)"
         />
       </AreaChart>
-    </ResponsiveContainer>
+      </ResponsiveContainer>
+    </div>
   );
 }

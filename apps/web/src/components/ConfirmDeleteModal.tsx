@@ -2,7 +2,7 @@
 
 import { createPortal } from "react-dom";
 import { useEffect } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertOctagon } from "@/lib/premiumIcons";
 
 export function ConfirmDeleteModal({
   open,
@@ -48,16 +48,16 @@ export function ConfirmDeleteModal({
         aria-label={cancelLabel}
         onClick={loading ? undefined : onCancel}
       />
-      <div className="relative w-full max-w-sm rounded-2xl border border-card-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-sm rounded-lg border border-card-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="p-6 flex flex-col items-center text-center gap-4">
           <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-500/10 text-red-600 dark:text-red-400">
-            <AlertTriangle className="w-6 h-6" strokeWidth={2} />
+            <AlertOctagon className="w-6 h-6" strokeWidth={1.5} />
           </div>
           <div className="space-y-1">
-            <h2 id="confirm-delete-title" className="text-sm font-semibold text-text-primary">
+            <h2 id="confirm-delete-title" className="text-sm premium-section-title">
               {title}
             </h2>
-            <p id="confirm-delete-desc" className="text-sm text-text-secondary">
+            <p id="confirm-delete-desc" className="text-sm premium-subtitle">
               {message}
             </p>
           </div>

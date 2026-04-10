@@ -8,7 +8,7 @@ import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { checkPasswordRequirements, isPasswordSecure } from "@parkit/shared";
 import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Lock, Eye, EyeOff, ArrowRight, CheckCircle, Check, Circle } from "lucide-react";
+import { Lock, Eye, EyeOff, ArrowRight, CheckCircle, Check, Circle } from "@/lib/premiumIcons";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageLoader } from "@/components/PageLoader";
 import { ThemeToggleSimple } from "@/components/ThemeToggleSimple";
@@ -126,7 +126,7 @@ function AcceptInviteForm() {
         <AnimatedBackground />
         <TopRightToggles />
         <main className="w-full max-w-[480px] relative z-10">
-          <div className="bg-white/90 dark:bg-slate-900/70 backdrop-blur-2xl rounded-3xl border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-8 md:p-10 text-center">
+          <div className="bg-white/90 dark:bg-slate-900/70 backdrop-blur-2xl rounded-lg border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-8 md:p-10 text-center">
             <Logo variant={logoVariant} className="text-5xl mx-auto mb-6" />
             <p className="text-slate-600 dark:text-slate-300 mb-6">{t("auth.inviteExpiredOrInvalid")}</p>
             <Link href="/login" className="group inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm font-medium">
@@ -146,13 +146,13 @@ function AcceptInviteForm() {
         <AnimatedBackground />
         <TopRightToggles />
         <main className="w-full max-w-[480px] relative z-10">
-          <div className="bg-white/90 dark:bg-slate-900/70 backdrop-blur-2xl rounded-3xl border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-8 md:p-10 text-center">
+          <div className="bg-white/90 dark:bg-slate-900/70 backdrop-blur-2xl rounded-lg border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-8 md:p-10 text-center">
             <Logo variant={logoVariant} className="text-5xl mx-auto mb-6" />
             <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-4">
               <CheckCircle className="w-8 h-8" />
             </span>
-            <h1 className="text-xl font-semibold text-slate-800 dark:text-white mb-2">{t("auth.passwordSetSuccess")}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">{t("auth.redirectingToLogin", { seconds: redirectSeconds })}</p>
+            <h1 className="text-[1.35rem] premium-title mb-2">{t("auth.passwordSetSuccess")}</h1>
+            <p className="premium-subtitle text-sm mb-6">{t("auth.redirectingToLogin", { seconds: redirectSeconds })}</p>
             <Link href="/login" className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
               {t("auth.backToSignIn")}
               <ArrowRight className="w-4 h-4" />
@@ -170,11 +170,11 @@ function AcceptInviteForm() {
       <TopRightToggles />
       
       <main className="w-full max-w-[480px] relative z-10">
-        <div className="bg-white/90 dark:bg-slate-900/70 backdrop-blur-2xl rounded-3xl border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-8 md:p-10">
+        <div className="bg-white/90 dark:bg-slate-900/70 backdrop-blur-2xl rounded-lg border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-8 md:p-10">
           <div className="flex flex-col items-center mb-10">
             <Logo variant={logoVariant} className="text-5xl mb-5" />
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">{t("auth.acceptInviteTitle")}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 text-center">{t("auth.acceptInviteDescription")}</p>
+            <h1 className="text-[1.75rem] leading-tight premium-title premium-title-glow mb-2">{t("auth.acceptInviteTitle")}</h1>
+            <p className="premium-subtitle text-sm text-center">{t("auth.acceptInviteDescription")}</p>
           </div>
 
           {error && (

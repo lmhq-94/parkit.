@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown } from "@/lib/premiumIcons";
 import { useToast } from "@/lib/toastStore";
 
 export type StatusStyle = { text: string; dot: string };

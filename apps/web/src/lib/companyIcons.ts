@@ -18,8 +18,8 @@ import {
   BookOpen,
   Store,
   University,
-  type LucideIcon,
-} from "lucide-react";
+  type PremiumIcon,
+} from "@/lib/premiumIcons";
 
 export type IndustryValue =
   | "PARKING_OPERATOR"
@@ -42,7 +42,7 @@ export type IndustryValue =
   | "EDUCATION"
   | "OTHER";
 
-export const INDUSTRY_ICONS: Record<IndustryValue, LucideIcon> = {
+export const INDUSTRY_ICONS: Record<IndustryValue, PremiumIcon> = {
   AIRPORT: Plane,
   BANKING_FINANCIAL: Landmark,
   MALL: ShoppingBag,
@@ -66,7 +66,7 @@ export const INDUSTRY_ICONS: Record<IndustryValue, LucideIcon> = {
 
 export function getIndustryIcon(
   industry: string | null | undefined,
-): LucideIcon {
+): PremiumIcon {
   if (!industry) return Building2;
   const normalized = industry.trim().toUpperCase();
   return INDUSTRY_ICONS[normalized as IndustryValue] || Building2;

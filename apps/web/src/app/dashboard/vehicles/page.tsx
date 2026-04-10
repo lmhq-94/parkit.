@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { Plus } from "lucide-react";
+import { Plus } from "@/lib/premiumIcons";
 import { useRouter } from "next/navigation";
 import { PageLoader } from "@/components/PageLoader";
 

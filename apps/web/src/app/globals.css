@@ -108,6 +108,62 @@ body {
   @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800;
 }
 
+/* Premium Typography - Títulos y subtítulos elegantes */
+
+/* Título principal Premium - Para headers de página */
+.premium-title {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--company-primary, #2563eb) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Subtítulo Premium - Complemento elegante */
+.premium-subtitle {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+/* Título de sección Premium */
+.premium-section-title {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+/* Título de card/modal Premium */
+.premium-card-title {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+/* Label/Label pequeño Premium - uppercase elegante */
+.premium-label {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--company-primary, #2563eb);
+}
+
+/* Efecto de brillo sutil para títulos importantes */
+.premium-title-glow {
+  text-shadow: 0 0 40px rgba(37, 99, 235, 0.15);
+}
+
 /* AG Grid: headers without uppercase */
 .ag-theme-quartz .ag-header-cell-label {
   text-transform: none;

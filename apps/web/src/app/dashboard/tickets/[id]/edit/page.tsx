@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Users, Car, MapPin, ArrowRight, UserRound } from "lucide-react";
+import { Users, Car, MapPin, ArrowRight, User } from "@/lib/premiumIcons";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
@@ -148,10 +148,10 @@ export default function EditTicketPage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-text-primary">{t("tickets.sectionMain")}</p>
+            <p className="text-sm premium-section-title">{t("tickets.sectionMain")}</p>
             <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
           </div>
-          <p className="text-xs text-text-muted mt-1">{t("tickets.sectionMainDesc")}</p>
+          <p className="text-xs premium-subtitle mt-1">{t("tickets.sectionMainDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -197,17 +197,17 @@ export default function EditTicketPage() {
       <div className="overflow-hidden mt-6">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-text-primary">{t("tickets.sectionAssignments")}</p>
+            <p className="text-sm premium-section-title">{t("tickets.sectionAssignments")}</p>
             <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
           </div>
-          <p className="text-xs text-text-muted mt-1">{t("tickets.sectionAssignmentsDesc")}</p>
+          <p className="text-xs premium-subtitle mt-1">{t("tickets.sectionAssignmentsDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <div>
               <label className={LABEL}>{t("tickets.receptorValet")} <span className="text-company-primary">*</span></label>
               {valets.length === 0 ? skel : (
-                <SelectField value={form.receptorValetId} onChange={set("receptorValetId")} icon={UserRound}>
+                <SelectField value={form.receptorValetId} onChange={set("receptorValetId")} icon={User}>
                   <option value="">{t("common.selectPlaceholder")}</option>
                   {valets.map((v) => (
                     <option key={v.id} value={v.id}>
@@ -220,7 +220,7 @@ export default function EditTicketPage() {
             <div>
               <label className={LABEL}>{t("tickets.driverValet")}</label>
               {valets.length === 0 ? skel : (
-                <SelectField value={form.driverValetId} onChange={set("driverValetId")} icon={UserRound}>
+                <SelectField value={form.driverValetId} onChange={set("driverValetId")} icon={User}>
                   <option value="">{t("common.selectPlaceholder")}</option>
                   {valets.map((v) => (
                     <option key={v.id} value={v.id}>
@@ -233,7 +233,7 @@ export default function EditTicketPage() {
             <div>
               <label className={LABEL}>{t("tickets.delivererValet")}</label>
               {valets.length === 0 ? skel : (
-                <SelectField value={form.delivererValetId} onChange={set("delivererValetId")} icon={UserRound}>
+                <SelectField value={form.delivererValetId} onChange={set("delivererValetId")} icon={User}>
                   <option value="">{t("common.selectPlaceholder")}</option>
                   {valets.map((v) => (
                     <option key={v.id} value={v.id}>
