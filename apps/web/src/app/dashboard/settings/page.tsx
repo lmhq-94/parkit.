@@ -10,9 +10,9 @@ import {
   ImageIcon,
   Sparkles,
   Eye,
-  Building2,
+  Building,
   RotateCcw,
-  CheckCircle2,
+  CheckCircle,
 } from "lucide-react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -120,7 +120,7 @@ function ColorInput({
               animate={{ scale: 1, rotate: 0 }}
               exit={{ scale: 0, rotate: 180 }}
             >
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              <CheckCircle className="w-4 h-4 text-emerald-500" />
             </motion.div>
           ) : (
             <motion.div key="copy" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
@@ -179,13 +179,13 @@ function BrandingPreview({ form, t, companyName }: { form: BrandingConfig; t: (k
             {form.logoImageUrl ? (
               <Image src={form.logoImageUrl} alt="" fill className="object-cover" sizes="80px" />
             ) : (
-              <Building2 className="w-10 h-10" style={{ color: colors.primary }} />
+              <Building className="w-10 h-10" style={{ color: colors.primary }} />
             )}
           </div>
 
           <div className="pt-2">
             <p className="font-semibold text-text-primary">{companyName || t("settings.previewCompany")}</p>
-            <p className="text-xs text-text-muted">{t("settings.previewLabel")}</p>
+            <p className="text-xs premium-subtitle">{t("settings.previewLabel")}</p>
           </div>
         </div>
 
@@ -500,11 +500,11 @@ export default function SettingsPage() {
                       <ImageIcon className="w-5 h-5 text-company-primary" />
                     </div>
                     <div>
-                      <h2 className="text-base font-semibold text-text-primary flex items-center gap-2">
+                      <h2 className="text-base premium-section-title flex items-center gap-2">
                         {t("settings.companyTheme")}
                         <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-text-muted/10 text-text-muted">{t("common.optionalBadge")}</span>
                       </h2>
-                      <p className="text-sm text-text-muted">{t("settings.companyThemeDescription")}</p>
+                      <p className="text-sm premium-subtitle">{t("settings.companyThemeDescription")}</p>
                     </div>
                   </div>
                   <div className="space-y-8 pl-1">
@@ -543,8 +543,8 @@ export default function SettingsPage() {
                         <Palette className="w-5 h-5 text-company-primary" />
                       </div>
                       <div>
-                        <h2 className="text-base font-semibold text-text-primary">{t("settings.sectionColors")}</h2>
-                        <p className="text-sm text-text-muted">{t("settings.sectionColorsDesc")}</p>
+                        <h2 className="text-base premium-section-title">{t("settings.sectionColors")}</h2>
+                        <p className="text-sm premium-subtitle">{t("settings.sectionColorsDesc")}</p>
                       </div>
                     </div>
                     <div className="space-y-8 pl-1">
@@ -559,7 +559,7 @@ export default function SettingsPage() {
                             <label className="text-sm font-semibold text-text-primary">
                               {t("settings.primaryColor")}
                             </label>
-                            <p className="text-xs text-text-muted">{t("settings.primaryColorDescription")}</p>
+                            <p className="text-xs premium-subtitle">{t("settings.primaryColorDescription")}</p>
                           </div>
                         </div>
 
@@ -616,7 +616,7 @@ export default function SettingsPage() {
                             <label className="text-sm font-semibold text-text-primary">
                               {t("settings.secondaryColor")}
                             </label>
-                            <p className="text-xs text-text-muted">{t("settings.secondaryColorDescription")}</p>
+                            <p className="text-xs premium-subtitle">{t("settings.secondaryColorDescription")}</p>
                           </div>
                         </div>
 
@@ -673,7 +673,7 @@ export default function SettingsPage() {
                             <label className="text-sm font-semibold text-text-primary">
                               {t("settings.tertiaryColor")}
                             </label>
-                            <p className="text-xs text-text-muted">{t("settings.tertiaryColorDescription")}</p>
+                            <p className="text-xs premium-subtitle">{t("settings.tertiaryColorDescription")}</p>
                           </div>
                         </div>
 
@@ -728,8 +728,8 @@ export default function SettingsPage() {
                         <Eye className="w-5 h-5 text-company-primary" />
                       </div>
                       <div>
-                        <h2 className="text-base font-semibold text-text-primary">{t("settings.livePreview")}</h2>
-                        <p className="text-sm text-text-muted">{t("settings.previewLabel")}</p>
+                        <h2 className="text-base premium-section-title">{t("settings.livePreview")}</h2>
+                        <p className="text-sm premium-subtitle">{t("settings.previewLabel")}</p>
                       </div>
                     </div>
                     <div className="max-w-3xl">
@@ -743,7 +743,7 @@ export default function SettingsPage() {
                       <Sparkles className="w-5 h-5 text-company-primary" />
                     </div>
                     <div>
-                      <h2 className="text-base font-semibold text-text-primary mb-2">{t("settings.proTips")}</h2>
+                      <h2 className="text-base premium-section-title mb-2">{t("settings.proTips")}</h2>
                       <ul className="text-sm text-text-muted space-y-2">
                         <li className="flex items-start gap-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-company-primary mt-1.5 shrink-0" />
@@ -772,7 +772,7 @@ export default function SettingsPage() {
           type="button"
           onClick={handleRevertToDefault}
           disabled={!isDirty || reverting || submitting}
-          className="group flex items-center gap-2 px-4 py-2.5 rounded-lg border border-card-border text-sm font-medium text-text-secondary hover:text-red-500 hover:border-red-200 hover:bg-red-50/50 dark:hover:bg-red-500/10 transition-all disabled:opacity-50"
+          className="group flex items-center gap-2 px-4 py-2.5 rounded-lg border border-card-border text-sm font-medium text-text-secondary hover:text-red-500 hover:border-red-200 hover:bg-red-50/50 dark:hover:bg-red-500/10 transition-all disabled:opacity-50 disabled:pointer-events-none disabled:hover:text-text-secondary disabled:hover:border-card-border disabled:hover:bg-transparent dark:disabled:hover:bg-transparent"
         >
           {reverting ? (
             <LoadingSpinner size="sm" />
@@ -792,7 +792,7 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={submitting}
+            disabled={!isDirty || submitting}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors"
           >
             {submitting ? <><LoadingSpinner size="sm" />{t("common.saving")}</> : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}

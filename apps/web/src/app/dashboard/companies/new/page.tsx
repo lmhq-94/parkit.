@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  Building2, Receipt, Mail, Phone, Globe,
+  Building, Receipt, Mail, Phone, Globe,
   DollarSign, Clock, MapPin,
 } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";
@@ -162,15 +162,15 @@ export default function NewCompanyPage() {
       isValid: () => !!(form.legalName.trim() && form.taxId.trim()),
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <Field label={t("companies.legalName")} required icon={Building2} error={errors.legalName}>
+          <Field label={t("companies.legalName")} required icon={Building} error={errors.legalName}>
             <input value={form.legalName} onChange={set("legalName")} placeholder={t("common.placeholderLegalName")} className={IL} aria-invalid={!!errors.legalName} />
           </Field>
           <Field label={t("companies.taxId")} required icon={Receipt} error={errors.taxId}>
             <input value={form.taxId} onChange={(e) => setForm((p) => ({ ...p, taxId: formatTaxId(e.target.value) }))} placeholder={t("common.placeholderTaxId")} className={IL} aria-invalid={!!errors.taxId} />
           </Field>
           <div className="sm:col-span-2 lg:col-span-1">
-            <Field label={t("companies.industry")} required icon={Building2} error={errors.industry}>
-              <SelectField value={form.industry} onChange={set("industry")} icon={Building2}>
+            <Field label={t("companies.industry")} required icon={Building} error={errors.industry}>
+              <SelectField value={form.industry} onChange={set("industry")} icon={Building}>
                 <option value="">{t("common.selectPlaceholder")}</option>
                 {INDUSTRIES.map((ind) => (
                   <option key={ind.value} value={ind.value}>
@@ -191,7 +191,7 @@ export default function NewCompanyPage() {
       isValid: () => !!(form.commercialName?.trim() && form.email?.trim()),
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <Field label={t("companies.commercialName")} required icon={Building2} error={errors.commercialName}>
+          <Field label={t("companies.commercialName")} required icon={Building} error={errors.commercialName}>
             <input value={form.commercialName} onChange={set("commercialName")} placeholder={t("common.placeholderCommercialName")} className={IL} aria-invalid={!!errors.commercialName}/>
           </Field>
           <Field label={t("companies.email")} required icon={Mail} error={errors.email}>

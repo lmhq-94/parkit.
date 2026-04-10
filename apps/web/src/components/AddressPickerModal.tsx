@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { MapPin, Search, X } from "lucide-react";
+import { MapPin, Search, XCircle } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -196,11 +196,11 @@ export function AddressPickerModal({
         onClick={onClose}
       />
       <div
-        className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl border border-card-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-lg border border-card-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-card-border shrink-0">
-          <h2 id="address-picker-title" className="text-sm font-semibold text-text-primary flex items-center gap-2">
+          <h2 id="address-picker-title" className="text-sm premium-section-title flex items-center gap-2">
             <MapPin className="w-4 h-4 text-company-primary" />
             {t("companies.addressPickerTitle")}
           </h2>
@@ -210,7 +210,7 @@ export function AddressPickerModal({
             className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-input-bg transition-colors"
             aria-label={t("common.close")}
           >
-            <X className="w-5 h-5" />
+            <XCircle className="w-5 h-5" />
           </button>
         </div>
 

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
-import { Pencil, X } from "lucide-react";
+import { Pencil, XCircle } from "lucide-react";
 
 export interface RowDetailModalProps {
   title: string;
@@ -44,13 +44,13 @@ export function RowDetailModal({
     >
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
-        className="relative w-full max-w-3xl bg-card border border-card-border rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-3xl bg-card border border-card-border rounded-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-4 px-8 py-5 bg-card border-b border-card-border">
           <div className="min-w-0">
-            <h2 className="text-base font-semibold text-text-primary truncate leading-tight">{title}</h2>
-            {subtitle && <p className="text-xs text-text-muted truncate">{subtitle}</p>}
+            <h2 className="text-base premium-card-title truncate">{title}</h2>
+            {subtitle && <p className="text-xs premium-subtitle truncate">{subtitle}</p>}
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {statusLabel && (
@@ -85,7 +85,7 @@ export function RowDetailModal({
               className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors"
               title={t("common.cancel")}
             >
-              <X className="w-4 h-4" />
+              <XCircle className="w-4 h-4" />
             </button>
           </div>
         </div>

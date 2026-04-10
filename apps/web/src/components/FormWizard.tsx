@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ArrowRight, Check, AlertCircle } from "lucide-react";
+import { ChevronLeft, ArrowRight, Check, AlertOctagon } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
@@ -93,7 +93,7 @@ export function FormWizard({
       {/* ── Error ───────────────────────────────────── */}
       {error && (
         <div className="flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/8 px-4 py-3 text-sm text-red-600 dark:text-red-400">
-          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <AlertOctagon className="w-4 h-4 shrink-0 mt-0.5" />
           {error}
         </div>
       )}
@@ -114,7 +114,7 @@ export function FormWizard({
           {/* Step header */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-base font-semibold text-text-primary">{step.title}</h2>
+              <h2 className="text-base premium-section-title">{step.title}</h2>
               {step.badge === "required" && (
                 <span className="text-[11px] font-medium text-red-500">
                   {t("common.requiredBadge")}
@@ -127,7 +127,7 @@ export function FormWizard({
               )}
             </div>
             {step.description && (
-              <p className="text-sm text-text-muted">{step.description}</p>
+              <p className="text-sm premium-subtitle">{step.description}</p>
             )}
           </div>
 

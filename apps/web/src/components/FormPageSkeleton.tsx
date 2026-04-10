@@ -4,7 +4,7 @@ export function FormPageSkeleton() {
       {/* Sección 1 */}
       <div className="overflow-hidden">
         <div className="px-6 py-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-input-border/30 shrink-0" />
+          <div className="w-9 h-9 rounded-lg bg-input-border/30 shrink-0" />
           <div className="flex-1 space-y-2">
             <div className="h-3.5 bg-input-border/40 rounded-md w-36" />
             <div className="h-3 bg-input-border/25 rounded-md w-52" />
@@ -26,7 +26,7 @@ export function FormPageSkeleton() {
       {/* Sección 2 */}
       <div className="overflow-hidden">
         <div className="px-6 py-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-input-border/30 shrink-0" />
+          <div className="w-9 h-9 rounded-lg bg-input-border/30 shrink-0" />
           <div className="flex-1 space-y-2">
             <div className="h-3.5 bg-input-border/40 rounded-md w-40" />
             <div className="h-3 bg-input-border/25 rounded-md w-48" />

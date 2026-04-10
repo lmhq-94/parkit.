@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { User, Mail, Shield } from "lucide-react";
+import { User, MailOpen, Shield } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
@@ -96,7 +96,7 @@ export default function NewSuperAdminPage() {
           <div>
             <label className={LABEL}>{t("users.email")} <span className="text-red-500">*</span></label>
             <div className="relative group">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+              <MailOpen className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} aria-invalid={!!errors.email} />
             </div>
             <div className="min-h-[1.25rem] mt-1">{errors.email && <p className="text-sm text-red-500" role="alert">{errors.email}</p>}</div>
@@ -107,7 +107,7 @@ export default function NewSuperAdminPage() {
               <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input type="password" value={form.password} onChange={set("password")} placeholder={t("common.placeholderPassword")} className={IL} autoComplete="new-password" />
             </div>
-            <p className="text-xs text-text-muted mt-1">{t("superAdmins.invitationNote")}</p>
+            <p className="text-xs premium-subtitle mt-1">{t("superAdmins.invitationNote")}</p>
           </div>
         </div>
       ),

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useCallback } from "react";
-import { X } from "lucide-react";
+import { XCircle } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -84,7 +84,7 @@ export function BookingQRModal({ booking, open, onClose }: BookingQRModalProps) 
           className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors z-10"
           aria-label={t("common.close")}
         >
-          <X className="w-5 h-5" />
+          <XCircle className="w-5 h-5" />
         </button>
 
         <div className="pt-8 pb-6 px-6 text-center">

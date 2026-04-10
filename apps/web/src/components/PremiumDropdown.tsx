@@ -269,7 +269,7 @@ export function PremiumDropdownContent({
     <div
       ref={dropdownRef}
       data-premium-dropdown
-      className={`fixed z-[99999] flex flex-col rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 min-w-[200px] ${className}`}
+      className={`fixed z-[99999] flex flex-col rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200 min-w-[200px] ${className}`}
       style={{
         ...dropdownStyles,
         ...alignStyles,
@@ -311,12 +311,12 @@ export function PremiumDropdownHeader({
   return (
     <div className="px-4 py-3.5 border-b border-slate-200/60 dark:border-slate-700/60">
       {title && (
-        <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+        <p className="premium-label">
           {title}
         </p>
       )}
       {subtitle && (
-        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 mt-0.5 truncate">
+        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 mt-1 truncate tracking-tight">
           {subtitle}
         </p>
       )}

@@ -118,12 +118,12 @@ export default function PrivacyPage() {
                 {t("privacy.backToHome")}
               </Link>
               <Logo variant={isDark ? "onDark" : "default"} className="text-3xl mb-4" />
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-white mb-2">
+              <h1 className="text-[2rem] md:text-[2.25rem] leading-tight premium-title premium-title-glow mb-2">
                 {t("privacy.title")}
               </h1>
               {/* updatedAt generado en cliente para evitar hydration mismatch */}
               {updatedAt && (
-                <p className="text-slate-500 dark:text-slate-400 text-sm">
+                <p className="premium-subtitle text-sm">
                   {t("privacy.updatedAt")}: {updatedAt}
                 </p>
               )}
@@ -139,7 +139,7 @@ export default function PrivacyPage() {
             {/* Content */}
             <div className="space-y-8">
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">
+                <h2 className="text-lg premium-section-title mb-3">
                   {t("privacy.section1Title")}
                 </h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm mb-3">
@@ -182,7 +182,7 @@ export default function PrivacyPage() {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">
+                <h2 className="text-lg premium-section-title mb-3">
                   {t("privacy.section2Title")}
                 </h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm mb-3">
@@ -196,7 +196,7 @@ export default function PrivacyPage() {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">
+                <h2 className="text-lg premium-section-title mb-3">
                   {t("privacy.section3Title")}
                 </h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm mb-3">
@@ -210,7 +210,7 @@ export default function PrivacyPage() {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">
+                <h2 className="text-lg premium-section-title mb-3">
                   {t("privacy.section4Title")}
                 </h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm mb-3">
@@ -240,7 +240,7 @@ export default function PrivacyPage() {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">
+                <h2 className="text-lg premium-section-title mb-3">
                   {t("privacy.section5Title")}
                 </h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm">
@@ -249,7 +249,7 @@ export default function PrivacyPage() {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">
+                <h2 className="text-lg premium-section-title mb-3">
                   {t("privacy.section6Title")}
                 </h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm mb-3">
@@ -263,7 +263,7 @@ export default function PrivacyPage() {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">
+                <h2 className="text-lg premium-section-title mb-3">
                   {t("privacy.section7Title")}
                 </h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm">
@@ -272,7 +272,7 @@ export default function PrivacyPage() {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-3">
+                <h2 className="text-lg premium-section-title mb-3">
                   {t("privacy.section8Title")}
                 </h2>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm">

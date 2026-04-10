@@ -230,7 +230,7 @@ export function BrandModelComboField({
       <div
         data-brand-model-combo-dropdown
         onMouseDown={(e) => e.preventDefault()}
-        className="fixed z-[99999] flex flex-col rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 min-w-[220px]"
+        className="fixed z-[99999] flex flex-col rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200 min-w-[220px]"
         style={{
           ...dropdownStyles,
           top: dropdownPos.top,

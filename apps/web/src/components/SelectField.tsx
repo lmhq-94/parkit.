@@ -117,7 +117,7 @@ export function SelectField({ value, onChange, icon: Icon, children, className, 
     createPortal(
       <div
         data-select-dropdown
-        className="fixed z-[99999] flex flex-col rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 min-w-[220px]"
+        className="fixed z-[99999] flex flex-col rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200 min-w-[220px]"
         style={{
           ...dropdownStyles,
           top: position.top,

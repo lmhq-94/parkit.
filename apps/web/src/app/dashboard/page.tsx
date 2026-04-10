@@ -9,10 +9,10 @@ import { formatPlate } from "@/lib/inputMasks";
 import {
   ArrowLeft,
   MapPin,
-  Ticket,
-  CalendarCheck,
+  TicketCheck,
+  Calendar,
   Users,
-  UserRound,
+  User,
   TrendingUp,
   Car,
   ChevronRight,
@@ -232,7 +232,7 @@ export default function DashboardPage() {
             key: "bookings",
             title: t("sidebar.bookings"),
             value: stats.bookingsCount,
-            icon: <CalendarCheck className="w-6 h-6" />,
+            icon: <Calendar className="w-6 h-6" />,
             color: "amber",
           },
         ]
@@ -241,14 +241,14 @@ export default function DashboardPage() {
       key: "tickets",
       title: t("sidebar.tickets"),
       value: stats.ticketsCount,
-      icon: <Ticket className="w-6 h-6" />,
+      icon: <TicketCheck className="w-6 h-6" />,
       color: "violet",
     },
     {
       key: "valets",
       title: t("sidebar.valets"),
       value: stats.valetsCount,
-      icon: <UserRound className="w-6 h-6" />,
+      icon: <User className="w-6 h-6" />,
       color: "cyan",
     },
     {
@@ -364,10 +364,10 @@ export default function DashboardPage() {
                       <TrendingUp className="w-7 h-7" />
                     </div>
                     <div>
-                      <p className="text-xl font-semibold text-white tracking-tight">
+                      <p className="text-xl font-bold text-white tracking-tight drop-shadow-sm">
                         {t("dashboard.activityOverviewTitle")}
                       </p>
-                      <p className="text-sm mt-1 text-white/80 font-medium">
+                      <p className="text-sm mt-1 text-white/90 font-medium tracking-wide">
                         {stats.ticketsLast7Days.reduce((a, b) => a + b.count, 0)} {t("dashboard.ticketsThisWeek")}
                       </p>
                     </div>
@@ -376,7 +376,7 @@ export default function DashboardPage() {
                 <div className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-4 border-t border-white/15">
                   <div className="flex items-center gap-2.5">
                     <div className="rounded-lg bg-white/10 p-1.5">
-                      <CalendarCheck className="w-4 h-4 shrink-0 text-white/90" />
+                      <Calendar className="w-4 h-4 shrink-0 text-white/90" />
                     </div>
                     <span className="text-sm text-white/80">
                       {t("dashboard.avgPerDay")}
@@ -399,7 +399,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center gap-2.5">
                     <div className="rounded-lg bg-white/10 p-1.5">
-                      <Ticket className="w-4 h-4 shrink-0 text-white/90" />
+                      <TicketCheck className="w-4 h-4 shrink-0 text-white/90" />
                     </div>
                     <span className="text-sm text-white/80">
                       {t("dashboard.today")}
@@ -438,10 +438,10 @@ export default function DashboardPage() {
 
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="text-text-secondary/90 text-sm font-medium truncate tracking-wide">
+                          <p className="premium-label text-slate-500 dark:text-slate-400">
                             {card.title}
                           </p>
-                          <p className="text-2xl font-bold text-text-primary mt-2 tabular-nums tracking-tight">
+                          <p className="text-2xl font-bold text-text-primary mt-1.5 tabular-nums tracking-tight">
                             {card.value.toLocaleString()}
                           </p>
                         </div>
@@ -461,7 +461,7 @@ export default function DashboardPage() {
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
               <div className="lg:col-span-2 rounded-2xl border border-card-border bg-gradient-to-br from-card to-card/95 p-6 backdrop-blur-sm overflow-hidden flex flex-col min-h-[320px] shadow-sm hover:shadow-md transition-shadow duration-300">
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                  <h2 className="text-lg font-semibold text-text-primary">
+                  <h2 className="text-lg premium-section-title">
                     {t("dashboard.chartTicketsTitle")}
                   </h2>
                   <div className="flex items-center justify-end gap-3">
@@ -546,7 +546,7 @@ export default function DashboardPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex-1 min-h-[240px]">
+                <div className="flex-1 min-h-[240px] w-full">
                   <DashboardTicketsChart
                     data={chartData}
                     ticketsLabel={t("dashboard.ticketsLabel")}
@@ -556,7 +556,7 @@ export default function DashboardPage() {
 
               <div className="rounded-2xl border border-card-border bg-gradient-to-br from-card to-card/95 backdrop-blur-sm overflow-hidden flex flex-col min-h-0 shadow-sm hover:shadow-md transition-shadow duration-300">
                 <div className="p-4 border-b border-card-border/80 flex items-center justify-between bg-gradient-to-r from-transparent via-card to-transparent">
-                  <h2 className="text-lg font-semibold text-text-primary">
+                  <h2 className="text-lg premium-section-title">
                     {t("dashboard.recentTickets")}
                   </h2>
                   <Link

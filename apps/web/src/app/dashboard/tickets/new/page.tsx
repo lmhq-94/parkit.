@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Users, Car, MapPin, UserRound } from "lucide-react";
+import { Users, Car, MapPin, User } from "lucide-react";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -208,7 +208,7 @@ export default function NewTicketPage() {
               <SelectField
                 value={form.receptorValetId}
                 onChange={set("receptorValetId")}
-                icon={UserRound}
+                icon={User}
                 aria-invalid={!!errors.receptorValetId}
               >
                 <option value="">{t("common.selectPlaceholder")}</option>
@@ -227,7 +227,7 @@ export default function NewTicketPage() {
               <SelectField
                 value={form.driverValetId}
                 onChange={set("driverValetId")}
-                icon={UserRound}
+                icon={User}
                 aria-invalid={!!errors.driverValetId}
               >
                 <option value="">{t("common.selectPlaceholder")}</option>
@@ -246,7 +246,7 @@ export default function NewTicketPage() {
               <SelectField
                 value={form.delivererValetId}
                 onChange={set("delivererValetId")}
-                icon={UserRound}
+                icon={User}
                 aria-invalid={!!errors.delivererValetId}
               >
                 <option value="">{t("common.selectPlaceholder")}</option>

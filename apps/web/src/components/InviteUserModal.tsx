@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Mail, Plus, Trash2, X, Users } from "lucide-react";
+import { MailOpen, Plus, Trash, XCircle, Users } from "lucide-react";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/lib/toastStore";
@@ -98,12 +98,12 @@ export function InviteUserModal({
         onClick={onClose}
       />
       <div
-        className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl border border-card-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-lg border border-card-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-card-border shrink-0">
-          <h2 id="invite-modal-title" className="text-sm font-semibold text-text-primary flex items-center gap-2">
+          <h2 id="invite-modal-title" className="text-sm premium-section-title flex items-center gap-2">
             <Users className="w-4 h-4 text-company-primary" />
             {title || t("users.inviteUser")}
           </h2>
@@ -113,13 +113,13 @@ export function InviteUserModal({
             className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-input-bg transition-colors"
             aria-label={t("common.close")}
           >
-            <X className="w-5 h-5" />
+            <XCircle className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
         <div className="p-6 space-y-6 overflow-auto">
-          <p className="text-sm text-text-muted">
+          <p className="text-sm premium-subtitle">
             {description || t("users.inviteDescription")}
           </p>
 
@@ -130,7 +130,7 @@ export function InviteUserModal({
             </label>
             <div className="flex gap-2">
               <div className="relative flex-1 group">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                <MailOpen className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                 <input
                   type="email"
                   value={emailInput}
@@ -160,7 +160,7 @@ export function InviteUserModal({
           {/* List of emails */}
           <div className="space-y-3">
             <div className="flex items-center justify-between px-1">
-              <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">
+              <h3 className="premium-label text-text-muted">
                 {t("users.emailsList")}
               </h3>
               <span className="text-[10px] font-medium bg-input-bg text-text-secondary px-2 py-0.5 rounded-full border border-input-border">
@@ -182,7 +182,7 @@ export function InviteUserModal({
                       className="p-1.5 rounded-md text-text-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
                       title={t("users.removeEmail")}
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash className="w-4 h-4" />
                     </button>
                   </li>
                 ))}

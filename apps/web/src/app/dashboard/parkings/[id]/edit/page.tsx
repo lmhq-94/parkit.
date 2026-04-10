@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { MapPin, Tag, Navigation, Radius, ArrowRight, Plus, Trash2, Clock, Coins } from "lucide-react";
+import { MapPin, Tag, Navigation, Radius, ArrowRight, Plus, Trash, Clock, Coins } from "lucide-react";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -294,10 +294,10 @@ export default function EditParkingPage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-text-primary">{t("parkings.sectionMain")}</p>
+            <p className="text-sm premium-section-title">{t("parkings.sectionMain")}</p>
             <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
           </div>
-          <p className="text-xs text-text-muted mt-1">{t("parkings.sectionMainDesc")}</p>
+          <p className="text-xs premium-subtitle mt-1">{t("parkings.sectionMainDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -469,10 +469,10 @@ export default function EditParkingPage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-text-primary">{t("parkings.sectionSlots")}</p>
+            <p className="text-sm premium-section-title">{t("parkings.sectionSlots")}</p>
             <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
           </div>
-          <p className="text-xs text-text-muted mt-1">{t("parkings.sectionSlotsDesc")}</p>
+          <p className="text-xs premium-subtitle mt-1">{t("parkings.sectionSlotsDesc")}</p>
         </div>
         <div className="p-6 pt-4 space-y-5">
           <div className="flex flex-wrap items-end gap-3 p-4 rounded-xl bg-input-bg/60 border border-input-border">
@@ -556,7 +556,7 @@ export default function EditParkingPage() {
                     className="p-2 rounded-lg text-text-muted hover:text-red-600 hover:bg-red-500/10 transition-colors"
                     aria-label={t("parkings.removeSlot")}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash className="w-4 h-4" />
                   </button>
                 </li>
               ))}
@@ -576,10 +576,10 @@ export default function EditParkingPage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-text-primary">{t("parkings.sectionGeo")}</p>
+            <p className="text-sm premium-section-title">{t("parkings.sectionGeo")}</p>
             <span className="text-[11px] font-medium text-text-muted">{t("common.optionalBadge")}</span>
           </div>
-          <p className="text-xs text-text-muted mt-1">{t("parkings.sectionGeoDesc")}</p>
+          <p className="text-xs premium-subtitle mt-1">{t("parkings.sectionGeoDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Construction, Plus } from "lucide-react";
+import { Building, Plus } from "lucide-react";
 import Link from "next/link";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getStoredUser, isSuperAdmin } from "@/lib/auth";
@@ -48,20 +48,20 @@ export default function NoCompaniesPage() {
           
           {/* Large icon without container */}
           <div className="relative flex items-center justify-center">
-            <Construction 
-              className="h-14 w-14 text-slate-300 dark:text-slate-700" 
-              strokeWidth={1.2} 
+            <Building
+              className="h-14 w-14 text-slate-300 dark:text-slate-700"
+              strokeWidth={1.2}
             />
           </div>
         </div>
         
         {/* Premium typography with refined hierarchy */}
         <div className="space-y-4 mb-10">
-          <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
+          <h1 className="text-[1.75rem] md:text-[2rem] premium-title premium-title-glow">
             {t("companies.noCompanies")}
           </h1>
           
-          <p className="text-base text-slate-600 dark:text-slate-400 leading-relaxed max-w-sm mx-auto">
+          <p className="premium-subtitle text-base leading-relaxed max-w-sm mx-auto">
             {t("companies.noCompaniesDescription")}
           </p>
         </div>

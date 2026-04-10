@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, X, Crop } from "lucide-react";
+import { Upload, XCircle, Crop } from "lucide-react";
 import { ImageCropEditor } from "@/components/ImageCropEditor";
 
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -141,12 +141,12 @@ export function ImageCropField({
           onClick={() => setPendingCrop(null)}
         />
         <div
-          className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl border border-card-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+          className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-lg border border-card-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-card-border shrink-0">
-            <h2 id="crop-modal-title" className="text-sm font-semibold text-text-primary flex items-center gap-2">
+            <h2 id="crop-modal-title" className="text-sm premium-section-title flex items-center gap-2">
               <Crop className="w-4 h-4 text-company-primary" />
               {isLogo ? t("settings.cropLogoTitle") : t("settings.cropBannerTitle")}
             </h2>
@@ -156,7 +156,7 @@ export function ImageCropField({
               className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-input-bg transition-colors"
               aria-label={t("common.close")}
             >
-              <X className="w-5 h-5" />
+              <XCircle className="w-5 h-5" />
             </button>
           </div>
 
@@ -191,9 +191,9 @@ export function ImageCropField({
     <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start lg:items-center">
       {/* Main Upload Area */}
       <div className="flex flex-col gap-4 flex-1 min-w-0 w-full lg:w-auto order-1">
-        <div className={`overflow-hidden bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 w-full flex items-center justify-center ${isLogo ? "rounded-full max-w-[220px] aspect-square" : "rounded-xl max-w-[500px]"}`}>
+        <div className={`overflow-hidden bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 w-full flex items-center justify-center ${isLogo ? "rounded-lg max-w-[220px] aspect-square" : "rounded-lg max-w-[500px]"}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={value} alt="" className={`w-full h-full object-cover object-center ${isLogo ? "rounded-full" : "rounded-xl"}`} style={!isLogo ? { aspectRatio: "5/1" } : undefined} />
+          <img src={value} alt="" className={`w-full h-full object-cover object-center ${isLogo ? "rounded-lg" : "rounded-lg"}`} style={!isLogo ? { aspectRatio: "5/1" } : undefined} />
         </div>
         {/* Actions */}
         <div className="flex items-center gap-3 shrink-0 pt-0.5">
@@ -201,7 +201,7 @@ export function ImageCropField({
             {t("settings.changeImage")}
           </button>
           <button type="button" onClick={onClear} className="group flex items-center gap-1.5 text-sm font-medium text-company-tertiary hover:text-red-500 dark:hover:text-red-400 transition-colors whitespace-nowrap">
-            <X className="w-4 h-4 shrink-0 transition-transform duration-300 group-hover:rotate-90" />
+            <XCircle className="w-4 h-4 shrink-0 transition-transform duration-300 group-hover:rotate-90" />
             {t("settings.removeImage")}
           </button>
         </div>
@@ -210,9 +210,9 @@ export function ImageCropField({
       <div className="shrink-0 order-2">
         <div className="flex flex-col items-center justify-center gap-2">
           <p className="text-xs text-text-muted uppercase tracking-wider font-medium">vista previa en el sistema</p>
-          <div className={`overflow-hidden bg-input-bg ring-1 ring-black/5 dark:ring-white/5 flex items-center justify-center ${isLogo ? "rounded-full w-16 h-16" : "rounded-xl w-full max-w-[280px] h-16"}`}>
+          <div className={`overflow-hidden bg-input-bg ring-1 ring-black/5 dark:ring-white/5 flex items-center justify-center ${isLogo ? "rounded-lg w-16 h-16" : "rounded-lg w-full max-w-[280px] h-16"}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={value} alt="" className={`w-full h-full object-cover object-center ${isLogo ? "rounded-full" : "rounded-xl"}`} />
+            <img src={value} alt="" className={`w-full h-full object-cover object-center ${isLogo ? "rounded-lg" : "rounded-lg"}`} />
           </div>
         </div>
       </div>
@@ -258,7 +258,7 @@ export function ImageCropField({
     );
   }
   return (
-    <div className="rounded-xl border border-card-border bg-card/80 p-5 min-w-0 flex flex-col" style={{ minHeight: cardMinHeight }}>
+    <div className="rounded-lg border border-card-border bg-card/80 p-5 min-w-0 flex flex-col" style={{ minHeight: cardMinHeight }}>
       {headerClassName ? <div className={headerClassName}>{header}</div> : header}
       {emptyContent}
     </div>

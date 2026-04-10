@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Mail, Phone, Clock, Shield, ArrowRight } from "lucide-react";
+import { User, MailOpen, Phone, Clock, Shield, ArrowRight } from "lucide-react";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
@@ -153,10 +153,10 @@ export default function EditUserPage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-text-primary">{t("users.sectionMain")}</p>
+            <p className="text-sm premium-section-title">{t("users.sectionMain")}</p>
             <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
           </div>
-          <p className="text-xs text-text-muted mt-1">{t("users.sectionMainDesc")}</p>
+          <p className="text-xs premium-subtitle mt-1">{t("users.sectionMainDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -179,7 +179,7 @@ export default function EditUserPage() {
             <div>
               <label className={LABEL}>{t("users.email")} <span className="text-red-500">*</span></label>
               <div className="relative group">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                <MailOpen className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                 <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} aria-invalid={!!errors.email} />
               </div>
               <div className="min-h-[1.25rem] mt-1">{errors.email && <p className="text-sm text-red-500" role="alert">{errors.email}</p>}</div>
@@ -197,10 +197,10 @@ export default function EditUserPage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-text-primary">{t("users.sectionContact")}</p>
+            <p className="text-sm premium-section-title">{t("users.sectionContact")}</p>
             <span className="text-[11px] font-medium text-text-muted">{t("common.optionalBadge")}</span>
           </div>
-          <p className="text-xs text-text-muted mt-1">{t("users.sectionContactDesc")}</p>
+          <p className="text-xs premium-subtitle mt-1">{t("users.sectionContactDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

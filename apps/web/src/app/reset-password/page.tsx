@@ -116,10 +116,10 @@ function ResetPasswordForm() {
             <span className="mt-6 inline-flex items-center justify-center w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <CheckCircle className="w-8 h-8" />
             </span>
-            <h1 className="mt-4 text-lg font-semibold text-text-primary">
+            <h1 className="mt-4 text-[1.35rem] premium-title">
               {t("auth.passwordUpdatedSuccess")}
             </h1>
-            <p className="mt-2 text-sm text-text-muted">
+            <p className="mt-2 premium-subtitle text-sm">
               {t("auth.redirectingToLogin", { seconds: redirectSeconds })}
             </p>
           </div>
@@ -151,10 +151,10 @@ function ResetPasswordForm() {
       <div className="w-full max-w-[360px]">
         <div className="flex flex-col items-center mb-10">
           <Logo variant={logoVariant} className="text-4xl" />
-          <h1 className="mt-6 text-lg font-semibold text-text-primary">
+          <h1 className="mt-6 text-[1.35rem] premium-title">
             {t("auth.resetPasswordFormTitle")}
           </h1>
-          <p className="mt-2 text-sm text-text-muted text-center">
+          <p className="mt-2 premium-subtitle text-sm text-center">
             {t("auth.resetPasswordFormDescription")}
           </p>
         </div>

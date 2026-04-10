@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Building2, Receipt, Mail, Phone, Globe,
+  Building, Receipt, Mail, Phone, Globe,
   DollarSign, Clock, MapPin, ArrowRight,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -182,21 +182,21 @@ export default function EditCompanyPage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-text-primary">{t("companies.sectionMain")}</p>
+            <p className="text-sm premium-section-title">{t("companies.sectionMain")}</p>
             <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
           </div>
-          <p className="text-xs text-text-muted mt-1">{t("companies.sectionMainDesc")}</p>
+          <p className="text-xs premium-subtitle mt-1">{t("companies.sectionMainDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <Field label={t("companies.legalName")} required icon={Building2} error={errors.legalName}>
+            <Field label={t("companies.legalName")} required icon={Building} error={errors.legalName}>
               <input value={form.legalName} onChange={set("legalName")} placeholder={t("common.placeholderLegalName")} className={IL} aria-invalid={!!errors.legalName} />
             </Field>
             <Field label={t("companies.taxId")} required icon={Receipt} error={errors.taxId}>
               <input value={form.taxId} onChange={(e) => setForm((p) => ({ ...p, taxId: formatTaxId(e.target.value) }))} placeholder={t("common.placeholderTaxId")} className={IL} aria-invalid={!!errors.taxId} />
             </Field>
-            <Field label={t("companies.industry")} icon={Building2}>
-              <SelectField value={form.industry} onChange={set("industry")} icon={Building2}>
+            <Field label={t("companies.industry")} icon={Building}>
+              <SelectField value={form.industry} onChange={set("industry")} icon={Building}>
                 <option value="">{t("common.selectPlaceholder")}</option>
                 {INDUSTRIES.map((ind) => (
                   <option key={ind.value} value={ind.value}>
@@ -213,14 +213,14 @@ export default function EditCompanyPage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-text-primary">{t("companies.sectionContact")}</p>
+            <p className="text-sm premium-section-title">{t("companies.sectionContact")}</p>
             <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
           </div>
-          <p className="text-xs text-text-muted mt-1">{t("companies.sectionContactDesc")}</p>
+          <p className="text-xs premium-subtitle mt-1">{t("companies.sectionContactDesc")}</p>
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <Field label={t("companies.commercialName")} required icon={Building2} error={errors.commercialName}>
+            <Field label={t("companies.commercialName")} required icon={Building} error={errors.commercialName}>
               <input value={form.commercialName} onChange={set("commercialName")} placeholder={t("common.placeholderCommercialName")} className={IL} aria-invalid={!!errors.commercialName} />
             </Field>
             <Field label={t("companies.email")} required icon={Mail} error={errors.email}>
@@ -261,8 +261,8 @@ export default function EditCompanyPage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4 flex items-center gap-3">
           <div>
-            <p className="text-sm font-semibold text-text-primary">{t("companies.sectionRegional")}</p>
-            <p className="text-xs text-text-muted">{t("companies.sectionRegionalDesc")}</p>
+            <p className="text-sm premium-section-title">{t("companies.sectionRegional")}</p>
+            <p className="text-xs premium-subtitle">{t("companies.sectionRegionalDesc")}</p>
           </div>
         </div>
         <div className="p-6 pt-4">
@@ -297,12 +297,12 @@ export default function EditCompanyPage() {
         <div className="px-6 py-4 flex items-center gap-3">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-sm font-semibold text-text-primary">{t("companies.channelTitle")}</p>
+              <p className="text-sm premium-section-title">{t("companies.channelTitle")}</p>
               <span className="text-[11px] font-medium text-red-500">
                 {t("common.requiredBadge")}
               </span>
             </div>
-            <p className="text-xs text-text-muted mt-1">{t("companies.channelDescription")}</p>
+            <p className="text-xs premium-subtitle mt-1">{t("companies.channelDescription")}</p>
           </div>
         </div>
         <div className="p-6 pt-4">

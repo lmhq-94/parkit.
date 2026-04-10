@@ -106,7 +106,7 @@ export function DefaultBanner({
       {/* Izquierda: círculo con avatar/logo o icono de industria - estilo premium */}
       <div className={`relative z-10 shrink-0 pl-4 ${hasBackgroundImage ? "drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]" : ""}`}>
         <div
-          className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center transition-all duration-300"
+          className="w-12 h-12 rounded-lg overflow-hidden flex items-center justify-center transition-all duration-300"
           style={{
             backgroundColor: isDark ? "rgba(30,41,59,0.8)" : "#ffffff",
             border: isDark 
@@ -138,7 +138,7 @@ export function DefaultBanner({
           renderRight
         ) : (
           <div
-            className="inline-flex flex-col gap-0.5 rounded-xl px-4 py-2 backdrop-blur-xl transition-all duration-300 hover:scale-[1.02]"
+            className="inline-flex flex-col gap-0.5 rounded-lg px-4 py-2 backdrop-blur-xl transition-all duration-300 hover:scale-[1.02]"
             style={{
               backgroundColor: isDark 
                 ? "rgba(15,23,42,0.6)" 
@@ -151,11 +151,11 @@ export function DefaultBanner({
                 : "0 8px 32px -8px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,1)",
             }}
           >
-            <p className="text-sm font-semibold truncate tracking-tight text-text-primary drop-shadow-sm">
+            <p className="text-sm font-bold truncate tracking-tight text-text-primary drop-shadow-sm">
               {companyName || "Company"}
             </p>
             {subtitle && (
-              <p className="text-[11px] truncate font-medium text-text-muted">
+              <p className="text-[11px] truncate font-semibold tracking-wide text-text-muted/80">
                 {subtitle}
               </p>
             )}

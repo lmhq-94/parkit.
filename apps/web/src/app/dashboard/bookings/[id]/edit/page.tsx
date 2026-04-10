@@ -148,14 +148,14 @@ export default function EditBookingPage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-text-primary">
+            <p className="text-sm premium-section-title">
               {t("bookings.sectionMain")}
             </p>
             <span className="text-[11px] font-medium text-red-500">
               {t("common.requiredBadge")}
             </span>
           </div>
-          <p className="text-xs text-text-muted mt-1">
+          <p className="text-xs premium-subtitle mt-1">
             {t("bookings.sectionMainDesc")}
           </p>
         </div>
@@ -238,14 +238,14 @@ export default function EditBookingPage() {
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold text-text-primary">
+            <p className="text-sm premium-section-title">
               {t("bookings.sectionExit")}
             </p>
             <span className="text-[11px] font-medium text-text-muted">
               {t("common.optionalBadge")}
             </span>
           </div>
-          <p className="text-xs text-text-muted mt-1">
+          <p className="text-xs premium-subtitle mt-1">
             {t("bookings.sectionExitDesc")}
           </p>
         </div>

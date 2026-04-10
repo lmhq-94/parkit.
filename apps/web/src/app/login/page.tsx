@@ -9,7 +9,7 @@ import { isSuperAdmin } from "@/lib/auth";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaSquareFacebook, FaMicrosoft } from "react-icons/fa6";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -231,12 +231,12 @@ export default function LoginPage() {
       {/* MAIN: Centered Form with Logo */}
       <main className="w-full max-w-[480px] relative z-10">
         {/* Premium Glass Card Container */}
-        <div className="bg-white/90 dark:bg-slate-900/70 backdrop-blur-2xl rounded-3xl border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-8 md:p-10">
+        <div className="bg-white/90 dark:bg-slate-900/70 backdrop-blur-2xl rounded-lg border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-8 md:p-10">
           {/* Logo and Title */}
           <div className="flex flex-col items-center mb-10">
             <Logo variant={logoVariant} className="text-5xl mb-5" />
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">{t("auth.signIn")}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 text-center">{t("auth.signInToContinue")}</p>
+            <h1 className="text-[1.75rem] leading-tight premium-title premium-title-glow mb-2">{t("auth.signIn")}</h1>
+            <p className="premium-subtitle text-sm text-center">{t("auth.signInToContinue")}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">

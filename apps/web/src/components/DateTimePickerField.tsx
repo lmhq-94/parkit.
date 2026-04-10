@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { Calendar, ChevronLeft, ChevronRight, X, Clock } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, XCircle, Clock } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface DateTimePickerFieldProps {
@@ -367,7 +367,7 @@ export function DateTimePickerField({
                 disabled={disabled}
                 onClick={() => selectDay(day)}
                 className={[
-                  "w-full aspect-square min-w-0 rounded-md text-xs transition-colors flex items-center justify-center font-medium touch-manipulation",
+                  "w-full aspect-square min-w-0 rounded-lg text-xs transition-colors flex items-center justify-center font-medium touch-manipulation",
                   disabled
                     ? "text-slate-300 dark:text-slate-600 cursor-not-allowed"
                     : isSelected
@@ -394,7 +394,7 @@ export function DateTimePickerField({
               <select
                 value={hour12}
                 onChange={(e) => setHour(hour12AmPmTo24(Number(e.target.value), ampm))}
-                className="w-[3rem] rounded-md border border-input-border bg-input-bg text-slate-800 dark:text-slate-200 text-xs py-1.5 px-1.5"
+                className="w-[3rem] rounded-lg border border-input-border bg-input-bg text-slate-800 dark:text-slate-200 text-xs py-1.5 px-1.5"
               >
                 {hours12.map((h) => (
                   <option key={h} value={h} disabled={isHourDisabled(h)}>
@@ -406,7 +406,7 @@ export function DateTimePickerField({
               <select
                 value={parsed ? parsed.getMinutes() : time.minute}
                 onChange={(e) => setMinute(Number(e.target.value))}
-                className="w-[3rem] rounded-md border border-input-border bg-input-bg text-slate-800 dark:text-slate-200 text-xs py-1.5 px-1.5"
+                className="w-[3rem] rounded-lg border border-input-border bg-input-bg text-slate-800 dark:text-slate-200 text-xs py-1.5 px-1.5"
               >
                 {minutes.map((m) => (
                   <option key={m} value={m} disabled={isMinuteDisabled(m)}>
@@ -417,7 +417,7 @@ export function DateTimePickerField({
               <select
                 value={ampm}
                 onChange={(e) => setHour(hour12AmPmTo24(hour12, e.target.value as "AM" | "PM"))}
-                className="w-[3.25rem] rounded-md border border-input-border bg-input-bg text-slate-800 dark:text-slate-200 text-xs py-1.5 px-1.5"
+                className="w-[3.25rem] rounded-lg border border-input-border bg-input-bg text-slate-800 dark:text-slate-200 text-xs py-1.5 px-1.5"
               >
                 <option value="AM">{t("datepicker.am")}</option>
                 <option value="PM">{t("datepicker.pm")}</option>
@@ -437,7 +437,7 @@ export function DateTimePickerField({
               onClick={() => { onChange(""); setOpen(false); }}
               className="text-xs text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center gap-1"
             >
-              <X className="w-3 h-3" />
+              <XCircle className="w-3 h-3" />
               {t("datepicker.clear")}
             </button>
           </div>
