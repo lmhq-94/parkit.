@@ -2,7 +2,7 @@
 
 import { createPortal } from "react-dom";
 import { useState } from "react";
-import { HelpCircle, XCircle, MailOpen, MessageSquare, BookOpen, ExternalLink, Shield, Gavel, ChevronDown } from "@/lib/premiumIcons";
+import { HelpCircle, XCircle, MailOpen, MessageSquare, ExternalLink, Shield, Gavel, ChevronDown } from "@/lib/premiumIcons";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface HelpModalProps {
@@ -75,20 +75,6 @@ export function HelpModal({ open, onClose }: HelpModalProps) {
               {t("help.resources")}
             </h3>
             <div className="space-y-2">
-              <a
-                href="/docs"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 rounded-lg border border-input-border bg-input-bg hover:bg-company-primary-subtle transition-colors group"
-              >
-                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-company-secondary/10 text-company-secondary group-hover:bg-company-primary group-hover:text-white transition-colors">
-                  <BookOpen className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text-primary">{t("help.documentation")}</p>
-                </div>
-                <ExternalLink className="w-4 h-4 text-text-muted group-hover:text-company-primary transition-colors" />
-              </a>
               <a
                 href="/faq"
                 target="_blank"

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { User, MailOpen, CreditCard, Briefcase } from "@/lib/premiumIcons";
+import { UserCircle, MailOpen, CreditCard, Briefcase, ClipboardText, Car } from "@/lib/premiumIcons";
 import { FormWizard } from "@/components/FormWizard";
 import { MultiSelectField } from "@/components/MultiSelectField";
 import { SelectField } from "@/components/SelectField";
@@ -13,7 +13,7 @@ import { useToast } from "@/lib/toastStore";
 import { LICENSE_TYPES } from "@/lib/companyOptions";
 import { required, email as validateEmail } from "@/lib/validation";
 
-const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
+const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-all duration-200 ease-out focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary/20 focus:ring-inset placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
 const STAFF_ROLES = ["RECEPTIONIST", "DRIVER"] as const;
@@ -45,8 +45,6 @@ export default function NewValetPage() {
     const e1 = required(t, form.firstName); if (e1) next.firstName = e1;
     const e2 = required(t, form.lastName); if (e2) next.lastName = e2;
     const e3 = required(t, form.email) ?? validateEmail(t, form.email); if (e3) next.email = e3;
-    if (licenseTypes.length === 0) next.licenseTypes = t("validation.selectRequired");
-    const e4 = required(t, form.licenseExpiry); if (e4) next.licenseExpiry = e4;
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -60,13 +58,6 @@ export default function NewValetPage() {
       setErrors(next);
       return Object.keys(next).length === 0;
     }
-    if (stepIndex === 1) {
-      const next: Partial<Record<keyof typeof defaultForm | "licenseTypes", string>> = {};
-      if (licenseTypes.length === 0) next.licenseTypes = t("validation.selectRequired");
-      const e4 = required(t, form.licenseExpiry); if (e4) next.licenseExpiry = e4;
-      setErrors(next);
-      return Object.keys(next).length === 0;
-    }
     return true;
   };
 
@@ -74,14 +65,15 @@ export default function NewValetPage() {
     if (!validate()) return;
     setSubmitting(true); setError(null);
     try {
-      await apiClient.post("/valets", {
+      const payload: Record<string, unknown> = {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         email: form.email.trim(),
-        licenseNumber: licenseTypes.join(", "),
-        licenseExpiry: new Date(form.licenseExpiry).toISOString(),
         staffRole: form.staffRole,
-      });
+      };
+      if (licenseTypes.length > 0) payload.licenseNumber = licenseTypes.join(", ");
+      if (form.licenseExpiry) payload.licenseExpiry = new Date(form.licenseExpiry).toISOString();
+      await apiClient.post("/valets", payload);
       showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/valets");
     } catch (err) {
@@ -104,7 +96,7 @@ export default function NewValetPage() {
           <div>
             <label className={LABEL}>{t("users.firstName")} <span className="text-red-500">*</span></label>
             <div className="relative group">
-              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+              <UserCircle className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input value={form.firstName} onChange={set("firstName")} placeholder={t("common.placeholderName")} className={IL} aria-invalid={!!errors.firstName} />
             </div>
             <div className="min-h-[1.25rem] mt-1">{errors.firstName && <p className="text-sm text-red-500" role="alert">{errors.firstName}</p>}</div>
@@ -112,7 +104,7 @@ export default function NewValetPage() {
           <div>
             <label className={LABEL}>{t("users.lastName")} <span className="text-red-500">*</span></label>
             <div className="relative group">
-              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+              <UserCircle className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input value={form.lastName} onChange={set("lastName")} placeholder={t("common.placeholderLastName")} className={IL} aria-invalid={!!errors.lastName} />
             </div>
             <div className="min-h-[1.25rem] mt-1">{errors.lastName && <p className="text-sm text-red-500" role="alert">{errors.lastName}</p>}</div>
@@ -135,7 +127,7 @@ export default function NewValetPage() {
                   staffRole: e.target.value as (typeof STAFF_ROLES)[number],
                 }))
               }
-              icon={Briefcase}
+              icon={form.staffRole === "DRIVER" ? Car : ClipboardText}
             >
               {STAFF_ROLES.map((r) => (
                 <option key={r} value={r}>
@@ -150,13 +142,12 @@ export default function NewValetPage() {
     {
       title: t("valets.sectionLicense"),
       description: t("valets.sectionLicenseDesc"),
-      badge: "required" as const,
       accentColor: "sky",
-      isValid: () => licenseTypes.length > 0 && !!form.licenseExpiry,
+      isValid: () => true,
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <div>
-            <label className={LABEL}>{t("valets.licenseType")} <span className="text-red-500">*</span></label>
+            <label className={LABEL}>{t("valets.licenseType")}</label>
             <MultiSelectField
               value={licenseTypes}
               onChange={setLicenseTypes}
@@ -167,7 +158,7 @@ export default function NewValetPage() {
             <div className="min-h-[1.25rem] mt-1">{errors.licenseTypes && <p className="text-sm text-red-500" role="alert">{errors.licenseTypes}</p>}</div>
           </div>
           <div>
-            <label className={LABEL}>{t("valets.licenseExpiry")} <span className="text-red-500">*</span></label>
+            <label className={LABEL}>{t("valets.licenseExpiry")}</label>
             <DatePickerField
               value={form.licenseExpiry}
               onChange={v => setForm(p => ({ ...p, licenseExpiry: v }))}

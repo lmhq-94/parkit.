@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { MapPin, Tag, Navigation, Radius, ArrowRight, Plus, Trash, Clock, Coins } from "@/lib/premiumIcons";
+import { Tag, Navigation, Radius, ArrowRight, Plus, Trash, Clock, Coins, Building, World } from "@/lib/premiumIcons";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -13,8 +13,8 @@ import { useDashboardStore } from "@/lib/store";
 import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
-const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
-const INPUT = "w-full px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
+const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-all duration-200 ease-out focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary/20 focus:ring-inset placeholder:text-text-muted";
+const INPUT = "w-full px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-all duration-200 ease-out focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary/20 focus:ring-inset placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 
 const PARKING_TYPES = ["OPEN", "COVERED", "TOWER", "UNDERGROUND", "ELEVATOR"] as const;
@@ -295,7 +295,7 @@ export default function EditParkingPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm premium-section-title">{t("parkings.sectionMain")}</p>
-            <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">{t("common.requiredBadge")}</span>
           </div>
           <p className="text-xs premium-subtitle mt-1">{t("parkings.sectionMainDesc")}</p>
         </div>
@@ -304,7 +304,7 @@ export default function EditParkingPage() {
             <div className="sm:col-span-2 lg:col-span-3">
               <label className={LABEL}>{t("parkings.name")} <span className="text-company-primary">*</span></label>
               <div className="relative group">
-                <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                 <input value={form.name} onChange={set("name")} placeholder={t("common.placeholderName")} className={IL} aria-invalid={!!fieldErrors.name} />
               </div>
             </div>
@@ -320,7 +320,7 @@ export default function EditParkingPage() {
                   onClick={() => setAddressPickerOpen(true)}
                   className="shrink-0 px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-secondary text-sm font-medium hover:bg-company-primary-subtle hover:border-company-primary-muted hover:text-company-primary transition-colors flex items-center gap-2"
                 >
-                  <MapPin className="w-4 h-4" />
+                  <World className="w-4 h-4" />
                   {t("companies.pickAddressOnMap")}
                 </button>
               </div>
@@ -367,7 +367,7 @@ export default function EditParkingPage() {
                     role="switch"
                     aria-checked={chargesParking}
                     onClick={() => setChargesParking((v) => !v)}
-                    className={`relative w-10 h-6 rounded-full shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page ${
+                    className={`relative w-10 h-6 rounded-full shrink-0 transition-colors focus:outline-none focus:ring-1 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page ${
                       chargesParking ? "bg-company-primary" : "bg-input-border"
                     }`}
                   >
@@ -470,7 +470,7 @@ export default function EditParkingPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm premium-section-title">{t("parkings.sectionSlots")}</p>
-            <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">{t("common.requiredBadge")}</span>
           </div>
           <p className="text-xs premium-subtitle mt-1">{t("parkings.sectionSlotsDesc")}</p>
         </div>
@@ -512,7 +512,7 @@ export default function EditParkingPage() {
             <button
               type="button"
               onClick={addSlotsBatch}
-              className="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2"
+              className="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:opacity-95 focus:outline-none focus:ring-1 focus:ring-company-primary focus:ring-offset-2"
             >
               <Plus className="w-4 h-4" />
               {t("parkings.addSlotsBatch")}
@@ -577,7 +577,6 @@ export default function EditParkingPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm premium-section-title">{t("parkings.sectionGeo")}</p>
-            <span className="text-[11px] font-medium text-text-muted">{t("common.optionalBadge")}</span>
           </div>
           <p className="text-xs premium-subtitle mt-1">{t("parkings.sectionGeoDesc")}</p>
         </div>
@@ -616,7 +615,7 @@ export default function EditParkingPage() {
             {t("common.cancel")}
           </Link>
           <button type="button" onClick={handleSubmit} disabled={submitting || !isDirty || !isValid}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors">
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors">
             {submitting ? <><LoadingSpinner size="sm" />{t("common.saving")}</> : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}
           </button>
         </div>

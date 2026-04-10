@@ -151,7 +151,7 @@ export default function EditBookingPage() {
             <p className="text-sm premium-section-title">
               {t("bookings.sectionMain")}
             </p>
-            <span className="text-[11px] font-medium text-red-500">
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">
               {t("common.requiredBadge")}
             </span>
           </div>
@@ -241,9 +241,6 @@ export default function EditBookingPage() {
             <p className="text-sm premium-section-title">
               {t("bookings.sectionExit")}
             </p>
-            <span className="text-[11px] font-medium text-text-muted">
-              {t("common.optionalBadge")}
-            </span>
           </div>
           <p className="text-xs premium-subtitle mt-1">
             {t("bookings.sectionExitDesc")}

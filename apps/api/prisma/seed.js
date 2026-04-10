@@ -3478,27 +3478,43 @@ async function main() {
 
   // Flow: SUPER_ADMIN creates companies via API, picks one in the company selector (x-company-id),
   // and everything created afterward (users, parkings, etc.) is linked to that company.
+  // Create or update the system superadmin with complete profile
+  const superAdminEmail = process.env.SUPPORT_EMAIL || "soporte@parkitcr.com";
+  const superAdminPhone = process.env.SUPER_ADMIN_PHONE || "+50662164040";
   await prisma.user.upsert({
-    where: { email: "superadmin@parkit.cr" },
+    where: { email: superAdminEmail },
     update: {
       companyId: null,
-      firstName: "Parkit",
-      lastName: "Admin",
+      firstName: "Administrador",
+      lastName: "del Sistema",
       passwordHash,
       systemRole: "SUPER_ADMIN",
-      timezone: "UTC",
+      timezone: "America/Costa_Rica",
+      phone: superAdminPhone,
+      phoneVerified: true,
       isActive: true,
     },
     create: {
       id: "b8e5d9b5-6g35-5c77-0g95-d6ec1g9f7b12",
       companyId: null,
-      firstName: "Parkit",
-      lastName: "Admin",
-      email: "superadmin@parkit.cr",
+      firstName: "Administrador",
+      lastName: "del Sistema",
+      email: superAdminEmail,
       passwordHash,
       systemRole: "SUPER_ADMIN",
-      timezone: "UTC",
+      timezone: "America/Costa_Rica",
+      phone: superAdminPhone,
+      phoneVerified: true,
       isActive: true,
+      appPreferences: JSON.stringify({
+        language: "es",
+        theme: "system",
+        notifications: {
+          email: true,
+          push: true,
+          sms: false,
+        },
+      }),
     },
   });
 

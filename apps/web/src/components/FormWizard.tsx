@@ -116,13 +116,8 @@ export function FormWizard({
             <div className="flex items-center gap-2 mb-1">
               <h2 className="text-base premium-section-title">{step.title}</h2>
               {step.badge === "required" && (
-                <span className="text-[11px] font-medium text-red-500">
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">
                   {t("common.requiredBadge")}
-                </span>
-              )}
-              {step.badge === "optional" && (
-                <span className="text-[11px] font-medium text-text-muted">
-                  {t("common.optionalBadge")}
                 </span>
               )}
             </div>
@@ -189,9 +184,11 @@ export function FormWizard({
                 {footerNote}
               </p>
             )}
-            <p className="text-xs text-text-muted/50">
-              {step.badge === "required" ? t("common.requiredNote") : t("common.optionalNote")}
-            </p>
+            {step.badge === "required" && (
+              <p className="text-xs text-text-muted/50">
+                {t("common.requiredNote")}
+              </p>
+            )}
           </div>
 
           <div className="flex items-center gap-2.5 ml-auto">

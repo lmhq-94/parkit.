@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocaleStore } from "@/lib/store";
-import { Globe, Check } from "@/lib/premiumIcons";
+import { World, Check } from "@/lib/premiumIcons";
 import { apiClient } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useState, useRef, useEffect } from "react";
@@ -78,7 +78,7 @@ export function LocaleToggle() {
           title={t("settings.language")}
           aria-label={t("settings.language")}
         >
-          <Globe className="w-5 h-5" />
+          <World className="w-5 h-5" />
           <span className="text-xs font-medium uppercase hidden sm:inline">{locale}</span>
         </button>
       </div>

@@ -149,7 +149,7 @@ export default function EditTicketPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm premium-section-title">{t("tickets.sectionMain")}</p>
-            <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">{t("common.requiredBadge")}</span>
           </div>
           <p className="text-xs premium-subtitle mt-1">{t("tickets.sectionMainDesc")}</p>
         </div>
@@ -198,7 +198,7 @@ export default function EditTicketPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm premium-section-title">{t("tickets.sectionAssignments")}</p>
-            <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">{t("common.requiredBadge")}</span>
           </div>
           <p className="text-xs premium-subtitle mt-1">{t("tickets.sectionAssignmentsDesc")}</p>
         </div>

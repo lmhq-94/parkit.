@@ -103,18 +103,22 @@ export function DefaultBanner({
         </>
       )}
 
-      {/* Izquierda: círculo con avatar/logo o icono de industria - estilo premium */}
+      {/* Izquierda: avatar/logo o icono de industria - estilo consistente con perfil */}
       <div className={`relative z-10 shrink-0 pl-4 ${hasBackgroundImage ? "drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]" : ""}`}>
         <div
-          className="w-12 h-12 rounded-lg overflow-hidden flex items-center justify-center transition-all duration-300"
+          className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center transition-all duration-300"
           style={{
-            backgroundColor: isDark ? "rgba(30,41,59,0.8)" : "#ffffff",
-            border: isDark 
-              ? "1px solid rgba(255,255,255,0.15)" 
-              : "1px solid rgba(0,0,0,0.06)",
-            boxShadow: isDark
-              ? "0 4px 20px -4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)"
-              : "0 4px 20px -4px rgba(0,0,0,0.1), 0 1px 2px rgba(255,255,255,1) inset",
+            backgroundColor: logoImageUrl?.trim()
+              ? (isDark ? "rgba(30,41,59,0.8)" : "#ffffff")
+              : (isDark ? "hsla(220, 10%, 35%, 1)" : "hsla(220, 10%, 88%, 1)"),
+            border: logoImageUrl?.trim()
+              ? (isDark ? "1px solid rgba(255,255,255,0.15)" : "1px solid rgba(0,0,0,0.06)")
+              : `2px solid ${isDark ? "hsla(220, 15%, 45%, 0.4)" : "hsla(220, 15%, 75%, 0.6)"}`,
+            boxShadow: logoImageUrl?.trim()
+              ? (isDark
+                  ? "0 4px 12px -2px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)"
+                  : "0 4px 12px -2px rgba(0,0,0,0.1), 0 1px 2px rgba(255,255,255,1) inset")
+              : "0 2px 8px -2px rgba(0,0,0,0.08)",
             color: isDark ? "#e2e8f0" : "#475569",
           }}
         >
@@ -122,12 +126,12 @@ export function DefaultBanner({
             <Image
               src={logoImageUrl}
               alt=""
-              width={48}
-              height={48}
+              width={36}
+              height={36}
               className="w-full h-full object-cover object-center"
             />
           ) : (
-            <IndustryIcon className="w-5 h-5" strokeWidth={1.5} />
+            <IndustryIcon className="w-[18px] h-[18px]" strokeWidth={1.5} />
           )}
         </div>
       </div>

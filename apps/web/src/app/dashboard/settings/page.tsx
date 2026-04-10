@@ -380,20 +380,7 @@ export default function SettingsPage() {
   const handleRevertToDefault = async () => {
     setReverting(true);
     try {
-      await apiClient.patch("/companies/me", {
-        brandingConfig: {
-          bannerImageUrl: null,
-          logoImageUrl: null,
-          primaryColor: THEME_DEFAULT_PRIMARY_LIGHT,
-          primaryColorDark: THEME_DEFAULT_PRIMARY_DARK,
-          secondaryColor: THEME_DEFAULT_SECONDARY_LIGHT,
-          secondaryColorDark: THEME_DEFAULT_SECONDARY_DARK,
-          tertiaryColor: THEME_DEFAULT_TERTIARY_LIGHT,
-          tertiaryColorDark: THEME_DEFAULT_TERTIARY_DARK,
-        },
-      });
-
-      const defaultBranding = {
+      const serverPayload = {
         bannerImageUrl: null,
         logoImageUrl: null,
         primaryColor: THEME_DEFAULT_PRIMARY_LIGHT,
@@ -402,20 +389,30 @@ export default function SettingsPage() {
         secondaryColorDark: THEME_DEFAULT_SECONDARY_DARK,
         tertiaryColor: THEME_DEFAULT_TERTIARY_LIGHT,
         tertiaryColorDark: THEME_DEFAULT_TERTIARY_DARK,
+      };
+
+      await apiClient.patch("/companies/me", {
+        brandingConfig: serverPayload,
+      });
+
+      const defaultBranding = {
+        ...serverPayload,
         businessActivity: currentBranding?.businessActivity ?? null,
       };
 
       setCompanyBranding(defaultBranding);
       if (selectedCompanyId) setBrandingInCache(selectedCompanyId, defaultBranding);
-      const revertedForm = {
+
+      // Form state uses empty strings for image URLs (UI inputs need strings)
+      const revertedForm: BrandingConfig = {
         bannerImageUrl: "",
         logoImageUrl: "",
-        primaryColor: THEME_DEFAULT_PRIMARY_LIGHT,
-        primaryColorDark: THEME_DEFAULT_PRIMARY_DARK,
-        secondaryColor: THEME_DEFAULT_SECONDARY_LIGHT,
-        secondaryColorDark: THEME_DEFAULT_SECONDARY_DARK,
-        tertiaryColor: THEME_DEFAULT_TERTIARY_LIGHT,
-        tertiaryColorDark: THEME_DEFAULT_TERTIARY_DARK,
+        primaryColor: serverPayload.primaryColor,
+        primaryColorDark: serverPayload.primaryColorDark,
+        secondaryColor: serverPayload.secondaryColor,
+        secondaryColorDark: serverPayload.secondaryColorDark,
+        tertiaryColor: serverPayload.tertiaryColor,
+        tertiaryColorDark: serverPayload.tertiaryColorDark,
       };
       setForm(revertedForm);
       setInitialForm(revertedForm);
@@ -500,9 +497,8 @@ export default function SettingsPage() {
                       <ImageIcon className="w-5 h-5 text-company-primary" />
                     </div>
                     <div>
-                      <h2 className="text-base premium-section-title flex items-center gap-2">
+                      <h2 className="text-base premium-section-title">
                         {t("settings.companyTheme")}
-                        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-text-muted/10 text-text-muted">{t("common.optionalBadge")}</span>
                       </h2>
                       <p className="text-sm premium-subtitle">{t("settings.companyThemeDescription")}</p>
                     </div>

@@ -40,12 +40,12 @@ export function ImageCropEditor({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
   const [imageSize, setImageSize] = useState<{ w: number; h: number } | null>(null);
+  const [minScale, setMinScale] = useState(0.05);
+  const [maxScale, setMaxScale] = useState(2);
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
-  /** Minimum zoom so very large images can be reduced and fully seen in crop area. */
-  const MIN_SCALE = 0.05;
 
   const imgOnLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -53,11 +53,16 @@ export function ImageCropEditor({
       const w = img.naturalWidth;
       const h = img.naturalHeight;
       setImageSize({ w, h });
-      // Scale to COVER: image fills whole area (logo/banner), centered; minimum zoom for very large images
+      // Scale to COVER: image fills whole area (logo/banner), centered
       const scaleToCoverW = cropBoxWidth / w;
       const scaleToCoverH = cropBoxHeight / h;
       const scaleToCover = Math.max(scaleToCoverW, scaleToCoverH);
-      const initialScale = Math.max(scaleToCover * 1.01, MIN_SCALE);
+      // Min scale ensures image always covers crop area (no empty space)
+      const calculatedMinScale = Math.max(scaleToCoverW, scaleToCoverH);
+      setMinScale(calculatedMinScale);
+      // Max scale limited to 3x the min scale (good slider range with reasonable zoom limit)
+      setMaxScale(calculatedMinScale * 3);
+      const initialScale = Math.max(scaleToCover * 1.01, calculatedMinScale);
       setScale(initialScale);
       const scaledW = w * initialScale;
       const scaledH = h * initialScale;
@@ -131,7 +136,7 @@ export function ImageCropEditor({
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3">
         <p className="text-xs text-text-muted">{hintText}</p>
-        <div className={`relative inline-block w-fit ${circular ? "mx-auto" : ""}`}>
+        <div className="flex justify-center">
         <div
           ref={containerRef}
           className={`relative overflow-hidden bg-input-bg ring-1 ring-black/5 dark:ring-white/10 select-none cursor-move ${circular ? "rounded-full" : "rounded-xl"}`}
@@ -161,12 +166,12 @@ export function ImageCropEditor({
                 draggable={false}
               />
             </div>
+            {aspectLabel && (
+              <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-black/50 text-white/90">
+                {aspectLabel}
+              </span>
+            )}
           </div>
-          {aspectLabel && (
-            <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-black/50 text-white/90">
-              {aspectLabel}
-            </span>
-          )}
         </div>
       </div>
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
@@ -174,8 +179,8 @@ export function ImageCropEditor({
           <span className="text-sm font-medium text-text-secondary shrink-0">Zoom</span>
           <input
             type="range"
-            min={MIN_SCALE}
-            max="3"
+            min={minScale}
+            max={maxScale}
             step="0.1"
             value={scale}
             onChange={(e) => setScale(Number(e.target.value))}

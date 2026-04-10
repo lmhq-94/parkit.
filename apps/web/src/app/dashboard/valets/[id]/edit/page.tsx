@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, MailOpen, CreditCard, Activity, ArrowRight, Briefcase } from "@/lib/premiumIcons";
+import { UserCircle, MailOpen, CreditCard, Activity, ArrowRight, Briefcase, ClipboardText, Car } from "@/lib/premiumIcons";
 import { MultiSelectField } from "@/components/MultiSelectField";
 import { DatePickerField } from "@/components/DatePickerField";
 import { SelectField } from "@/components/SelectField";
@@ -14,7 +14,7 @@ import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { LICENSE_TYPES } from "@/lib/companyOptions";
 
-const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
+const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-all duration-200 ease-out focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary/20 focus:ring-inset placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 const STATUSES = ["AVAILABLE", "BUSY", "AWAY"] as const;
 const STAFF_ROLES = ["RECEPTIONIST", "DRIVER"] as const;
@@ -79,7 +79,7 @@ export default function EditValetPage() {
       setForm(p => ({ ...p, [k]: e.target.value }));
 
   const handleSubmit = async () => {
-    if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim() || licenseTypes.length === 0) return;
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim()) return;
     setSubmitting(true); setError(null);
     try {
       await Promise.all([
@@ -112,7 +112,7 @@ export default function EditValetPage() {
       JSON.stringify([...licenseTypes].sort()) !== JSON.stringify([...initialLicenseTypes].sort()),
     [form, initialForm, licenseTypes, initialLicenseTypes]
   );
-  const isValid = form.firstName.trim() && form.lastName.trim() && form.email.trim() && licenseTypes.length > 0;
+  const isValid = form.firstName.trim() && form.lastName.trim() && form.email.trim();
 
   if (loading) {
     return (
@@ -135,7 +135,7 @@ export default function EditValetPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm premium-section-title">{t("valets.sectionEmployee")}</p>
-            <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">{t("common.requiredBadge")}</span>
           </div>
           <p className="text-xs premium-subtitle mt-1">{t("valets.sectionEmployeeDesc")}</p>
         </div>
@@ -144,14 +144,14 @@ export default function EditValetPage() {
             <div>
               <label className={LABEL}>{t("users.firstName")} <span className="text-red-500">*</span></label>
               <div className="relative group">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                <UserCircle className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                 <input value={form.firstName} onChange={set("firstName")} className={IL} />
               </div>
             </div>
             <div>
               <label className={LABEL}>{t("users.lastName")} <span className="text-red-500">*</span></label>
               <div className="relative group">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                <UserCircle className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                 <input value={form.lastName} onChange={set("lastName")} className={IL} />
               </div>
             </div>
@@ -177,7 +177,7 @@ export default function EditValetPage() {
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <div>
-              <label className={LABEL}>{t("valets.licenseType")} <span className="text-red-500">*</span></label>
+              <label className={LABEL}>{t("valets.licenseType")}</label>
               <MultiSelectField
                 value={licenseTypes}
                 onChange={setLicenseTypes}
@@ -202,7 +202,6 @@ export default function EditValetPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm premium-section-title">{t("valets.sectionStatusEdit")}</p>
-            <span className="text-[11px] font-medium text-text-muted">{t("common.optionalBadge")}</span>
           </div>
           <p className="text-xs premium-subtitle mt-1">{t("valets.sectionStatusEditDesc")}</p>
         </div>
@@ -210,7 +209,7 @@ export default function EditValetPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <div>
               <label className={LABEL}>{t("valets.staffRole")}</label>
-              <SelectField value={form.staffRole} onChange={set("staffRole")} icon={Briefcase}>
+              <SelectField value={form.staffRole} onChange={set("staffRole")} icon={form.staffRole === "DRIVER" ? Car : ClipboardText}>
                 {STAFF_ROLES.map((r) => (
                   <option key={r} value={r}>{tEnum("valetStaffRole", r)}</option>
                 ))}
@@ -234,7 +233,7 @@ export default function EditValetPage() {
             {t("common.cancel")}
           </Link>
           <button type="button" onClick={handleSubmit} disabled={submitting || !isDirty || !isValid}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors">
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors">
             {submitting
               ? <><LoadingSpinner size="sm" />{t("common.saving")}</>
               : <>{t("common.save")}<ArrowRight className="w-4 h-4" /></>}

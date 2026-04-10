@@ -188,7 +188,6 @@ export default function NewBookingPage() {
     {
       title: t("bookings.sectionExit"),
       description: t("bookings.sectionExitDesc"),
-      badge: "optional" as const,
       accentColor: "sky",
       isValid: () => true,
       content: (

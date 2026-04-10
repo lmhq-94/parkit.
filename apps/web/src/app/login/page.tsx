@@ -9,12 +9,10 @@ import { isSuperAdmin } from "@/lib/auth";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ArrowRight, Eye, EyeOff } from "@/lib/premiumIcons";
-import { FcGoogle } from "react-icons/fc";
-import { FaSquareFacebook, FaMicrosoft } from "react-icons/fa6";
+import { ArrowRight, Eye, EyeOff, GoogleIcon, FacebookIcon, MicrosoftIcon } from "@/lib/premiumIcons";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ThemeToggleSimple } from "@/components/ThemeToggleSimple";
-import { LocaleToggleSimple } from "@/components/LocaleToggleSimple";
+import { LocaleToggle } from "@/components/LocaleToggle";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -225,7 +223,7 @@ export default function LoginPage() {
       {/* TOP RIGHT: Theme and Locale toggles */}
       <div className="absolute top-4 right-4 z-30 hidden md:flex items-center gap-3">
         <ThemeToggleSimple />
-        <LocaleToggleSimple />
+        <LocaleToggle />
       </div>
 
       {/* MAIN: Centered Form with Logo */}
@@ -251,7 +249,7 @@ export default function LoginPage() {
                 onChange={handleChange}
                 required
                 autoComplete="email"
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-slate-900 dark:text-white text-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-slate-900 dark:text-white text-sm transition-all duration-200 ease-out focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/20 focus:ring-inset placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
             </div>
 
@@ -269,7 +267,7 @@ export default function LoginPage() {
                   onChange={handleChange}
                   required
                   autoComplete="current-password"
-                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-3 pl-4 pr-10 text-slate-900 dark:text-white text-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-3 pl-4 pr-10 text-slate-900 dark:text-white text-sm transition-all duration-200 ease-out focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/20 focus:ring-inset placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
                 <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -277,7 +275,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <button type="submit" disabled={isSubmitting} className="group w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:pointer-events-none transition-all">
+            <button type="submit" disabled={isSubmitting} className="group w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:pointer-events-none transition-all">
               {isSubmitting ? <LoadingSpinner size="sm" variant="white" /> : <>{t("auth.signIn")}<ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" /></>}
             </button>
           </form>
@@ -300,7 +298,7 @@ export default function LoginPage() {
               className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               title={t("auth.continueWithGoogle")}
             >
-              <FcGoogle className="h-6 w-6" />
+              <GoogleIcon className="h-6 w-6 text-red-500" />
             </button>
             <button
               type="button"
@@ -308,7 +306,7 @@ export default function LoginPage() {
               className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               title={t("auth.continueWithMicrosoft")}
             >
-              <FaMicrosoft className="h-6 w-6 text-blue-600" />
+              <MicrosoftIcon className="h-6 w-6 text-blue-600" />
             </button>
             <button
               type="button"
@@ -316,7 +314,7 @@ export default function LoginPage() {
               className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               title={t("auth.continueWithFacebook")}
             >
-              <FaSquareFacebook className="h-6 w-6 text-[#1877F2]" />
+              <FacebookIcon className="h-6 w-6 text-blue-600" />
             </button>
           </div>
 

@@ -23,8 +23,8 @@ import {
   TicketCheck,
   Bell,
   Settings,
-  ChevronsRight,
-  ChevronsLeft,
+  SidebarCollapse,
+  SidebarExpand,
   ChevronRight,
   ChevronDown,
   Building,
@@ -302,17 +302,18 @@ function CompanySelector({
       <div className="relative flex items-center gap-3">
         {!hideAvatar && (
           <div
-            className="w-9 h-9 rounded-lg shrink-0 flex items-center justify-center text-xs font-semibold overflow-hidden"
+            className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center text-xs font-semibold overflow-hidden"
             style={
               !logoImageUrl?.trim()
                 ? {
-                    backgroundColor: selectedCompanyId ? (isDark ? "hsla(220, 10%, 35%, 1)" : "hsla(220, 10%, 88%, 1)") : "transparent",
+                    backgroundColor: selectedCompanyId ? (isDark ? "hsla(220, 10%, 35%, 1)" : "hsla(220, 10%, 88%, 1)") : (isDark ? "hsla(220, 10%, 25%, 1)" : "hsla(220, 10%, 95%, 1)"),
                     color: isDark ? "hsla(220, 10%, 85%, 1)" : "hsla(220, 10%, 45%, 1)",
-                    border: `2px solid ${selectedCompanyId ? (isDark ? "hsla(220, 15%, 45%, 0.4)" : "hsla(220, 15%, 75%, 0.6)") : "transparent"}`,
+                    border: `2px solid ${selectedCompanyId ? (isDark ? "hsla(220, 15%, 45%, 0.4)" : "hsla(220, 15%, 75%, 0.6)") : (isDark ? "hsla(220, 15%, 35%, 0.3)" : "hsla(220, 15%, 85%, 0.5)")}`,
+                    boxShadow: "0 2px 8px -2px rgba(0,0,0,0.08)",
                   }
                 : {
-                    border: "2px solid transparent",
-                    boxShadow: "inset 0 2px 4px rgba(0,0,0,0.1)",
+                    border: "1px solid rgba(0,0,0,0.06)",
+                    boxShadow: "0 4px 12px -2px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)",
                   }
             }
           >
@@ -585,7 +586,7 @@ export function DashboardSidebar() {
               className="p-2.5 rounded-lg text-text-muted hover:text-company-primary hover:bg-company-primary/10 transition-all duration-300 ease-out w-full flex justify-center group"
               aria-label="Expand sidebar"
             >
-              <ChevronsLeft className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+              <SidebarExpand className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
             </button>
           </SidebarTooltip>
         ) : (
@@ -600,7 +601,7 @@ export function DashboardSidebar() {
                 className="hidden md:flex p-2 rounded-lg text-text-muted hover:text-company-primary hover:bg-company-primary/10 transition-all duration-300 ease-out shrink-0 group"
                 aria-label="Collapse sidebar"
               >
-                <ChevronsRight className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+                <SidebarCollapse className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
               </button>
             </div>
           </>

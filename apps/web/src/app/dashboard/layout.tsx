@@ -333,14 +333,18 @@ function DashboardLayoutInner({
                         const avatarColors = getAvatarHSLColors(user.id, theme === "dark");
                         const hasAvatar = (user.avatarUrl ?? user.avatar)?.trim();
                         return (
-                          <div 
-                            className={`relative w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center shrink-0 transition-transform duration-300 ease-out ${
+                              <div
+                            className={`relative w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center shrink-0 transition-transform duration-300 ease-out ${
                               userMenuOpen ? "scale-95" : "group-hover:scale-105"
                             }`}
                             style={{
                               backgroundColor: hasAvatar ? undefined : avatarColors.bg,
-                              border: `2px solid ${hasAvatar ? 'transparent' : avatarColors.border}`,
-                              boxShadow: hasAvatar ? 'inset 0 2px 4px rgba(0,0,0,0.1)' : 'none',
+                              border: hasAvatar
+                                ? '1px solid rgba(0,0,0,0.06)'
+                                : `2px solid ${avatarColors.border}`,
+                              boxShadow: hasAvatar
+                                ? '0 4px 12px -2px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)'
+                                : '0 2px 8px -2px rgba(0,0,0,0.08)',
                             }}
                           >
                             {hasAvatar ? (
@@ -353,7 +357,7 @@ function DashboardLayoutInner({
                                 unoptimized
                               />
                             ) : (
-                              <User 
+                              <User
                                 className="w-[18px] h-[18px]"
                                 style={{ color: avatarColors.fg }}
                               />
