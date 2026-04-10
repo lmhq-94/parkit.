@@ -17,6 +17,7 @@ export default function HelpScreen() {
   const C = theme.colors;
   const S = theme.space;
   const Fa = ticketsA11y.font;
+  const Fonts = theme.fontFamily;
   const isDriver = user?.valetStaffRole === "DRIVER";
 
   const styles = useMemo(
@@ -42,8 +43,9 @@ export default function HelpScreen() {
         title: {
           flex: 1,
           textAlign: "center",
-          fontSize: Fa.title - 4,
+          fontSize: Math.round(Fa.secondary * 0.85),
           fontWeight: "800",
+          fontFamily: Fonts.primary,
           color: C.text,
         },
         scroll: { flex: 1 },
@@ -53,7 +55,8 @@ export default function HelpScreen() {
           paddingBottom: 48,
         },
         subtitle: {
-          fontSize: Fa.secondary,
+          fontSize: Math.round(Fa.status * 0.65),
+          fontFamily: Fonts.primary,
           color: C.textMuted,
           marginBottom: S.md,
           lineHeight: 24,
@@ -63,7 +66,7 @@ export default function HelpScreen() {
           fontWeight: Platform.OS === "android" ? "normal" : "800",
           color: C.primary,
           marginBottom: S.md,
-          fontFamily: "CalSans",
+          fontFamily: Fonts.primary,
         },
         stepRow: {
           flexDirection: "row",
@@ -81,18 +84,20 @@ export default function HelpScreen() {
         },
         stepBadgeText: {
           color: "#fff",
-          fontSize: 14,
+          fontSize: Math.round(Fa.status * 0.65),
           fontWeight: "800",
+          fontFamily: Fonts.primary,
         },
         stepText: {
           flex: 1,
-          fontSize: Fa.secondary - 1,
+          fontSize: Math.round(Fa.status * 0.65),
+          fontFamily: Fonts.primary,
           color: C.text,
           lineHeight: 22,
           fontWeight: "600",
         },
       }),
-    [C, S, Fa, responsive.contentMaxWidth, responsive.sectionPadding]
+    [C, S, Fa, Fonts, responsive.contentMaxWidth, responsive.sectionPadding]
   );
 
   if (!user) {

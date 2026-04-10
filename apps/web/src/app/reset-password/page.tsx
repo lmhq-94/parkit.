@@ -96,7 +96,7 @@ function ResetPasswordForm() {
           <p className="text-xs text-text-muted">
             {t("auth.supportHint")}{" "}
             <a
-              href="mailto:soporte@parkit.app"
+              href="mailto:soporte@parkitcr.com"
               className="font-medium text-company-primary hover:text-company-primary underline-offset-2 hover:underline"
             >
               {t("auth.supportLinkLabel")}
@@ -135,7 +135,7 @@ function ResetPasswordForm() {
           <p className="text-xs text-text-muted">
             {t("auth.supportHint")}{" "}
             <a
-              href="mailto:soporte@parkit.app"
+              href="mailto:soporte@parkitcr.com"
               className="font-medium text-company-primary hover:text-company-primary underline-offset-2 hover:underline"
             >
               {t("auth.supportLinkLabel")}
@@ -247,22 +247,22 @@ function ResetPasswordForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 rounded-lg bg-company-primary py-3 text-sm font-medium text-white hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none"
+            className="group w-full flex items-center justify-center gap-2 rounded-lg bg-company-primary py-3 text-sm font-medium text-white hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none"
           >
             {isSubmitting ? (
               <LoadingSpinner size="sm" variant="white" />
             ) : (
               <>
                 {t("auth.saveNewPassword")}
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
               </>
             )}
           </button>
 
           <p className="text-center">
-            <Link href="/login" className="text-sm text-company-primary hover:text-company-primary inline-flex items-center gap-1">
+            <Link href="/login" className="group text-sm text-company-primary hover:text-company-primary inline-flex items-center gap-1">
               {t("auth.backToSignIn")}
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
           </p>
         </form>
@@ -272,7 +272,7 @@ function ResetPasswordForm() {
         <p className="text-xs text-text-muted">
           {t("auth.supportHint")}{" "}
           <a
-            href="mailto:soporte@parkit.app"
+            href="mailto:soporte@parkitcr.com"
             className="font-medium text-company-primary hover:text-company-primary underline-offset-2 hover:underline"
           >
             {t("auth.supportLinkLabel")}

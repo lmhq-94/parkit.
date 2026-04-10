@@ -4,11 +4,11 @@ import {
   StyleSheet,
   Pressable,
   Platform,
-  Linking,
   ActivityIndicator,
   useWindowDimensions,
   Animated,
   Easing,
+  Modal,
 } from "react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CameraView, useCameraPermissions } from "expo-camera";
@@ -38,7 +38,6 @@ type Props = {
 const CORNER_LEN = 28;
 const CORNER_THICK = 3;
 const ACCENT_GLOW = "rgba(56, 189, 248, 0.95)";
-const ACCENT_SOFT = "rgba(56, 189, 248, 0.35)";
 
 /**
  * Vista previa de cámara + escaneo QR para enlazar una reserva (flujo valet).
@@ -56,6 +55,7 @@ export function ReservationQrPanel({
   const { width: winW, height: winH } = useWindowDimensions();
   const safeInsets = useSafeAreaInsets();
   const [permission, requestPermission] = useCameraPermissions();
+  const [permissionModalOpen, setPermissionModalOpen] = useState(false);
   const handledRef = useRef(false);
   /**
    * Android / expo-camera: si `onBarcodeScanned` activa el analizador antes de que
@@ -87,6 +87,23 @@ export function ReservationQrPanel({
       cancelAnimationFrame(id);
     };
   }, [permission?.granted]);
+
+  // Controlar modal de permisos
+  useEffect(() => {
+    if (permission && !permission.granted) {
+      setPermissionModalOpen(true);
+    } else {
+      setPermissionModalOpen(false);
+    }
+  }, [permission]);
+
+  const handleRequestPermission = useCallback(() => {
+    void requestPermission();
+  }, [requestPermission]);
+
+  const handleCancelPermission = useCallback(() => {
+    setPermissionModalOpen(false);
+  }, []);
 
   const scanLineAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(0)).current;
@@ -170,54 +187,42 @@ export function ReservationQrPanel({
     );
   }
 
-  if (!permission.granted) {
-    if (variant === "premium") {
-      return (
-        <View style={[styles.permissionBox, styles.permissionBoxPremium]}>
-          <View style={styles.permissionIconWrap}>
-            <LinearGradient
-              colors={[ACCENT_SOFT, "rgba(59, 130, 246, 0.15)"]}
-              style={StyleSheet.absoluteFill}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            />
-            <Ionicons name="camera-outline" size={36} color={ACCENT_GLOW} />
+  // Modal bottom sheet para permisos (igual que CardScanner)
+  const permissionModal = !permission.granted ? (
+    <Modal
+      visible={permissionModalOpen}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={handleCancelPermission}
+      statusBarTranslucent
+    >
+      <View style={styles.permissionOverlay}>
+        <View style={styles.permissionSheet}>
+          <View style={styles.permissionSheetHeader}>
+            <Text style={styles.permissionSheetTitle}>
+              {t(locale, "receive.cameraPermissionNeeded")}
+            </Text>
           </View>
-          <Text style={styles.permissionTitle}>{t(locale, "receive.qrPermissionTitle")}</Text>
-          <Text style={styles.permissionText}>{t(locale, "receive.qrPermissionExplain")}</Text>
           <Pressable
-            style={({ pressed }) => [styles.permissionBtn, pressed && { opacity: 0.92 }]}
-            onPress={() => void requestPermission()}
+            style={({ pressed }) => [styles.permissionActionBtn, pressed && { opacity: 0.9 }]}
+            onPress={handleRequestPermission}
           >
-            <LinearGradient
-              colors={["#38BDF8", "#3B82F6"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            />
-            <Text style={styles.permissionBtnText}>{t(locale, "receive.qrAllowCamera")}</Text>
+            <Text style={styles.permissionActionText}>
+              {t(locale, "common.allow")}
+            </Text>
           </Pressable>
-          <Pressable onPress={() => void Linking.openSettings()} style={styles.settingsLink}>
-            <Text style={styles.settingsLinkText}>{t(locale, "receive.qrOpenSettings")}</Text>
+          <Pressable
+            style={({ pressed }) => [styles.permissionCancelBtn, pressed && { opacity: 0.8 }]}
+            onPress={handleCancelPermission}
+          >
+            <Text style={styles.permissionCancelText}>
+              {t(locale, "common.cancel")}
+            </Text>
           </Pressable>
         </View>
-      );
-    }
-    return (
-      <View style={styles.permissionBox}>
-        <Text style={styles.permissionText}>{t(locale, "receive.qrPermissionExplain")}</Text>
-        <Pressable
-          style={({ pressed }) => [styles.permissionBtnLegacy, pressed && { opacity: 0.9 }]}
-          onPress={() => void requestPermission()}
-        >
-          <Text style={styles.permissionBtnTextLegacy}>{t(locale, "receive.qrAllowCamera")}</Text>
-        </Pressable>
-        <Pressable onPress={() => void Linking.openSettings()} style={styles.settingsLink}>
-          <Text style={styles.settingsLinkText}>{t(locale, "receive.qrOpenSettings")}</Text>
-        </Pressable>
       </View>
-    );
-  }
+    </Modal>
+  ) : null;
 
   if (variant === "premium") {
     const frameW = Math.min(winW * 0.76, Math.min(300, winH * 0.42));
@@ -328,25 +333,29 @@ export function ReservationQrPanel({
   }
 
   return (
-    <View style={styles.cameraWrap}>
-      <CameraView
-        style={styles.camera}
-        facing="back"
-        barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-        onBarcodeScanned={scanningActive ? handleBarCodeScanned : undefined}
-      />
-      <View style={styles.cameraOverlay} pointerEvents="none">
-        <View style={styles.cameraFrame} />
+    <>
+      {permissionModal}
+      <View style={styles.cameraWrap}>
+        <CameraView
+          style={styles.camera}
+          facing="back"
+          barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+          onBarcodeScanned={scanningActive ? handleBarCodeScanned : undefined}
+        />
+        <View style={styles.cameraOverlay} pointerEvents="none">
+          <View style={styles.cameraFrame} />
+        </View>
       </View>
-    </View>
+    </>
   );
 }
 
-export function createQrStyles(theme: Theme, layoutHeight?: number) {
+export function createQrStyles(theme: Theme, safeInsets: { bottom: number }, layoutHeight?: number) {
   const C = theme.colors;
   const S = theme.space;
   const R = theme.radius;
-  const F = 14;
+  const F = theme.a11yFont;
+  const Fonts = theme.fontFamily;
   const headerMaxH = layoutHeight ? Math.round(layoutHeight * 0.24) : 130;
 
   const cornerBase = {
@@ -435,7 +444,7 @@ export function createQrStyles(theme: Theme, layoutHeight?: number) {
       maxHeight: headerMaxH,
     },
     premiumKicker: {
-      fontSize: 11,
+      fontSize: Math.round(F.status * 0.55),
       fontWeight: "700",
       letterSpacing: 2,
       color: "rgba(56, 189, 248, 0.85)",
@@ -443,14 +452,14 @@ export function createQrStyles(theme: Theme, layoutHeight?: number) {
       marginBottom: S.xs,
     },
     premiumTitle: {
-      fontSize: 26,
+      fontSize: Math.round(F.status * 0.85),
       fontWeight: "800",
       color: "#F8FAFC",
       letterSpacing: -0.5,
     },
     premiumSubtitle: {
       marginTop: S.sm,
-      fontSize: F,
+      fontSize: Math.round(F.status * 0.65),
       lineHeight: 22,
       color: "rgba(248, 250, 252, 0.72)",
       maxWidth: 320,
@@ -479,7 +488,7 @@ export function createQrStyles(theme: Theme, layoutHeight?: number) {
     },
     validatingText: {
       flexShrink: 1,
-      fontSize: F,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "600",
       color: "#E2E8F0",
     },
@@ -502,7 +511,7 @@ export function createQrStyles(theme: Theme, layoutHeight?: number) {
       marginBottom: S.sm,
     },
     permissionTitle: {
-      fontSize: 20,
+      fontSize: Math.round(F.status * 0.85),
       fontWeight: "800",
       color: C.text,
       textAlign: "center",
@@ -546,7 +555,7 @@ export function createQrStyles(theme: Theme, layoutHeight?: number) {
       backgroundColor: theme.isDark ? "rgba(148,163,184,0.08)" : "rgba(148,163,184,0.12)",
     },
     webFallbackText: {
-      fontSize: F,
+      fontSize: Math.round(F.status * 0.65),
       color: C.textMuted,
       textAlign: "center",
       lineHeight: 22,
@@ -562,7 +571,7 @@ export function createQrStyles(theme: Theme, layoutHeight?: number) {
       gap: S.md,
     },
     permissionText: {
-      fontSize: F,
+      fontSize: Math.round(F.status * 0.65),
       color: C.textMuted,
       textAlign: "center",
       lineHeight: 22,
@@ -579,10 +588,10 @@ export function createQrStyles(theme: Theme, layoutHeight?: number) {
     permissionBtnText: {
       color: "#fff",
       fontWeight: "800",
-      fontSize: F,
+      fontSize: Math.round(F.status * 0.65),
     },
     settingsLink: { paddingVertical: S.sm },
-    settingsLinkText: { fontSize: F - 1, fontWeight: "600", color: C.primary },
+    settingsLinkText: { fontSize: Math.round(F.status * 0.6), fontWeight: "600", color: C.primary },
     permissionBtnLegacy: {
       backgroundColor: C.primary,
       paddingVertical: S.md,
@@ -592,7 +601,67 @@ export function createQrStyles(theme: Theme, layoutHeight?: number) {
     permissionBtnTextLegacy: {
       color: "#fff",
       fontWeight: "800",
-      fontSize: F,
+      fontSize: Math.round(F.status * 0.65),
+    },
+    // Bottom sheet styles para permisos
+    permissionOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+      justifyContent: 'flex-end',
+    },
+    permissionSheet: {
+      backgroundColor: theme.isDark ? '#1E293B' : '#FFFFFF',
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      paddingTop: S.md,
+      paddingHorizontal: S.md,
+      paddingBottom: Math.max(S.lg, safeInsets.bottom + S.md),
+      ...Platform.select({
+        ios: {
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 20,
+        },
+        android: { elevation: 16 },
+      }),
+    },
+    permissionSheetHeader: {
+      alignItems: 'center',
+      paddingVertical: S.md,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.isDark ? 'rgba(148, 163, 184, 0.2)' : 'rgba(203, 213, 225, 0.5)',
+      marginBottom: S.sm,
+    },
+    permissionSheetTitle: {
+      fontSize: Math.round(F.status * 0.65),
+      fontWeight: '800',
+      fontFamily: Fonts.primary,
+      color: C.text,
+    },
+    permissionCancelBtn: {
+      backgroundColor: theme.isDark ? 'rgba(148, 163, 184, 0.15)' : 'rgba(241, 245, 249, 0.8)',
+      borderRadius: 14,
+      paddingVertical: S.md,
+      alignItems: 'center',
+      marginBottom: S.sm,
+    },
+    permissionCancelText: {
+      fontSize: Math.round(F.status * 0.6),
+      fontWeight: '800',
+      color: C.text,
+    },
+    permissionActionBtn: {
+      backgroundColor: C.primary,
+      borderRadius: 14,
+      paddingVertical: S.md,
+      alignItems: 'center',
+      marginBottom: S.sm,
+    },
+    permissionActionText: {
+      fontSize: Math.round(F.status * 0.6),
+      fontWeight: '800',
+      color: '#fff',
     },
   });
 }

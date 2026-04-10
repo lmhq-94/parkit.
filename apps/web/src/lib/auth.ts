@@ -98,3 +98,24 @@ export function getAvatarColor(userId: string | null | undefined): string | unde
   const index = userId.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) % AVATAR_COLORS.length;
   return AVATAR_COLORS[index];
 }
+
+
+/** Colores HSL para avatar estilo mobile-valet (neutros) */
+export function getAvatarHSLColors(
+  _userId: string | null | undefined,
+  isDark = false
+): { bg: string; fg: string; border: string } {
+  // Usar colores neutros (gris azulado) para ambos temas
+  if (isDark) {
+    return {
+      bg: "hsla(220, 10%, 35%, 1)",
+      fg: "hsla(220, 10%, 85%, 1)",
+      border: "hsla(220, 15%, 45%, 0.4)",
+    };
+  }
+  return {
+    bg: "hsla(220, 10%, 88%, 1)",
+    fg: "hsla(220, 10%, 45%, 1)",
+    border: "hsla(220, 15%, 75%, 0.6)",
+  };
+}

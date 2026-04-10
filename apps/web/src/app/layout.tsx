@@ -17,7 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" suppressHydrationWarning data-scroll-behavior="smooth">
-      <body className="bg-page text-text-primary antialiased">
+      <body className="bg-page text-text-primary antialiased" suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>

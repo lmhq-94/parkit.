@@ -19,27 +19,23 @@ import {
   LayoutAnimation,
   UIManager,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Logo } from "@parkit/shared";
+import { Logo, getTranslatedApiErrorMessage } from "@parkit/shared";
 import api, { setAuthToken } from "@/lib/api";
 import { saveUser } from "@/lib/auth";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-import { AuthHeroGradient } from "@/components/AuthHeroGradient";
+import { KeyboardAvoidingView } from "react-native";
+import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
-import { messageFromAxios, getTranslatedApiErrorMessage } from "@/lib/apiErrors";
-import { Users, Car } from "lucide-react-native";
+import { STAFF_ROLES, type StaffRole } from "@/lib/staffRoles";
 
 const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
 const LOGO_SIZE = 72;
 const CONTROL_HEIGHT = 56;
-
-const STAFF_ROLES = ["RECEPTIONIST", "DRIVER"] as const;
-type StaffRole = (typeof STAFF_ROLES)[number];
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -50,11 +46,12 @@ export default function LoginScreen() {
   const theme = useValetTheme();
   const { width, height } = useWindowDimensions();
   const a = theme.auth;
+  const F = theme.font;
   const shortestSide = Math.min(width, height);
   const isTablet = shortestSide >= 600;
   const isLandscape = width > height;
   const horizontalPadding = isTablet ? 36 : 28;
-  const sheetMaxWidth = isTablet ? 640 : 560;
+  const sheetMaxWidth = width;
   const { isDark } = theme;
   const heroMinHeight = Math.round((isLandscape ? height * 0.24 : height * 0.32));
 
@@ -62,9 +59,8 @@ export default function LoginScreen() {
     () =>
       StyleSheet.create({
         heroStrip: {
-          backgroundColor: a.authHeroStripBg,
-          zIndex: 0,
-          overflow: "hidden",
+          flex: 1,
+          backgroundColor: 'transparent',
         },
         topBar: {
           flexDirection: "row",
@@ -75,6 +71,7 @@ export default function LoginScreen() {
           width: "100%",
           maxWidth: sheetMaxWidth,
           alignSelf: "center",
+          backgroundColor: 'transparent',
         },
         backBtn: {
           width: 44,
@@ -86,13 +83,11 @@ export default function LoginScreen() {
           marginLeft: -2,
         },
         hero: {
-          alignItems: "center",
+          flex: 1,
           justifyContent: "center",
-          paddingVertical: 12,
+          alignItems: "center",
           minHeight: heroMinHeight,
-        },
-        heroLogin: {
-          minHeight: Math.round(heroMinHeight * 0.74),
+          backgroundColor: 'transparent',
         },
         heroCompact: {
           minHeight: Math.round(heroMinHeight * 0.55),
@@ -101,7 +96,7 @@ export default function LoginScreen() {
         heroLogo: { marginBottom: 0 },
         heroBrand: {
           marginTop: 28,
-          fontSize: 15,
+          fontSize: F.secondary,
           fontWeight: "600",
           letterSpacing: 4,
           color: a.authHeroValetLabel,
@@ -118,6 +113,7 @@ export default function LoginScreen() {
           width: "100%",
           maxWidth: sheetMaxWidth,
           alignSelf: "center",
+          maxHeight: Math.round(height * 0.62),
         },
         bottomWrap: {
           flex: 1,
@@ -142,21 +138,21 @@ export default function LoginScreen() {
           justifyContent: "flex-start",
         },
         cardHeadline: {
-          fontSize: 26,
-          fontWeight: "700",
+          fontSize: Math.round(F.secondary * 0.85),
+          fontWeight: "800",
           color: a.text,
           marginBottom: 4,
           letterSpacing: -0.4,
         },
         cardTagline: {
-          fontSize: 15,
-          lineHeight: 21,
+          fontSize: Math.round(F.secondary * 0.9),
+          lineHeight: Math.round(F.secondary * 1.4),
           fontWeight: "500",
           color: a.textMuted,
           marginBottom: 40,
         },
         inputBlock: { marginBottom: 12 },
-        label: { fontSize: 13, fontWeight: "600", color: a.textSecondary, marginBottom: 6 },
+        label: { fontSize: Math.round(F.status * 0.65), fontWeight: "800", color: a.textSecondary, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.6 },
         inputRow: {
           flexDirection: "row",
           alignItems: "center",
@@ -168,12 +164,12 @@ export default function LoginScreen() {
           paddingLeft: 16,
           paddingRight: 14,
         },
-        input: { flex: 1, paddingVertical: 12, fontSize: 15, color: a.text },
+        input: { flex: 1, paddingVertical: 12, fontSize: Math.round(F.status * 0.65), color: a.text },
         passwordInput: { paddingRight: 10 },
         inputIconRight: { marginLeft: 10 },
         eyeWrap: { padding: 4, marginLeft: 6 },
         forgotWrap: { alignSelf: "flex-end", marginTop: 8, marginBottom: 20 },
-        forgot: { fontSize: 12, fontWeight: "600", color: a.linkAccent },
+        forgot: { fontSize: Math.round(F.status * 0.65), fontWeight: "600", color: a.linkAccent },
         errorWrap: {
           flexDirection: "row",
           alignItems: "center",
@@ -184,7 +180,7 @@ export default function LoginScreen() {
           borderRadius: 12,
           marginBottom: 12,
         },
-        errorText: { color: a.errorText, fontSize: 14, fontWeight: "500" },
+        errorText: { color: a.errorText, fontSize: Math.round(F.status * 0.65), fontWeight: "500" },
         loginBtn: {
           minHeight: CONTROL_HEIGHT,
           borderRadius: 16,
@@ -217,7 +213,7 @@ export default function LoginScreen() {
             android: { elevation: 0 },
           }),
         },
-        loginBtnText: { fontSize: 16, fontWeight: "800", color: "#FFFFFF", letterSpacing: 0.5 },
+        loginBtnText: { fontSize: Math.round(F.status * 0.65), fontWeight: "800", color: "#FFFFFF", letterSpacing: 0.5 },
         btnPressed: { opacity: 0.92 },
         btnDisabled: { opacity: 0.7 },
         footer: {
@@ -230,8 +226,8 @@ export default function LoginScreen() {
           paddingTop: 22,
           paddingBottom: 18,
         },
-        footerText: { fontSize: 12, color: a.textMuted },
-        footerLink: { fontSize: 13, fontWeight: "600", color: a.linkAccent },
+        footerText: { fontSize: Math.round(F.status * 0.65), color: a.textMuted },
+        footerLink: { fontSize: Math.round(F.status * 0.65), fontWeight: "800", color: a.linkAccent },
         modalOverlay: {
           flex: 1,
           justifyContent: "flex-end",
@@ -250,7 +246,7 @@ export default function LoginScreen() {
           paddingBottom: 12,
         },
         modalTitle: {
-          fontSize: 16,
+          fontSize: Math.round(F.status * 0.65),
           fontWeight: "800",
           textAlign: "center",
           marginBottom: 10,
@@ -267,7 +263,7 @@ export default function LoginScreen() {
           borderBottomWidth: StyleSheet.hairlineWidth,
         },
         optionText: {
-          fontSize: 16,
+          fontSize: Math.round(F.status * 0.65),
           color: a.text,
           fontWeight: "600",
         },
@@ -310,7 +306,7 @@ export default function LoginScreen() {
           marginBottom: 4,
         },
         roleTitle: {
-          fontSize: 11,
+          fontSize: Math.round(F.status * 0.65),
           fontWeight: "800",
           color: a.textMuted,
           textTransform: "uppercase",
@@ -325,20 +321,20 @@ export default function LoginScreen() {
           paddingHorizontal: 8,
         },
         roleChooseBtnText: {
-          fontSize: 12,
+          fontSize: Math.round(F.status * 0.7),
           fontWeight: "800",
           color: a.linkAccent,
         },
         roleName: {
-          fontSize: 16,
+          fontSize: Math.round(F.status * 0.65),
           fontWeight: "800",
           color: a.text,
         },
         roleDescription: {
-          fontSize: 12,
+          fontSize: Math.round(F.status * 0.7),
           color: a.textSecondary,
           marginTop: 4,
-          lineHeight: 16,
+          lineHeight: Math.round(F.status * 0.95),
         },
         // Role Modal List Styles
         roleRow: {
@@ -353,18 +349,18 @@ export default function LoginScreen() {
           marginRight: 12,
         },
         roleRowName: {
-          fontSize: 16,
+          fontSize: Math.round(F.status * 0.65),
           fontWeight: "800",
           color: a.text,
         },
         roleRowDescription: {
-          fontSize: 12,
+          fontSize: Math.round(F.status * 0.7),
           color: a.textMuted,
           marginTop: 2,
-          lineHeight: 16,
+          lineHeight: Math.round(F.status * 0.95),
         },
       }),
-    [a, heroMinHeight, horizontalPadding, sheetMaxWidth, isDark]
+    [a, heroMinHeight, horizontalPadding, sheetMaxWidth, isDark, height, F]
   );
 
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -519,14 +515,28 @@ export default function LoginScreen() {
   );
   const inputsMaxHeight = keyboardVisible
     ? keyboardInputsMaxHeight
-    : Math.round(height * (mode === "signup" ? 0.38 : 0.30));
+    : Math.round(height * 0.30);
 
   return (
-    <AuthHeroGradient chromeBg={a.authScreenChromeBg}>
-      <StatusBar barStyle={a.statusBarStyle} backgroundColor={a.statusBarBg} />
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+    <AnimatedAuthBackground isDark={theme.isDark}>
+      <StatusBar barStyle={a.statusBarStyle} backgroundColor="transparent" />
+      <KeyboardAvoidingView style={{ flex: 1, backgroundColor: 'transparent' }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        {/* Keyboard background color matching form */}
+        {keyboardVisible && (
+          <View
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: keyboardHeight,
+              backgroundColor: a.bottomSheet,
+              zIndex: 0,
+            }}
+          />
+        )}
         <View style={styles.heroStrip}>
-          <SafeAreaView style={styles.topBar} edges={["top"]}>
+          <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 12) }]}>
             <TouchableOpacity
               onPress={() => {
                 if (Platform.OS === "android") {
@@ -541,19 +551,18 @@ export default function LoginScreen() {
               style={styles.backBtn}
               hitSlop={12}
             >
-              <Ionicons name="chevron-back" size={24} color={a.authHeroBackBtnIcon} />
+              <Ionicons name="chevron-back" size={20} color={a.authHeroBackBtnIcon} />
             </TouchableOpacity>
-          </SafeAreaView>
+          </View>
 
           <Animated.View
             style={[
               styles.hero,
-              mode === "signup" ? styles.heroCompact : styles.heroLogin,
               keyboardVisible ? { height: 0, opacity: 0, overflow: "hidden" } : null,
               { transform: [{ translateY: heroTranslateY }] },
             ]}
           >
-            <Logo size={LOGO_SIZE} style={styles.heroLogo} variant="onDark" />
+            <Logo size={LOGO_SIZE} style={styles.heroLogo} variant={isDark ? "onDark" : "onLight"} />
             <Text style={styles.heroBrand}>valet</Text>
           </Animated.View>
         </View>
@@ -662,7 +671,7 @@ export default function LoginScreen() {
                       autoCorrect={false}
                       autoComplete="email"
                     />
-                    <Ionicons name="mail-outline" size={20} color={ph} style={styles.inputIconRight} />
+                    <Ionicons name="mail-outline" size={16} color={ph} style={styles.inputIconRight} />
                   </View>
                 </View>
 
@@ -689,7 +698,7 @@ export default function LoginScreen() {
                       autoComplete="password"
                     />
                     <TouchableOpacity onPress={() => setShowPassword((v) => !v)} hitSlop={8} style={styles.eyeWrap}>
-                      <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={22} color={ph} />
+                      <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={18} color={ph} />
                     </TouchableOpacity>
                   </View>
                   {mode === "login" ? (
@@ -717,9 +726,9 @@ export default function LoginScreen() {
                       <View style={styles.roleCardInner}>
                         <View style={styles.roleIconWrap}>
                           {staffRole === "RECEPTIONIST" ? (
-                            <Users size={22} color={a.linkAccent} strokeWidth={2.5} />
+                            <Ionicons name="people-outline" size={18} color={a.linkAccent} />
                           ) : (
-                            <Car size={22} color={a.linkAccent} strokeWidth={2.5} />
+                            <Ionicons name="car-outline" size={18} color={a.linkAccent} />
                           )}
                         </View>
                         <View style={styles.roleTextCol}>
@@ -740,7 +749,7 @@ export default function LoginScreen() {
                           </Text>
                         </View>
                         <View style={{ alignSelf: "center", marginLeft: 8 }}>
-                          <Ionicons name="chevron-forward" size={20} color={a.textMuted} />
+                          <Ionicons name="chevron-forward" size={16} color={a.textMuted} />
                         </View>
                       </View>
                     </Pressable>
@@ -796,7 +805,7 @@ export default function LoginScreen() {
                                     </Text>
                                   </View>
                                   {active ? (
-                                    <Ionicons name="checkmark-circle" size={24} color={a.linkAccent} />
+                                    <Ionicons name="checkmark-circle" size={20} color={a.linkAccent} />
                                   ) : null}
                                 </Pressable>
                               );
@@ -810,7 +819,7 @@ export default function LoginScreen() {
 
                 {error ? (
                   <View style={styles.errorWrap}>
-                    <Ionicons name="alert-circle" size={18} color={a.errorText} />
+                    <Ionicons name="alert-circle" size={14} color={a.errorText} />
                     <Text style={styles.errorText}>{error}</Text>
                   </View>
                 ) : null}
@@ -852,6 +861,6 @@ export default function LoginScreen() {
           </Animated.View>
         </View>
       </KeyboardAvoidingView>
-    </AuthHeroGradient>
+    </AnimatedAuthBackground>
   );
 }

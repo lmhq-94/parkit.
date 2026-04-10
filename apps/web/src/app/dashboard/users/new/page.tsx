@@ -9,7 +9,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
-import { TIMEZONES } from "@/lib/companyOptions";
+import { TIMEZONES, getLocalTimezone } from "@/lib/companyOptions";
 import { formatPhoneWithCountryCode, COUNTRY_DIAL_CODES, getDeviceCountryCode } from "@/lib/inputMasks";
 import { required, email as validateEmail, phone as validatePhone } from "@/lib/validation";
 import { isSuperAdmin } from "@/lib/auth";
@@ -21,7 +21,7 @@ const ROLES = ["CUSTOMER", "ADMIN"] as const;
 const defaultForm = {
   firstName: "", lastName: "", email: "",
   systemRole: "CUSTOMER" as const, phone: "",
-  timezone: "UTC",
+  timezone: getLocalTimezone(),
 };
 
 export default function NewUserPage() {
@@ -186,7 +186,7 @@ export default function NewUserPage() {
                 onChange={(e) =>
                   setForm((p) => ({ ...p, phone: formatPhoneWithCountryCode(e.target.value, phoneCountry) }))
                 }
-                placeholder={`+${COUNTRY_DIAL_CODES[phoneCountry] || "506"} 6216-4040`}
+                placeholder={`+${COUNTRY_DIAL_CODES[phoneCountry] || "1"}`}
                 className={IL}
                 aria-invalid={!!errors.phone}
               />

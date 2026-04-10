@@ -56,15 +56,25 @@ export const useAuthStore = create<AuthStore>((set) => ({
 // Locale (i18n)
 const LOCALE_KEY = "parkit_locale";
 
+// Detect device locale on client for initial state
+const getInitialLocale = (): Locale => {
+  if (typeof window === "undefined") return "es";
+  const stored = localStorage.getItem(LOCALE_KEY) as Locale | null;
+  if (stored === "en" || stored === "es") return stored;
+  // Detect from browser
+  const lang = (navigator.language || (navigator as unknown as { languages?: readonly string[] }).languages?.[0] || "es").toLowerCase();
+  return lang.startsWith("en") ? "en" : "es";
+};
+
 interface LocaleStore {
   locale: Locale;
   setLocale: (locale: Locale) => void;
 }
 
-// Always initialize to "es" so SSR and first client paint match (avoids hydration mismatch).
-// Actual value is restored in Providers with getStoredLocale() in useEffect.
+// Initialize with stored or detected locale on client to avoid flicker.
+// SSR always uses "es" to avoid hydration mismatch.
 export const useLocaleStore = create<LocaleStore>((set) => ({
-  locale: "es",
+  locale: getInitialLocale(),
   setLocale: (locale: Locale) => {
     if (typeof window !== "undefined") {
       localStorage.setItem(LOCALE_KEY, locale);
@@ -83,6 +93,7 @@ export type CompanyBranding = {
   secondaryColorDark?: string | null;
   tertiaryColor?: string | null;
   tertiaryColorDark?: string | null;
+  businessActivity?: string | null;
 } | null;
 
 // UI/Dashboard state (sidebarCollapsed starts true to avoid SSR mismatch; hydrated from localStorage in sidebar)
@@ -95,7 +106,8 @@ interface DashboardStore {
   setSidebarCollapsed: (collapsed: boolean) => void;
   selectedCompanyId: string | null;
   selectedCompanyName: string | null;
-  setSelectedCompany: (id: string | null, name: string | null) => void;
+  requiresCustomerApp: boolean | null;
+  setSelectedCompany: (id: string | null, name: string | null, requiresCustomerApp?: boolean | null) => void;
   /** Incrementar para forzar recarga de la lista de companies en el sidebar */
   companiesVersion: number;
   bumpCompanies: () => void;
@@ -127,7 +139,8 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
     typeof window !== "undefined" ? localStorage.getItem(SELECTED_COMPANY_KEY) : null,
   selectedCompanyName:
     typeof window !== "undefined" ? localStorage.getItem(SELECTED_COMPANY_NAME_KEY) : null,
-  setSelectedCompany: (id: string | null, name: string | null) => {
+  requiresCustomerApp: null,
+  setSelectedCompany: (id: string | null, name: string | null, requiresCustomerApp: boolean | null = null) => {
     if (typeof window !== "undefined") {
       if (id) {
         localStorage.setItem(SELECTED_COMPANY_KEY, id);
@@ -137,7 +150,7 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
         localStorage.removeItem(SELECTED_COMPANY_NAME_KEY);
       }
     }
-    set({ selectedCompanyId: id, selectedCompanyName: name });
+    set({ selectedCompanyId: id, selectedCompanyName: name, requiresCustomerApp });
   },
   companiesVersion: 0,
   bumpCompanies: () => set((s) => ({ companiesVersion: s.companiesVersion + 1 })),

@@ -4,14 +4,14 @@ import {
   StyleSheet,
   TextInput,
   Pressable,
-  Platform,
-  ActivityIndicator,
   Image,
   Modal,
   FlatList,
+  Platform,
   StatusBar,
+  ActivityIndicator,
+  ScrollView,
 } from "react-native";
-import { KeyboardAwareScrollView, KeyboardStickyView } from "react-native-keyboard-controller";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -25,17 +25,23 @@ import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTh
 import { ValetBackButton } from "@/components/ValetBackButton";
 import { StickyFormFooter } from "@/components/StickyFormFooter";
 import api from "@/lib/api";
-import { messageFromAxios } from "@/lib/apiErrors";
+import { messageFromAxios } from "@parkit/shared";
 import { saveUser } from "@/lib/auth";
 import { createFeedback } from "@/lib/feedback";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { LICENSE_TYPE_OPTIONS, LICENSE_TYPE_VALUES, labelForLicenseType } from "@/lib/licenseTypes";
 import {
+  COUNTRY_DIAL_CODES,
+  formatPhoneInternational,
   formatPhoneWithCountryCode,
   getDeviceCountryCode,
   isValidPhoneOptional,
   phoneDigitsForApi,
 } from "@/lib/phoneInternational";
+
+import { formatYmdLocal, parseYmdLocal } from "@/lib/dateUtils";
+import { EMAIL_RE } from "@/lib/validation";
+import { STAFF_ROLES } from "@/lib/staffRoles";
 
 type MePayload = {
   firstName?: string;
@@ -44,24 +50,6 @@ type MePayload = {
   phone?: string | null;
   avatarUrl?: string | null;
 };
-
-const STAFF_ROLES: ValetStaffRole[] = ["RECEPTIONIST", "DRIVER"];
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function formatYmdLocal(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function parseYmdLocal(ymd: string): Date | null {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd.trim());
-  if (!m) return null;
-  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-  return Number.isNaN(d.getTime()) ? null : d;
-}
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -99,6 +87,38 @@ export default function ProfileScreen() {
     Partial<Record<"firstName" | "lastName" | "email" | "phone", string>>
   >({});
 
+  // Estados para valores originales (para detectar cambios)
+  const [originalFirstName, setOriginalFirstName] = useState("");
+  const [originalLastName, setOriginalLastName] = useState("");
+  const [originalEmail, setOriginalEmail] = useState("");
+  const [originalPhone, setOriginalPhone] = useState("");
+  const [originalStaffRole, setOriginalStaffRole] = useState<ValetStaffRole>(
+    user?.valetStaffRole === "DRIVER" ? "DRIVER" : "RECEPTIONIST"
+  );
+  const [originalLicenseTypes, setOriginalLicenseTypes] = useState<string[]>([]);
+  const [originalLicenseExpiryYmd, setOriginalLicenseExpiryYmd] = useState("");
+  const [originalAvatarRemoved, setOriginalAvatarRemoved] = useState(false);
+
+  const hasChanges = useMemo(() => {
+    if (saving) return false;
+    return (
+      firstName !== originalFirstName ||
+      lastName !== originalLastName ||
+      email !== originalEmail ||
+      phone !== originalPhone ||
+      staffRole !== originalStaffRole ||
+      licenseExpiryYmd !== originalLicenseExpiryYmd ||
+      avatarRemoved !== originalAvatarRemoved ||
+      localAvatar !== undefined ||
+      JSON.stringify([...licenseTypes].sort()) !== JSON.stringify([...originalLicenseTypes].sort())
+    );
+  }, [
+    firstName, lastName, email, phone, staffRole, licenseExpiryYmd,
+    avatarRemoved, localAvatar, licenseTypes, saving,
+    originalFirstName, originalLastName, originalEmail, originalPhone,
+    originalStaffRole, originalLicenseExpiryYmd, originalAvatarRemoved, originalLicenseTypes
+  ]);
+
   useEffect(() => {
     const r = user?.valetStaffRole;
     if (r === "DRIVER" || r === "RECEPTIONIST") {
@@ -123,10 +143,19 @@ export default function ProfileScreen() {
       ]);
       const d = uRes.data?.data;
       if (d) {
-        setFirstName(String(d.firstName ?? ""));
-        setLastName(String(d.lastName ?? ""));
-        setEmail(String(d.email ?? ""));
-        setPhone(formatPhoneWithCountryCode(d.phone != null ? String(d.phone) : "", getDeviceCountryCode()));
+        const fn = String(d.firstName ?? "");
+        const ln = String(d.lastName ?? "");
+        const em = String(d.email ?? "");
+        const ph = formatPhoneWithCountryCode(d.phone != null ? String(d.phone) : "", getDeviceCountryCode());
+        setFirstName(fn);
+        setLastName(ln);
+        setEmail(em);
+        setPhone(ph);
+        setOriginalFirstName(fn);
+        setOriginalLastName(ln);
+        setOriginalEmail(em);
+        setOriginalPhone(ph);
+        setOriginalAvatarRemoved(false);
         setLocalAvatar(undefined);
         setAvatarRemoved(false);
       }
@@ -134,21 +163,29 @@ export default function ProfileScreen() {
       if (vd) {
         if (vd.staffRole === "DRIVER" || vd.staffRole === "RECEPTIONIST") {
           setStaffRole(vd.staffRole);
+          setOriginalStaffRole(vd.staffRole);
         }
         if (vd.staffRole === "DRIVER") {
           const raw = String(vd.licenseNumber ?? "");
           const parts = raw ? raw.split(",").map((s) => s.trim()).filter(Boolean) : [];
           const allowed = new Set<string>([...LICENSE_TYPE_VALUES]);
-          setLicenseTypes(parts.filter((p) => allowed.has(p)));
+          const filteredTypes = parts.filter((p) => allowed.has(p));
+          setLicenseTypes(filteredTypes);
+          setOriginalLicenseTypes(filteredTypes);
           if (vd.licenseExpiry) {
             const dt = new Date(String(vd.licenseExpiry));
-            setLicenseExpiryYmd(Number.isNaN(dt.getTime()) ? "" : formatYmdLocal(dt));
+            const ymd = Number.isNaN(dt.getTime()) ? "" : formatYmdLocal(dt);
+            setLicenseExpiryYmd(ymd);
+            setOriginalLicenseExpiryYmd(ymd);
           } else {
             setLicenseExpiryYmd("");
+            setOriginalLicenseExpiryYmd("");
           }
         } else {
           setLicenseTypes([]);
+          setOriginalLicenseTypes([]);
           setLicenseExpiryYmd("");
+          setOriginalLicenseExpiryYmd("");
         }
       }
     } catch {
@@ -169,14 +206,7 @@ export default function ProfileScreen() {
     return user?.avatarUrl?.trim() || null;
   }, [avatarRemoved, localAvatar, user?.avatarUrl]);
 
-  const initials = useMemo(() => {
-    const fn = firstName.trim();
-    const ln = lastName.trim();
-    const em = email.trim();
-    const a = (fn[0] || em[0] || "?").toUpperCase();
-    const b = (ln[0] || em[1] || "").toUpperCase();
-    return `${a}${b}`;
-  }, [firstName, lastName, email]);
+  const hasPhotoPending = typeof localAvatar === "string" && localAvatar.length > 0;
 
   const processPickedUri = async (uri: string) => {
     try {
@@ -223,11 +253,6 @@ export default function ProfileScreen() {
     });
     if (result.canceled || !result.assets?.[0]?.uri) return;
     await processPickedUri(result.assets[0].uri);
-  };
-
-  const clearLocalPhoto = () => {
-    setLocalAvatar(undefined);
-    setAvatarRemoved(true);
   };
 
   const validate = useCallback((): boolean => {
@@ -356,10 +381,6 @@ export default function ProfileScreen() {
     }
   };
 
-  const canRemovePhoto =
-    !avatarRemoved &&
-    ((typeof localAvatar === "string" && localAvatar.length > 0) || !!user?.avatarUrl?.trim());
-
   const staffRoleLabel =
     staffRole === "RECEPTIONIST"
       ? t(locale, "signup.staffRoleReceptionist")
@@ -431,78 +452,34 @@ export default function ProfileScreen() {
           </View>
         ) : (
           <View style={styles.bodyColumn}>
-            <KeyboardAwareScrollView
+            <ScrollView
               style={styles.scroll}
               contentContainerStyle={styles.scrollContent}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
-              bottomOffset={96}
             >
-              <Text style={styles.intro}>{t(locale, "profile.intro")}</Text>
-
               <View style={styles.avatarBlock}>
                 <Pressable
                   onPress={openPhotoChooser}
-                  style={({ pressed }) => [styles.avatarRing, pressed && styles.pressed]}
+                  style={({ pressed }) => [
+                    styles.avatarRing,
+                    { borderColor: hasPhotoPending ? "#F59E0B" : C.primary },
+                    pressed && styles.pressed,
+                  ]}
                   accessibilityRole="button"
                   accessibilityLabel={t(locale, "profile.changePhoto")}
                 >
                   {displayAvatarUri ? (
                     <Image source={{ uri: displayAvatarUri }} style={styles.avatarImage} />
                   ) : (
-                    <View style={styles.avatarPlaceholder}>
-                      <Text style={styles.avatarInitials} maxFontSizeMultiplier={2}>
-                        {initials}
-                      </Text>
+                    <View style={[styles.avatarPlaceholder, { backgroundColor: theme.isDark ? "rgba(148,163,184,0.15)" : "rgba(100,116,139,0.15)" }]}>
+                      <Ionicons name="person" size={60} color={C.textMuted} />
                     </View>
                   )}
                 </Pressable>
-                <Text style={[styles.avatarHint, { color: C.textMuted }]}>
-                  {Platform.OS === "web"
-                    ? t(locale, "profile.avatarHintWeb")
-                    : t(locale, "profile.avatarHintNative")}
+                <Text style={[styles.avatarSub, { color: C.textMuted }]}>
+                  {t(locale, "profile.tapToChangePhoto")}
                 </Text>
-                <View style={styles.avatarActionsRow}>
-                  <Pressable
-                    onPress={pickImage}
-                    style={({ pressed }) => [
-                      styles.avatarChip,
-                      { borderColor: C.border, backgroundColor: C.card },
-                      pressed && styles.pressed,
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel={t(locale, "profile.photoFromLibrary")}
-                  >
-                    <Ionicons name="images-outline" size={22} color={C.primary} />
-                    <Text style={[styles.avatarChipText, { color: C.text }]}>
-                      {t(locale, "profile.photoFromLibrary")}
-                    </Text>
-                  </Pressable>
-                  {Platform.OS !== "web" ? (
-                    <Pressable
-                      onPress={takePhoto}
-                      style={({ pressed }) => [
-                        styles.avatarChip,
-                        { borderColor: C.border, backgroundColor: C.card },
-                        pressed && styles.pressed,
-                      ]}
-                      accessibilityRole="button"
-                      accessibilityLabel={t(locale, "profile.photoFromCamera")}
-                    >
-                      <Ionicons name="camera-outline" size={22} color={C.primary} />
-                      <Text style={[styles.avatarChipText, { color: C.text }]}>
-                        {t(locale, "profile.photoFromCamera")}
-                      </Text>
-                    </Pressable>
-                  ) : null}
-                </View>
-                {canRemovePhoto ? (
-                  <Pressable onPress={clearLocalPhoto} style={styles.secondaryLink}>
-                    <Text style={[styles.secondaryLinkText, styles.dangerText]}>
-                      {t(locale, "profile.removePhoto")}
-                    </Text>
-                  </Pressable>
-                ) : null}
               </View>
 
             <Text style={styles.label}>{t(locale, "profile.staffRoleLabel")}</Text>
@@ -660,7 +637,7 @@ export default function ProfileScreen() {
                 setPhone(formatPhoneWithCountryCode(v, getDeviceCountryCode()));
                 if (fieldErrors.phone) setFieldErrors((e) => ({ ...e, phone: undefined }));
               }}
-              placeholder={t(locale, "profile.placeholderPhoneIntl")}
+              placeholder={`+${COUNTRY_DIAL_CODES[getDeviceCountryCode()] || "1"}`}
               placeholderTextColor={C.textSubtle}
               keyboardType="default"
               autoComplete="tel"
@@ -671,8 +648,7 @@ export default function ProfileScreen() {
             {staffRole === "DRIVER" && (
               <>
                 <View style={styles.licenseDivider} />
-                <Text style={styles.sectionDriver}>{t(locale, "profile.licenseSectionDriver")}</Text>
-
+                
                 <Text style={styles.label}>{t(locale, "profile.licenseTypesLabel")}</Text>
                 <Text style={[styles.helper, { color: C.textMuted }]}>{t(locale, "profile.licenseTypesHint")}</Text>
                 <Pressable
@@ -833,19 +809,19 @@ export default function ProfileScreen() {
                 ) : null}
               </>
             )}
-            </KeyboardAwareScrollView>
+            </ScrollView>
 
-            <KeyboardStickyView>
+            <View>
               <StickyFormFooter keyboardPinned>
                 <Pressable
                   style={({ pressed }) => [
                     styles.primaryBtnFooter,
                     { backgroundColor: C.primary },
-                    saving && styles.btnDisabled,
-                    pressed && !saving && styles.pressed,
+                    (!hasChanges || saving) && styles.btnDisabled,
+                    pressed && hasChanges && !saving && styles.pressed,
                   ]}
                   onPress={handleSave}
-                  disabled={saving}
+                  disabled={!hasChanges || saving}
                 >
                   {saving ? (
                     <ActivityIndicator color="#fff" />
@@ -854,7 +830,7 @@ export default function ProfileScreen() {
                   )}
                 </Pressable>
               </StickyFormFooter>
-            </KeyboardStickyView>
+            </View>
           </View>
         )}
       </View>
@@ -870,6 +846,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
   const S = theme.space;
   const F = ticketsA11y.font;
   const R = theme.radius;
+  const Fonts = theme.fontFamily;
 
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: C.bg, alignItems: "center" },
@@ -894,8 +871,9 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     headerTitle: {
       flex: 1,
       textAlign: "center",
-      fontSize: F.title - 4,
+      fontSize: Math.round(F.secondary * 0.85),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.text,
     },
     centered: {
@@ -904,7 +882,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       alignItems: "center",
       gap: S.md,
     },
-    loadingText: { fontSize: F.secondary, color: C.textMuted },
+    loadingText: { fontSize: Math.round(F.status * 0.65), fontFamily: Fonts.primary, color: C.textMuted },
     scroll: { flex: 1 },
     scrollContent: {
       paddingHorizontal: sectionPadding,
@@ -912,20 +890,29 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       paddingBottom: S.xl,
     },
     intro: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       color: C.textMuted,
       lineHeight: 24,
       marginBottom: S.md,
       fontWeight: "600",
     },
     avatarBlock: { alignItems: "center", marginBottom: S.lg },
+    avatarSub: {
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
+      textAlign: "center",
+      marginTop: S.sm,
+      fontWeight: "500",
+    },
     avatarHint: {
-      fontSize: F.secondary - 1,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       textAlign: "center",
       marginTop: S.sm,
       marginBottom: S.md,
       fontWeight: "600",
-      lineHeight: 20,
+      lineHeight: 18,
       paddingHorizontal: S.md,
     },
     avatarActionsRow: {
@@ -945,13 +932,14 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderWidth: 2,
     },
     avatarChipText: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
     },
     avatarRing: {
-      width: 120,
-      height: 120,
-      borderRadius: 60,
+      width: 80,
+      height: 80,
+      borderRadius: 40,
       overflow: "hidden",
       borderWidth: 3,
       borderColor: C.primary,
@@ -965,23 +953,25 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       backgroundColor: theme.isDark ? "rgba(148,163,184,0.12)" : "rgba(15,23,42,0.06)",
     },
     avatarInitials: {
-      fontSize: 44,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.text,
       letterSpacing: 1,
     },
     secondaryLink: { paddingVertical: S.xs },
     secondaryLinkText: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "700",
+      fontFamily: Fonts.primary,
       color: C.primary,
     },
     dangerText: { color: C.logout },
     label: {
-      fontSize: 12,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.textMuted,
-      textTransform: "uppercase",
       letterSpacing: 0.6,
       marginBottom: S.xs,
     },
@@ -997,14 +987,16 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     pickerRowText: { flex: 1, minWidth: 0 },
     pickerRowTitle: {
-      fontSize: F.body,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
     },
     pickerRowSub: {
-      fontSize: F.secondary - 1,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "600",
+      fontFamily: Fonts.primary,
       marginTop: 4,
-      lineHeight: 20,
+      lineHeight: 18,
     },
     modalOverlay: {
       flex: 1,
@@ -1024,8 +1016,9 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       paddingBottom: S.lg,
     },
     modalTitle: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       textAlign: "center",
       marginBottom: S.sm,
     },
@@ -1035,19 +1028,22 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     roleRow: {
       flexDirection: "row",
       alignItems: "center",
-      paddingVertical: S.md,
+      paddingVertical: S.sm,
       borderBottomWidth: StyleSheet.hairlineWidth,
       gap: S.sm,
+      minHeight: 52,
     },
     roleRowText: { flex: 1, minWidth: 0 },
     roleRowName: {
-      fontSize: F.secondary - 1,
-      fontWeight: "800",
+      fontSize: Math.round(F.status * 0.65),
+      fontWeight: "500",
+      fontFamily: Fonts.primary,
     },
     roleRowAddr: {
-      fontSize: 12,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       marginTop: 4,
-      lineHeight: 16,
+      lineHeight: Math.round(F.status * 0.85),
     },
     input: {
       backgroundColor: C.card,
@@ -1056,13 +1052,15 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderRadius: R.button,
       paddingHorizontal: S.md,
       paddingVertical: 14,
-      fontSize: F.body,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       color: C.text,
       marginBottom: S.xs,
     },
     fieldError: {
-      fontSize: 12,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "600",
+      fontFamily: Fonts.primary,
       color: C.logout,
       marginBottom: S.sm,
     },
@@ -1078,7 +1076,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       justifyContent: "center",
       minHeight: 52,
     },
-    primaryBtnText: { color: "#fff", fontWeight: "800", fontSize: F.button },
+    primaryBtnText: { color: "#fff", fontWeight: "800", fontSize: Math.round(F.status * 0.65), fontFamily: Fonts.primary },
     btnDisabled: { opacity: 0.55 },
     pressed: { opacity: 0.9 },
     licenseDivider: {
@@ -1087,14 +1085,16 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       marginVertical: S.lg,
     },
     sectionDriver: {
-      fontSize: F.body,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
       color: C.text,
       marginBottom: S.sm,
     },
     helper: {
-      fontSize: F.secondary - 1,
-      lineHeight: 20,
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
+      lineHeight: 18,
       marginBottom: S.sm,
       fontWeight: "500",
     },
@@ -1113,19 +1113,23 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     licenseOptionRow: {
       flexDirection: "row",
       alignItems: "center",
-      paddingVertical: S.md,
+      paddingVertical: S.sm,
       borderBottomWidth: StyleSheet.hairlineWidth,
       gap: S.md,
+      minHeight: 52,
     },
     licenseOptionText: { flex: 1, minWidth: 0 },
     modalDoneBtn: {
       alignItems: "center",
-      paddingVertical: S.md,
+      paddingVertical: S.sm,
       marginTop: S.xs,
+      minHeight: 48,
+      justifyContent: "center",
     },
     modalDoneBtnText: {
-      fontSize: F.body,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
+      fontFamily: Fonts.primary,
     },
     clearExpiryLink: {
       alignSelf: "flex-start",
@@ -1152,8 +1156,9 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderBottomColor: C.border,
     },
     iosExpiryToolbarBtn: {
-      fontSize: F.body,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "600",
+      fontFamily: Fonts.primary,
     },
   });
 }

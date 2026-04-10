@@ -6,9 +6,11 @@ import {
   ValetStatus,
   ValetStaffRole,
   NotificationType,
+  CardType,
 } from "@prisma/client";
 import type { CreateTicketDTO } from "./tickets.types";
-import { sendTicketCodeEmail } from "../../shared/email/ticketCodeEmail";
+import { sendTicketCheckInEmail } from "../../shared/email/ticketCheckInEmail";
+import { sendTicketCheckOutEmail } from "../../shared/email/ticketCheckOutEmail";
 
 const MANUAL_CODE_MIN_LEN = 2;
 const MANUAL_CODE_MAX_LEN = 64;
@@ -241,9 +243,11 @@ export class TicketsService {
       if (data.bankCard) {
         await tx.bankCard.create({
           data: {
-            clientId: data.clientId,
-            issuer: data.bankCard.issuer as any,
-            type: data.bankCard.type as any,
+            code: data.bankCard.code,
+            name: data.bankCard.name,
+            type: data.bankCard.type as CardType,
+            bankId: data.bankCard.bankId,
+            clients: { connect: { id: data.clientId } },
           },
         });
       }
@@ -350,16 +354,22 @@ export class TicketsService {
 
     const userEmail = result.client?.user?.email;
     if (userEmail) {
-      sendTicketCodeEmail({
+      sendTicketCheckInEmail({
         to: userEmail,
         firstName: result.client?.user?.firstName ?? "",
         lastName: result.client?.user?.lastName ?? "",
         ticketCode: result.ticketCode ?? "",
         locationName: result.parking?.name ?? undefined,
         plateNumber: result.vehicle?.plate ?? undefined,
-        entryTime: result.entryTime ? result.entryTime.toLocaleString("es-CR", { timeZone: result.company?.timezone ?? "UTC", dateStyle: "short", timeStyle: "short" }) : undefined,
+        entryTime: result.entryTime
+          ? result.entryTime.toLocaleString("es-CR", {
+              timeZone: result.company?.timezone ?? "UTC",
+              dateStyle: "short",
+              timeStyle: "short",
+            })
+          : undefined,
         notes: data.intakeDamageReport?.description?.trim() ?? undefined,
-      }).catch(err => console.error("[TicketCodeEmail Async Error]", err));
+      }).catch((err) => console.error("[TicketCheckInEmail Async Error]", err));
     }
 
     return result;
@@ -709,16 +719,72 @@ export class TicketsService {
   }
 
   static async checkout(companyId: string, ticketId: string) {
-    return prisma.ticket.update({
+    const ticket = await prisma.ticket.findFirst({
+      where: { id: ticketId, companyId },
+      include: {
+        vehicle: true,
+        client: { include: { user: true } },
+        parking: true,
+        company: true,
+      },
+    });
+
+    if (!ticket) throw new Error("Ticket not found");
+
+    const exitTime = new Date();
+    const updated = await prisma.ticket.update({
       where: { id: ticketId },
       data: {
         status: TicketStatus.DELIVERED,
-        exitTime: new Date(),
+        exitTime,
       },
       include: {
         vehicle: true,
-        client: true,
+        client: { include: { user: true } },
+        parking: true,
+        company: true,
       },
     });
+
+    // Calculate duration and price for the email
+    const entry = updated.entryTime;
+    const diffMs = exitTime.getTime() - entry.getTime();
+    const diffMins = Math.max(0, Math.floor(diffMs / 60000));
+    const hours = Math.floor(diffMins / 60) || 0;
+    const mins = diffMins % 60;
+    const totalDuration = `${hours}h ${mins}m`;
+
+    const freeMins = updated.parking.freeBenefitMinutes || 0;
+    const billableMins = Math.max(0, diffMins - freeMins);
+    const billableHours = Math.ceil(billableMins / 60);
+    const rate = Number(updated.parking.pricePerExtraHour || 0);
+    const totalPrice = (billableHours * rate).toFixed(2);
+    const currency = updated.company.currency || "CRC";
+
+    const userEmail = updated.client?.user?.email;
+    if (userEmail) {
+      sendTicketCheckOutEmail({
+        to: userEmail,
+        firstName: updated.client?.user?.firstName ?? "",
+        lastName: updated.client?.user?.lastName ?? "",
+        ticketCode: updated.ticketCode ?? "",
+        totalPrice: `${currency} ${totalPrice}`,
+        totalDuration,
+        entryTime: entry.toLocaleString("es-CR", {
+          timeZone: updated.company.timezone ?? "UTC",
+          dateStyle: "short",
+          timeStyle: "short",
+        }),
+        exitTime: exitTime.toLocaleString("es-CR", {
+          timeZone: updated.company.timezone ?? "UTC",
+          dateStyle: "short",
+          timeStyle: "short",
+        }),
+        locationName: updated.parking.name,
+        plateNumber: updated.vehicle.plate,
+      }).catch((err) => console.error("[TicketCheckOutEmail Async Error]", err));
+    }
+
+    return updated;
   }
 }

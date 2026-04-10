@@ -1,6 +1,9 @@
 module.exports = {
   root: true,
   parser: "@typescript-eslint/parser",
+  parserOptions: {
+    warnOnUnsupportedTypeScriptVersion: false,
+  },
   plugins: ["@typescript-eslint", "react-hooks"],
   extends: [
     "eslint:recommended",

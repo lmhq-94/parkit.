@@ -1,21 +1,24 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { View, StyleSheet, Animated, StatusBar, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/lib/store";
 import { WelcomeContent } from "./welcome";
+import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
+import { useIsDark } from "@/lib/useIsDark";
+import { useValetTheme } from "@/theme/valetTheme";
 
 const SPLASH_DURATION_MS = 2600;
 const LOGO_SIZE = 72;
 
-/** Mismo fondo que la franja del logo en welcome/login/registro/forgot. */
-const SPLASH_BG = "#020617";
-
-export default function SplashScreen() {
-  const splashBg = SPLASH_BG;
-  /** Logo sobre franja oscura (misma lógica que `Logo` variant onDark). */
-  const parkColor = "#FFFFFF";
-  const itColor = "#7DD3FC";
-  const subtleColor = "rgba(148, 163, 184, 0.58)";
+export default function Index() {
+  const isDark = useIsDark();
+  const theme = useValetTheme();
+  const F = theme.font;
+  const Fonts = theme.fontFamily;
+  const styles = useMemo(() => createStyles(F, Fonts), [F, Fonts]);
+  const parkColor = isDark ? "#FFFFFF" : "#0F172A";
+  const itColor = isDark ? "#7DD3FC" : "#2563EB";
+  const valetColor = isDark ? "rgba(148, 163, 184, 0.58)" : "rgba(100, 116, 139, 0.8)";
 
   const router = useRouter();
   const { user } = useAuthStore();
@@ -107,79 +110,84 @@ export default function SplashScreen() {
   }, [user, router, splashOpacity, welcomeOpacity]);
 
   return (
-    <View style={[styles.container, { backgroundColor: splashBg }]}>
-      <StatusBar barStyle="light-content" backgroundColor={splashBg} />
-      <Animated.View style={[styles.logoWrap, { opacity: splashOpacity, transform: [{ scale: breathScale }] }]}>
-        <View style={styles.logoRow}>
-          <Animated.Text
-            style={[
-              styles.logoPart,
-              {
-                color: parkColor,
-                opacity: parkOpacity,
-                transform: [{ translateX: parkTranslate }],
-              },
-            ]}
-          >
-            park
+    <AnimatedAuthBackground isDark={isDark}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor="transparent" />
+      <View style={styles.content}>
+        <Animated.View style={[styles.logoWrap, { opacity: splashOpacity, transform: [{ scale: breathScale }] }]}>
+          <View style={styles.logoRow}>
+            <Animated.Text
+              style={[
+                styles.logoPart,
+                {
+                  color: parkColor,
+                  opacity: parkOpacity,
+                  transform: [{ translateX: parkTranslate }],
+                },
+              ]}
+            >
+              park
+            </Animated.Text>
+            <Animated.Text
+              style={[
+                styles.logoPart,
+                {
+                  color: itColor,
+                  opacity: itOpacity,
+                  transform: [{ translateX: itTranslate }, { scale: itScale }],
+                },
+              ]}
+            >
+              it.
+            </Animated.Text>
+          </View>
+          <Animated.Text style={[styles.valetLabel, { color: valetColor, opacity: subtleOpacity }]}>
+            valet
           </Animated.Text>
-          <Animated.Text
-            style={[
-              styles.logoPart,
-              {
-                color: itColor,
-                opacity: itOpacity,
-                transform: [{ translateX: itTranslate }, { scale: itScale }],
-              },
-            ]}
-          >
-            it.
-          </Animated.Text>
-        </View>
-        <Animated.Text style={[styles.valetLabel, { color: subtleColor, opacity: subtleOpacity }]}>
-          valet
-        </Animated.Text>
-      </Animated.View>
-
-      {showWelcome && (
-        <Animated.View style={[styles.welcomeOverlay, { opacity: welcomeOpacity }]}>
-          <WelcomeContent
-            onLogin={() => router.replace("/login")}
-            onSignup={() => router.replace("/login?mode=signup")}
-          />
         </Animated.View>
-      )}
-    </View>
+
+        {showWelcome && (
+          <Animated.View style={[styles.welcomeOverlay, { opacity: welcomeOpacity }]}>
+            <WelcomeContent
+              onLogin={() => router.replace("/login")}
+              onSignup={() => router.replace("/login?mode=signup")}
+            />
+          </Animated.View>
+        )}
+      </View>
+    </AnimatedAuthBackground>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logoWrap: {
-    alignItems: "center",
-  },
-  logoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  logoPart: {
-    fontFamily: "CalSans",
-    fontSize: LOGO_SIZE,
-    fontWeight: Platform.OS === "android" ? "normal" : "700",
-    letterSpacing: -1.5,
-  },
-  valetLabel: {
-    marginTop: 28,
-    fontSize: 15,
-    fontWeight: "600",
-    letterSpacing: 4,
-    textTransform: "lowercase",
-  },
-  welcomeOverlay: {
-    ...StyleSheet.absoluteFillObject,
-  },
-});
+function createStyles(F: { secondary: number }, Fonts: { primary: string }) {
+  return StyleSheet.create({
+    content: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: 'transparent',
+    },
+    logoWrap: {
+      alignItems: "center",
+    },
+    logoRow: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    logoPart: {
+      fontFamily: Fonts.primary,
+      fontSize: LOGO_SIZE,
+      fontWeight: Platform.OS === "android" ? "normal" : "700",
+      letterSpacing: -1.5,
+    },
+    valetLabel: {
+      marginTop: 28,
+      fontSize: F.secondary,
+      fontWeight: "600",
+      letterSpacing: 4,
+      textTransform: "lowercase",
+    },
+    welcomeOverlay: {
+      ...StyleSheet.absoluteFillObject,
+    },
+  });
+}

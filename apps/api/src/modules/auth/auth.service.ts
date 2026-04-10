@@ -1,15 +1,15 @@
 import { prisma } from "../../shared/prisma";
 import {
-  AcceptInvitationDTO,
   ForgotPasswordDTO,
   LoginDTO,
   RegisterDTO,
+  RegisterInvitedDTO,
   RegisterValetDTO,
   RequestOtpDTO,
   ResetPasswordDTO,
   VerifyOtpDTO,
 } from "./auth.types";
-import { comparePassword, hashPassword, signToken } from "./auth.utils";
+import { comparePassword, hashPassword, signToken, verifyInvitationToken } from "./auth.utils";
 import crypto from "crypto";
 import { UsersService } from "../users/users.service";
 import { ValetsService } from "../valets/valets.service";
@@ -159,44 +159,64 @@ export class AuthService {
     return { user: toAuthUserResponse(user, vr), token };
   }
 
-  static async acceptInvitation(data: AcceptInvitationDTO) {
-    const user = await prisma.user.findFirst({
-      where: {
-        invitationToken: data.token,
-        invitationTokenExpiresAt: { gt: new Date() },
-      },
+  /**
+   * Registers a user from a stateless invitation token.
+   */
+  static async registerInvited(data: RegisterInvitedDTO) {
+    const payload = verifyInvitationToken(data.token);
+    const { email, companyId, role } = payload;
+
+    // Check if invitation exists and is pending
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const invitation = await (prisma as any).invitation.findUnique({
+      where: { token: data.token, status: "PENDING" },
     });
 
-    if (!user) {
-      throw new Error("Invalid or expired invitation link. Ask your admin to resend the invitation.");
-    }
-
-    if (user.isActive === false) {
-      throw new Error("USER_INACTIVE");
+    if (!invitation || invitation.expiresAt < new Date()) {
+      throw new Error("Invalid or expired invitation");
     }
 
     const passwordHash = await hashPassword(data.password);
 
-    const updated = await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        passwordHash,
-        invitationToken: null,
-        invitationTokenExpiresAt: null,
-        lastLogin: new Date(),
-      },
+    const user = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          firstName: data.firstName.trim(),
+          lastName: data.lastName.trim(),
+          email: email.toLowerCase().trim(),
+          passwordHash,
+          companyId,
+          systemRole: role,
+        },
+      });
+
+      if (role === "CUSTOMER") {
+        await tx.client.create({
+          data: {
+            userId: newUser.id,
+            companyId,
+            governmentId: `INV-${newUser.id.split("-")[0]}`, // Placeholder ID, user can update later
+          },
+        });
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (tx as any).invitation.update({
+        where: { id: invitation.id },
+        data: { status: "ACCEPTED" },
+      });
+
+      return newUser;
     });
 
-    const vr = await valetStaffRoleForUser(updated.id);
+    const vr = await valetStaffRoleForUser(user.id);
     const token = signToken({
-      userId: updated.id,
-      role: updated.systemRole,
-      companyId: updated.companyId ?? undefined,
+      userId: user.id,
+      role: user.systemRole,
+      companyId: user.companyId ?? undefined,
     });
 
-    await ValetsService.syncValetStatusAfterAuthSession(updated.id).catch(() => {});
-
-    return { user: toAuthUserResponse(updated, vr), token };
+    return { user: toAuthUserResponse(user, vr), token };
   }
 
   /**
@@ -211,14 +231,16 @@ export class AuthService {
 
     if (user && user.isActive !== false && user.passwordHash != null) {
       const passwordResetToken = crypto.randomBytes(32).toString("hex");
-      const passwordResetExpiresAt = new Date();
-      passwordResetExpiresAt.setHours(
-        passwordResetExpiresAt.getHours() + PASSWORD_RESET_EXPIRY_HOURS
-      );
+      const expiresAt = new Date(Date.now() + PASSWORD_RESET_EXPIRY_HOURS * 60 * 60 * 1000);
 
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { passwordResetToken, passwordResetExpiresAt },
+      await prisma.oneTimeCode.create({
+        data: {
+          userId: user.id,
+          codeHash: passwordResetToken, // for reset links, we store the full token as hash
+          purpose: "RESET_PASSWORD",
+          channel: "EMAIL",
+          expiresAt,
+        },
       });
 
       await sendPasswordResetEmail({
@@ -233,18 +255,24 @@ export class AuthService {
   }
 
   static async resetPassword(data: ResetPasswordDTO) {
-    const user = await prisma.user.findFirst({
+    const token = data.token.trim();
+    const otc = await prisma.oneTimeCode.findFirst({
       where: {
-        passwordResetToken: data.token.trim(),
-        passwordResetExpiresAt: { gt: new Date() },
+        codeHash: token,
+        purpose: "RESET_PASSWORD",
+        expiresAt: { gt: new Date() },
+        usedAt: null,
       },
+      include: { user: true },
     });
 
-    if (!user) {
+    if (!otc || !otc.user) {
       throw new Error(
         "Invalid or expired reset link. Request a new one from the login page."
       );
     }
+
+    const user = otc.user;
 
     if (user.isActive === false) {
       throw new Error("USER_INACTIVE");
@@ -252,17 +280,19 @@ export class AuthService {
 
     const passwordHash = await hashPassword(data.password);
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        passwordHash,
-        passwordResetToken: null,
-        passwordResetExpiresAt: null,
-        invitationToken: null,
-        invitationTokenExpiresAt: null,
-        lastLogin: new Date(),
-      },
-    });
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: {
+          passwordHash,
+          lastLogin: new Date(),
+        },
+      }),
+      prisma.oneTimeCode.update({
+        where: { id: otc.id },
+        data: { usedAt: new Date() },
+      }),
+    ]);
 
     return { ok: true as const };
   }

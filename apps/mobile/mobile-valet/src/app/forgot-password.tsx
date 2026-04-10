@@ -18,7 +18,7 @@ import {
   LayoutAnimation,
   UIManager,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import { Logo } from "@parkit/shared";
@@ -26,10 +26,10 @@ import api from "@/lib/api";
 import { useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-import { AuthHeroGradient } from "@/components/AuthHeroGradient";
+import { KeyboardAvoidingView } from "react-native";
+import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
 import { useValetTheme, ACCENT } from "@/theme/valetTheme";
-import { getTranslatedApiErrorMessage } from "@/lib/apiErrors";
+import { getTranslatedApiErrorMessage } from "@parkit/shared";
 
 const SUPPORT_EMAIL = "mailto:soporte@parkit.app";
 const LOGO_SIZE = 72;
@@ -42,20 +42,20 @@ export default function ForgotPasswordScreen() {
   const theme = useValetTheme();
   const { width, height } = useWindowDimensions();
   const a = theme.auth;
+  const F = theme.font;
   const shortestSide = Math.min(width, height);
   const isTablet = shortestSide >= 600;
   const isLandscape = width > height;
   const horizontalPadding = isTablet ? 36 : 28;
-  const sheetMaxWidth = isTablet ? 640 : 560;
-  const heroMin = Math.round((isLandscape ? height * 0.2 : height * 0.22));
+  const sheetMaxWidth = width;
+  const heroMin = Math.round((isLandscape ? height * 0.24 : height * 0.32));
 
   const styles = useMemo(
     () =>
       StyleSheet.create({
         heroStrip: {
-          backgroundColor: a.authHeroStripBg,
-          zIndex: 0,
-          overflow: "hidden",
+          flex: 1,
+          backgroundColor: 'transparent',
         },
         topBar: {
           flexDirection: "row",
@@ -66,6 +66,7 @@ export default function ForgotPasswordScreen() {
           width: "100%",
           maxWidth: sheetMaxWidth,
           alignSelf: "center",
+          backgroundColor: 'transparent',
         },
         backBtn: {
           width: 44,
@@ -77,15 +78,16 @@ export default function ForgotPasswordScreen() {
           marginLeft: -2,
         },
         hero: {
-          alignItems: "center",
+          flex: 1,
           justifyContent: "center",
-          paddingVertical: 12,
+          alignItems: "center",
           minHeight: heroMin,
+          backgroundColor: 'transparent',
         },
         heroLogo: { marginBottom: 0 },
         heroBrand: {
           marginTop: 28,
-          fontSize: 15,
+          fontSize: F.secondary,
           fontWeight: "600",
           letterSpacing: 4,
           color: a.authHeroValetLabel,
@@ -118,15 +120,15 @@ export default function ForgotPasswordScreen() {
         inputsScroll: {},
         inputsScrollContent: { paddingBottom: 12 },
         cardHeadline: {
-          fontSize: 26,
-          fontWeight: "700",
+          fontSize: Math.round(F.secondary * 0.85),
+          fontWeight: "800",
           color: a.text,
           marginBottom: 8,
           letterSpacing: -0.4,
         },
-        subtitle: { fontSize: 15, lineHeight: 22, color: a.textMuted, marginBottom: 40 },
+        subtitle: { fontSize: Math.round(F.secondary * 0.9), lineHeight: Math.round(F.secondary * 1.4), color: a.textMuted, marginBottom: 40 },
         inputBlock: { marginBottom: 14 },
-        label: { fontSize: 13, fontWeight: "600", color: a.textSecondary, marginBottom: 6 },
+        label: { fontSize: Math.round(F.status * 0.65), fontWeight: "600", color: a.textSecondary, marginBottom: 6 },
         inputRow: {
           flexDirection: "row",
           alignItems: "center",
@@ -138,7 +140,7 @@ export default function ForgotPasswordScreen() {
           paddingLeft: 16,
           paddingRight: 14,
         },
-        input: { flex: 1, paddingVertical: 12, fontSize: 15, color: a.text },
+        input: { flex: 1, paddingVertical: 12, fontSize: Math.round(F.status * 0.65), color: a.text },
         inputIconRight: { marginLeft: 10 },
         errorWrap: {
           flexDirection: "row",
@@ -150,7 +152,7 @@ export default function ForgotPasswordScreen() {
           borderRadius: 12,
           marginBottom: 12,
         },
-        errorText: { color: a.errorText, fontSize: 14, fontWeight: "500", flex: 1 },
+        errorText: { color: a.errorText, fontSize: Math.round(F.status * 0.65), fontWeight: "500", flex: 1 },
         submitBtn: {
           minHeight: CONTROL_HEIGHT,
           borderRadius: 16,
@@ -169,11 +171,11 @@ export default function ForgotPasswordScreen() {
             android: { elevation: 4 },
           }),
         },
-        submitBtnText: { fontSize: 16, fontWeight: "800", color: "#FFFFFF", letterSpacing: 0.5 },
+        submitBtnText: { fontSize: Math.round(F.status * 0.65), fontWeight: "800", color: "#FFFFFF", letterSpacing: 0.5 },
         btnPressed: { opacity: 0.92 },
         btnDisabled: { opacity: 0.6 },
         backToLoginBtn: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4, marginBottom: 8 },
-        backToLoginText: { fontSize: 15, fontWeight: "600", color: a.linkAccent },
+        backToLoginText: { fontSize: Math.round(F.status * 0.65), fontWeight: "600", color: a.linkAccent },
         footerLinkWrap: { alignItems: "center", marginBottom: 4 },
         footer: {
           flexDirection: "row",
@@ -185,11 +187,11 @@ export default function ForgotPasswordScreen() {
           paddingTop: 22,
           paddingBottom: 18,
         },
-        footerText: { fontSize: 12, color: a.textMuted },
-        footerLink: { fontSize: 14, fontWeight: "600", color: a.linkAccent },
-        footerLinkMuted: { fontSize: 13, fontWeight: "600", color: a.linkAccent },
+        footerText: { fontSize: Math.round(F.status * 0.65), color: a.textMuted },
+        footerLink: { fontSize: Math.round(F.status * 0.65), fontWeight: "600", color: a.linkAccent },
+        footerLinkMuted: { fontSize: Math.round(F.status * 0.65), fontWeight: "600", color: a.linkAccent },
       }),
-    [a, heroMin, horizontalPadding, sheetMaxWidth]
+    [a, heroMin, horizontalPadding, sheetMaxWidth, F]
   );
 
   const [email, setEmail] = useState("");
@@ -272,11 +274,25 @@ export default function ForgotPasswordScreen() {
   const inputsMaxHeight = keyboardVisible ? keyboardInputsMaxHeight : Math.round(height * 0.24);
 
   return (
-    <AuthHeroGradient chromeBg={a.authScreenChromeBg}>
-      <StatusBar barStyle={a.statusBarStyle} backgroundColor={a.statusBarBg} />
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+    <AnimatedAuthBackground isDark={theme.isDark}>
+      <StatusBar barStyle={a.statusBarStyle} backgroundColor="transparent" />
+      <KeyboardAvoidingView style={{ flex: 1, backgroundColor: 'transparent' }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        {/* Keyboard background color matching form */}
+        {keyboardVisible && (
+          <View
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: keyboardHeight,
+              backgroundColor: a.bottomSheet,
+              zIndex: 0,
+            }}
+          />
+        )}
         <View style={styles.heroStrip}>
-          <SafeAreaView style={styles.topBar} edges={["top"]}>
+          <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 12) }]}>
             <TouchableOpacity
               onPress={() => {
                 if (Platform.OS === "android") {
@@ -291,9 +307,9 @@ export default function ForgotPasswordScreen() {
               style={styles.backBtn}
               hitSlop={12}
             >
-              <Ionicons name="chevron-back" size={24} color={a.authHeroBackBtnIcon} />
+              <Ionicons name="chevron-back" size={20} color={a.authHeroBackBtnIcon} />
             </TouchableOpacity>
-          </SafeAreaView>
+          </View>
 
           <Animated.View
             style={[
@@ -302,7 +318,7 @@ export default function ForgotPasswordScreen() {
               { transform: [{ translateY: heroTranslateY }] },
             ]}
           >
-            <Logo size={LOGO_SIZE} style={styles.heroLogo} variant="onDark" />
+            <Logo size={LOGO_SIZE} style={styles.heroLogo} variant={theme.isDark ? "onDark" : "onLight"} />
             <Text style={styles.heroBrand}>valet</Text>
           </Animated.View>
         </View>
@@ -335,7 +351,7 @@ export default function ForgotPasswordScreen() {
                 style={styles.backToLoginBtn}
                 hitSlop={8}
               >
-                <Ionicons name="arrow-back" size={20} color={a.linkAccent} />
+                <Ionicons name="arrow-back" size={18} color={a.linkAccent} />
                 <Text style={styles.backToLoginText}>{t(locale, "forgot.backToLogin")}</Text>
               </TouchableOpacity>
             ) : (
@@ -364,13 +380,13 @@ export default function ForgotPasswordScreen() {
                       autoComplete="email"
                       editable={!loading}
                     />
-                    <Ionicons name="mail-outline" size={20} color={ph} style={styles.inputIconRight} />
+                    <Ionicons name="mail-outline" size={16} color={ph} style={styles.inputIconRight} />
                   </View>
                 </View>
 
                 {error ? (
                   <View style={styles.errorWrap}>
-                    <Ionicons name="alert-circle" size={18} color={a.errorText} />
+                    <Ionicons name="alert-circle" size={14} color={a.errorText} />
                     <Text style={styles.errorText}>{error}</Text>
                   </View>
                 ) : null}
@@ -422,6 +438,6 @@ export default function ForgotPasswordScreen() {
           </View>
         </View>
       </KeyboardAvoidingView>
-    </AuthHeroGradient>
+    </AnimatedAuthBackground>
   );
 }

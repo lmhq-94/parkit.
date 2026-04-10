@@ -198,7 +198,7 @@ export function FormWizard({
           {current === 0 ? (
             <Link
               href={cancelHref}
-              className="px-4 py-2.5 rounded-lg text-sm font-medium text-text-muted hover:text-text-primary hover:bg-input-bg transition-colors"
+              className="group px-4 py-2.5 rounded-lg text-sm font-medium text-text-muted hover:text-text-primary hover:bg-input-bg transition-colors"
             >
               {t("common.cancel")}
             </Link>
@@ -206,9 +206,9 @@ export function FormWizard({
             <button
               type="button"
               onClick={handleBack}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-text-muted hover:text-text-primary hover:bg-input-bg transition-colors"
+              className="group inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-text-muted hover:text-text-primary hover:bg-input-bg transition-colors"
             >
-              <ChevronLeft className="w-3.5 h-3.5" />
+              <ChevronLeft className="w-3.5 h-3.5 transition-transform duration-300 group-hover:-translate-x-0.5" />
               {t("common.back")}
             </button>
           )}
@@ -217,7 +217,7 @@ export function FormWizard({
             type="button"
             onClick={handleNext}
             disabled={submitting || nextLoading || (onValidateBeforeAction ? false : !canAdvance)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm"
+            className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm"
           >
             {submitting ? (
               <>
@@ -232,12 +232,12 @@ export function FormWizard({
             ) : isLast ? (
               <>
                 {submitLabel ?? t("common.save")}
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
               </>
             ) : (
               <>
                 {t("common.next")}
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
               </>
             )}
           </button>

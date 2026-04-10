@@ -11,8 +11,10 @@ export interface CreateTicketDTO {
   keyCode?: string;
   ticketCode?: string;
   bankCard?: {
-    issuer: string;
+    code: string;
+    name: string;
     type: string;
+    bankId?: string;
   };
   /**
    * Estado del vehículo al ingreso (fotos en data URL o URL pública + nota opcional).

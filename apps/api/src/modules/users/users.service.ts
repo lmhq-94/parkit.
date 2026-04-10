@@ -1,11 +1,7 @@
-import crypto from "crypto";
 import { prisma } from "../../shared/prisma";
 import { CreateUserDTO, UpdateUserDTO } from "./users.types";
 import { hashPassword } from "../auth/auth.utils";
 import { SystemRole } from "@prisma/client";
-import { sendInvitationEmail } from "../../shared/email/invitationEmail";
-
-const INVITATION_EXPIRY_HOURS = 72;
 
 /** Si la empresa está PENDING y este es el primer usuario, la pasa a ACTIVE. */
 async function activateCompanyIfFirstUser(companyId: string): Promise<void> {
@@ -58,30 +54,6 @@ export class UsersService {
     const isInvitation = data.password == null || data.password === "";
 
     if (isInvitation) {
-      if (data.walkInCustomer) {
-        const user = await prisma.user.create({
-          data: {
-            companyId,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            email: data.email,
-            passwordHash: null,
-            systemRole: data.systemRole ?? SystemRole.STAFF,
-            ...(data.phone != null ? { phone: data.phone } : {}),
-            ...(data.timezone != null ? { timezone: data.timezone } : {}),
-          },
-        });
-        await activateCompanyIfFirstUser(companyId);
-        await ensureClientForCustomer(companyId, user);
-        return user;
-      }
-
-      const invitationToken = crypto.randomBytes(32).toString("hex");
-      const invitationTokenExpiresAt = new Date();
-      invitationTokenExpiresAt.setHours(
-        invitationTokenExpiresAt.getHours() + INVITATION_EXPIRY_HOURS
-      );
-
       const user = await prisma.user.create({
         data: {
           companyId,
@@ -90,22 +62,10 @@ export class UsersService {
           email: data.email,
           passwordHash: null,
           systemRole: data.systemRole ?? SystemRole.STAFF,
-          invitationToken,
-          invitationTokenExpiresAt,
           ...(data.phone != null ? { phone: data.phone } : {}),
           ...(data.timezone != null ? { timezone: data.timezone } : {}),
         },
       });
-
-      const companyDisplayName = company.commercialName?.trim() || company.legalName || "";
-      await sendInvitationEmail({
-        to: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        token: invitationToken,
-        companyName: companyDisplayName,
-      });
-
       await activateCompanyIfFirstUser(companyId);
       await ensureClientForCustomer(companyId, user);
       return user;
@@ -140,12 +100,7 @@ export class UsersService {
     }
     const isInvitation = data.password == null || data.password === "";
     if (isInvitation) {
-      const invitationToken = crypto.randomBytes(32).toString("hex");
-      const invitationTokenExpiresAt = new Date();
-      invitationTokenExpiresAt.setHours(
-        invitationTokenExpiresAt.getHours() + INVITATION_EXPIRY_HOURS
-      );
-      const user = await prisma.user.create({
+      return prisma.user.create({
         data: {
           companyId: null,
           firstName: data.firstName,
@@ -153,18 +108,8 @@ export class UsersService {
           email: data.email,
           passwordHash: null,
           systemRole: SystemRole.SUPER_ADMIN,
-          invitationToken,
-          invitationTokenExpiresAt,
         },
       });
-      await sendInvitationEmail({
-        to: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        token: invitationToken,
-        companyName: undefined,
-      });
-      return user;
     }
     const passwordHash = await hashPassword(data.password!);
     return prisma.user.create({
@@ -194,12 +139,7 @@ export class UsersService {
     }
     const isInvitation = data.password == null || data.password === "";
     if (isInvitation) {
-      const invitationToken = crypto.randomBytes(32).toString("hex");
-      const invitationTokenExpiresAt = new Date();
-      invitationTokenExpiresAt.setHours(
-        invitationTokenExpiresAt.getHours() + INVITATION_EXPIRY_HOURS
-      );
-      const user = await prisma.user.create({
+      return prisma.user.create({
         data: {
           companyId: null,
           firstName: data.firstName,
@@ -207,18 +147,8 @@ export class UsersService {
           email: data.email,
           passwordHash: null,
           systemRole: SystemRole.STAFF,
-          invitationToken,
-          invitationTokenExpiresAt,
         },
       });
-      await sendInvitationEmail({
-        to: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        token: invitationToken,
-        companyName: undefined,
-      });
-      return user;
     }
     const passwordHash = await hashPassword(data.password!);
     return prisma.user.create({
@@ -265,98 +195,23 @@ export class UsersService {
     };
     const orderBy = { createdAt: "desc" as const };
 
-    try {
-      const users = await prisma.user.findMany({
-        where,
-        select: {
-          ...this.listSelectWithoutInvitation,
-          invitationTokenExpiresAt: true,
-        },
-        orderBy,
-      });
-      return users.map((u) => {
-        const { invitationTokenExpiresAt, ...rest } = u;
-        const pendingInvitation =
-          invitationTokenExpiresAt != null && new Date(invitationTokenExpiresAt) > new Date();
-        return { ...rest, pendingInvitation };
-      });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "";
-      if (msg.includes("does not exist in the current database")) {
-        const users = await prisma.user.findMany({
-          where,
-          select: this.listSelectWithoutInvitation,
-          orderBy,
-        });
-        return users.map((u) => ({ ...u, pendingInvitation: false }));
-      }
-      throw err;
-    }
+    const users = await prisma.user.findMany({
+      where,
+      select: this.listSelectWithoutInvitation,
+      orderBy,
+    });
+    return users;
   }
 
   static async getById(companyId: string, userId: string) {
-    try {
-      const user = await prisma.user.findFirst({
-        where: { id: userId, companyId },
-      });
-      if (!user) return null;
-      const {
-        passwordHash: _passwordHash,
-        invitationToken: _invitationToken,
-        invitationTokenExpiresAt,
-        passwordResetToken: _passwordResetToken,
-        passwordResetExpiresAt: _passwordResetExpiresAt,
-        ...rest
-      } = user;
-      const pendingInvitation =
-        invitationTokenExpiresAt != null && new Date(invitationTokenExpiresAt) > new Date();
-      return { ...rest, pendingInvitation };
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "";
-      if (msg.includes("does not exist in the current database")) {
-        const user = await prisma.user.findFirst({
-          where: { id: userId, companyId },
-          select: { ...this.listSelectWithoutInvitation },
-        });
-        return user ? { ...user, pendingInvitation: false } : null;
-      }
-      throw err;
-    }
-  }
-
-  static async resendInvitation(companyId: string, userId: string) {
     const user = await prisma.user.findFirst({
       where: { id: userId, companyId },
+      select: { ...this.listSelectWithoutInvitation },
     });
-    if (!user) throw new Error("User not found");
-    if (!user.invitationToken || user.passwordHash != null) {
-      throw new Error("User has already set their password or was not invited by email");
-    }
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
-      select: { commercialName: true, legalName: true },
-    });
-    const companyDisplayName = company
-      ? (company.commercialName?.trim() || company.legalName || "").trim()
-      : "";
-    const invitationToken = crypto.randomBytes(32).toString("hex");
-    const invitationTokenExpiresAt = new Date();
-    invitationTokenExpiresAt.setHours(
-      invitationTokenExpiresAt.getHours() + INVITATION_EXPIRY_HOURS
-    );
-    await prisma.user.update({
-      where: { id: userId },
-      data: { invitationToken, invitationTokenExpiresAt },
-    });
-    await sendInvitationEmail({
-      to: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      token: invitationToken,
-      companyName: companyDisplayName || undefined,
-    });
-    return { ok: true };
+    return user;
   }
+
+
 
   static async update(
     companyId: string,

@@ -47,13 +47,14 @@ export class CompaniesService {
   static async getBrandingById(id: string) {
     const row = await prisma.company.findUnique({
       where: { id },
-      select: { brandingConfig: true },
+      select: { brandingConfig: true, industry: true },
     });
     if (!row) return null;
     const brandingConfig = normalizeBrandingConfig(
       row.brandingConfig as Parameters<typeof normalizeBrandingConfig>[0]
     );
-    return { brandingConfig };
+    // Include industry as businessActivity for frontend icon selection
+    return { brandingConfig: { ...brandingConfig, businessActivity: row.industry } };
   }
 
   static async update(id: string, data: UpdateCompanyDTO) {

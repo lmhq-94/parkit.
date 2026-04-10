@@ -82,34 +82,17 @@ enum NotificationStatus {
   FAILED
 }
 
-enum BankIssuer {
-  BAC_CREDOMATIC
-  PROMERICA
-  NO_ISSUER
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
 }
 
-enum BankCardType {
-  AMEX_THE_PLATINUM_CARD
-  AMEX_CASHBACK_PREMIUM
-  AMEX_MILLAS_PLUS_BLACK
-  AMEX_PLATINUM
-  AMEX_INCAE
-  AMEX_AADVANTAGE_PRESTIGE
-  AMEX_LIFEMILES_ELITE
-  MASTERCARD_BLACK
-  MASTERCARD_PLATINUM
-  MASTERCARD_BLACK_MILLAS_PLUS
-  MASTERCARD_CASHBACK_PREMIUM
-  MASTERCARD_BLACK_AADVANTAGE
-  VISA_INFINITE
-  VISA_INFINITE_IBERIA
-  VISA_INFINITE_EMERALD
-  VISA_INFINITE_CONNECT_MILES
-  VISA_INFINITE_MILLAS_PLUS
-  VISA_PLATINO
-  LINCOLN_PLAZA
-  CORPORATE_BENEFICIARY
-  NO_CARD
+enum CardType {
+  AMEX
+  MASTERCARD
+  VISA
+  OTHER
 }
 
 /**
@@ -117,6 +100,38 @@ enum BankCardType {
  * | CORE
  * |--------------------------------------------------------------------------
  */
+
+model Bank {
+  id          String     @id @default(uuid())
+  code        String     @unique
+  name        String
+  isActive    Boolean    @default(true)
+  sortOrder   Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  cards       BankCard[]
+
+  @@index([isActive, sortOrder])
+}
+
+model BankCard {
+  id              String   @id @default(uuid())
+  bankId          String?
+  code            String   @unique
+  name            String
+  type            CardType
+  feeCrc          Int      @default(0)
+  isActive        Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  bank            Bank?    @relation(fields: [bankId], references: [id], onDelete: SetNull)
+  clients         Client[] @relation("ClientBankCards")
+
+  @@index([bankId, isActive, sortOrder])
+}
 
 model Company {
   id             String        @id @default(uuid())
@@ -145,6 +160,7 @@ model Company {
   vehicles Vehicle[]
   bookings Booking[]
   tickets  Ticket[]
+  invitations Invitation[]
 }
 
 model User {
@@ -159,18 +175,9 @@ model User {
   phone          String?
   phoneVerified  Boolean    @default(false)
   systemRole     SystemRole @default(CUSTOMER)
-  pushToken      String?
   lastLogin      DateTime?
   isActive       Boolean    @default(true)
   appPreferences Json?
-
-  // Invitation flow: when admin invites by email, user sets password via link
-  invitationToken         String?   @unique
-  invitationTokenExpiresAt DateTime?
-
-  // Forgot-password flow: link in email points to web /reset-password
-  passwordResetToken         String?   @unique
-  passwordResetExpiresAt     DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -182,6 +189,27 @@ model User {
   auditLogs        AuditLog[]
   notificationLogs NotificationLog[]
   oneTimeCodes     OneTimeCode[]
+  sentInvitations  Invitation[]      @relation("InvitedBy")
+}
+
+model Invitation {
+  id              String           @id @default(uuid())
+  email           String
+  companyId       String
+  role            SystemRole       @default(CUSTOMER)
+  token           String           @unique
+  status          InvitationStatus @default(PENDING)
+  invitedByUserId String
+  expiresAt       DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relations
+  company   Company @relation(fields: [companyId], references: [id])
+  invitedBy User    @relation("InvitedBy", fields: [invitedByUserId], references: [id])
+
+  @@index([email, companyId])
 }
 
 /**
@@ -206,22 +234,7 @@ model Client {
   vehicles  ClientVehicle[]
   bookings  Booking[]
   tickets   Ticket[]
-  bankCards BankCard[]
-}
-model BankCard {
-  id        String        @id @default(uuid())
-  clientId  String
-  
-  issuer    BankIssuer
-  type      BankCardType
-  
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-
-  // relations
-  client    Client        @relation(fields: [clientId], references: [id])
-
-  @@unique([clientId, issuer, type])
+  bankCards BankCard[] @relation("ClientBankCards")
 }
 
 model Valet {
@@ -331,6 +344,61 @@ model ClientVehicle {
   // relations
   client  Client  @relation(fields: [clientId], references: [id])
   vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+}
+
+/**
+ * Vehicle Catalog - Makes and Models for the vehicle selector
+ */
+model VehicleMake {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relations
+  models VehicleModel[]
+
+  @@index([isActive, sortOrder])
+}
+
+model VehicleModel {
+  id          String   @id @default(uuid())
+  makeId      String
+  name        String
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relations
+  make      VehicleMake           @relation(fields: [makeId], references: [id], onDelete: Cascade)
+  variants  VehicleModelVariant[]
+
+  @@unique([makeId, name])
+  @@index([isActive, sortOrder])
+}
+
+model VehicleModelVariant {
+  id          String   @id @default(uuid())
+  modelId     String
+  yearStart   Int
+  yearEnd     Int
+  lengthCm    Int?
+  widthCm     Int?
+  heightCm    Int?
+  isActive    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relations
+  model VehicleModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@index([modelId, yearStart, yearEnd])
 }
 
 /**

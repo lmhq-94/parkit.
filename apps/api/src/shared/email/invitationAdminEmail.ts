@@ -1,29 +1,27 @@
 /**
- * Sends an invitation email with a link for the user to set their password.
- * Uses Resend when RESEND_API_KEY is set; otherwise logs the link to console (dev).
+ * Sends an administrative invitation email.
  */
 
 const INVITATION_BASE_URL =
   process.env.INVITATION_BASE_URL || "http://localhost:3000";
 const FROM_EMAIL =
   process.env.INVITATION_FROM_EMAIL || "Parkit <onboarding@resend.dev>";
-const INVITATION_TEMPLATE_ID = process.env.INVITATION_TEMPLATE_ID || "";
-/** Same support email as login/support link (e.g. soporte@parkit.app). */
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "soporte@parkit.app";
+const INVITATION_ADMIN_TEMPLATE_ID = process.env.INVITATION_ADMIN_TEMPLATE_ID || process.env.INVITATION_TEMPLATE_ID || "";
+/** Same support email as login/support link (e.g. soporte@parkitcr.com). */
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "soporte@parkitcr.com";
 /** Optional privacy policy URL */
 const PRIVACY_URL = process.env.INVITATION_PRIVACY_URL || "";
 /** Optional terms and conditions URL */
 const TERMS_URL = process.env.INVITATION_TERMS_URL || "";
-/** Optional unsubscribe URL */
-const UNSUBSCRIBE_URL = process.env.INVITATION_UNSUBSCRIBE_URL || "";
 
-export interface SendInvitationParams {
+export interface SendInvitationAdminParams {
   to: string;
-  firstName: string;
-  lastName: string;
-  token: string;
+  firstName?: string;
+  lastName?: string;
+  token?: string;
   /** Company display name (e.g. commercialName or legalName) when inviting to a company; empty for super-admin invite. */
   companyName?: string;
+  invitationLink: string;
 }
 
 function buildInviteLink(token: string): string {
@@ -31,13 +29,11 @@ function buildInviteLink(token: string): string {
   return `${base}/accept-invite?token=${encodeURIComponent(token)}`;
 }
 
-export async function sendInvitationEmail(
-  params: SendInvitationParams,
+export async function sendInvitationAdminEmail(
+  params: SendInvitationAdminParams,
 ): Promise<{ sent: boolean; error?: string }> {
-  const { to, firstName, lastName, token, companyName } = params;
+  const { to, firstName, lastName, token, companyName, invitationLink } = params;
 
-  // In development, redirect all emails to the developer's verified email for Resend testing
-  // This allows testing with any email address without domain verification
   const isDevelopment = process.env.NODE_ENV !== "production";
   const actualTo = isDevelopment ? "luis.herrera506@gmail.com" : to;
 
@@ -48,19 +44,17 @@ export async function sendInvitationEmail(
   }
 
   const companyDisplay = (companyName || "").trim();
-  const inviteLink = buildInviteLink(token);
+  const inviteLink = invitationLink || buildInviteLink(token || "");
 
-  // Template must be configured in env
-  if (!INVITATION_TEMPLATE_ID) {
+  if (!INVITATION_ADMIN_TEMPLATE_ID) {
     console.error(
-      "[Invitation email error] INVITATION_TEMPLATE_ID not configured in environment",
+      "[Invitation email error] INVITATION_ADMIN_TEMPLATE_ID not configured in environment",
     );
-    return { sent: false, error: "INVITATION_TEMPLATE_ID not configured" };
+    return { sent: false, error: "INVITATION_ADMIN_TEMPLATE_ID not configured" };
   }
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey || apiKey === "re_xxxxxxxxx") {
-    // Development fallback
     console.log("[Invitation email not sent - no RESEND_API_KEY]");
     console.log(`  Original To: ${to}`);
     console.log(`  Invite link: ${inviteLink}`);
@@ -68,8 +62,6 @@ export async function sendInvitationEmail(
   }
 
   try {
-    // Resend requires html or text as fallback when using template_id
-    // This fallback is specific to invitation emails for quality UX if template fails
     const htmlFallback = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html dir="ltr" lang="es">
   <head>
@@ -102,7 +94,7 @@ export async function sendInvitationEmail(
             
             <tr>
               <td class="content" style="padding: 45px 50px 40px;">
-                <div style="margin-bottom: 8px; font-size: 12px; font-weight: 700; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.1em;">Invitación</div>
+                <div style="margin-bottom: 8px; font-size: 12px; font-weight: 700; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.1em;">ACCESO ADMINISTRATIVO</div>
                 <h2 style="font-size: 28px; font-weight: 800; margin: 0 0 16px; color: #1e293b; letter-spacing: -0.02em;">Te damos la bienvenida</h2>
                 
                 <p style="font-size: 16px; line-height: 26px; color: #475569; margin: 0 0 32px;">
@@ -113,8 +105,8 @@ export async function sendInvitationEmail(
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                   <tr>
                     <td align="center">
-                      <a href="${inviteLink}" target="_blank" style="background-color: #3b82f6; color: #ffffff; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
-                        Crear mi contraseña
+                      <a href="${inviteLink}" target="_blank" style="display: inline-block; padding: 18px 45px; background-color: #2563eb; color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);">
+                        Configurar Acceso
                       </a>
                     </td>
                   </tr>
@@ -162,16 +154,15 @@ export async function sendInvitationEmail(
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: [actualTo],
-        subject: `Invitación a Parkit${companyDisplay ? ` - ${companyDisplay}` : ""}`,
+        subject: `Invitación Admin a Parkit${companyDisplay ? ` - ${companyDisplay}` : ""}`,
         html: htmlFallback,
-        template_id: INVITATION_TEMPLATE_ID,
+        template_id: INVITATION_ADMIN_TEMPLATE_ID,
         template_data: {
           company: companyDisplay || "Parkit",
           url: inviteLink,
           support: SUPPORT_EMAIL,
           privacy: PRIVACY_URL || "",
           terms: TERMS_URL || "",
-          unsubscribe: UNSUBSCRIBE_URL || "",
           first_name: firstName || "",
           full_name: `${firstName} ${lastName}`.trim() || "",
           current_year: new Date().getFullYear(),

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Building2, Receipt, Mail, Phone, Globe,
   DollarSign, Clock, MapPin,
@@ -13,7 +13,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { useDashboardStore } from "@/lib/store";
-import { COUNTRIES, CURRENCIES, TIMEZONES, INDUSTRIES } from "@/lib/companyOptions";
+import { COUNTRIES, CURRENCIES, TIMEZONES, INDUSTRIES, getLocalTimezone } from "@/lib/companyOptions";
 import { formatTaxId, formatPhoneWithCountryCode, COUNTRY_DIAL_CODES } from "@/lib/inputMasks";
 import { required, email as validateEmail, phone as validatePhone } from "@/lib/validation";
 
@@ -40,7 +40,7 @@ function Field({ label, required, icon: Icon, error, children }: {
 
 const defaultForm = {
   legalName: "", taxId: "", industry: "", commercialName: "",
-  countryCode: "CR", currency: "CRC", timezone: "UTC",
+  countryCode: "CR", currency: "CRC", timezone: getLocalTimezone(),
   email: "", contactPhone: "", legalAddress: "",
   requiresCustomerApp: "" as "" | "true" | "false",
 };
@@ -49,13 +49,30 @@ export default function NewCompanyPage() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const bumpCompanies = useDashboardStore((s) => s.bumpCompanies);
   const setSelectedCompany = useDashboardStore((s) => s.setSelectedCompany);
+  const isFirstCompanyFlow = searchParams?.get("first") === "1";
+  const [hasExistingCompanies, setHasExistingCompanies] = useState<boolean | null>(null);
   const [form, setForm] = useState(defaultForm);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof typeof defaultForm, string>>>({});
   const [addressPickerOpen, setAddressPickerOpen] = useState(false);
+
+  // Check if there are existing companies when in first company flow
+  useEffect(() => {
+    if (isFirstCompanyFlow) {
+      apiClient.get<{ id: string }[]>("/companies")
+        .then(data => setHasExistingCompanies(Array.isArray(data) && data.length > 0))
+        .catch(() => setHasExistingCompanies(true)); // Assume true on error
+    }
+  }, [isFirstCompanyFlow]);
+
+  // Determine cancel href: if first flow and no companies, go to no-companies page
+  const cancelHref = isFirstCompanyFlow && hasExistingCompanies === false
+    ? "/dashboard/no-companies"
+    : "/dashboard/companies";
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -181,7 +198,7 @@ export default function NewCompanyPage() {
             <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} aria-invalid={!!errors.email} />
           </Field>
           <Field label={t("companies.contactPhone")} icon={Phone} error={errors.contactPhone}>
-            <input type="tel" value={form.contactPhone} onChange={(e) => setForm((p) => ({ ...p, contactPhone: formatPhoneWithCountryCode(e.target.value, form.countryCode) }))} placeholder={`+${COUNTRY_DIAL_CODES[form.countryCode] || "506"} 6216-4040`} className={IL} aria-invalid={!!errors.contactPhone} />
+            <input type="tel" value={form.contactPhone} onChange={(e) => setForm((p) => ({ ...p, contactPhone: formatPhoneWithCountryCode(e.target.value, form.countryCode) }))} placeholder={`+${COUNTRY_DIAL_CODES[form.countryCode] || "1"}`} className={IL} aria-invalid={!!errors.contactPhone} />
           </Field>
           <div className="sm:col-span-2 lg:col-span-3">
             <label className={LABEL}>{t("companies.legalAddress")}</label>
@@ -288,7 +305,7 @@ export default function NewCompanyPage() {
         onSubmit={handleSubmit}
         submitting={submitting}
         submitLabel={t("companies.createCompany")}
-        cancelHref="/dashboard/companies"
+        cancelHref={cancelHref}
         error={error}
         onValidateBeforeAction={validateStep}
       />

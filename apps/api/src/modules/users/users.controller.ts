@@ -4,6 +4,8 @@ import { ClientsService } from "../clients/clients.service";
 import { parseQueryParamArray } from "../../shared/utils/queryParser";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
 import type { CreateUserInput } from "../../shared/validators";
+import { InvitationsService } from "./invitations.service";
+import { SystemRole } from "@prisma/client";
 
 export class UsersController {
   static async getProfile(req: Request, res: Response) {
@@ -13,15 +15,9 @@ export class UsersController {
       if (!user) return notFound(res, "User not found");
       const {
         passwordHash: _passwordHash,
-        invitationToken: _invitationToken,
-        invitationTokenExpiresAt,
-        passwordResetToken: _passwordResetToken,
-        passwordResetExpiresAt: _passwordResetExpiresAt,
         ...rest
       } = user;
-      const pendingInvitation =
-        invitationTokenExpiresAt != null && new Date(invitationTokenExpiresAt) > new Date();
-      return ok(res, { ...rest, pendingInvitation });
+      return ok(res, rest);
     } catch (error: unknown) {
       return fail(
         res,
@@ -37,15 +33,9 @@ export class UsersController {
       const user = await UsersService.updateProfile(userId, req.body);
       const {
         passwordHash: _passwordHash,
-        invitationToken: _invitationToken,
-        invitationTokenExpiresAt,
-        passwordResetToken: _passwordResetToken,
-        passwordResetExpiresAt: _passwordResetExpiresAt,
         ...rest
       } = user;
-      const pendingInvitation =
-        invitationTokenExpiresAt != null && new Date(invitationTokenExpiresAt) > new Date();
-      return ok(res, { ...rest, pendingInvitation });
+      return ok(res, rest);
     } catch (error: unknown) {
       return fail(
         res,
@@ -59,11 +49,7 @@ export class UsersController {
     try {
       const user = await UsersService.createSuperAdmin(req.body);
       const {
-        invitationToken: _invitationToken,
-        invitationTokenExpiresAt: _invitationTokenExpiresAt,
         passwordHash: _passwordHash,
-        passwordResetToken: _passwordResetToken,
-        passwordResetExpiresAt: _passwordResetExpiresAt,
         ...rest
       } = user;
       return created(res, rest);
@@ -84,11 +70,7 @@ export class UsersController {
 
       // Don't expose invitation token or password hash in API response
       const {
-        invitationToken: _invitationToken,
-        invitationTokenExpiresAt: _invitationTokenExpiresAt,
         passwordHash: _passwordHash,
-        passwordResetToken: _passwordResetToken,
-        passwordResetExpiresAt: _passwordResetExpiresAt,
         ...rest
       } = user;
       return created(res, rest);
@@ -156,15 +138,9 @@ export class UsersController {
 
       const {
         passwordHash: _passwordHash,
-        invitationToken: _invitationToken,
-        invitationTokenExpiresAt,
-        passwordResetToken: _passwordResetToken,
-        passwordResetExpiresAt: _passwordResetExpiresAt,
         ...rest
       } = user;
-      const pendingInvitation =
-        invitationTokenExpiresAt != null && new Date(invitationTokenExpiresAt) > new Date();
-      return ok(res, { ...rest, pendingInvitation });
+      return ok(res, rest);
     } catch (error: unknown) {
       return fail(
         res,
@@ -192,23 +168,71 @@ export class UsersController {
     }
   }
 
-  static async resendInvitation(req: Request, res: Response) {
+  static async invite(req: Request, res: Response) {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-      await UsersService.resendInvitation(req.user.companyId!, id);
-      return ok(res, { ok: true }, "Invitation email sent");
+      const companyId = req.user.companyId!;
+      const { email, role } = req.body;
+      if (!email) throw new Error("Email is required");
+
+      const invitation = await InvitationsService.sendInvitation({
+        email: email.toLowerCase().trim(),
+        companyId,
+        role: (role as SystemRole) || SystemRole.CUSTOMER,
+        invitedByUserId: req.user.userId,
+      });
+
+      return created(res, invitation);
     } catch (error: unknown) {
-      return fail(
-        res,
-        400,
-        error instanceof Error ? error.message : "Unknown error"
-      );
+      return fail(res, 400, error instanceof Error ? error.message : "Unknown error");
+    }
+  }
+
+  static async inviteBatch(req: Request, res: Response) {
+    try {
+      const companyId = req.user.companyId!;
+      const { emails, role } = req.body;
+      if (!Array.isArray(emails) || emails.length === 0) {
+        throw new Error("Emails array is required and cannot be empty");
+      }
+
+      const results = await InvitationsService.sendInvitationsBatch({
+        emails: emails.map((e) => String(e).trim()),
+        companyId,
+        role: (role as SystemRole) || SystemRole.ADMIN,
+        invitedByUserId: req.user.userId,
+      });
+
+      return created(res, results);
+    } catch (error: unknown) {
+      return fail(res, 400, error instanceof Error ? error.message : "Unknown error");
+    }
+  }
+
+  static async listInvitations(req: Request, res: Response) {
+    try {
+      const companyId = req.user.companyId!;
+      const role = req.query.role as SystemRole | undefined;
+      const invitations = await InvitationsService.listByCompany(companyId, role);
+      return ok(res, invitations);
+    } catch (error: unknown) {
+      return fail(res, 400, error instanceof Error ? error.message : "Unknown error");
+    }
+  }
+
+  static async revokeInvitation(req: Request, res: Response) {
+    try {
+      const companyId = req.user.companyId!;
+      const id = String(req.params.id);
+      await InvitationsService.revoke(id, companyId);
+      return ok(res, { ok: true }, "Invitation revoked");
+    } catch (error: unknown) {
+      return fail(res, 400, error instanceof Error ? error.message : "Unknown error");
     }
   }
 
   static async addVehicle(req: Request, res: Response) {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = String(req.params.id);
       const clientVehicle = await ClientsService.addVehicleByUserId(
         req.user.companyId!,
         id,

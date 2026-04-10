@@ -6,6 +6,7 @@ import type { ViewStyle } from "react-native";
 import { Platform, useColorScheme, useWindowDimensions } from "react-native";
 import { useMemo } from "react";
 import { useThemeStore } from "@/lib/themeStore";
+import { useAccessibilityStore } from '@/lib/store';
 
 /** Mismo azul que welcome.btnPrimary */
 export const ACCENT = "#3B82F6";
@@ -69,9 +70,9 @@ function authColors(isDark: boolean): AuthThemeColors {
   return {
     authScreenChromeBg: "#020617",
     authHeroStripBg: "#020617",
-    authHeroBackBtnBg: "rgba(248, 250, 252, 0.12)",
-    authHeroBackBtnIcon: "#F8FAFC",
-    authHeroValetLabel: "rgba(148, 163, 184, 0.58)",
+    authHeroBackBtnBg: isDark ? "rgba(248, 250, 252, 0.12)" : "rgba(15, 23, 42, 0.12)",
+    authHeroBackBtnIcon: isDark ? "#F8FAFC" : "#0F172A",
+    authHeroValetLabel: isDark ? "rgba(148, 163, 184, 0.58)" : "rgba(71, 85, 105, 0.9)",
     bottomSheet: isDark ? "#0F172A" : "#FFFFFF",
     text: isDark ? "#F8FAFC" : "#0F172A",
     textSecondary: isDark ? "#94A3B8" : "#475569",
@@ -139,6 +140,19 @@ function homeColors(isDark: boolean): HomeThemeColors {
 const ANDROID_FONT_DELTA = Platform.OS === "android" ? -4 : 0;
 const fontSize = (value: number) => Math.max(10, value + ANDROID_FONT_DELTA);
 
+/** Aplica el factor de escala de accesibilidad a todos los tamaños de fuente */
+function applyTextScale(fonts: typeof valetStaticTokens.font, scale: number) {
+  return {
+    title: Math.round(fonts.title * scale),
+    subtitle: Math.round(fonts.subtitle * scale),
+    hero: Math.round(fonts.hero * scale),
+    body: Math.round(fonts.body * scale),
+    secondary: Math.round(fonts.secondary * scale),
+    button: Math.round(fonts.button * scale),
+    status: Math.round(fonts.status * scale),
+  };
+}
+
 export const valetStaticTokens = {
   minTouch: 56,
   radius: { card: 16, button: 14 },
@@ -152,12 +166,13 @@ export const valetStaticTokens = {
     button: fontSize(19),
     status: fontSize(16),
   },
+  fontFamily: {
+    primary: "CalSans",
+    secondary: "System",
+  } as const,
 } as const;
 
-/**
- * Pantalla de trabajo (tickets): botones y texto más grandes para reducir errores
- * (personas con menos práctica con el móvil o visión reducida).
- */
+
 export const ticketsA11y = {
   minTouch: 60,
   font: {
@@ -174,6 +189,7 @@ export const ticketsA11y = {
 export function useValetTheme() {
   const systemScheme = useColorScheme();
   const preference = useThemeStore((s) => s.preference);
+  const { textScale } = useAccessibilityStore();
   const isDark =
     preference === "dark"
       ? true
@@ -187,8 +203,10 @@ export function useValetTheme() {
       auth: authColors(isDark),
       colors: homeColors(isDark),
       ...valetStaticTokens,
+      font: applyTextScale(valetStaticTokens.font, textScale),
+      a11yFont: applyTextScale(ticketsA11y.font, textScale),
     }),
-    [isDark]
+    [isDark, textScale]
   );
 }
 
@@ -205,8 +223,8 @@ export function useResponsiveLayout() {
       shortestSide,
       isTablet,
       isLandscape,
-      contentMaxWidth: isTablet ? 1100 : 860,
-      formMaxWidth: isTablet ? 640 : 560,
+      contentMaxWidth: width,
+      formMaxWidth: width,
       horizontalPadding: isTablet ? 36 : 20,
       sectionPadding: isTablet ? 28 : 20,
     }),
@@ -214,7 +232,6 @@ export function useResponsiveLayout() {
   );
 }
 
-/** Píldoras de estado en tickets: variantes por tema */
 export function statusVisuals(
   status: "assigned" | "in-transit" | "completed",
   isDark: boolean

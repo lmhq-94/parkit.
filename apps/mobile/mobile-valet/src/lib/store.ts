@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { User } from './auth';
 import type { Locale } from '@parkit/shared';
 import { getStoredLocale, setStoredLocale } from './i18n';
@@ -30,7 +32,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
   isLoading: false,
   setUser: (user) => set({ user }),
   mergeUser: (patch) =>
-    set((s) => (s.user ? { user: { ...s.user, ...patch } } : {})),
+    set((s) => {
+      if (!s.user) return s;
+      return { user: { ...s.user, ...patch } };
+    }),
   setLoading: (loading) => set({ isLoading: loading }),
 }));
 
@@ -57,3 +62,27 @@ export const useLocaleStore = create<LocaleStore>((set) => ({
     set({ locale, isHydrated: true });
   },
 }));
+
+interface AccessibilityStore {
+  /** Escala de texto para accesibilidad (1.0 = normal, 1.5 = máximo) */
+  textScale: number;
+  /** Animaciones reducidas para usuarios sensibles */
+  reduceMotion: boolean;
+  setTextScale: (scale: number) => void;
+  setReduceMotion: (enabled: boolean) => void;
+}
+
+export const useAccessibilityStore = create<AccessibilityStore>()(
+  persist(
+    (set) => ({
+      textScale: 1,
+      reduceMotion: false,
+      setTextScale: (scale) => set({ textScale: Math.max(1, Math.min(1.25, scale)) }),
+      setReduceMotion: (enabled) => set({ reduceMotion: enabled }),
+    }),
+    {
+      name: 'parkit-accessibility',
+      storage: createJSONStorage(() => AsyncStorage),
+    }
+  )
+);

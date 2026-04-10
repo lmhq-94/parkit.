@@ -1,20 +1,11 @@
 "use client";
 
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { useEffect } from "react";
-import { useLocaleStore } from "@/lib/store";
-import { getStoredLocale } from "@/lib/i18n";
 import { CompanyThemeSync } from "@/components/CompanyThemeSync";
 import { Toaster } from "@/components/Toaster";
+import { LocaleInit } from "@/components/LocaleInit";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const setLocale = useLocaleStore((s) => s.setLocale);
-
-  useEffect(() => {
-    const stored = getStoredLocale();
-    setLocale(stored);
-  }, [setLocale]);
-
   return (
     <NextThemesProvider
       attribute="class"
@@ -24,7 +15,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange={false}
     >
       <CompanyThemeSync />
-      {children}
+      <LocaleInit>{children}</LocaleInit>
       <Toaster />
     </NextThemesProvider>
   );

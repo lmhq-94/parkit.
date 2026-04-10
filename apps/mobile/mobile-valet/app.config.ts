@@ -63,11 +63,24 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     '@react-native-community/datetimepicker',
     [
+      '@stripe/stripe-react-native',
+      {
+        merchantIdentifier: 'merchant.com.parkit.valet',
+      },
+    ],
+    [
       'expo-camera',
       {
         cameraPermission:
           'Permite escanear el QR de la reserva del cliente y usar la cámara si lo necesitas.',
       },
+    ],
+    // OAuth Plugins - Google only for now
+    [
+      '@react-native-google-signin/google-signin',
+      {
+        iosUrlScheme: 'com.googleusercontent.apps.YOUR_REVERSED_CLIENT_ID'
+      }
     ],
   ],
   experiments: {

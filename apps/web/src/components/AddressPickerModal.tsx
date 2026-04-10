@@ -73,7 +73,7 @@ const FALLBACK_LON = -84.0907;
 const PickerMap = dynamic(
   () =>
     import("@/components/AddressPickerMap").then((m) => m.AddressPickerMap),
-  { ssr: false, loading: () => <div className="h-[220px] bg-input-bg rounded-lg animate-pulse" style={{ height: 220 }} /> }
+  { ssr: false, loading: () => <div className="h-[350px] bg-input-bg rounded-lg animate-pulse" style={{ height: 350 }} /> }
 );
 
 export function AddressPickerModal({
@@ -196,7 +196,7 @@ export function AddressPickerModal({
         onClick={onClose}
       />
       <div
-        className="relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-2xl border border-card-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl border border-card-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-card-border shrink-0">

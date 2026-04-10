@@ -1,21 +1,18 @@
 /**
- * Sends a ticket code email with the parking ticket code for the customer.
- * Uses Resend when RESEND_API_KEY is set; otherwise logs the code to console (dev).
+ * Sends a ticket check-in email with a QR code for the customer.
  */
 
 const FROM_EMAIL =
-  process.env.TICKET_CODE_FROM_EMAIL || "Parkit <onboarding@resend.dev>";
-const TICKET_CODE_TEMPLATE_ID = process.env.TICKET_CODE_TEMPLATE_ID || "";
-/** Support email for ticket-related inquiries (e.g. soporte@parkit.app). */
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "soporte@parkit.app";
+  process.env.TICKET_CHECKIN_FROM_EMAIL || "Parkit <onboarding@resend.dev>";
+const TICKET_CHECKIN_TEMPLATE_ID = process.env.TICKET_CHECKIN_TEMPLATE_ID || process.env.TICKET_CODE_TEMPLATE_ID || "";
+/** Support email for ticket-related inquiries (e.g. soporte@parkitcr.com). */
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "soporte@parkitcr.com";
 /** Optional privacy policy URL */
 const PRIVACY_URL = process.env.TICKET_CODE_PRIVACY_URL || "";
 /** Optional terms and conditions URL */
 const TERMS_URL = process.env.TICKET_CODE_TERMS_URL || "";
-/** Optional unsubscribe URL */
-const UNSUBSCRIBE_URL = process.env.TICKET_CODE_UNSUBSCRIBE_URL || "";
 
-export interface SendTicketCodeParams {
+export interface SendTicketCheckInParams {
   to: string;
   firstName: string;
   lastName: string;
@@ -24,14 +21,14 @@ export interface SendTicketCodeParams {
   locationName?: string;
   /** Vehicle plate number */
   plateNumber?: string;
-  /** Parking entry date/time (ISO format or formatted string) */
+  /** Parking entry date/time (formatted string) */
   entryTime?: string;
   /** Optional additional instructions or notes */
   notes?: string;
 }
 
-export async function sendTicketCodeEmail(
-  params: SendTicketCodeParams,
+export async function sendTicketCheckInEmail(
+  params: SendTicketCheckInParams,
 ): Promise<{ sent: boolean; error?: string }> {
   const {
     to,
@@ -44,41 +41,32 @@ export async function sendTicketCodeEmail(
     notes,
   } = params;
 
-  // In development, redirect all emails to the developer's verified email for Resend testing
-  // This allows testing with any email address without domain verification
   const isDevelopment = process.env.NODE_ENV !== "production";
   const actualTo = isDevelopment ? "luis.herrera506@gmail.com" : to;
 
   if (isDevelopment && to !== actualTo) {
     console.log(
-      `🎫 [DEV MODE] Redirecting ticket code email from ${to} → ${actualTo}`,
+      `🎫 [DEV MODE] Redirecting ticket check-in email from ${to} → ${actualTo}`,
     );
   }
 
   const locationDisplay = (locationName || "").trim();
 
-  // Template must be configured in env
-  if (!TICKET_CODE_TEMPLATE_ID) {
-    console.error(
-      "[Ticket code email error] TICKET_CODE_TEMPLATE_ID not configured in environment",
+  if (!TICKET_CHECKIN_TEMPLATE_ID) {
+    console.warn(
+      "[Ticket check-in email warning] TICKET_CHECKIN_TEMPLATE_ID not configured, using fallback html",
     );
-    return { sent: false, error: "TICKET_CODE_TEMPLATE_ID not configured" };
   }
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey || apiKey === "re_xxxxxxxxx") {
-    // Development fallback
-    console.log("[Ticket code email not sent - no RESEND_API_KEY]");
+    console.log("[Ticket check-in email not sent - no RESEND_API_KEY]");
     console.log(`  Original To: ${to}`);
     console.log(`  Ticket code: ${ticketCode}`);
-    if (locationDisplay) console.log(`  Location: ${locationDisplay}`);
-    if (entryTime) console.log(`  Entry time: ${entryTime}`);
     return { sent: true };
   }
 
   try {
-    // Resend requires html or text as fallback when using template_id
-    // This fallback is specific to ticket code emails for quality UX if template fails
     const htmlFallback = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html dir="ltr" lang="es">
   <head>
@@ -117,9 +105,10 @@ export async function sendTicketCodeEmail(
 
             <tr>
               <td class="content" style="padding: 45px 50px 10px;">
-                <h2 style="font-size: 26px; font-weight: 800; margin: 0 0 12px; color: #1e293b; letter-spacing: -0.02em;">Te damos la bienvenida</h2>
+                <div style="margin-bottom: 8px; font-size: 12px; font-weight: 700; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.1em;">Check-in</div>
+                <h2 style="font-size: 26px; font-weight: 800; margin: 0 0 12px; color: #1e293b; letter-spacing: -0.02em;">Tu vehículo está seguro.</h2>
                 <p style="font-size: 15px; line-height: 24px; color: #475569; margin: 0 0 30px;">
-                  Su vehículo ha sido ingresado a nuestro sistema de custodia. Deberá mostrar este código al personal cuando desee solicitar su vehículo nuevamente.
+                  Hemos recibido tu vehículo en ${locationDisplay || "nuestra ubicación"}. Este correo sirve como tu comprobante digital; deberás mostrar el número de tiquete o código QR al personal cuando desees retirar tu vehículo nuevamente.
                 </p>
               </td>
             </tr>
@@ -142,7 +131,9 @@ export async function sendTicketCodeEmail(
                   <div style="text-align: center; border-bottom: 2px dashed #cbd5e1; padding-bottom: 20px; margin-bottom: 25px;">
                     <p style="margin: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #64748b; font-weight: 700;">Comprobante de Parqueo</p>
                     <h3 style="margin: 8px 0 0; font-size: 18px; font-weight: 900; color: #000000; font-family: 'JetBrains Mono', monospace;">VALET PARKING</h3>
-                                   <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 25px 5px; margin-bottom: 25px; text-align: center;">
+                  </div>
+
+                  <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 25px 5px; margin-bottom: 25px; text-align: center;">
                     <span style="font-size: 9px; text-transform: uppercase; color: #64748b; display: block; margin-bottom: 10px; font-weight: 700;">Código para Retiro</span>
                     <span style="font-family: 'JetBrains Mono', monospace; font-size: 44px; font-weight: 800; letter-spacing: 5px; color: #000; line-height: 1;">${ticketCode}</span>
                   </div>
@@ -162,7 +153,14 @@ export async function sendTicketCodeEmail(
                     </tr>
                   </table>
 
-                  <div style="margin: 35px auto 5px; width: 100%; height: 50px; background: repeating-linear-gradient(90deg, #000, #000 1px, transparent 1px, transparent 3px, #000 3px, #000 4px, transparent 4px, transparent 6px); opacity: 0.8;"></div>
+                  <div style="margin: 30px auto 10px; text-align: center;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(ticketCode)}&margin=10" 
+                         alt="QR Code" 
+                         width="140" 
+                         height="140" 
+                         style="display: block; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px;" />
+                  </div>
+                  
                   <p style="font-size: 10px; color: #64748b; margin: 15px 0 0; text-align: center; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Código de un único uso.</p>
                   <div style="position: absolute; bottom: -10px; left: -1px; right: -1px; height: 12px; background-image: radial-gradient(circle at 8px 16px, #ffffff 10px, transparent 11px); background-size: 16px 12px;"></div>
                 </div>
@@ -184,7 +182,7 @@ export async function sendTicketCodeEmail(
                     <strong style="display: block; margin-bottom: 2px;">Notas adicionales:</strong>
                     ${notes}
                   </div>
-                  ` : ''}
+                  ` : ""}
                 </div>
               </td>
             </tr>
@@ -192,7 +190,9 @@ export async function sendTicketCodeEmail(
             <tr>
               <td style="border-top: 1px solid #f1f5f9; padding: 40px; text-align: center; background-color: #fafbfc;">
                 <div style="font-family: 'Inter', Helvetica, Arial, sans-serif;">
-                  <p style="margin: 0 0 12px; font-size: 13px; color: #64748b;">¿Necesitas ayuda? <a href="mailto:${SUPPORT_EMAIL}" style="color: #3b82f6; text-decoration: none; font-weight: 700;">Contacta soporte</a></p>
+                  <p style="margin: 0 0 12px; font-size: 13px; color: #64748b;">
+                    ¿Necesitas ayuda? <a href="mailto:${SUPPORT_EMAIL}" style="color: #3b82f6; text-decoration: none; font-weight: 700;">Contacta soporte</a>
+                  </p>
                   
                   <p style="margin: 0 0 15px; font-size: 12px; color: #94a3b8;">
                     <a href="${TERMS_URL}" style="color: #94a3b8; text-decoration: underline;">Términos</a> · 
@@ -223,19 +223,20 @@ export async function sendTicketCodeEmail(
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: [actualTo],
-        subject: "Tu código de pase de salida - Parkit",
+        subject: "Tu vehículo está seguro - Parkit",
         html: htmlFallback,
-        template_id: TICKET_CODE_TEMPLATE_ID,
+        template_id: TICKET_CHECKIN_TEMPLATE_ID || undefined,
         template_data: {
-          ticket_code: ticketCode,
           location_name: locationDisplay || "",
+          ticket_code: ticketCode,
           plate_number: plateNumber || "",
           entry_time: entryTime || "",
+          first_name: firstName,
+          last_name: lastName,
           notes: notes || "",
           support: SUPPORT_EMAIL,
           privacy: PRIVACY_URL || "",
           terms: TERMS_URL || "",
-          unsubscribe: UNSUBSCRIBE_URL || "",
           current_year: new Date().getFullYear(),
         },
       }),
@@ -245,14 +246,14 @@ export async function sendTicketCodeEmail(
     if (!response.ok) {
       const message =
         (result && result.error && result.error.message) || response.statusText;
-      console.error("[Ticket code email error]", result);
+      console.error("[Ticket check-in email error]", result);
       return { sent: false, error: message };
     }
 
     return { sent: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[Ticket code email error]", err);
+    console.error("[Ticket check-in email error]", err);
     return { sent: false, error: message };
   }
 }

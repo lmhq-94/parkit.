@@ -5,6 +5,7 @@ module.exports = {
     ecmaVersion: 2022,
     sourceType: 'module',
     project: ['./tsconfig.json'],
+    warnOnUnsupportedTypeScriptVersion: false,
   },
   plugins: ['@typescript-eslint'],
   extends: [

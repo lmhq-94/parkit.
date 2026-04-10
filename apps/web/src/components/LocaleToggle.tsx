@@ -1,31 +1,22 @@
 "use client";
 
-import { createPortal } from "react-dom";
 import { useLocaleStore } from "@/lib/store";
-import { Globe } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { Globe, Check } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useState, useRef, useEffect } from "react";
+
+const LOCALE_OPTIONS = [
+  { value: "es", label: "Español", flag: "🇪🇸" },
+  { value: "en", label: "English", flag: "🇬🇧" },
+];
 
 export function LocaleToggle() {
   const { locale, setLocale } = useLocaleStore();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, right: 0 });
   const ref = useRef<HTMLDivElement>(null);
-
-  const updatePosition = () => {
-    if (ref.current) {
-      const rect = ref.current.getBoundingClientRect();
-      setPosition({
-        top: rect.bottom + 4,
-        right: window.innerWidth - rect.right,
-      });
-    }
-  };
-
-  const handleToggle = () => {
-    if (!open) updatePosition();
-    setOpen((o) => !o);
-  };
 
   useEffect(() => {
     if (open) {
@@ -50,64 +41,32 @@ export function LocaleToggle() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const dropdown = open && typeof document !== "undefined" && (
-    createPortal(
-      <div
-        data-locale-dropdown
-        className="fixed overflow-y-auto overscroll-contain py-1.5 px-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl min-w-[120px] z-[99999] bg-white dark:bg-slate-900"
-        style={{
-          top: position.top,
-          right: position.right,
-          left: "auto",
-          maxHeight: "min(70vh, 400px)",
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => {
-            setLocale("es");
-            setOpen(false);
-            apiClient
-              .patch("/users/me", {
-                appPreferences: { locale: "es" },
-              })
-              .catch(() => {
-                // Language preference should not break UI if it fails.
-              });
-          }}
-          className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg ${
-            locale === "es"
-              ? "bg-company-primary-muted text-company-primary font-medium"
-              : "hover:bg-company-tertiary-subtle text-company-secondary"
-          }`}
-        >
-          Español
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setLocale("en");
-            setOpen(false);
-            apiClient
-              .patch("/users/me", {
-                appPreferences: { locale: "en" },
-              })
-              .catch(() => {
-                // Language preference should not break UI if it fails.
-              });
-          }}
-          className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg ${
-            locale === "en"
-              ? "bg-company-primary-muted text-company-primary font-medium"
-              : "hover:bg-company-tertiary-subtle text-company-secondary"
-          }`}
-        >
-          English
-        </button>
-      </div>,
-      document.body
-    )
-  );
+  const updatePosition = () => {
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + 4,
+        right: window.innerWidth - rect.right,
+      });
+    }
+  };
+
+  const handleToggle = () => {
+    if (!open) updatePosition();
+    setOpen((o) => !o);
+  };
+
+  const handleLocaleChange = (newLocale: string) => {
+    setLocale(newLocale as "es" | "en");
+    setOpen(false);
+    apiClient
+      .patch("/users/me", {
+        appPreferences: { locale: newLocale },
+      })
+      .catch(() => {
+        // Language preference should not break UI if it fails.
+      });
+  };
 
   return (
     <>
@@ -116,14 +75,49 @@ export function LocaleToggle() {
           type="button"
           onClick={handleToggle}
           className="h-10 rounded-xl text-text-secondary hover:text-text-primary hover:bg-input-bg transition-colors flex items-center gap-1.5 px-2"
-          title={locale === "es" ? "English" : "Español"}
-          aria-label="Idioma / Language"
+          title={t("settings.language")}
+          aria-label={t("settings.language")}
         >
           <Globe className="w-5 h-5" />
           <span className="text-xs font-medium uppercase hidden sm:inline">{locale}</span>
         </button>
       </div>
-      {dropdown}
+      {open && typeof document !== "undefined" && (
+        <div
+          data-locale-dropdown
+          className="fixed z-[99999] p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl bg-white dark:bg-slate-900"
+          style={{
+            top: position.top,
+            right: position.right,
+            left: "auto",
+            minWidth: "180px",
+          }}
+        >
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
+            {t("settings.language")}
+          </p>
+          <div className="space-y-1">
+            {LOCALE_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => handleLocaleChange(option.value)}
+                className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  locale === option.value
+                    ? "bg-company-primary-subtle text-company-primary ring-1 ring-company-primary/30"
+                    : "text-text-primary hover:bg-input-bg"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="text-base">{option.flag}</span>
+                  <span>{option.label}</span>
+                </span>
+                {locale === option.value && <Check className="w-4 h-4" />}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -11,6 +11,7 @@ export function FeedbackModal() {
   const S = theme.space;
   const R = theme.radius;
   const M = ticketsA11y.minTouch;
+  const Fonts = theme.fontFamily;
 
   const styles = useMemo(
     () =>
@@ -30,18 +31,19 @@ export function FeedbackModal() {
           paddingBottom: S.xl + 20,
         },
         modalTitle: {
-          fontSize: F.title - 6,
+          fontSize: Math.round(F.status * 0.65),
           fontWeight: Platform.OS === "android" ? "normal" : "800",
           textAlign: "center",
           marginBottom: S.sm,
-          fontFamily: "CalSans",
+          fontFamily: Fonts.primary,
           color: C.text,
         },
         modalMessage: {
-          fontSize: F.body,
+          fontSize: Math.round(F.status * 0.65),
+          fontFamily: Fonts.primary,
           color: C.textMuted,
           textAlign: "center",
-          lineHeight: 22,
+          lineHeight: 18,
           marginBottom: S.lg,
         },
         buttonsRow: {
@@ -66,19 +68,21 @@ export function FeedbackModal() {
         },
         btnTextDefault: {
           color: "#fff",
-          fontSize: F.body,
+          fontSize: Math.round(F.status * 0.65),
           fontWeight: "700",
+          fontFamily: Fonts.primary,
         },
         btnTextCancel: {
           color: C.text,
-          fontSize: F.body,
+          fontSize: Math.round(F.status * 0.65),
           fontWeight: "700",
+          fontFamily: Fonts.primary,
         },
         pressed: {
           opacity: 0.8,
         },
       }),
-    [C, F, M, R, S, theme]
+    [C, F, Fonts, M, R, S, theme]
   );
 
   if (!isOpen || !options) return null;

@@ -430,13 +430,21 @@ export const VerifyOtpSchema = z.object({
 export type RequestOtpInput = z.infer<typeof RequestOtpSchema>;
 export type VerifyOtpInput = z.infer<typeof VerifyOtpSchema>;
 
-// Invitations (accept invite: set password via email link)
-export const AcceptInvitationSchema = z.object({
+export const RegisterInvitedSchema = z.object({
   token: z.string().min(1, "Invitation token required"),
+  firstName: z.string().min(1, "First name required"),
+  lastName: z.string().min(1, "Last name required"),
   password: securePasswordSchema,
 });
 
-export type AcceptInvitationInput = z.infer<typeof AcceptInvitationSchema>;
+export type RegisterInvitedInput = z.infer<typeof RegisterInvitedSchema>;
+
+export const InviteUserSchema = z.object({
+  email: z.string().email("Invalid email"),
+  role: z.enum(["ADMIN", "STAFF", "CUSTOMER"]).default("CUSTOMER"),
+});
+
+export type InviteUserInput = z.infer<typeof InviteUserSchema>;
 
 export const ForgotPasswordSchema = z.object({
   email: z.string().email("Invalid email"),

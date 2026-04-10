@@ -1,12 +1,14 @@
 import "@/lib/androidTextDefaults";
 import { Stack, SplashScreen } from 'expo-router';
 import { useEffect } from 'react';
-import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { StripeProvider } from '@stripe/stripe-react-native';
 import { useAuthStore, useLocaleStore } from '@/lib/store';
 import { useThemeStore } from '@/lib/themeStore';
 import { getStoredUser } from '@/lib/auth';
 import { useFonts } from 'expo-font';
 import { FeedbackModal } from '@/components/FeedbackModal';
+
+const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_your_key_here';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -37,7 +39,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (!isLoading && fontsLoaded) {
-      SplashScreen.hideAsync();
+      SplashScreen.hideAsync().catch(() => {
+        // Ignore error if splash screen wasn't registered yet
+      });
     }
   }, [isLoading, fontsLoaded]);
 
@@ -46,42 +50,40 @@ export default function RootLayout() {
   }
 
   return (
-    <>
-      <KeyboardProvider preload={false}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            animation: 'default',
-          }}
-        >
-          <Stack.Screen
-            name="index"
-            options={{ animation: 'none', gestureEnabled: false }}
-          />
-          <Stack.Screen name="home" />
-          <Stack.Screen name="receive" />
-          <Stack.Screen name="return-pickup" />
-          <Stack.Screen name="tickets" />
-          <Stack.Screen name="park" />
-          <Stack.Screen name="settings" />
-          <Stack.Screen name="profile" />
-          <Stack.Screen name="workflow" />
-          <Stack.Screen name="help" />
-          <Stack.Screen
-            name="welcome"
-            options={{ animation: 'fade', gestureEnabled: false }}
-          />
-          <Stack.Screen
-            name="login"
-            options={{ animation: 'slide_from_right', gestureEnabled: true }}
-          />
-          <Stack.Screen
-            name="forgot-password"
-            options={{ animation: 'slide_from_right', gestureEnabled: true }}
-          />
-        </Stack>
-      </KeyboardProvider>
+    <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: 'default',
+        }}
+      >
+        <Stack.Screen
+          name="index"
+          options={{ animation: 'none', gestureEnabled: false }}
+        />
+        <Stack.Screen name="home" />
+        <Stack.Screen name="receive" />
+        <Stack.Screen name="return-pickup" />
+        <Stack.Screen name="tickets" />
+        <Stack.Screen name="park" />
+        <Stack.Screen name="settings" />
+        <Stack.Screen name="profile" />
+        <Stack.Screen name="workflow" />
+        <Stack.Screen name="help" />
+        <Stack.Screen
+          name="welcome"
+          options={{ animation: 'fade', gestureEnabled: false }}
+        />
+        <Stack.Screen
+          name="login"
+          options={{ animation: 'slide_from_right', gestureEnabled: true }}
+        />
+        <Stack.Screen
+          name="forgot-password"
+          options={{ animation: 'slide_from_right', gestureEnabled: true }}
+        />
+      </Stack>
       <FeedbackModal />
-    </>
+    </StripeProvider>
   );
 }

@@ -17,7 +17,7 @@ const defaultIcon = L.icon({
   iconAnchor: [12, 41],
 });
 
-const MAP_HEIGHT = 220;
+const MAP_HEIGHT = 350;
 
 interface AddressPickerMapProps {
   lat: number;

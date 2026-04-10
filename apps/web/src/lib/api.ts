@@ -14,7 +14,15 @@ export interface ApiResponse<T> {
 }
 
 const GET_CACHE_TTL_MS = 30_000; // 30s for branding and data that does not change constantly
-const CACHEABLE_GET_PREFIXES = ["/companies/me", "/companies/"];
+const CACHEABLE_GET_PREFIXES = [
+  "/companies/me",
+  "/companies/",
+  "/companies",
+  "/users/me",
+  "/clients",
+  "/notifications/user/",
+  "/parkings/has-bookable",
+];
 
 function isCacheableGet(url: string): boolean {
   return CACHEABLE_GET_PREFIXES.some((p) => url.includes(p));
@@ -25,6 +33,7 @@ type CacheEntry<T> = { data: T; expiresAt: number };
 class ApiClient {
   private client: AxiosInstance;
   private getCache = new Map<string, CacheEntry<unknown>>();
+  private pendingRequests = new Map<string, Promise<unknown>>();
 
   constructor() {
     this.client = axios.create({
@@ -113,15 +122,28 @@ class ApiClient {
       const hit = this.getCache.get(cacheKey) as CacheEntry<T> | undefined;
       if (hit && hit.expiresAt > Date.now()) return hit.data;
     }
-    const response = await this.client.get<ApiResponse<T>>(url);
-    const data = response.data.data as T;
-    if (typeof window !== "undefined" && isCacheableGet(url)) {
-      this.getCache.set(cacheKey, {
-        data,
-        expiresAt: Date.now() + GET_CACHE_TTL_MS,
-      });
-    }
-    return data;
+
+    const pending = this.pendingRequests.get(cacheKey) as Promise<T> | undefined;
+    if (pending) return pending;
+
+    const promise = (async () => {
+      try {
+        const response = await this.client.get<ApiResponse<T>>(url);
+        const data = response.data.data as T;
+        if (typeof window !== "undefined" && isCacheableGet(url)) {
+          this.getCache.set(cacheKey, {
+            data,
+            expiresAt: Date.now() + GET_CACHE_TTL_MS,
+          });
+        }
+        return data;
+      } finally {
+        this.pendingRequests.delete(cacheKey);
+      }
+    })();
+
+    this.pendingRequests.set(cacheKey, promise);
+    return promise;
   }
 
   /** Invalidates GET cache (e.g. after branding update). */
@@ -131,16 +153,19 @@ class ApiClient {
 
   public async post<T>(url: string, data?: unknown): Promise<T> {
     const response = await this.client.post<ApiResponse<T>>(url, data);
+    this.clearGetCache();
     return response.data.data as T;
   }
 
   public async patch<T>(url: string, data?: unknown): Promise<T> {
     const response = await this.client.patch<ApiResponse<T>>(url, data);
+    this.clearGetCache();
     return response.data.data as T;
   }
 
   public async delete<T>(url: string): Promise<T> {
     const response = await this.client.delete<ApiResponse<T>>(url);
+    this.clearGetCache();
     return response.data.data as T;
   }
 }
