@@ -9,12 +9,10 @@ import { isSuperAdmin } from "@/lib/auth";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ArrowRight, Eye, EyeOff } from "@/lib/premiumIcons";
-import { FcGoogle } from "react-icons/fc";
-import { FaSquareFacebook, FaMicrosoft } from "react-icons/fa6";
+import { ArrowRight, Eye, EyeOff, GoogleIcon, FacebookIcon, MicrosoftIcon } from "@/lib/premiumIcons";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ThemeToggleSimple } from "@/components/ThemeToggleSimple";
-import { LocaleToggleSimple } from "@/components/LocaleToggleSimple";
+import { LocaleToggle } from "@/components/LocaleToggle";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -225,7 +223,7 @@ export default function LoginPage() {
       {/* TOP RIGHT: Theme and Locale toggles */}
       <div className="absolute top-4 right-4 z-30 hidden md:flex items-center gap-3">
         <ThemeToggleSimple />
-        <LocaleToggleSimple />
+        <LocaleToggle />
       </div>
 
       {/* MAIN: Centered Form with Logo */}
@@ -300,7 +298,7 @@ export default function LoginPage() {
               className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               title={t("auth.continueWithGoogle")}
             >
-              <FcGoogle className="h-6 w-6" />
+              <GoogleIcon className="h-6 w-6 text-red-500" />
             </button>
             <button
               type="button"
@@ -308,7 +306,7 @@ export default function LoginPage() {
               className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               title={t("auth.continueWithMicrosoft")}
             >
-              <FaMicrosoft className="h-6 w-6 text-blue-600" />
+              <MicrosoftIcon className="h-6 w-6 text-blue-600" />
             </button>
             <button
               type="button"
@@ -316,7 +314,7 @@ export default function LoginPage() {
               className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               title={t("auth.continueWithFacebook")}
             >
-              <FaSquareFacebook className="h-6 w-6 text-[#1877F2]" />
+              <FacebookIcon className="h-6 w-6 text-blue-600" />
             </button>
           </div>
 

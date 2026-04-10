@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { MapPin, Tag, Navigation, Radius, ArrowRight, Plus, Trash, Clock, Coins } from "@/lib/premiumIcons";
+import { Tag, Navigation, Radius, ArrowRight, Plus, Trash, Clock, Coins, Building, World } from "@/lib/premiumIcons";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -295,7 +295,7 @@ export default function EditParkingPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm premium-section-title">{t("parkings.sectionMain")}</p>
-            <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">{t("common.requiredBadge")}</span>
           </div>
           <p className="text-xs premium-subtitle mt-1">{t("parkings.sectionMainDesc")}</p>
         </div>
@@ -304,7 +304,7 @@ export default function EditParkingPage() {
             <div className="sm:col-span-2 lg:col-span-3">
               <label className={LABEL}>{t("parkings.name")} <span className="text-company-primary">*</span></label>
               <div className="relative group">
-                <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                 <input value={form.name} onChange={set("name")} placeholder={t("common.placeholderName")} className={IL} aria-invalid={!!fieldErrors.name} />
               </div>
             </div>
@@ -320,7 +320,7 @@ export default function EditParkingPage() {
                   onClick={() => setAddressPickerOpen(true)}
                   className="shrink-0 px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-secondary text-sm font-medium hover:bg-company-primary-subtle hover:border-company-primary-muted hover:text-company-primary transition-colors flex items-center gap-2"
                 >
-                  <MapPin className="w-4 h-4" />
+                  <World className="w-4 h-4" />
                   {t("companies.pickAddressOnMap")}
                 </button>
               </div>
@@ -470,7 +470,7 @@ export default function EditParkingPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm premium-section-title">{t("parkings.sectionSlots")}</p>
-            <span className="text-[11px] font-medium text-red-500">{t("common.requiredBadge")}</span>
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">{t("common.requiredBadge")}</span>
           </div>
           <p className="text-xs premium-subtitle mt-1">{t("parkings.sectionSlotsDesc")}</p>
         </div>
@@ -577,7 +577,6 @@ export default function EditParkingPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm premium-section-title">{t("parkings.sectionGeo")}</p>
-            <span className="text-[11px] font-medium text-text-muted">{t("common.optionalBadge")}</span>
           </div>
           <p className="text-xs premium-subtitle mt-1">{t("parkings.sectionGeoDesc")}</p>
         </div>

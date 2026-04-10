@@ -9,7 +9,7 @@ import { ArrowLeft } from "@/lib/premiumIcons";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ThemeToggleSimple } from "@/components/ThemeToggleSimple";
-import { LocaleToggleSimple } from "@/components/LocaleToggleSimple";
+import { LocaleToggle } from "@/components/LocaleToggle";
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation();
@@ -63,7 +63,7 @@ export default function ForgotPasswordPage() {
       {/* TOP RIGHT: Theme and Locale toggles */}
       <div className="absolute top-4 right-4 z-30 hidden md:flex items-center gap-3">
         <ThemeToggleSimple />
-        <LocaleToggleSimple />
+        <LocaleToggle />
       </div>
 
       {/* MAIN */}

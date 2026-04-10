@@ -359,27 +359,36 @@ export const CURRENCIES = [
 ] as const;
 
 /** Industry values for company "business activity". Labels are translated via companies.industryOptions.<value> in i18n.
- *  Sorted alphabetically by Spanish labels (primary locale). "OTHER" is always last.
+ *  Sorted alphabetically by English value. "OTHER" is always last.
  */
 export const INDUSTRIES = [
+  { value: "AGRICULTURE" },
   { value: "AIRPORT" },
+  { value: "AUTOMOTIVE" },
   { value: "BANKING_FINANCIAL" },
-  { value: "MALL" },
-  { value: "EVENT_VENUE" },
-  { value: "OFFICE_BUILDING" },
+  { value: "CASINO_GAMING" },
+  { value: "CINEMA_THEATER" },
+  { value: "CONSTRUCTION" },
   { value: "EDUCATION" },
+  { value: "ENERGY_UTILITIES" },
   { value: "ENTERTAINMENT_LEISURE" },
+  { value: "EVENT_VENUE" },
+  { value: "GYM_SPORTS" },
   { value: "HOSPITAL_CLINIC" },
   { value: "HOTEL" },
   { value: "INDUSTRIAL_MANUFACTURING" },
   { value: "LOGISTICS_WAREHOUSING" },
+  { value: "MALL" },
+  { value: "MINING" },
   { value: "MUNICIPALITY" },
+  { value: "OFFICE_BUILDING" },
   { value: "PARKING_OPERATOR" },
+  { value: "PHARMACY" },
+  { value: "REAL_ESTATE" },
   { value: "RESIDENTIAL" },
   { value: "RESTAURANTS_FOOD" },
   { value: "SUPERMARKET_RETAIL_CHAIN" },
   { value: "TECH" },
-  { value: "UNIVERSITY_SCHOOL" },
   { value: "OTHER" },
 ] as const;
 
@@ -397,79 +406,277 @@ export const LICENSE_TYPES = [
   { value: "F",  label: "F — Vehículos especiales" },
 ] as const;
 
-/** Generates a human-readable label from an IANA timezone ID.
- * Replaces underscores with spaces and computes the live UTC offset via Intl (DST-aware).
- * Use this wherever a raw IANA ID needs to be displayed to the user.
- */
-export function makeTzLabel(ianaId: string): string {
-  const name = ianaId.replace(/_/g, ' ');
+/** Map of IANA timezone IDs to professional display names. */
+const TZ_DISPLAY_NAMES: Record<string, string> = {
+  // Pacific & Hawaii
+  'Pacific/Midway': 'Midway, Samoa',
+  'Pacific/Honolulu': 'Honolulu, Hawaii',
+
+  // Alaska
+  'America/Anchorage': 'Anchorage, Alaska',
+
+  // US & Canada Pacific
+  'America/Los_Angeles': 'Los Angeles, Pacific Time',
+
+  // US & Canada Mountain
+  'America/Denver': 'Denver, Mountain Time',
+  'America/Phoenix': 'Phoenix, Arizona (no DST)',
+
+  // US & Canada Central
+  'America/Chicago': 'Chicago, Central Time',
+  'America/Mexico_City': 'Mexico City, Central Time',
+
+  // US & Canada Eastern
+  'America/New_York': 'New York, Eastern Time',
+  'America/Toronto': 'Toronto, Eastern Time',
+
+  // Atlantic
+  'America/Halifax': 'Halifax, Atlantic Time',
+  'America/St_Johns': "St. John's, Newfoundland",
+
+  // South America
+  'America/Sao_Paulo': 'São Paulo, Brazil',
+  'America/Argentina/Buenos_Aires': 'Buenos Aires, Argentina',
+  'America/Montevideo': 'Montevideo, Uruguay',
+  'America/Santiago': 'Santiago, Chile',
+  'America/La_Paz': 'La Paz, Bolivia',
+  'America/Lima': 'Lima, Peru',
+  'America/Bogota': 'Bogotá, Colombia',
+  'America/Costa_Rica': 'San José, Costa Rica',
+  'America/Guatemala': 'Guatemala City, Central America',
+  'America/Caracas': 'Caracas, Venezuela',
+
+  // UTC
+  'UTC': 'UTC (Coordinated Universal Time)',
+
+  // Europe
+  'Europe/London': 'London, UK',
+  'Europe/Dublin': 'Dublin, Ireland',
+  'Europe/Paris': 'Paris, Central Europe',
+  'Europe/Berlin': 'Berlin, Central Europe',
+  'Europe/Rome': 'Rome, Central Europe',
+  'Europe/Madrid': 'Madrid, Central Europe',
+  'Europe/Amsterdam': 'Amsterdam, Central Europe',
+  'Europe/Athens': 'Athens, Eastern Europe',
+  'Europe/Helsinki': 'Helsinki, Eastern Europe',
+  'Europe/Bucharest': 'Bucharest, Eastern Europe',
+  'Europe/Moscow': 'Moscow, Russia',
+  'Europe/Istanbul': 'Istanbul, Turkey',
+
+  // Middle East & Central Asia
+  'Asia/Riyadh': 'Riyadh, Saudi Arabia',
+  'Asia/Baghdad': 'Baghdad, Iraq',
+  'Asia/Tehran': 'Tehran, Iran',
+  'Asia/Dubai': 'Dubai, UAE',
+  'Asia/Kabul': 'Kabul, Afghanistan',
+  'Asia/Tashkent': 'Tashkent, Uzbekistan',
+  'Asia/Karachi': 'Karachi, Pakistan',
+
+  // South & Southeast Asia
+  'Asia/Kolkata': 'Mumbai, India',
+  'Asia/Kathmandu': 'Kathmandu, Nepal',
+  'Asia/Dhaka': 'Dhaka, Bangladesh',
+  'Asia/Yangon': 'Yangon, Myanmar',
+  'Asia/Bangkok': 'Bangkok, Thailand',
+  'Asia/Jakarta': 'Jakarta, Indonesia',
+  'Asia/Ho_Chi_Minh': 'Ho Chi Minh City, Vietnam',
+
+  // East Asia
+  'Asia/Shanghai': 'Shanghai, China',
+  'Asia/Singapore': 'Singapore',
+  'Asia/Hong_Kong': 'Hong Kong',
+  'Asia/Taipei': 'Taipei, Taiwan',
+  'Asia/Tokyo': 'Tokyo, Japan',
+  'Asia/Seoul': 'Seoul, Korea',
+
+  // Australia & Pacific
+  'Australia/Adelaide': 'Adelaide, Australia',
+  'Australia/Sydney': 'Sydney, Australia',
+  'Australia/Brisbane': 'Brisbane, Australia (no DST)',
+  'Australia/Perth': 'Perth, Australia',
+  'Pacific/Auckland': 'Auckland, New Zealand',
+  'Pacific/Fiji': 'Fiji',
+  'Pacific/Tongatapu': 'Nukuʻalofa, Tonga',
+};
+
+/** Gets the current UTC offset for a timezone in format UTC±HH:MM. */
+function getUtcOffset(ianaId: string): string {
   try {
-    const offset = new Intl.DateTimeFormat('en', {
+    const formatter = new Intl.DateTimeFormat('en', {
       timeZone: ianaId,
       timeZoneName: 'shortOffset',
-    })
-      .formatToParts(new Date())
-      .find((p) => p.type === 'timeZoneName')?.value ?? '';
-    return offset ? `${name}  (${offset})` : name;
+    });
+    const parts = formatter.formatToParts(new Date());
+    const offsetPart = parts.find((p) => p.type === 'timeZoneName');
+    if (!offsetPart) return '';
+
+    // Convert "GMT-5" or "UTC-5" to "UTC-05:00" format
+    const match = offsetPart.value.match(/(?:GMT|UTC)?([+-]?)(\d+)(?::(\d+))?/);
+    if (!match) return offsetPart.value;
+
+    const [, sign, hours, minutes = '00'] = match;
+    if (!hours) return offsetPart.value;
+
+    const normalizedSign = sign === '-' ? '-' : '+';
+    const paddedHours = hours.padStart(2, '0');
+    const paddedMinutes = minutes.padStart(2, '0');
+    return `UTC${normalizedSign}${paddedHours}:${paddedMinutes}`;
   } catch {
-    return name;
+    return '';
   }
 }
 
+/** Generates a human-readable label from an IANA timezone ID.
+ * Shows clean city name with UTC offset in professional format like "New York, Eastern Time (UTC-05:00)".
+ */
+export function makeTzLabel(ianaId: string): string {
+  const displayName = TZ_DISPLAY_NAMES[ianaId];
+  if (!displayName) {
+    // Fallback for unknown timezones
+    const fallbackName = ianaId.replace(/_/g, ' ').replace(/.*\//, '');
+    return fallbackName;
+  }
+
+  const offset = getUtcOffset(ianaId);
+  return offset ? `${displayName} (${offset})` : displayName;
+}
+
 const TIMEZONE_IDS = [
-  // África
-  'Africa/Abidjan', 'Africa/Accra', 'Africa/Addis_Ababa', 'Africa/Algiers',
-  'Africa/Cairo', 'Africa/Casablanca', 'Africa/Johannesburg', 'Africa/Kampala',
-  'Africa/Lagos', 'Africa/Nairobi', 'Africa/Tunis',
-  // América — Norteamérica
-  'America/Anchorage', 'America/Chicago', 'America/Denver', 'America/Detroit',
-  'America/Los_Angeles', 'America/New_York', 'America/Phoenix',
-  // América — México
-  'America/Cancun', 'America/Chihuahua', 'America/Hermosillo', 'America/Mazatlan',
-  'America/Mexico_City', 'America/Monterrey', 'America/Tijuana',
-  // América — Centroamérica
-  'America/Belize', 'America/Costa_Rica', 'America/El_Salvador', 'America/Guatemala',
-  'America/Managua', 'America/Panama', 'America/Tegucigalpa',
-  // América — Caribe
-  'America/Havana', 'America/Jamaica', 'America/Port-au-Prince',
-  'America/Puerto_Rico', 'America/Santo_Domingo',
-  // América — Sudamérica Norte
-  'America/Bogota', 'America/Caracas', 'America/Guayaquil',
-  'America/Guyana', 'America/Lima', 'America/Paramaribo',
-  // América — Sudamérica Sur
-  'America/Argentina/Buenos_Aires', 'America/Argentina/Cordoba',
-  'America/Asuncion', 'America/La_Paz', 'America/Manaus',
-  'America/Montevideo', 'America/Santiago', 'America/Sao_Paulo',
-  // Canadá
-  'America/Edmonton', 'America/Halifax', 'America/St_Johns',
-  'America/Toronto', 'America/Vancouver', 'America/Winnipeg',
-  // Asia — Oriente Medio
-  'Asia/Aden', 'Asia/Amman', 'Asia/Baghdad', 'Asia/Bahrain', 'Asia/Beirut',
-  'Asia/Damascus', 'Asia/Dubai', 'Asia/Jerusalem', 'Asia/Kuwait',
-  'Asia/Muscat', 'Asia/Qatar', 'Asia/Riyadh', 'Asia/Tehran',
-  // Asia — Centro y Sur
-  'Asia/Baku', 'Asia/Colombo', 'Asia/Dhaka', 'Asia/Kabul', 'Asia/Karachi',
-  'Asia/Kathmandu', 'Asia/Kolkata', 'Asia/Tashkent', 'Asia/Tbilisi', 'Asia/Yerevan',
-  // Asia — Sudeste y Este
-  'Asia/Bangkok', 'Asia/Hong_Kong', 'Asia/Ho_Chi_Minh', 'Asia/Jakarta',
-  'Asia/Kuala_Lumpur', 'Asia/Makassar', 'Asia/Manila', 'Asia/Yangon',
-  'Asia/Seoul', 'Asia/Shanghai', 'Asia/Singapore', 'Asia/Taipei',
-  'Asia/Tokyo', 'Asia/Ulaanbaatar',
-  // Europa
-  'Europe/Amsterdam', 'Europe/Athens', 'Europe/Belgrade', 'Europe/Berlin',
-  'Europe/Brussels', 'Europe/Bucharest', 'Europe/Budapest', 'Europe/Copenhagen',
-  'Europe/Dublin', 'Europe/Helsinki', 'Europe/Istanbul', 'Europe/Kyiv',
-  'Europe/Lisbon', 'Europe/London', 'Europe/Luxembourg', 'Europe/Madrid',
-  'Europe/Minsk', 'Europe/Moscow', 'Europe/Oslo', 'Europe/Paris',
-  'Europe/Prague', 'Europe/Rome', 'Europe/Sofia', 'Europe/Stockholm',
-  'Europe/Tallinn', 'Europe/Vienna', 'Europe/Warsaw', 'Europe/Zurich',
-  // Pacífico y Oceanía
-  'Australia/Adelaide', 'Australia/Brisbane', 'Australia/Darwin',
-  'Australia/Perth', 'Australia/Sydney',
-  'Pacific/Auckland', 'Pacific/Fiji', 'Pacific/Guam',
-  'Pacific/Honolulu', 'Pacific/Port_Moresby', 'Pacific/Tongatapu',
+  // Pacific & Hawaii (UTC-12 to UTC-10)
+  'Pacific/Midway',      // UTC-11 (Samoa)
+  'Pacific/Honolulu',    // UTC-10 (Hawaii)
+
+  // Alaska (UTC-9/UTC-8 DST)
+  'America/Anchorage',   // Alaska
+
+  // US & Canada Pacific (UTC-8/UTC-7 DST)
+  'America/Los_Angeles', // Pacific Time
+
+  // US & Canada Mountain (UTC-7/UTC-6 DST, UTC-7 no DST in Arizona)
+  'America/Denver',      // Mountain Time
+  'America/Phoenix',     // Arizona (no DST)
+
+  // US & Canada Central (UTC-6/UTC-5 DST)
+  'America/Chicago',     // Central Time
+  'America/Mexico_City', // Mexico Central
+
+  // US & Canada Eastern (UTC-5/UTC-4 DST)
+  'America/New_York',    // Eastern Time
+  'America/Toronto',     // Canada Eastern
+
+  // Atlantic (UTC-4/UTC-3 DST)
+  'America/Halifax',     // Atlantic Time
+
+  // Newfoundland (UTC-3:30/UTC-2:30 DST)
+  'America/St_Johns',    // Newfoundland
+
+  // South America - East (UTC-3)
+  'America/Sao_Paulo',   // Brazil East
+  'America/Argentina/Buenos_Aires', // Argentina
+  'America/Montevideo',  // Uruguay
+
+  // South America - North/Central (UTC-4)
+  'America/Santiago',    // Chile
+  'America/La_Paz',      // Bolivia
+
+  // South America - Western (UTC-5)
+  'America/Lima',        // Peru
+  'America/Bogota',      // Colombia
+
+  // Central America & Caribbean (UTC-6)
+  'America/Costa_Rica',  // Costa Rica
+  'America/Guatemala',   // Central America
+
+  // Atlantic (UTC-4 no DST)
+  'America/Caracas',     // Venezuela
+
   // UTC
   'UTC',
+
+  // Western Europe (UTC+0/UTC+1 DST)
+  'Europe/London',       // GMT/BST
+  'Europe/Dublin',       // Ireland
+
+  // Central Europe (UTC+1/UTC+2 DST)
+  'Europe/Paris',        // Central European Time
+  'Europe/Berlin',       // Germany
+  'Europe/Rome',         // Italy
+  'Europe/Madrid',       // Spain
+  'Europe/Amsterdam',    // Netherlands
+
+  // Eastern Europe (UTC+2/UTC+3 DST)
+  'Europe/Athens',       // Eastern European Time
+  'Europe/Helsinki',     // Finland
+  'Europe/Bucharest',    // Romania
+
+  // Moscow (UTC+3 no DST)
+  'Europe/Moscow',       // Russia Moscow
+
+  // Turkey (UTC+3)
+  'Europe/Istanbul',     // Turkey
+
+  // Middle East (UTC+3)
+  'Asia/Riyadh',         // Saudi Arabia
+  'Asia/Baghdad',        // Iraq
+
+  // Iran (UTC+3:30)
+  'Asia/Tehran',         // Iran
+
+  // Middle East (UTC+4)
+  'Asia/Dubai',          // UAE
+
+  // Afghanistan (UTC+4:30)
+  'Asia/Kabul',          // Afghanistan
+
+  // Central Asia (UTC+5)
+  'Asia/Tashkent',       // Uzbekistan
+  'Asia/Karachi',        // Pakistan
+
+  // India (UTC+5:30)
+  'Asia/Kolkata',        // India
+
+  // Nepal (UTC+5:45)
+  'Asia/Kathmandu',      // Nepal
+
+  // Southeast Asia (UTC+6)
+  'Asia/Dhaka',          // Bangladesh
+
+  // Southeast Asia (UTC+6:30)
+  'Asia/Yangon',         // Myanmar
+
+  // Southeast Asia (UTC+7)
+  'Asia/Bangkok',        // Thailand
+  'Asia/Jakarta',        // Indonesia West
+  'Asia/Ho_Chi_Minh',    // Vietnam
+
+  // China & Singapore (UTC+8)
+  'Asia/Shanghai',       // China
+  'Asia/Singapore',      // Singapore
+  'Asia/Hong_Kong',      // Hong Kong
+  'Asia/Taipei',         // Taiwan
+
+  // Korea & Japan (UTC+9)
+  'Asia/Tokyo',          // Japan
+  'Asia/Seoul',          // Korea
+
+  // Australia (UTC+9:30/UTC+10:30 DST)
+  'Australia/Adelaide',  // Adelaide
+
+  // Australia East (UTC+10/UTC+11 DST)
+  'Australia/Sydney',    // Sydney
+  'Australia/Brisbane',    // Brisbane (no DST)
+
+  // Australia West (UTC+8)
+  'Australia/Perth',     // Perth
+
+  // New Zealand (UTC+12/UTC+13 DST)
+  'Pacific/Auckland',    // New Zealand
+
+  // Fiji (UTC+12/UTC+13 DST)
+  'Pacific/Fiji',        // Fiji
+
+  // Tonga (UTC+13)
+  'Pacific/Tongatapu',   // Tonga
 ] as const;
 
 export const TIMEZONES: { value: string; label: string }[] = TIMEZONE_IDS.map((id) => ({

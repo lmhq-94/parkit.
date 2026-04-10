@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Building, Receipt, Mail, Phone, Globe,
-  DollarSign, Clock, MapPin,
+  DollarSign, Clock, World, Navigation,
 } from "@/lib/premiumIcons";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
@@ -14,6 +14,7 @@ import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { useDashboardStore } from "@/lib/store";
 import { COUNTRIES, CURRENCIES, TIMEZONES, INDUSTRIES, getLocalTimezone } from "@/lib/companyOptions";
+import { getIndustryIcon } from "@/lib/companyIcons";
 import { formatTaxId, formatPhoneWithCountryCode, COUNTRY_DIAL_CODES } from "@/lib/inputMasks";
 import { required, email as validateEmail, phone as validatePhone } from "@/lib/validation";
 
@@ -77,6 +78,17 @@ export default function NewCompanyPage() {
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm(p => ({ ...p, [k]: e.target.value }));
+
+  // Sort industries alphabetically by translated label, keeping OTHER at the end
+  const sortedIndustries = useMemo(() => {
+    return [...INDUSTRIES].sort((a, b) => {
+      if (a.value === "OTHER") return 1;
+      if (b.value === "OTHER") return -1;
+      const labelA = t(`companies.industryOptions.${a.value}`);
+      const labelB = t(`companies.industryOptions.${b.value}`);
+      return labelA.localeCompare(labelB);
+    });
+  }, [t]);
 
   const validate = (): boolean => {
     const next: Partial<Record<keyof typeof defaultForm, string>> = {};
@@ -169,10 +181,10 @@ export default function NewCompanyPage() {
             <input value={form.taxId} onChange={(e) => setForm((p) => ({ ...p, taxId: formatTaxId(e.target.value) }))} placeholder={t("common.placeholderTaxId")} className={IL} aria-invalid={!!errors.taxId} />
           </Field>
           <div className="sm:col-span-2 lg:col-span-1">
-            <Field label={t("companies.industry")} required icon={Building} error={errors.industry}>
-              <SelectField value={form.industry} onChange={set("industry")} icon={Building}>
+            <Field label={t("companies.industry")} required icon={form.industry ? getIndustryIcon(form.industry) : Building} error={errors.industry}>
+              <SelectField value={form.industry} onChange={set("industry")} icon={form.industry ? getIndustryIcon(form.industry) : Building}>
                 <option value="">{t("common.selectPlaceholder")}</option>
-                {INDUSTRIES.map((ind) => (
+                {sortedIndustries.map((ind) => (
                   <option key={ind.value} value={ind.value}>
                     {t(`companies.industryOptions.${ind.value}`)}
                   </option>
@@ -204,7 +216,7 @@ export default function NewCompanyPage() {
             <label className={LABEL}>{t("companies.legalAddress")}</label>
             <div className="flex gap-2">
               <div className="relative group flex-1">
-                <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                 <input value={form.legalAddress} readOnly placeholder={t("common.placeholderAddress")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
               </div>
               <button
@@ -212,7 +224,7 @@ export default function NewCompanyPage() {
                 onClick={() => setAddressPickerOpen(true)}
                 className="shrink-0 px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-secondary text-sm font-medium hover:bg-company-primary-subtle hover:border-company-primary-muted hover:text-company-primary transition-colors flex items-center gap-2"
               >
-                <MapPin className="w-4 h-4" />
+                <World className="w-4 h-4" />
                 {t("companies.pickAddressOnMap")}
               </button>
             </div>
@@ -223,7 +235,6 @@ export default function NewCompanyPage() {
     {
       title: t("companies.sectionRegional"),
       description: t("companies.sectionRegionalDesc"),
-      badge: "optional" as const,
       accentColor: "emerald",
       isValid: () => true,
       content: (

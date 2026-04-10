@@ -1,67 +1,97 @@
 import {
-  Car,
-  ShoppingBag,
-  Stethoscope,
-  Hotel,
-  Plane,
+  Activity,
+  Backhoe,
+  Barbell,
   Building,
   Building2,
-  House,
-  GraduationCap,
-  CalendarDays,
-  Landmark,
-  Factory,
-  Truck,
-  Laptop,
-  Utensils,
+  ChalkboardTeacher,
+  BuildingArch,
+  BuildingCottage,
+  BuildingEstate,
+  BuildingFactory2,
+  BuildingHospital,
+  BuildingSkyscraper,
+  CalendarEvent,
+  CarGarage,
   Gamepad2,
-  BookOpen,
+  HomeBolt,
+  HomeDollar,
+  Landmark,
+  Laptop,
+  Movie,
+  ParkingCircle,
+  Pick,
+  Pill,
+  Plane,
+  PokerChip,
+  ShoppingBag,
   Store,
-  University,
+  ToolsKitchen2,
+  TruckDelivery,
   type PremiumIcon,
 } from "@/lib/premiumIcons";
 
 export type IndustryValue =
-  | "PARKING_OPERATOR"
-  | "MALL"
-  | "SUPERMARKET_RETAIL_CHAIN"
+  | "AGRICULTURE"
+  | "AIRPORT"
+  | "AUTOMOTIVE"
+  | "BANKING_FINANCIAL"
+  | "CASINO_GAMING"
+  | "CINEMA_THEATER"
+  | "CONSTRUCTION"
+  | "EDUCATION"
+  | "ENERGY_UTILITIES"
+  | "ENTERTAINMENT_LEISURE"
+  | "EVENT_VENUE"
+  | "GYM_SPORTS"
   | "HOSPITAL_CLINIC"
   | "HOTEL"
-  | "AIRPORT"
-  | "OFFICE_BUILDING"
-  | "RESIDENTIAL"
-  | "UNIVERSITY_SCHOOL"
-  | "EVENT_VENUE"
-  | "MUNICIPALITY"
   | "INDUSTRIAL_MANUFACTURING"
   | "LOGISTICS_WAREHOUSING"
-  | "BANKING_FINANCIAL"
-  | "TECH"
+  | "MALL"
+  | "MINING"
+  | "MUNICIPALITY"
+  | "OFFICE_BUILDING"
+  | "PARKING_OPERATOR"
+  | "PHARMACY"
+  | "REAL_ESTATE"
+  | "RESIDENTIAL"
   | "RESTAURANTS_FOOD"
-  | "ENTERTAINMENT_LEISURE"
-  | "EDUCATION"
+  | "SUPERMARKET_RETAIL_CHAIN"
+  | "TECH"
+  | "UNIVERSITY_SCHOOL"
   | "OTHER";
 
 export const INDUSTRY_ICONS: Record<IndustryValue, PremiumIcon> = {
+  AGRICULTURE: BuildingCottage,
   AIRPORT: Plane,
+  AUTOMOTIVE: CarGarage,
   BANKING_FINANCIAL: Landmark,
-  MALL: ShoppingBag,
-  EVENT_VENUE: CalendarDays,
-  OFFICE_BUILDING: Building,
-  EDUCATION: BookOpen,
+  CASINO_GAMING: PokerChip,
+  CINEMA_THEATER: Movie,
+  CONSTRUCTION: Backhoe,
+  EDUCATION: ChalkboardTeacher,
+  ENERGY_UTILITIES: HomeBolt,
   ENTERTAINMENT_LEISURE: Gamepad2,
-  HOSPITAL_CLINIC: Stethoscope,
-  HOTEL: Hotel,
-  INDUSTRIAL_MANUFACTURING: Factory,
-  LOGISTICS_WAREHOUSING: Truck,
-  MUNICIPALITY: University,
-  PARKING_OPERATOR: Car,
-  RESIDENTIAL: House,
-  RESTAURANTS_FOOD: Utensils,
+  EVENT_VENUE: CalendarEvent,
+  GYM_SPORTS: Barbell,
+  HOSPITAL_CLINIC: BuildingHospital,
+  HOTEL: BuildingSkyscraper,
+  INDUSTRIAL_MANUFACTURING: BuildingFactory2,
+  LOGISTICS_WAREHOUSING: TruckDelivery,
+  MALL: ShoppingBag,
+  MINING: Pick,
+  MUNICIPALITY: BuildingArch,
+  OFFICE_BUILDING: Building,
+  PARKING_OPERATOR: ParkingCircle,
+  PHARMACY: Pill,
+  REAL_ESTATE: BuildingEstate,
+  RESIDENTIAL: HomeDollar,
+  RESTAURANTS_FOOD: ToolsKitchen2,
   SUPERMARKET_RETAIL_CHAIN: Store,
   TECH: Laptop,
-  UNIVERSITY_SCHOOL: GraduationCap,
-  OTHER: Building2,
+  UNIVERSITY_SCHOOL: Building2,
+  OTHER: Activity,
 };
 
 export function getIndustryIcon(

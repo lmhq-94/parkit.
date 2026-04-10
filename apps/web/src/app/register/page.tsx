@@ -16,13 +16,14 @@ import {
   AlertOctagon,
   Check,
   X,
+  GoogleIcon,
+  FacebookIcon,
+  MicrosoftIcon,
 } from "@/lib/premiumIcons";
-import { FcGoogle } from "react-icons/fc";
-import { FaSquareFacebook, FaMicrosoft } from "react-icons/fa6";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageLoader } from "@/components/PageLoader";
 import { ThemeToggleSimple } from "@/components/ThemeToggleSimple";
-import { LocaleToggleSimple } from "@/components/LocaleToggleSimple";
+import { LocaleToggle } from "@/components/LocaleToggle";
 
 const REDIRECT_DELAY_SECONDS = 3;
 
@@ -250,7 +251,7 @@ function RegisterForm() {
       {/* TOP RIGHT: Theme and Locale toggles */}
       <div className="absolute top-4 right-4 z-30 hidden md:flex items-center gap-3">
         <ThemeToggleSimple />
-        <LocaleToggleSimple />
+        <LocaleToggle />
       </div>
 
       {/* MAIN: Centered Form with Logo */}
@@ -330,7 +331,7 @@ function RegisterForm() {
               {password && (
                 <div className="mt-3 space-y-2">
                   <div className="flex items-center gap-2">
-                    <PasswordRequirement label={t("auth.passwordReqMinLength")} met={req.hasMinLength} />
+                    <PasswordRequirement label={t("auth.passwordReqMinLength")} met={req.minLength} />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <PasswordRequirement label={t("auth.passwordReqUppercase")} met={req.hasUppercase} />
@@ -384,7 +385,7 @@ function RegisterForm() {
               <div className="w-full border-t border-slate-200 dark:border-slate-700" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white/90 dark:bg-slate-900/70 px-2 text-slate-500 dark:text-slate-400">{t("auth.orContinueWith")}</span>
+              <span className="bg-[#F2F3FE] dark:bg-[#161C3F] px-2 text-slate-500 dark:text-slate-400">{t("auth.orContinueWith")}</span>
             </div>
           </div>
 
@@ -396,7 +397,7 @@ function RegisterForm() {
               className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               title={t("auth.continueWithGoogle")}
             >
-              <FcGoogle className="h-6 w-6" />
+              <GoogleIcon className="h-6 w-6 text-red-500" />
             </button>
             <button
               type="button"
@@ -404,7 +405,7 @@ function RegisterForm() {
               className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               title={t("auth.continueWithMicrosoft")}
             >
-              <FaMicrosoft className="h-6 w-6 text-blue-600" />
+              <MicrosoftIcon className="h-6 w-6 text-blue-600" />
             </button>
             <button
               type="button"
@@ -412,7 +413,7 @@ function RegisterForm() {
               className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               title={t("auth.continueWithFacebook")}
             >
-              <FaSquareFacebook className="h-6 w-6 text-[#1877F2]" />
+              <FacebookIcon className="h-6 w-6 text-blue-600" />
             </button>
           </div>
 

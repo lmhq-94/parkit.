@@ -178,7 +178,6 @@ export function ImageCropField({
               cancelLabel={t("settings.cropCancel")}
               hintText={t("settings.cropHint")}
               aspectLabel={isLogo ? "1:1" : "5:1"}
-              circular={isLogo}
             />
           </div>
         </div>

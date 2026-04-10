@@ -6,15 +6,14 @@ import { useTheme } from "next-themes";
 import {
   ArrowRight,
   User,
+  UserCircle,
   Mail,
   Phone,
   Clock,
   Shield,
   Sun,
   Moon,
-  Globe,
   Camera,
-  Settings2,
   SlidersHorizontal,
   RotateCcw,
 } from "@/lib/premiumIcons";
@@ -382,7 +381,7 @@ export default function ProfilePage() {
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-company-primary/10">
-                  <Settings2 className="w-5 h-5 text-company-primary" />
+                  <User className="w-5 h-5 text-company-primary" />
                 </div>
                 <div className="flex-1">
                   <h2 className="text-base premium-section-title flex items-center gap-2">
@@ -400,7 +399,7 @@ export default function ProfilePage() {
                       <span className="text-red-500">*</span>
                     </label>
                     <div className="relative group">
-                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                      <UserCircle className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                       <input
                         value={form.firstName}
                         onChange={setAndClearError("firstName")}
@@ -423,7 +422,7 @@ export default function ProfilePage() {
                       <span className="text-red-500">*</span>
                     </label>
                     <div className="relative group">
-                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                      <UserCircle className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                       <input
                         value={form.lastName}
                         onChange={setAndClearError("lastName")}
@@ -512,9 +511,8 @@ export default function ProfilePage() {
                   <Camera className="w-5 h-5 text-company-primary" />
                 </div>
                 <div>
-                  <h2 className="text-base premium-section-title flex items-center gap-2">
+                  <h2 className="text-base premium-section-title">
                     {t("profile.sectionAvatar")}
-                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-text-muted/10 text-text-muted">{t("common.optionalBadge")}</span>
                   </h2>
                   <p className="text-sm premium-subtitle">{t("profile.sectionAvatarDesc")}</p>
                 </div>
@@ -622,7 +620,7 @@ export default function ProfilePage() {
                       onChange={(e) =>
                         handleLocaleChange(e.target.value as LocaleValue)
                       }
-                      icon={Globe}
+                      icon={World}
                     >
                       {LOCALE_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>

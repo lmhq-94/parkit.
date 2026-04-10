@@ -12,7 +12,7 @@ import { Lock, Eye, EyeOff, ArrowRight, CheckCircle, Check, Circle } from "@/lib
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageLoader } from "@/components/PageLoader";
 import { ThemeToggleSimple } from "@/components/ThemeToggleSimple";
-import { LocaleToggleSimple } from "@/components/LocaleToggleSimple";
+import { LocaleToggle } from "@/components/LocaleToggle";
 
 const REDIRECT_DELAY_SECONDS = 3;
 
@@ -101,7 +101,7 @@ function AcceptInviteForm() {
   const TopRightToggles = () => (
     <div className="absolute top-4 right-4 z-30 hidden md:flex items-center gap-3">
       <ThemeToggleSimple />
-      <LocaleToggleSimple />
+      <LocaleToggle />
     </div>
   );
 
