@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { UserCircle, MailOpen, CreditCard, Briefcase, ClipboardText, Car } from "@/lib/premiumIcons";
+import { UserCircle, MailOpen, CreditCard, ClipboardText, Car } from "@/lib/premiumIcons";
 import { FormWizard } from "@/components/FormWizard";
 import { MultiSelectField } from "@/components/MultiSelectField";
 import { SelectField } from "@/components/SelectField";
