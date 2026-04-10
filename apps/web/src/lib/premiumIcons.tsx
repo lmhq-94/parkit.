@@ -89,6 +89,7 @@ import {
   IconQrcode,
   IconReceipt,
   IconRefresh,
+  IconRuler,
   IconScale,
   IconSchool,
   IconSearch,
@@ -273,6 +274,7 @@ export const Users = wrap(IconUsers);
 export const Gauge = wrap(IconGauge);
 
 // Legal
+export const Ruler = wrap(IconRuler);
 export const Scale = wrap(IconScale);
 export const Weight = wrap(IconScale);
 export const Gavel = wrap(IconGavel);

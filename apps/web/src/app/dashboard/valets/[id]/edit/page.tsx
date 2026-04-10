@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { UserCircle, MailOpen, CreditCard, Activity, ArrowRight, Briefcase, ClipboardText, Car } from "@/lib/premiumIcons";
+import { UserCircle, MailOpen, CreditCard, Activity, ArrowRight, ClipboardText, Car } from "@/lib/premiumIcons";
 import { MultiSelectField } from "@/components/MultiSelectField";
 import { DatePickerField } from "@/components/DatePickerField";
 import { SelectField } from "@/components/SelectField";
