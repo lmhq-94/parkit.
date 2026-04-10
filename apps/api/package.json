@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/server.ts",
     "build": "tsc",
-    "start": "node -r tsconfig-paths/register dist/server.js",
+    "start": "TS_NODE_PROJECT=tsconfig.prod.json node -r tsconfig-paths/register dist/server.js",
     "prisma": "prisma",
     "env:dev": "node scripts/use-env.js dev",
     "env:prod": "node scripts/use-env.js prod",
