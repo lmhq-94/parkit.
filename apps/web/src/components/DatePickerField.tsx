@@ -25,9 +25,9 @@ function parseDate(v: string): Date | null {
   if (!v) return null;
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v.trim());
   if (match) {
-    const y = parseInt(match[1], 10);
-    const m = parseInt(match[2], 10) - 1;
-    const d = parseInt(match[3], 10);
+    const y = parseInt(match[1]!, 10);
+    const m = parseInt(match[2]!, 10) - 1;
+    const d = parseInt(match[3]!, 10);
     const date = new Date(y, m, d);
     return isNaN(date.getTime()) ? null : date;
   }
@@ -218,9 +218,9 @@ export function DatePickerField({
           <button
             type="button"
             onClick={prevMonth}
-            className="w-8 h-8 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors touch-manipulation"
+            className="group w-8 h-8 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors touch-manipulation"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-0.5" />
           </button>
           <span className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 tracking-wide truncate">
             {monthNames[view.month]} {view.year}
@@ -228,9 +228,9 @@ export function DatePickerField({
           <button
             type="button"
             onClick={nextMonth}
-            className="w-8 h-8 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors touch-manipulation"
+            className="group w-8 h-8 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors touch-manipulation"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
           </button>
         </div>
 

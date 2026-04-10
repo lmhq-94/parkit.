@@ -93,6 +93,7 @@ export type CompanyBranding = {
   secondaryColorDark?: string | null;
   tertiaryColor?: string | null;
   tertiaryColorDark?: string | null;
+  businessActivity?: string | null;
 } | null;
 
 // UI/Dashboard state (sidebarCollapsed starts true to avoid SSR mismatch; hydrated from localStorage in sidebar)

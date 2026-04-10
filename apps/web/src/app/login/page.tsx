@@ -136,6 +136,7 @@ export default function LoginPage() {
                 secondaryColorDark: bc.secondaryColorDark ?? null,
                 tertiaryColor: bc.tertiaryColor ?? null,
                 tertiaryColorDark: bc.tertiaryColorDark ?? null,
+                businessActivity: bc.businessActivity ?? null,
               }
               : null;
             setCompanyBranding(branding);
@@ -155,6 +156,7 @@ export default function LoginPage() {
                 secondaryColorDark: bc.secondaryColorDark ?? null,
                 tertiaryColor: bc.tertiaryColor ?? null,
                 tertiaryColorDark: bc.tertiaryColorDark ?? null,
+                businessActivity: bc.businessActivity ?? null,
               }
               : null;
             setCompanyBranding(branding);

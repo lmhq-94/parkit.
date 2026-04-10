@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Crop } from "lucide-react";
 import { ImageCropEditor } from "@/components/ImageCropEditor";
 
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
@@ -47,9 +47,9 @@ function resizeImageToFit(dataUrl: string, maxDimension: number): Promise<string
   });
 }
 
-const LOGO_CROP_SIZE = 176;
-const BANNER_CROP_W = 400;
-const BANNER_CROP_H = 80;
+const LOGO_CROP_SIZE = 220;
+const BANNER_CROP_W = 500;
+const BANNER_CROP_H = 100;
 
 export function ImageCropField({
   kind,
@@ -123,59 +123,79 @@ export function ImageCropField({
   const cardMinHeight = 92 + contentMinHeight;
 
   const isRow = layout === "row";
-  const rowWrapper = "flex flex-col gap-3 border-b border-card-border pb-6 last:border-0 last:pb-0 min-w-0";
+  const rowWrapper = "flex flex-col gap-3 min-w-0";
 
-  const wrapContent = (content: React.ReactNode) =>
-    isRow ? (
-      <div className={rowWrapper}>
-        <div>{headerClassName ? <div className={headerClassName}>{header}</div> : header}</div>
-        <div className="min-w-0 w-full flex justify-start">{content}</div>
-      </div>
-    ) : (
-      <div className="rounded-xl border border-card-border bg-card/80 p-5 space-y-4 min-w-0">
-        {headerClassName ? <div className={headerClassName}>{header}</div> : header}
-        {content}
-      </div>
-    );
-
+  // Modal de crop - estilo premium estándar del sistema
   if (pendingCrop) {
-    return wrapContent(
-      <ImageCropEditor
-        sourceDataUrl={pendingCrop}
-        aspectRatio={aspectRatio}
-        cropBoxWidth={cropBoxWidth}
-        cropBoxHeight={cropBoxHeight}
-        outputWidth={outputWidth}
-        outputHeight={outputHeight}
-        onApply={(url) => {
-          onChange(url);
-          setPendingCrop(null);
-        }}
-        onCancel={() => setPendingCrop(null)}
-        applyLabel={t("settings.cropApply")}
-        cancelLabel={t("settings.cropCancel")}
-        hintText={t("settings.cropHint")}
-        aspectLabel={isLogo ? "1:1" : "5:1"}
-        circular={isLogo}
-      />
+    return (
+      <div
+        className="fixed inset-0 z-[99999] flex items-center justify-center p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="crop-modal-title"
+      >
+        <button
+          type="button"
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+          aria-label={t("common.close")}
+          onClick={() => setPendingCrop(null)}
+        />
+        <div
+          className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl border border-card-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-card-border shrink-0">
+            <h2 id="crop-modal-title" className="text-sm font-semibold text-text-primary flex items-center gap-2">
+              <Crop className="w-4 h-4 text-company-primary" />
+              {isLogo ? t("settings.cropLogoTitle") : t("settings.cropBannerTitle")}
+            </h2>
+            <button
+              type="button"
+              onClick={() => setPendingCrop(null)}
+              className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-input-bg transition-colors"
+              aria-label={t("common.close")}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 overflow-y-auto">
+            <ImageCropEditor
+              sourceDataUrl={pendingCrop}
+              aspectRatio={aspectRatio}
+              cropBoxWidth={cropBoxWidth}
+              cropBoxHeight={cropBoxHeight}
+              outputWidth={outputWidth}
+              outputHeight={outputHeight}
+              onApply={(url) => {
+                onChange(url);
+                setPendingCrop(null);
+              }}
+              onCancel={() => setPendingCrop(null)}
+              applyLabel={t("settings.cropApply")}
+              cancelLabel={t("settings.cropCancel")}
+              hintText={t("settings.cropHint")}
+              aspectLabel={isLogo ? "1:1" : "5:1"}
+              circular={isLogo}
+            />
+          </div>
+        </div>
+      </div>
     );
   }
 
-  if (value) {
-    const previewContent = (
-      <div className="flex flex-col gap-4 flex-1 min-h-0" style={layout === "card" ? { minHeight: contentMinHeight } : undefined}>
-        <div className={`overflow-hidden rounded-xl bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 w-full flex items-center justify-center ${isLogo ? "rounded-full max-w-[176px] aspect-square" : "rounded-xl aspect-[5/1] max-w-[400px] min-w-[240px]"}`}>
+  // Contenido cuando hay imagen
+  const previewContent = value ? (
+    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start lg:items-center">
+      {/* Main Upload Area */}
+      <div className="flex flex-col gap-4 flex-1 min-w-0 w-full lg:w-auto order-1">
+        <div className={`overflow-hidden bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 w-full flex items-center justify-center ${isLogo ? "rounded-full max-w-[220px] aspect-square" : "rounded-xl max-w-[500px]"}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={value} alt="" className={`w-full h-full object-cover object-center ${isLogo ? "rounded-full" : ""}`} />
+          <img src={value} alt="" className={`w-full h-full object-cover object-center ${isLogo ? "rounded-full" : "rounded-xl"}`} style={!isLogo ? { aspectRatio: "5/1" } : undefined} />
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className={`overflow-hidden rounded-lg bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 flex items-center justify-center ${isLogo ? "rounded-full" : ""}`} style={{ width: isLogo ? 44 : 80, height: isLogo ? 44 : 20 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={value} alt="" className="w-full h-full object-cover object-center" />
-            </div>
-          ))}
-        </div>
+        {/* Actions */}
         <div className="flex items-center gap-3 shrink-0 pt-0.5">
           <button type="button" onClick={() => setPendingCrop(value)} className="text-sm font-medium text-company-primary hover:text-company-primary/90 transition-colors whitespace-nowrap">
             {t("settings.changeImage")}
@@ -186,29 +206,24 @@ export function ImageCropField({
           </button>
         </div>
       </div>
-    );
-    if (isRow) {
-      return (
-        <div className={rowWrapper}>
-          <div>{headerClassName ? <div className={headerClassName}>{header}</div> : header}</div>
-          <div className="min-w-0 w-full flex justify-start">{previewContent}</div>
+      {/* System Preview */}
+      <div className="shrink-0 order-2">
+        <div className="flex flex-col items-center justify-center gap-2">
+          <p className="text-xs text-text-muted uppercase tracking-wider font-medium">vista previa en el sistema</p>
+          <div className={`overflow-hidden bg-input-bg ring-1 ring-black/5 dark:ring-white/5 flex items-center justify-center ${isLogo ? "rounded-full w-16 h-16" : "rounded-xl w-full max-w-[280px] h-16"}`}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={value} alt="" className={`w-full h-full object-cover object-center ${isLogo ? "rounded-full" : "rounded-xl"}`} />
+          </div>
         </div>
-      );
-    }
-    return (
-      <div className="rounded-xl border border-card-border bg-card/80 p-5 min-w-0 flex flex-col" style={{ minHeight: cardMinHeight }}>
-        {headerClassName ? <div className={headerClassName}>{header}</div> : header}
-        {previewContent}
       </div>
-    );
-  }
+    </div>
+  ) : null;
 
-  const dropZonePadding = isLogo ? "py-6 px-5" : "py-4 px-4";
-  const dropZoneBase = `relative transition-all duration-200 flex flex-col items-center justify-center gap-3 shrink-0 cursor-pointer ${dropZonePadding} `;
+  const dropZoneBase = "relative transition-all duration-200 flex flex-col items-center justify-center gap-4 shrink-0 cursor-pointer py-12 px-8 min-h-[240px] ";
   const dropZoneState = dragOver
-    ? "border-2 border-dashed border-company-primary bg-company-primary-subtle/50 ring-2 ring-company-primary/20 "
+    ? "border-2 border-dashed border-company-primary bg-company-primary-subtle/50 "
     : "border-2 border-dashed border-input-border bg-input-bg/60 hover:border-company-primary-muted hover:bg-company-primary-subtle/30 ";
-  const dropZoneShape = isLogo ? "rounded-full w-full max-w-[176px] aspect-square min-w-[120px]" : "rounded-xl w-full max-w-[400px] min-w-[240px] aspect-[5/1]";
+  const dropZoneShape = "rounded-2xl w-full h-full";
   const dropZoneClass = dropZoneBase + dropZoneState + dropZoneShape;
 
   const emptyContent = (
@@ -225,8 +240,8 @@ export function ImageCropField({
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); inputRef.current?.click(); } }}
       >
         <Upload className="w-8 h-8 text-company-tertiary shrink-0" />
-        <span className={`font-medium text-text-secondary text-center leading-snug px-1 max-w-[90%] ${isLogo ? "text-sm" : "text-xs"}`}>
-          {t(isLogo ? "settings.dragOrClick" : "settings.dragOrClickShort")}
+        <span className="font-medium text-text-secondary text-center leading-snug px-1 max-w-[90%] text-sm">
+          {t("settings.dragOrClickShort")}
         </span>
       </div>
     </>
@@ -236,7 +251,9 @@ export function ImageCropField({
     return (
       <div className={rowWrapper}>
         <div>{headerClassName ? <div className={headerClassName}>{header}</div> : header}</div>
-        <div className="min-w-0 w-full flex justify-start">{emptyContent}</div>
+        <div className="min-w-0 w-full">
+          {value ? previewContent : emptyContent}
+        </div>
       </div>
     );
   }

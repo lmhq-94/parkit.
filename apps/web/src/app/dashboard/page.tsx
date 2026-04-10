@@ -267,47 +267,55 @@ export default function DashboardPage() {
     },
   ];
 
-  const colorClasses: Record<string, { bg: string; text: string; gradient: string }> = {
+  const colorClasses: Record<string, { bg: string; text: string; glow: string; ring: string }> = {
     sky: {
-      bg: "bg-company-primary-subtle",
+      bg: "bg-gradient-to-br from-company-primary/15 to-company-primary/5",
       text: "text-company-primary",
-      gradient: "from-company-primary-20 to-transparent",
+      glow: "shadow-company-primary/20",
+      ring: "ring-company-primary/20",
     },
     emerald: {
-      bg: "bg-emerald-500/10 dark:bg-emerald-400/10",
+      bg: "bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 dark:from-emerald-400/15 dark:to-emerald-400/5",
       text: "text-emerald-600 dark:text-emerald-400",
-      gradient: "from-emerald-500/20 to-transparent",
+      glow: "shadow-emerald-500/20 dark:shadow-emerald-400/20",
+      ring: "ring-emerald-500/20 dark:ring-emerald-400/20",
     },
     violet: {
-      bg: "bg-violet-500/10 dark:bg-violet-400/10",
+      bg: "bg-gradient-to-br from-violet-500/15 to-violet-500/5 dark:from-violet-400/15 dark:to-violet-400/5",
       text: "text-violet-600 dark:text-violet-400",
-      gradient: "from-violet-500/20 to-transparent",
+      glow: "shadow-violet-500/20 dark:shadow-violet-400/20",
+      ring: "ring-violet-500/20 dark:ring-violet-400/20",
     },
     amber: {
-      bg: "bg-amber-500/10 dark:bg-amber-400/10",
+      bg: "bg-gradient-to-br from-amber-500/15 to-amber-500/5 dark:from-amber-400/15 dark:to-amber-400/5",
       text: "text-amber-600 dark:text-amber-400",
-      gradient: "from-amber-500/20 to-transparent",
+      glow: "shadow-amber-500/20 dark:shadow-amber-400/20",
+      ring: "ring-amber-500/20 dark:ring-amber-400/20",
     },
     rose: {
-      bg: "bg-rose-500/10 dark:bg-rose-400/10",
+      bg: "bg-gradient-to-br from-rose-500/15 to-rose-500/5 dark:from-rose-400/15 dark:to-rose-400/5",
       text: "text-rose-600 dark:text-rose-400",
-      gradient: "from-rose-500/20 to-transparent",
+      glow: "shadow-rose-500/20 dark:shadow-rose-400/20",
+      ring: "ring-rose-500/20 dark:ring-rose-400/20",
     },
     cyan: {
-      bg: "bg-cyan-500/10 dark:bg-cyan-400/10",
+      bg: "bg-gradient-to-br from-cyan-500/15 to-cyan-500/5 dark:from-cyan-400/15 dark:to-cyan-400/5",
       text: "text-cyan-600 dark:text-cyan-400",
-      gradient: "from-cyan-500/20 to-transparent",
+      glow: "shadow-cyan-500/20 dark:shadow-cyan-400/20",
+      ring: "ring-cyan-500/20 dark:ring-cyan-400/20",
     },
     teal: {
-      bg: "bg-teal-500/10 dark:bg-teal-400/10",
+      bg: "bg-gradient-to-br from-teal-500/15 to-teal-500/5 dark:from-teal-400/15 dark:to-teal-400/5",
       text: "text-teal-600 dark:text-teal-400",
-      gradient: "from-teal-500/20 to-transparent",
+      glow: "shadow-teal-500/20 dark:shadow-teal-400/20",
+      ring: "ring-teal-500/20 dark:ring-teal-400/20",
     },
   };
-  const defaultCardStyle: { bg: string; text: string; gradient: string } = {
-    bg: "bg-company-primary-subtle",
+  const defaultCardStyle = {
+    bg: "bg-gradient-to-br from-sky-500/15 to-sky-500/5 dark:from-sky-400/15 dark:to-sky-400/5",
     text: "text-sky-600 dark:text-sky-400",
-    gradient: "from-sky-500/20 to-transparent",
+    glow: "shadow-sky-500/20 dark:shadow-sky-400/20",
+    ring: "ring-sky-500/20 dark:ring-sky-400/20",
   };
 
   const chartData = stats.ticketsLast7Days.map((d) => ({
@@ -330,64 +338,83 @@ export default function DashboardPage() {
 
   return (
     <div className="pt-4 md:pt-6 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 w-full flex-1 flex flex-col gap-6 md:gap-8">
-            {/* Banner: gradient based on theme color, dark background for strong text legibility */}
+            {/* Premium Banner with glassmorphism and refined gradients */}
             <header
-              className="relative overflow-hidden rounded-2xl border border-white/15 p-6 md:p-8"
+              className="relative overflow-hidden rounded-3xl border border-white/20 p-6 md:p-8 shadow-2xl shadow-black/10"
               style={{
-                background: `linear-gradient(to bottom right, color-mix(in srgb, var(--company-primary, #2563eb) 55%, black), color-mix(in srgb, var(--company-primary, #2563eb) 30%, black), color-mix(in srgb, var(--company-primary, #2563eb) 12%, black))`,
+                background: `
+                  linear-gradient(135deg, 
+                    color-mix(in srgb, var(--company-primary, #2563eb) 60%, black) 0%,
+                    color-mix(in srgb, var(--company-primary, #2563eb) 35%, black) 50%,
+                    color-mix(in srgb, var(--company-primary, #2563eb) 18%, black) 100%
+                  )
+                `,
               }}
             >
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(255,255,255,0.08),transparent)]" />
-              <div className="relative space-y-5">
+              {/* Premium ambient glow effects */}
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+              <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-white/5 rounded-full blur-3xl" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_-30%,rgba(255,255,255,0.12),transparent)]" />
+              <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,rgba(0,0,0,0.1)_100%)]" />
+
+              <div className="relative space-y-6">
                 <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-xl bg-white/15 p-2.5 shrink-0 text-white">
+                  <div className="flex items-center gap-4">
+                    <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-3 shrink-0 text-white shadow-lg">
                       <TrendingUp className="w-7 h-7" />
                     </div>
                     <div>
-                      <p className="text-lg font-semibold text-white tracking-tight">
+                      <p className="text-xl font-semibold text-white tracking-tight">
                         {t("dashboard.activityOverviewTitle")}
                       </p>
-                      <p className="text-sm mt-0.5 text-white/90">
+                      <p className="text-sm mt-1 text-white/80 font-medium">
                         {stats.ticketsLast7Days.reduce((a, b) => a + b.count, 0)} {t("dashboard.ticketsThisWeek")}
                       </p>
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-3 border-t border-white/15">
-                  <div className="flex items-center gap-2">
-                    <CalendarCheck className="w-4 h-4 shrink-0 text-white/90" />
-                    <span className="text-sm text-white/90">
-                      {t("dashboard.avgPerDay")}:{" "}
-                      <strong className="text-white font-semibold tabular-nums">
+                <div className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-4 border-t border-white/15">
+                  <div className="flex items-center gap-2.5">
+                    <div className="rounded-lg bg-white/10 p-1.5">
+                      <CalendarCheck className="w-4 h-4 shrink-0 text-white/90" />
+                    </div>
+                    <span className="text-sm text-white/80">
+                      {t("dashboard.avgPerDay")}
+                      <strong className="text-white font-semibold tabular-nums ml-1.5">
                         {avgPerDay.toFixed(avgPerDay >= 10 ? 0 : 1)}
                       </strong>
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 shrink-0 text-white/90" />
-                    <span className="text-sm text-white/90">
-                      {t("dashboard.peakDay")}:{" "}
-                      <strong className="text-white font-semibold tabular-nums">
+                  <div className="flex items-center gap-2.5">
+                    <div className="rounded-lg bg-white/10 p-1.5">
+                      <TrendingUp className="w-4 h-4 shrink-0 text-white/90" />
+                    </div>
+                    <span className="text-sm text-white/80">
+                      {t("dashboard.peakDay")}
+                      <strong className="text-white font-semibold tabular-nums ml-1.5">
                         {peakDay.count.toLocaleString()}
-                      </strong>{" "}
-                      <span className="text-white/80">({peakDayLabel})</span>
+                      </strong>
+                      <span className="text-white/60 ml-1">({peakDayLabel})</span>
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Ticket className="w-4 h-4 shrink-0 text-white/90" />
-                    <span className="text-sm text-white/90">
-                      {t("dashboard.today")}:{" "}
-                      <strong className="text-white font-semibold tabular-nums">
+                  <div className="flex items-center gap-2.5">
+                    <div className="rounded-lg bg-white/10 p-1.5">
+                      <Ticket className="w-4 h-4 shrink-0 text-white/90" />
+                    </div>
+                    <span className="text-sm text-white/80">
+                      {t("dashboard.today")}
+                      <strong className="text-white font-semibold tabular-nums ml-1.5">
                         {todayCount.toLocaleString()}
                       </strong>
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 shrink-0 text-white/90" />
-                    <span className="text-sm text-white/90">
-                      {t("dashboard.lastActivity")}:{" "}
-                      <strong className="text-white font-semibold">
+                  <div className="flex items-center gap-2.5">
+                    <div className="rounded-lg bg-white/10 p-1.5">
+                      <Users className="w-4 h-4 shrink-0 text-white/90" />
+                    </div>
+                    <span className="text-sm text-white/80">
+                      {t("dashboard.lastActivity")}
+                      <strong className="text-white font-semibold ml-1.5">
                         {lastActivity}
                       </strong>
                     </span>
@@ -396,7 +423,7 @@ export default function DashboardPage() {
               </div>
             </header>
 
-            {/* Stat cards: ocupan todo el row tanto con bookings como sin ellos */}
+            {/* Premium Stat Cards with refined shadows and gradients */}
             <section className="w-full">
               <div className="flex flex-wrap gap-4">
                 {statCards.map((card) => {
@@ -404,19 +431,22 @@ export default function DashboardPage() {
                   return (
                     <div
                       key={card.key}
-                      className="group relative flex-1 min-w-[160px] rounded-2xl border border-card-border bg-card p-5 backdrop-blur-sm transition-all duration-200 hover:border-company-primary-muted hover:shadow-lg"
+                      className={`group relative flex-1 min-w-[160px] rounded-2xl border border-card-border bg-gradient-to-br from-card to-card/95 p-5 backdrop-blur-sm transition-all duration-300 ease-out hover:border-company-primary/30 hover:shadow-lg hover:shadow-black/5 hover:-translate-y-0.5`}
                     >
+                      {/* Subtle glow effect on hover */}
+                      <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br ${c.bg} blur-xl -z-10`} />
+
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="text-text-secondary text-sm font-medium truncate">
+                          <p className="text-text-secondary/90 text-sm font-medium truncate tracking-wide">
                             {card.title}
                           </p>
-                          <p className="text-2xl font-bold text-text-primary mt-1 tabular-nums">
+                          <p className="text-2xl font-bold text-text-primary mt-2 tabular-nums tracking-tight">
                             {card.value.toLocaleString()}
                           </p>
                         </div>
                         <div
-                          className={`rounded-xl p-2.5 shrink-0 ${c.bg} ${c.text} transition-transform group-hover:scale-110`}
+                          className={`rounded-xl p-2.5 shrink-0 ${c.bg} ${c.text} transition-all duration-300 ease-out group-hover:scale-110 group-hover:shadow-md ${c.glow}`}
                         >
                           {card.icon}
                         </div>
@@ -427,9 +457,9 @@ export default function DashboardPage() {
               </div>
             </section>
 
-            {/* Chart + Recent tickets */}
+            {/* Chart + Recent tickets with premium styling */}
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
-              <div className="lg:col-span-2 rounded-2xl border border-card-border bg-card p-6 backdrop-blur-sm overflow-hidden flex flex-col min-h-[320px]">
+              <div className="lg:col-span-2 rounded-2xl border border-card-border bg-gradient-to-br from-card to-card/95 p-6 backdrop-blur-sm overflow-hidden flex flex-col min-h-[320px] shadow-sm hover:shadow-md transition-shadow duration-300">
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                   <h2 className="text-lg font-semibold text-text-primary">
                     {t("dashboard.chartTicketsTitle")}
@@ -524,8 +554,8 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-card-border bg-card backdrop-blur-sm overflow-hidden flex flex-col min-h-0">
-                <div className="p-4 border-b border-card-border flex items-center justify-between">
+              <div className="rounded-2xl border border-card-border bg-gradient-to-br from-card to-card/95 backdrop-blur-sm overflow-hidden flex flex-col min-h-0 shadow-sm hover:shadow-md transition-shadow duration-300">
+                <div className="p-4 border-b border-card-border/80 flex items-center justify-between bg-gradient-to-r from-transparent via-card to-transparent">
                   <h2 className="text-lg font-semibold text-text-primary">
                     {t("dashboard.recentTickets")}
                   </h2>

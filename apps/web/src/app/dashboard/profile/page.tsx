@@ -9,10 +9,14 @@ import {
   Mail,
   Phone,
   Clock,
-  UserPlus,
+  Shield,
   Sun,
   Moon,
   Globe,
+  Camera,
+  Settings2,
+  SlidersHorizontal,
+  RotateCcw,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
@@ -55,6 +59,8 @@ const defaultForm = {
   phone: "",
   timezone: "",
   avatarUrl: "",
+  theme: "light" as ThemeValue,
+  locale: "es" as LocaleValue,
 };
 
 export default function ProfilePage() {
@@ -63,8 +69,7 @@ export default function ProfilePage() {
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
   const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
-  const { theme, setTheme } = useTheme();
-  const locale = useLocaleStore((s) => s.locale);
+  const { setTheme } = useTheme();
   const setLocale = useLocaleStore((s) => s.setLocale);
   const [form, setForm] = useState(defaultForm);
   const [initialForm, setInitialForm] = useState(defaultForm);
@@ -73,13 +78,56 @@ export default function ProfilePage() {
   >({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [reverting, setReverting] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [prefsMounted, setPrefsMounted] = useState(false);
   const hasLocalEditsRef = useRef(false);
   const [phoneCountry, setPhoneCountry] = useState<string>("CR");
-  useEffect(() => {
-    setPrefsMounted(true);
-  }, []);
+  const [activeTab, setActiveTab] = useState<"info" | "avatar" | "preferences" | "superAdmin">("info");
+  
+  // Super admin invitation state (like invite modal)
+  const [superAdminEmails, setSuperAdminEmails] = useState<string[]>([]);
+  const [superAdminEmailInput, setSuperAdminEmailInput] = useState("");
+  const [sendingSuperAdminInvites, setSendingSuperAdminInvites] = useState(false);
+  
+  const addSuperAdminEmail = () => {
+    const trimmed = superAdminEmailInput.trim().toLowerCase();
+    if (trimmed && trimmed.includes("@") && !superAdminEmails.includes(trimmed)) {
+      setSuperAdminEmails((prev) => [...prev, trimmed]);
+      setSuperAdminEmailInput("");
+    }
+  };
+  
+  const removeSuperAdminEmail = (email: string) => {
+    setSuperAdminEmails((prev) => prev.filter((e) => e !== email));
+  };
+  
+  const handleSendSuperAdminInvites = async () => {
+    if (superAdminEmails.length === 0) {
+      showError(t("users.noEmails"));
+      return;
+    }
+    
+    setSendingSuperAdminInvites(true);
+    try {
+      // TODO: Replace with proper invitation endpoint when backend supports it
+      // For now, create super admins directly one by one
+      for (const email of superAdminEmails) {
+        await apiClient.post("/users/super-admin", {
+          email: email.trim(),
+          firstName: "",
+          lastName: "",
+        });
+      }
+      showSuccess(t("users.invitationsSentCount", { count: superAdminEmails.length }));
+      setSuperAdminEmails([]);
+      setSuperAdminEmailInput("");
+    } catch (err) {
+      const msg = getTranslatedApiErrorMessage(err, t);
+      showError(msg);
+    } finally {
+      setSendingSuperAdminInvites(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -106,6 +154,7 @@ export default function ProfilePage() {
         if (!cancelled) setPhoneCountry(countryCode);
         if (!cancelled && data) {
           if (hasLocalEditsRef.current) return;
+          const userPrefs = (data.appPreferences as Record<string, string> | undefined) ?? {};
           const loaded = {
             firstName: String(data.firstName ?? ""),
             lastName: String(data.lastName ?? ""),
@@ -113,9 +162,14 @@ export default function ProfilePage() {
             phone: formatPhoneWithCountryCode(String(data.phone ?? ""), countryCode),
             timezone: String(data.timezone ?? ""),
             avatarUrl: String(data.avatarUrl ?? ""),
+            theme: (userPrefs.theme === "dark" ? "dark" : "light") as ThemeValue,
+            locale: (userPrefs.locale === "en" ? "en" : "es") as LocaleValue,
           };
           setForm(loaded);
           setInitialForm(loaded);
+          // Apply loaded preferences immediately
+          setTheme(loaded.theme);
+          setLocale(loaded.locale);
         }
       } catch {
         if (!cancelled) {
@@ -129,7 +183,7 @@ export default function ProfilePage() {
     return () => {
       cancelled = true;
     };
-  }, [selectedCompanyId, showError, t, user]);
+  }, [selectedCompanyId, showError, t, user, setTheme, setLocale]);
 
   const set =
     (k: keyof typeof defaultForm) =>
@@ -181,8 +235,15 @@ export default function ProfilePage() {
               : undefined,
           timezone: form.timezone.trim() || undefined,
           avatarUrl: form.avatarUrl?.trim() || null,
+          appPreferences: {
+            theme: form.theme,
+            locale: form.locale,
+          },
         },
       );
+      // Apply theme and locale immediately after save
+      setTheme(form.theme);
+      setLocale(form.locale);
       if (response && user) {
         setUser({
           ...user,
@@ -198,6 +259,7 @@ export default function ProfilePage() {
             response.avatarUrl != null ? String(response.avatarUrl) : undefined,
         });
       }
+      const userPrefs = (response?.appPreferences as Record<string, string> | undefined) ?? {};
       const nextForm = {
         ...form,
         firstName: String(response?.firstName ?? form.firstName),
@@ -211,6 +273,8 @@ export default function ProfilePage() {
           response?.timezone != null ? String(response.timezone) : form.timezone,
         avatarUrl:
           response?.avatarUrl != null ? String(response.avatarUrl) : form.avatarUrl,
+        theme: (userPrefs.theme === "dark" ? "dark" : form.theme) as ThemeValue,
+        locale: (userPrefs.locale === "en" ? "en" : form.locale) as LocaleValue,
       };
       setForm(nextForm);
       setInitialForm(nextForm);
@@ -225,7 +289,7 @@ export default function ProfilePage() {
 
   const isDirty = useMemo(
     () => JSON.stringify(form) !== JSON.stringify(initialForm),
-    [form, initialForm],
+    [form, initialForm]
   );
   const isValid =
     form.firstName.trim() &&
@@ -233,38 +297,14 @@ export default function ProfilePage() {
     form.email.trim() &&
     Object.keys(errors).length === 0;
 
-  const currentTheme: ThemeValue =
-    prefsMounted && theme === "dark" ? "dark" : "light";
-  const currentLocale: LocaleValue = locale;
-
   const handleThemeChange = (value: ThemeValue) => {
-    setTheme(value);
-    apiClient
-      .patch("/users/me", { appPreferences: { theme: value } })
-      .then((res) => {
-        if (user && res && typeof res === "object" && "appPreferences" in res) {
-          setUser({
-            ...user,
-            appPreferences: { ...user.appPreferences, theme: value },
-          });
-        }
-      })
-      .catch(() => {});
+    setForm((p) => ({ ...p, theme: value }));
+    hasLocalEditsRef.current = true;
   };
 
   const handleLocaleChange = (value: LocaleValue) => {
-    setLocale(value);
-    apiClient
-      .patch("/users/me", { appPreferences: { locale: value } })
-      .then((res) => {
-        if (user && res && typeof res === "object" && "appPreferences" in res) {
-          setUser({
-            ...user,
-            appPreferences: { ...user.appPreferences, locale: value },
-          });
-        }
-      })
-      .catch(() => {});
+    setForm((p) => ({ ...p, locale: value }));
+    hasLocalEditsRef.current = true;
   };
 
   if (loading) {
@@ -280,31 +320,206 @@ export default function ProfilePage() {
   return (
     <div className="flex flex-col flex-1 min-h-0 pt-6 pb-8 px-4 md:px-10 lg:px-12 w-full">
       {loadError && (
-        <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400 shrink-0">
+        <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400 shrink-0 mb-4">
           {loadError}
         </div>
       )}
 
-      {/* Same structure as Company Settings: internal scroll + grid + cards with gradient header */}
-      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-8 items-start">
-          {/* Section 1 - Profile photo (optional), same style as settings */}
-          <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0">
-            <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent">
-              <div className="flex items-center gap-2 mb-1">
-                <p className="text-sm font-semibold text-text-primary">
-                  {t("profile.sectionAvatar")}
-                </p>
-                <span className="text-[11px] font-medium text-text-muted">
-                  {t("common.optionalBadge")}
-                </span>
+      {/* Tab Navigation - Toggle Style */}
+      <div className="flex items-center gap-1 p-0.5 rounded-lg bg-input-bg border border-card-border mb-6 w-fit">
+        <button
+          onClick={() => setActiveTab("info")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+            activeTab === "info"
+              ? "bg-white dark:bg-slate-700 text-company-primary shadow-sm"
+              : "text-text-muted hover:text-text-secondary"
+          }`}
+        >
+          <Settings2 className="w-4 h-4" />
+          {t("profile.tabInfo")}
+        </button>
+        <button
+          onClick={() => setActiveTab("avatar")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+            activeTab === "avatar"
+              ? "bg-white dark:bg-slate-700 text-company-primary shadow-sm"
+              : "text-text-muted hover:text-text-secondary"
+          }`}
+        >
+          <Camera className="w-4 h-4" />
+          {t("profile.tabAvatar")}
+        </button>
+        <button
+          onClick={() => setActiveTab("preferences")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+            activeTab === "preferences"
+              ? "bg-white dark:bg-slate-700 text-company-primary shadow-sm"
+              : "text-text-muted hover:text-text-secondary"
+          }`}
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          {t("profile.tabPreferences")}
+        </button>
+        {isSuperAdmin(user) && (
+          <button
+            onClick={() => setActiveTab("superAdmin")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+              activeTab === "superAdmin"
+                ? "bg-white dark:bg-slate-700 text-company-primary shadow-sm"
+                : "text-text-muted hover:text-text-secondary"
+            }`}
+          >
+            <Shield className="w-4 h-4" />
+            {t("superAdmins.newSuperAdmin")}
+          </button>
+        )}
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pb-4">
+        <div>
+          {activeTab === "info" ? (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-company-primary/10">
+                  <Settings2 className="w-5 h-5 text-company-primary" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-base font-semibold text-text-primary flex items-center gap-2">
+                    {t("profile.sectionInfo")}
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">{t("common.requiredBadge")}</span>
+                  </h2>
+                  <p className="text-sm text-text-muted">{t("profile.sectionInfoDesc")}</p>
+                </div>
               </div>
-              <p className="text-xs text-text-muted break-words">
-                {t("profile.sectionAvatarDesc")}
-              </p>
+              <div className="pl-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                  <div className="min-w-0">
+                    <label className={LABEL}>
+                      {t("users.firstName")}{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative group">
+                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                      <input
+                        value={form.firstName}
+                        onChange={setAndClearError("firstName")}
+                        placeholder={t("common.placeholderName")}
+                        className={IL}
+                        aria-invalid={!!errors.firstName}
+                      />
+                    </div>
+                    <div className="min-h-[1.25rem] mt-1">
+                      {errors.firstName && (
+                        <p className="text-sm text-red-500" role="alert">
+                          {errors.firstName}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="min-w-0">
+                    <label className={LABEL}>
+                      {t("users.lastName")}{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative group">
+                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                      <input
+                        value={form.lastName}
+                        onChange={setAndClearError("lastName")}
+                        placeholder={t("common.placeholderLastName")}
+                        className={IL}
+                        aria-invalid={!!errors.lastName}
+                      />
+                    </div>
+                    <div className="min-h-[1.25rem] mt-1">
+                      {errors.lastName && (
+                        <p className="text-sm text-red-500" role="alert">
+                          {errors.lastName}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="min-w-0 sm:col-span-2">
+                    <label className={LABEL}>
+                      {t("users.email")} <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative group">
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                      <input
+                        type="email"
+                        value={form.email}
+                        onChange={setAndClearError("email")}
+                        placeholder={t("common.placeholderEmail")}
+                        className={IL}
+                        aria-invalid={!!errors.email}
+                      />
+                    </div>
+                    <div className="min-h-[1.25rem] mt-1">
+                      {errors.email && (
+                        <p className="text-sm text-red-500" role="alert">
+                          {errors.email}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="min-w-0">
+                    <label className={LABEL}>{t("users.phone")}</label>
+                    <div className="relative group">
+                      <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                      <input
+                        type="tel"
+                        value={form.phone}
+                        onChange={(e) => {
+                          setForm((p) => ({ ...p, phone: formatPhoneWithCountryCode(e.target.value, phoneCountry) }));
+                          setErrors((prev) => ({ ...prev, phone: undefined }));
+                        }}
+                        placeholder={`+${COUNTRY_DIAL_CODES[phoneCountry] || "1"}`}
+                        className={IL}
+                        aria-invalid={!!errors.phone}
+                      />
+                    </div>
+                    <div className="min-h-[1.25rem] mt-1">
+                      {errors.phone && (
+                        <p className="text-sm text-red-500" role="alert">
+                          {errors.phone}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="min-w-0">
+                    <label className={LABEL}>{t("users.timezone")}</label>
+                    <SelectField
+                      value={form.timezone}
+                      onChange={set("timezone")}
+                      icon={Clock}
+                    >
+                      <option value="">{t("common.selectPlaceholder")}</option>
+                      {TIMEZONES.map((tz) => (
+                        <option key={tz.value} value={tz.value}>
+                          {tz.label}
+                        </option>
+                      ))}
+                    </SelectField>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="px-6 pb-6 pt-2">
-              <div className="flex flex-col gap-6">
+          ) : activeTab === "avatar" ? (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-company-primary/10">
+                  <Camera className="w-5 h-5 text-company-primary" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-text-primary flex items-center gap-2">
+                    {t("profile.sectionAvatar")}
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-text-muted/10 text-text-muted">{t("common.optionalBadge")}</span>
+                  </h2>
+                  <p className="text-sm text-text-muted">{t("profile.sectionAvatarDesc")}</p>
+                </div>
+              </div>
+              <div className="pl-1">
                 <ImageCropField
                   kind="logo"
                   value={form.avatarUrl}
@@ -324,271 +539,282 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
-          </div>
-
-          {/* Section 2 - Personal info (required), same style as settings */}
-          <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0">
-            <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent flex items-center gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="text-sm font-semibold text-text-primary">
-                    {t("profile.sectionInfo")}
-                  </p>
-                  <span className="text-[11px] font-medium text-red-500">
-                    {t("common.requiredBadge")}
-                  </span>
+          ) : activeTab === "preferences" ? (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-company-primary/10">
+                  <SlidersHorizontal className="w-5 h-5 text-company-primary" />
                 </div>
-                <p className="text-xs text-text-muted">
-                  {t("profile.sectionInfoDesc")}
-                </p>
-              </div>
-              {isSuperAdmin(user) && (
-                <Link
-                  href="/dashboard/super-admins/new"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-company-secondary-muted text-sm font-medium text-company-secondary hover:bg-company-secondary-subtle hover:text-company-secondary transition-colors shrink-0"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  {t("profile.createSuperAdmin")}
-                </Link>
-              )}
-            </div>
-            <div className="px-6 pb-6 pt-2">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
-                <div className="min-w-0">
-                  <label className={LABEL}>
-                    {t("users.firstName")}{" "}
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative group">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                    <input
-                      value={form.firstName}
-                      onChange={setAndClearError("firstName")}
-                      placeholder={t("common.placeholderName")}
-                      className={IL}
-                      aria-invalid={!!errors.firstName}
-                    />
-                  </div>
-                  <div className="min-h-[1.25rem] mt-1">
-                    {errors.firstName && (
-                      <p className="text-sm text-red-500" role="alert">
-                        {errors.firstName}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="min-w-0">
-                  <label className={LABEL}>
-                    {t("users.lastName")}{" "}
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative group">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                    <input
-                      value={form.lastName}
-                      onChange={setAndClearError("lastName")}
-                      placeholder={t("common.placeholderLastName")}
-                      className={IL}
-                      aria-invalid={!!errors.lastName}
-                    />
-                  </div>
-                  <div className="min-h-[1.25rem] mt-1">
-                    {errors.lastName && (
-                      <p className="text-sm text-red-500" role="alert">
-                        {errors.lastName}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="min-w-0 sm:col-span-2">
-                  <label className={LABEL}>
-                    {t("users.email")} <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative group">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                    <input
-                      type="email"
-                      value={form.email}
-                      onChange={setAndClearError("email")}
-                      placeholder={t("common.placeholderEmail")}
-                      className={IL}
-                      aria-invalid={!!errors.email}
-                    />
-                  </div>
-                  <div className="min-h-[1.25rem] mt-1">
-                    {errors.email && (
-                      <p className="text-sm text-red-500" role="alert">
-                        {errors.email}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="min-w-0">
-                  <label className={LABEL}>{t("users.phone")}</label>
-                  <div className="relative group">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                    <input
-                      type="tel"
-                      value={form.phone}
-                      onChange={(e) => {
-                        setForm((p) => ({ ...p, phone: formatPhoneWithCountryCode(e.target.value, phoneCountry) }));
-                        setErrors((prev) => ({ ...prev, phone: undefined }));
-                      }}
-                      placeholder={`+${COUNTRY_DIAL_CODES[phoneCountry] || "1"}`}
-                      className={IL}
-                      aria-invalid={!!errors.phone}
-                    />
-                  </div>
-                  <div className="min-h-[1.25rem] mt-1">
-                    {errors.phone && (
-                      <p className="text-sm text-red-500" role="alert">
-                        {errors.phone}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="min-w-0">
-                  <label className={LABEL}>{t("users.timezone")}</label>
-                  <SelectField
-                    value={form.timezone}
-                    onChange={set("timezone")}
-                    icon={Clock}
-                  >
-                    <option value="">{t("common.selectPlaceholder")}</option>
-                    {TIMEZONES.map((tz) => (
-                      <option key={tz.value} value={tz.value}>
-                        {tz.label}
-                      </option>
-                    ))}
-                  </SelectField>
+                <div>
+                  <h2 className="text-base font-semibold text-text-primary">
+                    {t("profile.sectionPreferences")}
+                  </h2>
+                  <p className="text-sm text-text-muted">{t("profile.sectionPreferencesDesc")}</p>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Section 3 - Preferences: theme and language (full width), same style as settings */}
-          <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0 xl:col-span-2">
-            <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent">
-              <p className="text-sm font-semibold text-text-primary">
-                {t("profile.sectionPreferences")}
-              </p>
-              <p className="text-xs text-text-muted mt-1 break-words">
-                {t("profile.sectionPreferencesDesc")}
-              </p>
-            </div>
-            <div className="px-6 pb-6 pt-2">
-              <div className="flex flex-col gap-6 md:flex-row md:gap-8 max-w-3xl">
-                {/* Theme */}
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-text-primary mb-3">
-                    {t("profile.themeLabel")}
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => handleThemeChange("light")}
-                      className={`flex flex-col items-center gap-3 p-4 rounded-xl border transition-all ${
-                        currentTheme === "light"
-                          ? "border-company-primary bg-company-primary-subtle ring-1 ring-company-primary/30 shadow-sm"
-                          : "border-input-border bg-input-bg/50 hover:border-company-primary-muted hover:bg-input-bg"
-                      }`}
-                    >
-                      <span
-                        className={`flex items-center justify-center w-11 h-11 rounded-full shrink-0 ${currentTheme === "light" ? "bg-company-primary/15 text-company-primary" : "bg-input-bg text-text-muted"}`}
+              <div className="pl-1">
+                <div className="flex flex-col gap-6 md:flex-row md:gap-8">
+                  {/* Theme */}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-text-primary mb-3">
+                      {t("profile.themeLabel")}
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => handleThemeChange("light")}
+                        className={`flex flex-col items-center gap-3 p-4 rounded-xl border transition-all ${
+                          form.theme === "light"
+                            ? "border-company-primary bg-company-primary-subtle ring-1 ring-company-primary/30 shadow-sm"
+                            : "border-input-border bg-input-bg/50 hover:border-company-primary-muted hover:bg-input-bg"
+                        }`}
                       >
-                        <Sun className="w-5 h-5" />
-                      </span>
-                      <div className="w-full text-center space-y-0.5">
-                        <p
-                          className={`text-sm font-medium ${currentTheme === "light" ? "text-company-primary" : "text-text-primary"}`}
+                        <span
+                          className={`flex items-center justify-center w-11 h-11 rounded-full shrink-0 ${form.theme === "light" ? "bg-company-primary/15 text-company-primary" : "bg-input-bg text-text-muted"}`}
                         >
-                          {t("profile.themeLight")}
-                        </p>
-                        <p className="text-[11px] text-text-muted leading-tight">
-                          {t("profile.themeLightDesc")}
-                        </p>
-                      </div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleThemeChange("dark")}
-                      className={`flex flex-col items-center gap-3 p-4 rounded-xl border transition-all ${
-                        currentTheme === "dark"
-                          ? "border-company-primary bg-company-primary-subtle ring-1 ring-company-primary/30 shadow-sm"
-                          : "border-input-border bg-input-bg/50 hover:border-company-primary-muted hover:bg-input-bg"
-                      }`}
-                    >
-                      <span
-                        className={`flex items-center justify-center w-11 h-11 rounded-full shrink-0 ${currentTheme === "dark" ? "bg-company-primary/15 text-company-primary" : "bg-input-bg text-text-muted"}`}
+                          <Sun className="w-5 h-5" />
+                        </span>
+                        <div className="w-full text-center space-y-0.5">
+                          <p
+                            className={`text-sm font-medium ${form.theme === "light" ? "text-company-primary" : "text-text-primary"}`}
+                          >
+                            {t("profile.themeLight")}
+                          </p>
+                          <p className="text-[11px] text-text-muted leading-tight">
+                            {t("profile.themeLightDesc")}
+                          </p>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleThemeChange("dark")}
+                        className={`flex flex-col items-center gap-3 p-4 rounded-xl border transition-all ${
+                          form.theme === "dark"
+                            ? "border-company-primary bg-company-primary-subtle ring-1 ring-company-primary/30 shadow-sm"
+                            : "border-input-border bg-input-bg/50 hover:border-company-primary-muted hover:bg-input-bg"
+                        }`}
                       >
-                        <Moon className="w-5 h-5" />
-                      </span>
-                      <div className="w-full text-center space-y-0.5">
-                        <p
-                          className={`text-sm font-medium ${currentTheme === "dark" ? "text-company-primary" : "text-text-primary"}`}
+                        <span
+                          className={`flex items-center justify-center w-11 h-11 rounded-full shrink-0 ${form.theme === "dark" ? "bg-company-primary/15 text-company-primary" : "bg-input-bg text-text-muted"}`}
                         >
-                          {t("profile.themeDark")}
-                        </p>
-                        <p className="text-[11px] text-text-muted leading-tight">
-                          {t("profile.themeDarkDesc")}
-                        </p>
-                      </div>
-                    </button>
+                          <Moon className="w-5 h-5" />
+                        </span>
+                        <div className="w-full text-center space-y-0.5">
+                          <p
+                            className={`text-sm font-medium ${form.theme === "dark" ? "text-company-primary" : "text-text-primary"}`}
+                          >
+                            {t("profile.themeDark")}
+                          </p>
+                          <p className="text-[11px] text-text-muted leading-tight">
+                            {t("profile.themeDarkDesc")}
+                          </p>
+                        </div>
+                      </button>
+                    </div>
                   </div>
-                </div>
-                {/* Language */}
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-text-primary mb-3">
-                    {t("profile.languageLabel")}
-                  </p>
-                  <SelectField
-                    value={currentLocale}
-                    onChange={(e) =>
-                      handleLocaleChange(e.target.value as LocaleValue)
-                    }
-                    icon={Globe}
-                  >
-                    {LOCALE_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {t(opt.labelKey)}
-                      </option>
-                    ))}
-                  </SelectField>
+                  {/* Language */}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-text-primary mb-3">
+                      {t("profile.languageLabel")}
+                    </p>
+                    <SelectField
+                      value={form.locale}
+                      onChange={(e) =>
+                        handleLocaleChange(e.target.value as LocaleValue)
+                      }
+                      icon={Globe}
+                    >
+                      {LOCALE_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {t(opt.labelKey)}
+                        </option>
+                      ))}
+                    </SelectField>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          ) : activeTab === "superAdmin" ? (
+            <SuperAdminTab 
+              t={t}
+              emails={superAdminEmails}
+              emailInput={superAdminEmailInput}
+              setEmailInput={setSuperAdminEmailInput}
+              onAddEmail={addSuperAdminEmail}
+              onRemoveEmail={removeSuperAdminEmail}
+            />
+          ) : null}
         </div>
       </div>
 
-      <div className="shrink-0 flex items-center justify-between gap-4 pt-4 flex-wrap border-t border-card-border mt-4 pt-4">
-        <div />
-        <div className="flex items-center gap-3 ml-auto">
-          <Link
-            href="/dashboard"
-            className="px-5 py-3 rounded-lg border border-company-secondary-muted text-sm font-medium text-company-secondary hover:bg-company-secondary-subtle hover:text-company-secondary transition-colors"
-          >
-            {t("common.cancel")}
-          </Link>
+      {/* Action Bar */}
+      <div className="mt-auto flex items-center justify-between gap-4 pt-4 border-t border-card-border">
+        {activeTab === "superAdmin" ? (
+          <div />
+        ) : (
           <button
             type="button"
-            onClick={handleSubmit}
-            disabled={submitting || !isDirty || !isValid}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:pointer-events-none transition-colors"
+            onClick={() => {
+              setReverting(true);
+              setForm(initialForm);
+              hasLocalEditsRef.current = false;
+              setTimeout(() => setReverting(false), 300);
+            }}
+            disabled={!isDirty || submitting || reverting}
+            className="group flex items-center gap-2 px-4 py-2.5 rounded-lg border border-card-border text-sm font-medium text-text-secondary hover:text-red-500 hover:border-red-200 hover:bg-red-50/50 dark:hover:bg-red-500/10 transition-all disabled:opacity-50"
           >
-            {submitting ? (
-              <>
-                <LoadingSpinner size="sm" />
-                {t("common.saving")}
-              </>
+            {reverting ? (
+              <LoadingSpinner size="sm" />
             ) : (
-              <>
-                {t("common.save")}
-                <ArrowRight className="w-4 h-4" />
-              </>
+              <RotateCcw className="w-4 h-4 transition-transform duration-500 group-hover:-rotate-180" />
             )}
+            {t("profile.revertToDefault")}
+          </button>
+        )}
+        <div className="flex items-center gap-3">
+          {activeTab === "superAdmin" ? (
+            <button
+              type="button"
+              onClick={handleSendSuperAdminInvites}
+              disabled={sendingSuperAdminInvites || superAdminEmails.length === 0}
+              className="group inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:opacity-95 transition-all disabled:opacity-50 disabled:pointer-events-none"
+            >
+              {sendingSuperAdminInvites ? (
+                <>
+                  <LoadingSpinner size="sm" />
+                  {t("common.sending")}
+                </>
+              ) : (
+                <>
+                  {t("users.sendInvitation")}
+                  <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                </>
+              )}
+            </button>
+          ) : (
+            <>
+              <Link
+                href="/dashboard"
+                className="px-5 py-3 rounded-lg border border-card-border text-sm font-medium text-text-secondary hover:bg-input-bg transition-colors"
+              >
+                {t("common.cancel")}
+              </Link>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={submitting || !isDirty || !isValid}
+                className="group inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-company-primary text-white text-sm font-medium hover:opacity-95 transition-all disabled:opacity-50 disabled:pointer-events-none"
+              >
+                {submitting ? (
+                  <>
+                    <LoadingSpinner size="sm" />
+                    {t("common.saving")}
+                  </>
+                ) : (
+                  <>
+                    {t("common.save")}
+                    <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                  </>
+                )}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Component for Super Admin invitation tab (like InviteUserModal)
+function SuperAdminTab({
+  t,
+  emails,
+  emailInput,
+  setEmailInput,
+  onAddEmail,
+  onRemoveEmail,
+}: {
+  t: (key: string) => string;
+  emails: string[];
+  emailInput: string;
+  setEmailInput: (value: string) => void;
+  onAddEmail: () => void;
+  onRemoveEmail: (email: string) => void;
+}) {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      onAddEmail();
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-xl bg-company-primary/10">
+          <Shield className="w-5 h-5 text-company-primary" />
+        </div>
+        <div>
+          <h2 className="text-base font-semibold text-text-primary flex items-center gap-2">
+            {t("profile.sectionSuperAdmin")}
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">
+              {t("common.requiredBadge")}
+            </span>
+          </h2>
+          <p className="text-sm text-text-muted">{t("profile.sectionSuperAdminDesc")}</p>
+        </div>
+      </div>
+
+      <div className="pl-1 space-y-4">
+        {/* Email input with add button */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+            <input
+              type="email"
+              value={emailInput}
+              onChange={(e) => setEmailInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={t("common.placeholderEmail")}
+              className={IL}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={onAddEmail}
+            disabled={!emailInput.trim().includes("@")}
+            className="px-4 py-3 rounded-lg border border-card-border bg-input-bg text-text-primary hover:bg-input-bg/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {t("users.addAnother")}
           </button>
         </div>
+
+        {/* Email chips */}
+        {emails.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {emails.map((email) => (
+              <div
+                key={email}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-company-primary/10 text-company-primary text-sm"
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span>{email}</span>
+                <button
+                  type="button"
+                  onClick={() => onRemoveEmail(email)}
+                  className="p-0.5 hover:bg-company-primary/20 rounded-full transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Hint text */}
+        <p className="text-xs text-text-muted">{t("superAdmins.invitationNote")}</p>
       </div>
     </div>
   );

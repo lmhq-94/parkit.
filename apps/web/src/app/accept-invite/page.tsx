@@ -110,11 +110,11 @@ function AcceptInviteForm() {
       <div className="max-w-[480px] mx-auto space-y-2">
         <p className="text-xs text-slate-600 dark:text-slate-400">{t("auth.supportHint")}{" "}<a href="mailto:soporte@parkitcr.com" className="font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">{t("auth.supportLinkLabel")}</a></p>
         <div className="flex items-center justify-center gap-3 text-[10px] text-slate-500 dark:text-slate-400">
-          <span>© {new Date().getFullYear()} Parkit. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} Parkit. {t("footer.allRightsReserved")}</span>
           <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
-          <Link href="/terms" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">Terms</Link>
+          <Link href="/terms" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">{t("footer.terms")}</Link>
           <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
-          <Link href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">Privacy</Link>
+          <Link href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">{t("footer.privacyPolicy")}</Link>
         </div>
       </div>
     </div>
@@ -129,9 +129,9 @@ function AcceptInviteForm() {
           <div className="bg-white/90 dark:bg-slate-900/70 backdrop-blur-2xl rounded-3xl border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-8 md:p-10 text-center">
             <Logo variant={logoVariant} className="text-5xl mx-auto mb-6" />
             <p className="text-slate-600 dark:text-slate-300 mb-6">{t("auth.inviteExpiredOrInvalid")}</p>
-            <Link href="/login" className="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm font-medium">
+            <Link href="/login" className="group inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm font-medium">
               {t("auth.backToSignIn")}
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
             </Link>
           </div>
           <BottomSection />

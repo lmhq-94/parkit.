@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, Car } from "lucide-react";
+import { useTheme } from "next-themes";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { toTitleCase } from "@/lib/inputMasks";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -49,6 +50,8 @@ export function BrandModelComboField({
   const openedFromFocusRef = useRef(false);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 220 });
   const { t } = useTranslation();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   const filtered =
     inputValue.trim() === ""
@@ -210,6 +213,16 @@ export function BrandModelComboField({
     );
   }
 
+  const dropdownStyles: React.CSSProperties = {
+    background: isDark
+      ? "linear-gradient(145deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%)"
+      : "linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.99) 100%)",
+    boxShadow: isDark
+      ? "0 25px 50px -12px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05), 0 10px 20px -5px rgba(0,0,0,0.4)"
+      : "0 25px 50px -12px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.8) inset, 0 10px 20px -5px rgba(0,0,0,0.1)",
+    backdropFilter: "blur(24px) saturate(180%)",
+  };
+
   const dropdown =
     open &&
     typeof document !== "undefined" &&
@@ -217,17 +230,18 @@ export function BrandModelComboField({
       <div
         data-brand-model-combo-dropdown
         onMouseDown={(e) => e.preventDefault()}
-        className="fixed z-[99999] flex flex-col rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl bg-white dark:bg-slate-900 py-1.5 px-1.5 min-w-[220px] overflow-hidden"
+        className="fixed z-[99999] flex flex-col rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 min-w-[220px]"
         style={{
+          ...dropdownStyles,
           top: dropdownPos.top,
           left: dropdownPos.left,
           width: dropdownPos.width,
-          maxHeight: 280,
+          maxHeight: 320,
         }}
       >
-        <div className="overflow-y-auto overscroll-contain min-h-0 flex-1">
+        <div className="p-1.5 overflow-y-auto overscroll-contain min-h-0 flex-1 space-y-0.5">
           {loading ? (
-            <div className="flex items-center justify-center gap-2 px-3 py-3 text-sm text-slate-400">
+            <div className="flex items-center justify-center gap-2 px-3 py-4 text-sm text-slate-400">
               <LoadingSpinner size="sm" />
               <span>{t("common.loading")}</span>
             </div>
@@ -238,17 +252,17 @@ export function BrandModelComboField({
                 type="button"
                 onClick={() => handleSelect(opt)}
                 onMouseEnter={() => setHighlightIndex(idx)}
-                className={`w-full px-3 py-2 text-left text-sm transition-colors rounded-lg ${
+                className={`w-full px-3 py-2.5 text-left text-sm rounded-xl transition-all duration-200 ${
                   idx === highlightIndex || opt.value === value
-                    ? "bg-company-primary-muted text-company-primary font-medium"
-                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    ? "bg-company-primary/10 dark:bg-company-primary/20 text-company-primary font-medium"
+                    : "text-slate-700 dark:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/80"
                 }`}
               >
-                {opt.label}
+                <span className="font-medium">{opt.label}</span>
               </button>
             ))
           ) : (
-            <p className="px-3 py-3 text-sm text-slate-400 text-center">
+            <p className="px-3 py-4 text-sm text-slate-400 text-center">
               {inputValue.trim() ? t("common.typeManuallyEnter") : t("common.noOptions")}
             </p>
           )}

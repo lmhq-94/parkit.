@@ -18,9 +18,9 @@ import type { CompanyBranding } from "@/lib/store";
 import { getAvatarHSLColors, getFullName, getShortName, isSuperAdmin } from "@/lib/auth";
 import { useTheme } from "next-themes";
 import { useLocaleStore } from "@/lib/store";
-import { Sun, Moon, Globe } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import { apiClient } from "@/lib/api";
-import { ArrowLeft, ChevronDown, Menu, UserRound, LogOut, User, HelpCircle } from "lucide-react";
+import { ArrowLeft, ChevronDown, Menu, UserRound, LogOut, User, HelpCircle, Settings } from "lucide-react";
 
 const HeaderActionContext = createContext<((node: React.ReactNode) => void) | null>(null);
 export function useHeaderAction() {
@@ -220,6 +220,7 @@ function DashboardLayoutInner({
               secondaryColorDark: bc.secondaryColorDark ?? null,
               tertiaryColor: bc.tertiaryColor ?? null,
               tertiaryColorDark: bc.tertiaryColorDark ?? null,
+              businessActivity: bc.businessActivity ?? null,
             }
           : null;
         setCompanyBranding(branding);
@@ -312,34 +313,41 @@ function DashboardLayoutInner({
                       onClick={() => {
                         setUserMenuOpen((open) => !open);
                       }}
-                      className="h-12 bg-card border border-card-border text-text-secondary hover:text-text-primary hover:bg-input-bg transition-colors flex items-center gap-2 pr-2 pl-0"
-                      style={{ borderRadius: '2rem 0.75rem 0.75rem 2rem' }}
+                      className={`group relative h-11 pl-1 pr-3 flex items-center gap-2.5 rounded-full transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] ${
+                        userMenuOpen
+                          ? "bg-white/80 dark:bg-slate-800/80 shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),0_2px_8px_rgba(0,0,0,0.3)] ring-2 ring-company-primary/20"
+                          : "bg-white/60 dark:bg-slate-900/60 hover:bg-white/90 dark:hover:bg-slate-800/90 shadow-[0_4px_20px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3),0_1px_3px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_28px_rgba(0,0,0,0.12),0_2px_6px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_28px_rgba(0,0,0,0.4),0_2px_6px_rgba(0,0,0,0.3)] backdrop-blur-xl border border-white/40 dark:border-white/10"
+                      }`}
                       aria-haspopup="menu"
                       aria-expanded={userMenuOpen}
                       title={getFullName(user) || user.email}
                     >
                       {(() => {
                         const avatarColors = getAvatarHSLColors(user.id, theme === "dark");
+                        const hasAvatar = (user.avatarUrl ?? user.avatar)?.trim();
                         return (
                           <div 
-                            className="relative w-12 h-12 rounded-full overflow-hidden flex items-center justify-center shrink-0"
+                            className={`relative w-9 h-9 rounded-full overflow-hidden flex items-center justify-center shrink-0 transition-transform duration-300 ease-out ${
+                              userMenuOpen ? "scale-95" : "group-hover:scale-105"
+                            }`}
                             style={{
-                              backgroundColor: avatarColors.bg,
-                              border: `2px solid ${avatarColors.border}`,
+                              backgroundColor: hasAvatar ? undefined : avatarColors.bg,
+                              border: `2px solid ${hasAvatar ? 'transparent' : avatarColors.border}`,
+                              boxShadow: hasAvatar ? 'inset 0 2px 4px rgba(0,0,0,0.1)' : 'none',
                             }}
                           >
-                            {(user.avatarUrl ?? user.avatar)?.trim() ? (
+                            {hasAvatar ? (
                               <Image
                                 src={user.avatarUrl ?? user.avatar}
                                 alt=""
                                 fill
                                 className="object-cover"
-                                sizes="48px"
+                                sizes="36px"
                                 unoptimized
                               />
                             ) : (
                               <User 
-                                className="w-6 h-6"
+                                className="w-[18px] h-[18px]"
                                 style={{ color: avatarColors.fg }}
                               />
                             )}
@@ -347,31 +355,56 @@ function DashboardLayoutInner({
                         );
                       })()}
                       <div className="hidden sm:flex flex-col items-start max-w-[140px] min-w-0">
-                        <span className="text-xs font-medium text-text-primary truncate">
+                        <span className="text-[13px] font-semibold text-slate-800 dark:text-slate-100 truncate leading-tight">
                           {getShortName(user) || getFullName(user) || user.email}
                         </span>
-                        <span className="text-[11px] text-text-muted truncate">
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate leading-tight">
                           {user.email}
                         </span>
                       </div>
-                      <ChevronDown
-                        className={`w-4 h-4 text-text-muted transition-transform duration-150 shrink-0 ml-auto ${
-                          userMenuOpen ? "rotate-180" : ""
-                        }`}
-                      />
+                      <div className={`ml-1 flex items-center justify-center w-5 h-5 rounded-full bg-slate-100/80 dark:bg-slate-800/80 transition-all duration-300 ${
+                        userMenuOpen ? "rotate-180 bg-company-primary/10" : "group-hover:bg-slate-200/80 dark:group-hover:bg-slate-700/80"
+                      }`}>
+                        <ChevronDown
+                          className={`w-3.5 h-3.5 transition-colors duration-300 ${
+                            userMenuOpen ? "text-company-primary" : "text-slate-500 dark:text-slate-400"
+                          }`}
+                        />
+                      </div>
                     </button>
                     {userMenuOpen && typeof document !== "undefined" && createPortal(
                       <div
                         data-user-menu-dropdown
-                        className="fixed z-[99999] flex flex-col rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl bg-white dark:bg-slate-900 py-1.5 px-1.5 min-w-[160px] overflow-hidden"
+                        className="fixed z-[99999] flex flex-col rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
                         style={{
                           top: userMenuPosition.top,
                           right: userMenuPosition.right,
                           left: "auto",
-                          maxHeight: "min(70vh, 400px)",
+                          maxHeight: "min(70vh, 420px)",
+                          minWidth: "220px",
+                          background: theme === "dark"
+                            ? "linear-gradient(145deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%)"
+                            : "linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.99) 100%)",
+                          boxShadow: theme === "dark"
+                            ? "0 25px 50px -12px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05), 0 10px 20px -5px rgba(0,0,0,0.4)"
+                            : "0 25px 50px -12px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.8) inset, 0 10px 20px -5px rgba(0,0,0,0.1)",
+                          backdropFilter: "blur(24px) saturate(180%)",
                         }}
                       >
-                        <div className="overflow-y-auto overscroll-contain min-h-0 flex-1">
+                        {/* Header con info del usuario */}
+                        <div className="px-4 py-3.5 border-b border-slate-200/60 dark:border-slate-700/60">
+                          <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                            {t("sidebar.signedInAs")}
+                          </p>
+                          <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 mt-0.5 truncate">
+                            {getFullName(user) || user.email}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                            {user.email}
+                          </p>
+                        </div>
+
+                        <div className="p-1.5 overflow-y-auto overscroll-contain min-h-0 flex-1 space-y-0.5">
                           {/* Only show My Profile when a company is selected */}
                           {selectedCompanyId && (
                             <button
@@ -380,86 +413,67 @@ function DashboardLayoutInner({
                                 setUserMenuOpen(false);
                                 router.push("/dashboard/profile");
                               }}
-                              className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"
+                              className="group w-full px-3 py-2.5 text-left text-sm rounded-xl transition-all duration-200 text-slate-700 dark:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 flex items-center gap-3"
                             >
-                              <UserRound className="w-4 h-4" />
-                              {t("sidebar.profile")}
+                              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-white dark:group-hover:bg-slate-700 group-hover:text-company-primary transition-all duration-200 shadow-sm">
+                                <UserRound className="w-4 h-4" />
+                              </span>
+                              <span className="font-medium">{t("sidebar.profile")}</span>
                             </button>
                           )}
-                          <div className="px-3 py-1 md:hidden">
-                            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                              {t("settings.theme")}
-                            </p>
-                            <div className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 px-2 py-2">
-                              <div className="flex items-center justify-center w-8 h-8 rounded-md bg-white/70 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200">
-                                {theme === "dark" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-                              </div>
-                              <div className="flex-1 flex items-center rounded-md bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 p-0.5">
+
+                          {/* Settings */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUserMenuOpen(false);
+                              router.push("/dashboard/settings");
+                            }}
+                            className="group w-full px-3 py-2.5 text-left text-sm rounded-xl transition-all duration-200 text-slate-700 dark:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 flex items-center gap-3"
+                          >
+                            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-white dark:group-hover:bg-slate-700 group-hover:text-company-primary transition-all duration-200 shadow-sm">
+                              <Settings className="w-4 h-4" />
+                            </span>
+                            <span className="font-medium">{t("sidebar.settings")}</span>
+                          </button>
+
+                          {/* Mobile theme & language - more compact */}
+                          <div className="md:hidden px-2 py-2 space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{t("settings.theme")}</span>
+                              <div className="flex items-center gap-1 p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800">
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    const nextTheme: "light" | "dark" = "light";
-                                    setTheme(nextTheme);
-                                    apiClient
-                                      .patch("/users/me", {
-                                        appPreferences: { theme: nextTheme },
-                                      })
-                                      .catch(() => {});
+                                    setTheme("light");
+                                    apiClient.patch("/users/me", { appPreferences: { theme: "light" } }).catch(() => {});
                                   }}
-                                  className={`flex-1 px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors ${
-                                    theme === "light"
-                                      ? "bg-company-primary text-white shadow-sm"
-                                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                                  }`}
+                                  className={`p-1.5 rounded-md transition-all ${theme === "light" ? "bg-white text-amber-500 shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
                                 >
-                                  {locale === "es" ? "Claro" : "Light"}
+                                  <Sun className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    const nextTheme: "light" | "dark" = "dark";
-                                    setTheme(nextTheme);
-                                    apiClient
-                                      .patch("/users/me", {
-                                        appPreferences: { theme: nextTheme },
-                                      })
-                                      .catch(() => {});
+                                    setTheme("dark");
+                                    apiClient.patch("/users/me", { appPreferences: { theme: "dark" } }).catch(() => {});
                                   }}
-                                  className={`flex-1 px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors ${
-                                    theme === "dark"
-                                      ? "bg-company-primary text-white shadow-sm"
-                                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                                  }`}
+                                  className={`p-1.5 rounded-md transition-all ${theme === "dark" ? "bg-slate-700 text-indigo-300 shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
                                 >
-                                  {locale === "es" ? "Oscuro" : "Dark"}
+                                  <Moon className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                             </div>
-                          </div>
-                          <div className="px-3 py-1 md:hidden">
-                            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                              {t("settings.language")}
-                            </p>
-                            <div className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 px-2 py-2">
-                              <div className="flex items-center justify-center w-8 h-8 rounded-md bg-white/70 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200">
-                                <Globe className="w-4 h-4" />
-                              </div>
-                              <div className="flex-1 flex items-center rounded-md bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 p-0.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{t("settings.language")}</span>
+                              <div className="flex items-center gap-1 p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800">
                                 <button
                                   type="button"
                                   onClick={() => {
                                     setLocale("es");
-                                    apiClient
-                                      .patch("/users/me", {
-                                        appPreferences: { locale: "es" },
-                                      })
-                                      .catch(() => {});
+                                    apiClient.patch("/users/me", { appPreferences: { locale: "es" } }).catch(() => {});
                                   }}
-                                  className={`flex-1 px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors ${
-                                    locale === "es"
-                                      ? "bg-company-primary text-white shadow-sm"
-                                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                                  }`}
+                                  className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all ${locale === "es" ? "bg-white text-company-primary shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
                                 >
                                   ES
                                 </button>
@@ -467,35 +481,38 @@ function DashboardLayoutInner({
                                   type="button"
                                   onClick={() => {
                                     setLocale("en");
-                                    apiClient
-                                      .patch("/users/me", {
-                                        appPreferences: { locale: "en" },
-                                      })
-                                      .catch(() => {});
+                                    apiClient.patch("/users/me", { appPreferences: { locale: "en" } }).catch(() => {});
                                   }}
-                                  className={`flex-1 px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors ${
-                                    locale === "en"
-                                      ? "bg-company-primary text-white shadow-sm"
-                                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                                  }`}
+                                  className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all ${locale === "en" ? "bg-slate-700 text-white shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
                                 >
                                   EN
                                 </button>
                               </div>
                             </div>
                           </div>
-                          {selectedCompanyId && <hr className="my-1 border-slate-200 dark:border-slate-700" />}
+
+                          {/* Divider */}
+                          <div className="h-px mx-3 my-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent" />
+
+                          {/* Help */}
                           <button
                             type="button"
                             onClick={() => {
                               setUserMenuOpen(false);
                               setHelpModalOpen(true);
                             }}
-                            className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"
+                            className="group w-full px-3 py-2.5 text-left text-sm rounded-xl transition-all duration-200 text-slate-700 dark:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 flex items-center gap-3"
                           >
-                            <HelpCircle className="w-4 h-4" />
-                            {t("sidebar.help")}
+                            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-white dark:group-hover:bg-slate-700 group-hover:text-company-primary transition-all duration-200 shadow-sm">
+                              <HelpCircle className="w-4 h-4" />
+                            </span>
+                            <span className="font-medium">{t("sidebar.help")}</span>
                           </button>
+
+                          {/* Divider before logout */}
+                          <div className="h-px mx-3 my-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent" />
+
+                          {/* Logout */}
                           <button
                             type="button"
                             onClick={() => {
@@ -507,10 +524,12 @@ function DashboardLayoutInner({
                                 router.replace("/login");
                               }
                             }}
-                            className="w-full px-3 py-2 text-left text-sm transition-colors rounded-lg text-red-600 dark:text-red-400 hover:bg-red-500/10 flex items-center gap-2"
+                            className="group w-full px-3 py-2.5 text-left text-sm rounded-xl transition-all duration-200 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-3"
                           >
-                            <LogOut className="w-4 h-4" />
-                            {t("auth.signOut")}
+                            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 group-hover:bg-red-100 dark:group-hover:bg-red-500/20 transition-all duration-200">
+                              <LogOut className="w-4 h-4" />
+                            </span>
+                            <span className="font-medium">{t("auth.signOut")}</span>
                           </button>
                         </div>
                       </div>,

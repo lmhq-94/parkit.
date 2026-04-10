@@ -1,8 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowRight, Copy, Check, Undo2 } from "lucide-react";
+import { useTheme } from "next-themes";
+import {
+  ArrowRight,
+  Copy,
+  Palette,
+  ImageIcon,
+  Sparkles,
+  Eye,
+  Building2,
+  RotateCcw,
+  CheckCircle2,
+} from "lucide-react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { useDashboardStore } from "@/lib/store";
@@ -30,9 +43,6 @@ type BrandingConfig = {
   tertiaryColorDark?: string | null;
 };
 
-const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-colors focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary placeholder:text-text-muted";
-const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
-
 function parseHexColor(value: string, fallback: string): string {
   const hex = value.replace(/^#/, "").trim();
   if (/^[0-9A-Fa-f]{6}$/.test(hex)) return `#${hex}`;
@@ -40,25 +50,195 @@ function parseHexColor(value: string, fallback: string): string {
   return fallback;
 }
 
-function CopyHexButton({ value, id, copiedId, onCopy, copyLabel }: { value: string; id: string; copiedId: string | null; onCopy: (id: string) => void; copyLabel: string }) {
-  const hex = /^#[0-9A-Fa-f]{6}$/.test(value) ? value : value.trim() ? value : "";
+
+
+function ColorInput({
+  value,
+  onChange,
+  label,
+  placeholder,
+  id,
+  copiedId,
+  onCopy,
+  copyLabel,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  label: string;
+  placeholder: string;
+  id: string;
+  copiedId: string | null;
+  onCopy: (id: string) => void;
+  copyLabel: string;
+}) {
+  const validHex = /^#[0-9A-Fa-f]{6}$/.test(value) ? value : "";
   const showCheck = copiedId === id;
+
   return (
-    <button
-      type="button"
-      onClick={() => {
-        if (hex && navigator.clipboard?.writeText) {
-          navigator.clipboard.writeText(hex);
-          onCopy(id);
-        }
-      }}
-      disabled={!hex}
-      className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-input-bg transition-colors disabled:opacity-40 disabled:pointer-events-none"
-      title={copyLabel}
-      aria-label={copyLabel}
-    >
-      {showCheck ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-    </button>
+    <div className="flex items-center gap-3 bg-card rounded-xl p-2.5 border border-card-border shadow-sm hover:shadow-md hover:border-company-primary/20 transition-all duration-300 group">
+      <div className="relative">
+        <input
+          type="color"
+          value={validHex || placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-11 h-11 rounded-xl cursor-pointer border-0 p-0 overflow-hidden opacity-0 absolute inset-0"
+          title={label}
+        />
+        <div
+          className="w-11 h-11 rounded-xl border-2 border-white dark:border-slate-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 transition-transform duration-300 group-hover:scale-105"
+          style={{ backgroundColor: validHex || placeholder }}
+        />
+      </div>
+      <div className="flex-1 min-w-0">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="w-full bg-transparent text-sm font-mono text-text-primary placeholder:text-text-muted focus:outline-none"
+          aria-label={label}
+        />
+      </div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => {
+          if (validHex && navigator.clipboard?.writeText) {
+            navigator.clipboard.writeText(validHex);
+            onCopy(id);
+          }
+        }}
+        disabled={!validHex}
+        className="p-2 rounded-lg text-text-muted hover:text-company-primary hover:bg-company-primary/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+        title={copyLabel}
+      >
+        <AnimatePresence mode="wait">
+          {showCheck ? (
+            <motion.div
+              key="check"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              exit={{ scale: 0, rotate: 180 }}
+            >
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            </motion.div>
+          ) : (
+            <motion.div key="copy" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+              <Copy className="w-4 h-4" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.button>
+    </div>
+  );
+}
+
+function BrandingPreview({ form, t, companyName }: { form: BrandingConfig; t: (key: string, vars?: Record<string, string | number>) => string; companyName: string | null }) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
+  const colors = useMemo(() => {
+    const primary = parseHexColor(
+      isDark ? form.primaryColorDark || "" : form.primaryColor || "",
+      isDark ? THEME_DEFAULT_PRIMARY_DARK : THEME_DEFAULT_PRIMARY_LIGHT
+    );
+    const secondary = parseHexColor(
+      isDark ? form.secondaryColorDark || "" : form.secondaryColor || "",
+      isDark ? THEME_DEFAULT_SECONDARY_DARK : THEME_DEFAULT_SECONDARY_LIGHT
+    );
+    const tertiary = parseHexColor(
+      isDark ? form.tertiaryColorDark || "" : form.tertiaryColor || "",
+      isDark ? THEME_DEFAULT_TERTIARY_DARK : THEME_DEFAULT_TERTIARY_LIGHT
+    );
+    return { primary, secondary, tertiary };
+  }, [form, isDark]);
+
+
+  return (
+    <div className="rounded-2xl border border-card-border bg-card shadow-lg overflow-hidden">
+      {/* Banner Preview */}
+      <div
+        className="h-28 relative"
+        style={{
+          background: form.bannerImageUrl
+            ? `url(${form.bannerImageUrl}) center/cover`
+            : `linear-gradient(135deg, ${colors.primary}25 0%, ${colors.secondary}20 50%, ${colors.tertiary}15 100%)`,
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/5" />
+      </div>
+
+      {/* Content Preview */}
+      <div className="p-5 pt-0">
+        <div className="flex flex-col gap-3 -mt-10 mb-5">
+          {/* Logo Preview */}
+          <div
+            className="w-20 h-20 rounded-2xl border-[3px] border-card flex items-center justify-center overflow-hidden bg-card relative shadow-xl"
+            style={{ boxShadow: `0 8px 32px -8px ${colors.primary}40` }}
+          >
+            {form.logoImageUrl ? (
+              <Image src={form.logoImageUrl} alt="" fill className="object-cover" sizes="80px" />
+            ) : (
+              <Building2 className="w-10 h-10" style={{ color: colors.primary }} />
+            )}
+          </div>
+
+          <div className="pt-2">
+            <p className="font-semibold text-text-primary">{companyName || t("settings.previewCompany")}</p>
+            <p className="text-xs text-text-muted">{t("settings.previewLabel")}</p>
+          </div>
+        </div>
+
+        {/* Color Palette Preview */}
+        <div className="space-y-3">
+          <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">{t("settings.colorPaletteLabel")}</p>
+          <div className="flex gap-2">
+            <div
+              className="h-10 flex-1 rounded-lg shadow-md ring-1 ring-black/5 dark:ring-white/10"
+              style={{ backgroundColor: colors.primary }}
+            />
+            <div
+              className="h-10 flex-1 rounded-lg shadow-md ring-1 ring-black/5 dark:ring-white/10"
+              style={{ backgroundColor: colors.secondary }}
+            />
+            <div
+              className="h-10 flex-1 rounded-lg shadow-md ring-1 ring-black/5 dark:ring-white/10"
+              style={{ backgroundColor: colors.tertiary }}
+            />
+          </div>
+        </div>
+
+        {/* Sample Button Preview */}
+        <div className="mt-5 flex gap-2.5">
+          <div
+            className="flex-1 py-2.5 rounded-lg text-sm font-medium text-center shadow-lg"
+            style={{ backgroundColor: colors.primary, color: "#fff", boxShadow: `0 4px 14px -4px ${colors.primary}50` }}
+          >
+            {t("settings.primaryAction")}
+          </div>
+          <div
+            className="flex-1 py-2.5 rounded-lg text-sm font-medium text-center shadow-md"
+            style={{
+              backgroundColor: colors.secondary,
+              color: isDark ? "#fff" : "#1e293b",
+              boxShadow: `0 2px 8px -2px ${colors.secondary}40`,
+            }}
+          >
+            {t("settings.secondary")}
+          </div>
+          <div
+            className="flex-1 py-2.5 rounded-lg text-sm font-medium text-center shadow-sm"
+            style={{
+              backgroundColor: colors.tertiary,
+              color: isDark ? "#fff" : "#1e293b",
+              boxShadow: `0 1px 4px -1px ${colors.tertiary}30`,
+            }}
+          >
+            {t("settings.tertiary")}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -67,8 +247,11 @@ export default function SettingsPage() {
   const { showSuccess, showError } = useToast();
   const setCompanyBranding = useDashboardStore((s) => s.setCompanyBranding);
   const selectedCompanyId = useDashboardStore((s) => s.selectedCompanyId);
+  const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const setBrandingInCache = useDashboardStore((s) => s.setBrandingInCache);
-  const [form, setForm] = useState<BrandingConfig>({
+  const currentBranding = useDashboardStore((s) => s.companyBranding);
+
+  const defaultForm: BrandingConfig = {
     bannerImageUrl: "",
     logoImageUrl: "",
     primaryColor: THEME_DEFAULT_PRIMARY_LIGHT,
@@ -77,23 +260,33 @@ export default function SettingsPage() {
     secondaryColorDark: THEME_DEFAULT_SECONDARY_DARK,
     tertiaryColor: THEME_DEFAULT_TERTIARY_LIGHT,
     tertiaryColorDark: THEME_DEFAULT_TERTIARY_DARK,
-  });
+  };
+
+  const [form, setForm] = useState<BrandingConfig>(defaultForm);
+  const [initialForm, setInitialForm] = useState<BrandingConfig>(defaultForm);
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [reverting, setReverting] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"visual" | "colors" | "preview">("visual");
+
+  const isDirty = useMemo(
+    () => JSON.stringify(form) !== JSON.stringify(initialForm),
+    [form, initialForm]
+  );
 
   const handleCopyHex = (id: string) => {
     setCopiedId(id);
   };
+
   useEffect(() => {
     if (!copiedId) return;
-    const t = setTimeout(() => setCopiedId(null), 1500);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setCopiedId(null), 1500);
+    return () => clearTimeout(timer);
   }, [copiedId]);
 
-  // Load branding only on mount; [t] caused re-runs and reset colors/image while editing form
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -101,7 +294,7 @@ export default function SettingsPage() {
         const data = await apiClient.get<{ brandingConfig?: BrandingConfig | null }>("/companies/me/branding");
         if (!cancelled && data?.brandingConfig && typeof data.brandingConfig === "object") {
           const bc = data.brandingConfig as BrandingConfig;
-          setForm({
+          const loaded = {
             bannerImageUrl: bc.bannerImageUrl ?? "",
             logoImageUrl: bc.logoImageUrl ?? "",
             primaryColor: bc.primaryColor ?? THEME_DEFAULT_PRIMARY_LIGHT,
@@ -110,7 +303,9 @@ export default function SettingsPage() {
             secondaryColorDark: bc.secondaryColorDark ?? THEME_DEFAULT_SECONDARY_DARK,
             tertiaryColor: bc.tertiaryColor ?? THEME_DEFAULT_TERTIARY_LIGHT,
             tertiaryColorDark: bc.tertiaryColorDark ?? THEME_DEFAULT_TERTIARY_DARK,
-          });
+          };
+          setForm(loaded);
+          setInitialForm(loaded);
         }
       } catch {
         if (!cancelled) setLoadError(t("settings.saveError"));
@@ -118,7 +313,9 @@ export default function SettingsPage() {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCompanyId]);
 
@@ -143,6 +340,7 @@ export default function SettingsPage() {
       const tertiaryColorDark = form.tertiaryColorDark?.trim()
         ? parseHexColor(form.tertiaryColorDark, THEME_DEFAULT_TERTIARY_DARK)
         : null;
+
       await apiClient.patch("/companies/me", {
         brandingConfig: {
           bannerImageUrl: form.bannerImageUrl?.trim() || null,
@@ -155,6 +353,7 @@ export default function SettingsPage() {
           tertiaryColorDark: tertiaryColorDark || null,
         },
       });
+
       const branding = {
         bannerImageUrl: form.bannerImageUrl?.trim() || null,
         logoImageUrl: form.logoImageUrl?.trim() || null,
@@ -164,9 +363,12 @@ export default function SettingsPage() {
         secondaryColorDark: secondaryColorDark || null,
         tertiaryColor: tertiaryColor || null,
         tertiaryColorDark: tertiaryColorDark || null,
+        businessActivity: currentBranding?.businessActivity ?? null,
       };
+
       setCompanyBranding(branding);
       if (selectedCompanyId) setBrandingInCache(selectedCompanyId, branding);
+      setInitialForm(form);
       showSuccess(t("settings.saveSuccess"));
     } catch {
       showError(t("settings.saveError"));
@@ -190,6 +392,7 @@ export default function SettingsPage() {
           tertiaryColorDark: THEME_DEFAULT_TERTIARY_DARK,
         },
       });
+
       const defaultBranding = {
         bannerImageUrl: null,
         logoImageUrl: null,
@@ -199,10 +402,12 @@ export default function SettingsPage() {
         secondaryColorDark: THEME_DEFAULT_SECONDARY_DARK,
         tertiaryColor: THEME_DEFAULT_TERTIARY_LIGHT,
         tertiaryColorDark: THEME_DEFAULT_TERTIARY_DARK,
+        businessActivity: currentBranding?.businessActivity ?? null,
       };
+
       setCompanyBranding(defaultBranding);
       if (selectedCompanyId) setBrandingInCache(selectedCompanyId, defaultBranding);
-      setForm({
+      const revertedForm = {
         bannerImageUrl: "",
         logoImageUrl: "",
         primaryColor: THEME_DEFAULT_PRIMARY_LIGHT,
@@ -211,7 +416,9 @@ export default function SettingsPage() {
         secondaryColorDark: THEME_DEFAULT_SECONDARY_DARK,
         tertiaryColor: THEME_DEFAULT_TERTIARY_LIGHT,
         tertiaryColorDark: THEME_DEFAULT_TERTIARY_DARK,
-      });
+      };
+      setForm(revertedForm);
+      setInitialForm(revertedForm);
       showSuccess(t("settings.saveSuccess"));
     } catch {
       showError(t("settings.saveError"));
@@ -231,151 +438,354 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 pt-6 pb-8 px-4 md:px-10 lg:px-12 w-full">
+    <div className="flex flex-col flex-1 min-h-0 pt-4 pb-6 px-4 md:px-8 lg:px-10 w-full">
       {loadError && (
-        <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400 shrink-0">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="rounded-xl border border-red-500/20 bg-gradient-to-r from-red-500/10 to-red-500/5 px-4 py-3 text-sm text-red-600 dark:text-red-400 shrink-0 mb-6"
+        >
           {loadError}
-        </div>
+        </motion.div>
       )}
 
-      {/* Content with internal scroll: page does not grow and scroll stays inside */}
-      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-      {/* In xl both sections are side by side to reduce height */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-8 items-start">
-        {/* Section 1 - Company theme (Logo and Banner) */}
-        <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0">
-          <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent">
-            <div className="flex items-center gap-2 mb-1">
-              <p className="text-sm font-semibold text-text-primary">{t("settings.companyTheme")}</p>
-              <span className="text-[11px] font-medium text-text-muted">{t("common.optionalBadge")}</span>
-            </div>
-            <p className="text-xs text-text-muted break-words">{t("settings.companyThemeDescription")}</p>
-          </div>
-          <div className="px-6 pb-6 pt-2">
-            <div className="flex flex-col gap-6">
-              <ImageCropField
-                kind="logo"
-                value={form.logoImageUrl ?? ""}
-                onChange={(v) => setForm((p) => ({ ...p, logoImageUrl: v }))}
-                onClear={() => setForm((p) => ({ ...p, logoImageUrl: "" }))}
-                label={t("settings.logoImage")}
-                description={t("settings.logoImageDescription")}
-                recommendedSize="400 × 400 px"
-                layout="row"
-                t={t}
-              />
-              <ImageCropField
-                kind="banner"
-                value={form.bannerImageUrl ?? ""}
-                onChange={(v) => setForm((p) => ({ ...p, bannerImageUrl: v }))}
-                onClear={() => setForm((p) => ({ ...p, bannerImageUrl: "" }))}
-                label={t("settings.bannerImage")}
-                description={t("settings.bannerImageDescription")}
-                recommendedSize="1200 × 240 px"
-                layout="row"
-                t={t}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Section 2 - Colors */}
-        <div className="bg-card/60 rounded-2xl overflow-hidden min-w-0">
-          <div className="px-6 py-4 bg-gradient-to-r from-violet-500/8 to-transparent flex items-center gap-3">
-            <div>
-              <p className="text-sm font-semibold text-text-primary">{t("settings.sectionColors")}</p>
-              <p className="text-xs text-text-muted">{t("settings.sectionColorsDesc")}</p>
-            </div>
-          </div>
-          <div className="px-6 pb-6 pt-2">
-          <div className="flex flex-col gap-6">
-            {/* Row: Primary */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 min-w-0 border-b border-card-border pb-6 last:border-0 last:pb-0">
-              <div className="sm:w-40 shrink-0">
-                <label className={LABEL}>{t("settings.primaryColor")}</label>
-                <p className="text-xs text-text-muted">{t("settings.primaryColorDescription")}</p>
-              </div>
-              <div className="flex flex-wrap items-center gap-4 sm:gap-8 flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-text-muted w-[4.5rem] shrink-0">{t("settings.forLightMode")}</span>
-                  <input type="color" value={form.primaryColor && /^#[0-9A-Fa-f]{6}$/.test(form.primaryColor) ? form.primaryColor : THEME_DEFAULT_PRIMARY_LIGHT} onChange={(e) => setForm((p) => ({ ...p, primaryColor: e.target.value }))} className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0" title={t("settings.primaryColor")} />
-                  <input type="text" value={form.primaryColor ?? ""} onChange={(e) => setForm((p) => ({ ...p, primaryColor: e.target.value }))} placeholder={t("settings.primaryColorPlaceholder")} className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`} aria-label={`${t("settings.primaryColor")} ${t("settings.forLightMode")}`} />
-                  <CopyHexButton value={form.primaryColor ?? THEME_DEFAULT_PRIMARY_LIGHT} id="primary-light" copiedId={copiedId} onCopy={handleCopyHex} copyLabel={t("settings.copyHex")} />
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-text-muted w-[4.5rem] shrink-0">{t("settings.forDarkMode")}</span>
-                  <input type="color" value={form.primaryColorDark && /^#[0-9A-Fa-f]{6}$/.test(form.primaryColorDark) ? form.primaryColorDark : THEME_DEFAULT_PRIMARY_DARK} onChange={(e) => setForm((p) => ({ ...p, primaryColorDark: e.target.value }))} className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0" title={t("settings.primaryColor")} />
-                  <input type="text" value={form.primaryColorDark ?? ""} onChange={(e) => setForm((p) => ({ ...p, primaryColorDark: e.target.value }))} placeholder="#3b82f6" className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`} aria-label={`${t("settings.primaryColor")} ${t("settings.forDarkMode")}`} />
-                  <CopyHexButton value={form.primaryColorDark ?? THEME_DEFAULT_PRIMARY_DARK} id="primary-dark" copiedId={copiedId} onCopy={handleCopyHex} copyLabel={t("settings.copyHex")} />
-                </div>
-              </div>
-            </div>
-            {/* Row: Secondary */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 min-w-0 border-b border-card-border pb-6 last:border-0 last:pb-0">
-              <div className="sm:w-40 shrink-0">
-                <label className={LABEL}>{t("settings.secondaryColor")}</label>
-                <p className="text-xs text-text-muted">{t("settings.secondaryColorDescription")}</p>
-              </div>
-              <div className="flex flex-wrap items-center gap-4 sm:gap-8 flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-text-muted w-[4.5rem] shrink-0">{t("settings.forLightMode")}</span>
-                  <input type="color" value={form.secondaryColor && /^#[0-9A-Fa-f]{6}$/.test(form.secondaryColor) ? form.secondaryColor : THEME_DEFAULT_SECONDARY_LIGHT} onChange={(e) => setForm((p) => ({ ...p, secondaryColor: e.target.value }))} className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0" title={t("settings.secondaryColor")} />
-                  <input type="text" value={form.secondaryColor ?? ""} onChange={(e) => setForm((p) => ({ ...p, secondaryColor: e.target.value }))} placeholder={t("settings.secondaryColorPlaceholder")} className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`} aria-label={`${t("settings.secondaryColor")} ${t("settings.forLightMode")}`} />
-                  <CopyHexButton value={form.secondaryColor ?? THEME_DEFAULT_SECONDARY_LIGHT} id="secondary-light" copiedId={copiedId} onCopy={handleCopyHex} copyLabel={t("settings.copyHex")} />
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-text-muted w-[4.5rem] shrink-0">{t("settings.forDarkMode")}</span>
-                  <input type="color" value={form.secondaryColorDark && /^#[0-9A-Fa-f]{6}$/.test(form.secondaryColorDark) ? form.secondaryColorDark : THEME_DEFAULT_SECONDARY_DARK} onChange={(e) => setForm((p) => ({ ...p, secondaryColorDark: e.target.value }))} className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0" title={t("settings.secondaryColor")} />
-                  <input type="text" value={form.secondaryColorDark ?? ""} onChange={(e) => setForm((p) => ({ ...p, secondaryColorDark: e.target.value }))} placeholder="#94a3b8" className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`} aria-label={`${t("settings.secondaryColor")} ${t("settings.forDarkMode")}`} />
-                  <CopyHexButton value={form.secondaryColorDark ?? THEME_DEFAULT_SECONDARY_DARK} id="secondary-dark" copiedId={copiedId} onCopy={handleCopyHex} copyLabel={t("settings.copyHex")} />
-                </div>
-              </div>
-            </div>
-            {/* Row: Tertiary */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 min-w-0">
-              <div className="sm:w-40 shrink-0">
-                <label className={LABEL}>{t("settings.tertiaryColor")}</label>
-                <p className="text-xs text-text-muted">{t("settings.tertiaryColorDescription")}</p>
-              </div>
-              <div className="flex flex-wrap items-center gap-4 sm:gap-8 flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-text-muted w-[4.5rem] shrink-0">{t("settings.forLightMode")}</span>
-                  <input type="color" value={form.tertiaryColor && /^#[0-9A-Fa-f]{6}$/.test(form.tertiaryColor) ? form.tertiaryColor : THEME_DEFAULT_TERTIARY_LIGHT} onChange={(e) => setForm((p) => ({ ...p, tertiaryColor: e.target.value }))} className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0" title={t("settings.tertiaryColor")} />
-                  <input type="text" value={form.tertiaryColor ?? ""} onChange={(e) => setForm((p) => ({ ...p, tertiaryColor: e.target.value }))} placeholder={t("settings.tertiaryColorPlaceholder")} className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`} aria-label={`${t("settings.tertiaryColor")} ${t("settings.forLightMode")}`} />
-                  <CopyHexButton value={form.tertiaryColor ?? THEME_DEFAULT_TERTIARY_LIGHT} id="tertiary-light" copiedId={copiedId} onCopy={handleCopyHex} copyLabel={t("settings.copyHex")} />
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-text-muted w-[4.5rem] shrink-0">{t("settings.forDarkMode")}</span>
-                  <input type="color" value={form.tertiaryColorDark && /^#[0-9A-Fa-f]{6}$/.test(form.tertiaryColorDark) ? form.tertiaryColorDark : THEME_DEFAULT_TERTIARY_DARK} onChange={(e) => setForm((p) => ({ ...p, tertiaryColorDark: e.target.value }))} className="w-10 h-10 rounded-lg border border-input-border cursor-pointer bg-transparent shrink-0" title={t("settings.tertiaryColor")} />
-                  <input type="text" value={form.tertiaryColorDark ?? ""} onChange={(e) => setForm((p) => ({ ...p, tertiaryColorDark: e.target.value }))} placeholder="#cbd5e1" className={`${IL} w-24 min-w-0 font-mono text-sm py-2 pl-3 pr-2`} aria-label={`${t("settings.tertiaryColor")} ${t("settings.forDarkMode")}`} />
-                  <CopyHexButton value={form.tertiaryColorDark ?? THEME_DEFAULT_TERTIARY_DARK} id="tertiary-dark" copiedId={copiedId} onCopy={handleCopyHex} copyLabel={t("settings.copyHex")} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
+      {/* Tab Navigation - Toggle Style */}
+      <div className="flex items-center gap-1 p-0.5 rounded-lg bg-input-bg border border-card-border mb-6 w-fit">
+        <button
+          onClick={() => setActiveTab("visual")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+            activeTab === "visual"
+              ? "bg-white dark:bg-slate-700 text-company-primary shadow-sm"
+              : "text-text-muted hover:text-text-secondary"
+          }`}
+        >
+          <ImageIcon className="w-4 h-4" />
+          {t("settings.visualIdentity")}
+        </button>
+        <button
+          onClick={() => setActiveTab("colors")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+            activeTab === "colors"
+              ? "bg-white dark:bg-slate-700 text-company-primary shadow-sm"
+              : "text-text-muted hover:text-text-secondary"
+          }`}
+        >
+          <Palette className="w-4 h-4" />
+          {t("settings.colorPalette")}
+        </button>
+        <button
+          onClick={() => setActiveTab("preview")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+            activeTab === "preview"
+              ? "bg-white dark:bg-slate-700 text-company-primary shadow-sm"
+              : "text-text-muted hover:text-text-secondary"
+          }`}
+        >
+          <Eye className="w-4 h-4" />
+          {t("settings.livePreview")}
+        </button>
       </div>
 
-      <div className="shrink-0 flex items-center justify-between gap-4 pt-4 flex-wrap border-t border-card-border mt-4 pt-4">
+      {/* Main Content Grid */}
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pb-4">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+          {/* Left Column - Settings (full width when not preview) */}
+          <div className="space-y-6 xl:col-span-12">
+            {activeTab === "visual" ? (
+              <div className="space-y-8">
+                {/* Visual Identity Section */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-company-primary/10">
+                      <ImageIcon className="w-5 h-5 text-company-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-semibold text-text-primary flex items-center gap-2">
+                        {t("settings.companyTheme")}
+                        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-text-muted/10 text-text-muted">{t("common.optionalBadge")}</span>
+                      </h2>
+                      <p className="text-sm text-text-muted">{t("settings.companyThemeDescription")}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-8 pl-1">
+                    <ImageCropField
+                      kind="logo"
+                      value={form.logoImageUrl ?? ""}
+                      onChange={(v) => setForm((p) => ({ ...p, logoImageUrl: v }))}
+                      onClear={() => setForm((p) => ({ ...p, logoImageUrl: "" }))}
+                      label={t("settings.logoImage")}
+                      description={t("settings.logoImageDescription")}
+                      recommendedSize="400 × 400 px"
+                      layout="row"
+                      t={t}
+                    />
+
+                    <ImageCropField
+                      kind="banner"
+                      value={form.bannerImageUrl ?? ""}
+                      onChange={(v) => setForm((p) => ({ ...p, bannerImageUrl: v }))}
+                      onClear={() => setForm((p) => ({ ...p, bannerImageUrl: "" }))}
+                      label={t("settings.bannerImage")}
+                      description={t("settings.bannerImageDescription")}
+                      recommendedSize="1200 × 240 px"
+                      layout="row"
+                      t={t}
+                    />
+                  </div>
+                </div>
+              </div>
+              ) : activeTab === "colors" ? (
+                <div className="space-y-8">
+                  {/* Colors Section */}
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-company-primary/10">
+                        <Palette className="w-5 h-5 text-company-primary" />
+                      </div>
+                      <div>
+                        <h2 className="text-base font-semibold text-text-primary">{t("settings.sectionColors")}</h2>
+                        <p className="text-sm text-text-muted">{t("settings.sectionColorsDesc")}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-8 pl-1">
+                      {/* Primary Color */}
+                      <div className="space-y-5">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-5 h-5 rounded-lg shadow-md ring-2 ring-white dark:ring-slate-700"
+                            style={{ backgroundColor: parseHexColor(form.primaryColor || "", THEME_DEFAULT_PRIMARY_LIGHT) }}
+                          />
+                          <div>
+                            <label className="text-sm font-semibold text-text-primary">
+                              {t("settings.primaryColor")}
+                            </label>
+                            <p className="text-xs text-text-muted">{t("settings.primaryColorDescription")}</p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          <div className="space-y-3">
+                            <span className="text-xs font-semibold text-text-secondary flex items-center gap-2">
+                              <div className="w-4 h-4 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 shadow-sm flex items-center justify-center">
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                              </div>
+                              {t("settings.forLightMode")}
+                            </span>
+                            <ColorInput
+                              value={form.primaryColor ?? ""}
+                              onChange={(v) => setForm((p) => ({ ...p, primaryColor: v }))}
+                              label={`${t("settings.primaryColor")} ${t("settings.forLightMode")}`}
+                              placeholder={THEME_DEFAULT_PRIMARY_LIGHT}
+                              id="primary-light"
+                              copiedId={copiedId}
+                              onCopy={handleCopyHex}
+                              copyLabel={t("settings.copyHex")}
+                            />
+                          </div>
+                          <div className="space-y-3">
+                            <span className="text-xs font-semibold text-text-secondary flex items-center gap-2">
+                              <div className="w-4 h-4 rounded-md bg-gradient-to-br from-slate-700 to-slate-800 shadow-sm flex items-center justify-center">
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+                              </div>
+                              {t("settings.forDarkMode")}
+                            </span>
+                            <ColorInput
+                              value={form.primaryColorDark ?? ""}
+                              onChange={(v) => setForm((p) => ({ ...p, primaryColorDark: v }))}
+                              label={`${t("settings.primaryColor")} ${t("settings.forDarkMode")}`}
+                              placeholder={THEME_DEFAULT_PRIMARY_DARK}
+                              id="primary-dark"
+                              copiedId={copiedId}
+                              onCopy={handleCopyHex}
+                              copyLabel={t("settings.copyHex")}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="h-px bg-card-border" />
+
+                      {/* Secondary Color */}
+                      <div className="space-y-5">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-5 h-5 rounded-lg shadow-md ring-2 ring-white dark:ring-slate-700"
+                            style={{ backgroundColor: parseHexColor(form.secondaryColor || "", THEME_DEFAULT_SECONDARY_LIGHT) }}
+                          />
+                          <div>
+                            <label className="text-sm font-semibold text-text-primary">
+                              {t("settings.secondaryColor")}
+                            </label>
+                            <p className="text-xs text-text-muted">{t("settings.secondaryColorDescription")}</p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          <div className="space-y-3">
+                            <span className="text-xs font-semibold text-text-secondary flex items-center gap-2">
+                              <div className="w-4 h-4 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 shadow-sm flex items-center justify-center">
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                              </div>
+                              {t("settings.forLightMode")}
+                            </span>
+                            <ColorInput
+                              value={form.secondaryColor ?? ""}
+                              onChange={(v) => setForm((p) => ({ ...p, secondaryColor: v }))}
+                              label={`${t("settings.secondaryColor")} ${t("settings.forLightMode")}`}
+                              placeholder={THEME_DEFAULT_SECONDARY_LIGHT}
+                              id="secondary-light"
+                              copiedId={copiedId}
+                              onCopy={handleCopyHex}
+                              copyLabel={t("settings.copyHex")}
+                            />
+                          </div>
+                          <div className="space-y-3">
+                            <span className="text-xs font-semibold text-text-secondary flex items-center gap-2">
+                              <div className="w-4 h-4 rounded-md bg-gradient-to-br from-slate-700 to-slate-800 shadow-sm flex items-center justify-center">
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+                              </div>
+                              {t("settings.forDarkMode")}
+                            </span>
+                            <ColorInput
+                              value={form.secondaryColorDark ?? ""}
+                              onChange={(v) => setForm((p) => ({ ...p, secondaryColorDark: v }))}
+                              label={`${t("settings.secondaryColor")} ${t("settings.forDarkMode")}`}
+                              placeholder={THEME_DEFAULT_SECONDARY_DARK}
+                              id="secondary-dark"
+                              copiedId={copiedId}
+                              onCopy={handleCopyHex}
+                              copyLabel={t("settings.copyHex")}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="h-px bg-card-border" />
+
+                      {/* Tertiary Color */}
+                      <div className="space-y-5">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-5 h-5 rounded-lg shadow-md ring-2 ring-white dark:ring-slate-700"
+                            style={{ backgroundColor: parseHexColor(form.tertiaryColor || "", THEME_DEFAULT_TERTIARY_LIGHT) }}
+                          />
+                          <div>
+                            <label className="text-sm font-semibold text-text-primary">
+                              {t("settings.tertiaryColor")}
+                            </label>
+                            <p className="text-xs text-text-muted">{t("settings.tertiaryColorDescription")}</p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          <div className="space-y-3">
+                            <span className="text-xs font-semibold text-text-secondary flex items-center gap-2">
+                              <div className="w-4 h-4 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 shadow-sm flex items-center justify-center">
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                              </div>
+                              {t("settings.forLightMode")}
+                            </span>
+                            <ColorInput
+                              value={form.tertiaryColor ?? ""}
+                              onChange={(v) => setForm((p) => ({ ...p, tertiaryColor: v }))}
+                              label={`${t("settings.tertiaryColor")} ${t("settings.forLightMode")}`}
+                              placeholder={THEME_DEFAULT_TERTIARY_LIGHT}
+                              id="tertiary-light"
+                              copiedId={copiedId}
+                              onCopy={handleCopyHex}
+                              copyLabel={t("settings.copyHex")}
+                            />
+                          </div>
+                          <div className="space-y-3">
+                            <span className="text-xs font-semibold text-text-secondary flex items-center gap-2">
+                              <div className="w-4 h-4 rounded-md bg-gradient-to-br from-slate-700 to-slate-800 shadow-sm flex items-center justify-center">
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+                              </div>
+                              {t("settings.forDarkMode")}
+                            </span>
+                            <ColorInput
+                              value={form.tertiaryColorDark ?? ""}
+                              onChange={(v) => setForm((p) => ({ ...p, tertiaryColorDark: v }))}
+                              label={`${t("settings.tertiaryColor")} ${t("settings.forDarkMode")}`}
+                              placeholder={THEME_DEFAULT_TERTIARY_DARK}
+                              id="tertiary-dark"
+                              copiedId={copiedId}
+                              onCopy={handleCopyHex}
+                              copyLabel={t("settings.copyHex")}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : activeTab === "preview" ? (
+                <div className="space-y-8">
+                  {/* Row 1: Live Preview */}
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 rounded-xl bg-company-primary/10">
+                        <Eye className="w-5 h-5 text-company-primary" />
+                      </div>
+                      <div>
+                        <h2 className="text-base font-semibold text-text-primary">{t("settings.livePreview")}</h2>
+                        <p className="text-sm text-text-muted">{t("settings.previewLabel")}</p>
+                      </div>
+                    </div>
+                    <div className="max-w-3xl">
+                      <BrandingPreview form={form} t={t} companyName={selectedCompanyName} />
+                    </div>
+                  </div>
+
+                  {/* Row 2: Pro Tips */}
+                  <div className="flex items-start gap-4">
+                    <div className="p-2.5 rounded-xl bg-company-primary/10 shrink-0">
+                      <Sparkles className="w-5 h-5 text-company-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-semibold text-text-primary mb-2">{t("settings.proTips")}</h2>
+                      <ul className="text-sm text-text-muted space-y-2">
+                        <li className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-company-primary mt-1.5 shrink-0" />
+                          {t("settings.tipContrast")}
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-company-primary mt-1.5 shrink-0" />
+                          {t("settings.tipSimple")}
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-company-primary mt-1.5 shrink-0" />
+                          {t("settings.tipTest")}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+          </div>
+        </div>
+      </div>
+
+      {/* Action Bar */}
+      <div className="mt-auto flex items-center justify-between gap-4 pt-4 border-t border-card-border">
         <button
           type="button"
           onClick={handleRevertToDefault}
-          disabled={reverting || submitting}
-          className="text-xs text-company-tertiary hover:text-company-secondary transition-colors disabled:opacity-50 disabled:pointer-events-none inline-flex items-center gap-1.5"
+          disabled={!isDirty || reverting || submitting}
+          className="group flex items-center gap-2 px-4 py-2.5 rounded-lg border border-card-border text-sm font-medium text-text-secondary hover:text-red-500 hover:border-red-200 hover:bg-red-50/50 dark:hover:bg-red-500/10 transition-all disabled:opacity-50"
         >
           {reverting ? (
-            <LoadingSpinner size="sm" className="shrink-0" />
+            <LoadingSpinner size="sm" />
           ) : (
-            <Undo2 className="w-3.5 h-3.5 shrink-0" />
+            <RotateCcw className="w-4 h-4 transition-transform duration-500 group-hover:-rotate-180" />
           )}
           {t("settings.revertToDefault")}
         </button>
-        <div className="flex items-center gap-3 ml-auto">
+
+        <div className="flex items-center gap-3">
           <Link
             href="/dashboard"
-            className="px-5 py-3 rounded-lg border border-company-secondary-muted text-sm font-medium text-company-secondary hover:bg-company-secondary-subtle hover:text-company-secondary transition-colors"
+            className="px-5 py-2.5 rounded-xl border border-card-border text-sm font-medium text-text-secondary hover:bg-card hover:text-text-primary transition-all hover:border-company-secondary/30"
           >
             {t("common.cancel")}
           </Link>

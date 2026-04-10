@@ -170,8 +170,8 @@ export function ImageCropEditor({
         </div>
       </div>
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-        <label className="flex items-center gap-3 min-w-0 sm:min-w-[180px]">
-          <span className="text-sm font-medium text-text-secondary w-10 shrink-0">Zoom</span>
+        <label className="flex items-center gap-3 flex-1 min-w-0">
+          <span className="text-sm font-medium text-text-secondary shrink-0">Zoom</span>
           <input
             type="range"
             min={MIN_SCALE}
@@ -183,7 +183,7 @@ export function ImageCropEditor({
             style={{ accentColor: "var(--company-primary, #2563eb)" }}
           />
         </label>
-        <div className="flex items-center justify-end sm:justify-start gap-2 shrink-0">
+        <div className="flex items-center justify-end gap-2 shrink-0">
           <button
             type="button"
             onClick={onCancel}

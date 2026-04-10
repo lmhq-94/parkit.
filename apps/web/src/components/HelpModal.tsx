@@ -1,7 +1,8 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { HelpCircle, X, Mail, MessageSquare, FileText, ExternalLink } from "lucide-react";
+import { useState } from "react";
+import { HelpCircle, X, Mail, MessageSquare, FileText, ExternalLink, Shield, Scale, ChevronDown } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface HelpModalProps {
@@ -11,6 +12,7 @@ interface HelpModalProps {
 
 export function HelpModal({ open, onClose }: HelpModalProps) {
   const { t } = useTranslation();
+  const [tipsExpanded, setTipsExpanded] = useState(false);
 
   if (!open || typeof document === "undefined") return null;
 
@@ -28,7 +30,7 @@ export function HelpModal({ open, onClose }: HelpModalProps) {
         onClick={onClose}
       />
       <div
-        className="relative w-full max-w-md max-h-[90vh] flex flex-col rounded-2xl border border-card-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-2xl border border-card-border bg-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-card-border shrink-0">
@@ -101,38 +103,73 @@ export function HelpModal({ open, onClose }: HelpModalProps) {
                 </div>
                 <ExternalLink className="w-4 h-4 text-text-muted group-hover:text-company-primary transition-colors" />
               </a>
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-3 rounded-lg border border-input-border bg-input-bg hover:bg-company-primary-subtle transition-colors group"
+              >
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-company-secondary/10 text-company-secondary group-hover:bg-company-primary group-hover:text-white transition-colors">
+                  <Shield className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-text-primary">{t("help.privacyPolicy")}</p>
+                </div>
+                <ExternalLink className="w-4 h-4 text-text-muted group-hover:text-company-primary transition-colors" />
+              </a>
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-3 rounded-lg border border-input-border bg-input-bg hover:bg-company-primary-subtle transition-colors group"
+              >
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-company-secondary/10 text-company-secondary group-hover:bg-company-primary group-hover:text-white transition-colors">
+                  <Scale className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-text-primary">{t("help.terms")}</p>
+                </div>
+                <ExternalLink className="w-4 h-4 text-text-muted group-hover:text-company-primary transition-colors" />
+              </a>
             </div>
           </div>
 
-          {/* Quick Tips */}
+          {/* Quick Tips - Collapsible */}
           <div className="space-y-3">
-            <h3 className="text-sm font-medium text-text-secondary">
+            <button
+              type="button"
+              onClick={() => setTipsExpanded(!tipsExpanded)}
+              className="flex items-center justify-between w-full text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
+            >
               {t("help.quickTips")}
-            </h3>
-            <div className="relative overflow-hidden rounded-xl border border-company-primary-muted bg-gradient-to-br from-company-primary-subtle via-company-primary-subtle/80 to-company-secondary-subtle/50 p-5">
-              <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-company-primary/10 blur-2xl" />
-              <div className="absolute -bottom-4 -left-4 h-20 w-20 rounded-full bg-company-secondary/10 blur-2xl" />
-              <ul className="relative space-y-3">
-                <li className="flex items-start gap-3">
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-company-primary text-xs font-semibold text-white shadow-sm">
-                    1
-                  </div>
-                  <span className="text-sm leading-relaxed text-text-secondary">{t("help.tip1")}</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-company-primary text-xs font-semibold text-white shadow-sm">
-                    2
-                  </div>
-                  <span className="text-sm leading-relaxed text-text-secondary">{t("help.tip2")}</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-company-primary text-xs font-semibold text-white shadow-sm">
-                    3
-                  </div>
-                  <span className="text-sm leading-relaxed text-text-secondary">{t("help.tip3")}</span>
-                </li>
-              </ul>
-            </div>
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${tipsExpanded ? "rotate-180" : ""}`} />
+            </button>
+            {tipsExpanded && (
+              <div className="relative overflow-hidden rounded-xl border border-company-primary-muted bg-gradient-to-br from-company-primary-subtle via-company-primary-subtle/80 to-company-secondary-subtle/50 p-5">
+                <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-company-primary/10 blur-2xl" />
+                <div className="absolute -bottom-4 -left-4 h-20 w-20 rounded-full bg-company-secondary/10 blur-2xl" />
+                <ul className="relative space-y-3">
+                  <li className="flex items-start gap-3">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-company-primary text-xs font-semibold text-white shadow-sm">
+                      1
+                    </div>
+                    <span className="text-sm leading-relaxed text-text-secondary">{t("help.tip1")}</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-company-primary text-xs font-semibold text-white shadow-sm">
+                      2
+                    </div>
+                    <span className="text-sm leading-relaxed text-text-secondary">{t("help.tip2")}</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-company-primary text-xs font-semibold text-white shadow-sm">
+                      3
+                    </div>
+                    <span className="text-sm leading-relaxed text-text-secondary">{t("help.tip3")}</span>
+                  </li>
+                </ul>
+              </div>
+            )}
           </div>
         </div>
 

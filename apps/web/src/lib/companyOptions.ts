@@ -358,26 +358,28 @@ export const CURRENCIES = [
   { code: "ZWL", label: "ZWL — Dólar zimbabuense" },
 ] as const;
 
-/** Industry values for company "business activity". Labels are translated via companies.industryOptions.<value> in i18n. */
+/** Industry values for company "business activity". Labels are translated via companies.industryOptions.<value> in i18n.
+ *  Sorted alphabetically by Spanish labels (primary locale). "OTHER" is always last.
+ */
 export const INDUSTRIES = [
-  { value: "PARKING_OPERATOR" },
+  { value: "AIRPORT" },
+  { value: "BANKING_FINANCIAL" },
   { value: "MALL" },
-  { value: "SUPERMARKET_RETAIL_CHAIN" },
+  { value: "EVENT_VENUE" },
+  { value: "OFFICE_BUILDING" },
+  { value: "EDUCATION" },
+  { value: "ENTERTAINMENT_LEISURE" },
   { value: "HOSPITAL_CLINIC" },
   { value: "HOTEL" },
-  { value: "AIRPORT" },
-  { value: "OFFICE_BUILDING" },
-  { value: "RESIDENTIAL" },
-  { value: "UNIVERSITY_SCHOOL" },
-  { value: "EVENT_VENUE" },
-  { value: "MUNICIPALITY" },
   { value: "INDUSTRIAL_MANUFACTURING" },
   { value: "LOGISTICS_WAREHOUSING" },
-  { value: "BANKING_FINANCIAL" },
-  { value: "TECH" },
+  { value: "MUNICIPALITY" },
+  { value: "PARKING_OPERATOR" },
+  { value: "RESIDENTIAL" },
   { value: "RESTAURANTS_FOOD" },
-  { value: "ENTERTAINMENT_LEISURE" },
-  { value: "EDUCATION" },
+  { value: "SUPERMARKET_RETAIL_CHAIN" },
+  { value: "TECH" },
+  { value: "UNIVERSITY_SCHOOL" },
   { value: "OTHER" },
 ] as const;
 
