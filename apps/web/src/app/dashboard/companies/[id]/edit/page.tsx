@@ -6,7 +6,7 @@ import Link from "next/link";
 import {
   Building, Receipt, Mail, Phone, Globe,
   DollarSign, Clock, MapPin, ArrowRight,
-} from "lucide-react";
+} from "@/lib/premiumIcons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";

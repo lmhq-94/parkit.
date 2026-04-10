@@ -2,7 +2,7 @@
 
 import { createPortal } from "react-dom";
 import { useState } from "react";
-import { HelpCircle, XCircle, MailOpen, MessageSquare, BookOpen, ExternalLink, Shield, Gavel, ChevronDown } from "lucide-react";
+import { HelpCircle, XCircle, MailOpen, MessageSquare, BookOpen, ExternalLink, Shield, Gavel, ChevronDown } from "@/lib/premiumIcons";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface HelpModalProps {

@@ -5,7 +5,7 @@ import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@/lib/premiumIcons";
 import { ThemeToggleSimple } from "@/components/ThemeToggleSimple";
 import { LocaleToggleSimple } from "@/components/LocaleToggleSimple";
 import { useTranslation } from "@/hooks/useTranslation";

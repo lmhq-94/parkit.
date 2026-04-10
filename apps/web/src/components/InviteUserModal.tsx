@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { MailOpen, Plus, Trash, XCircle, Users } from "lucide-react";
+import { MailOpen, Plus, Trash, XCircle, Users } from "@/lib/premiumIcons";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/lib/toastStore";

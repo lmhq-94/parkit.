@@ -19,7 +19,7 @@ import { getAvatarHSLColors, getFullName, getShortName, isSuperAdmin } from "@/l
 import { apiClient } from "@/lib/api";
 import { useTheme } from "next-themes";
 import { useLocaleStore } from "@/lib/store";
-import { Sun, Moon, ArrowLeft, ChevronDown, Menu, User, LogOut, HelpCircle, Award } from "lucide-react";
+import { Sun, Moon, ArrowLeft, ChevronDown, Menu, User, LogOut, HelpCircle } from "@/lib/premiumIcons";
 
 const HeaderActionContext = createContext<((node: React.ReactNode) => void) | null>(null);
 export function useHeaderAction() {

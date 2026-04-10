@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { User, MailOpen, Shield } from "lucide-react";
+import { User, MailOpen, Shield } from "@/lib/premiumIcons";
 import { FormWizard } from "@/components/FormWizard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";

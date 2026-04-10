@@ -8,7 +8,7 @@ import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { checkPasswordRequirements, isPasswordSecure } from "@parkit/shared";
 import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Lock, Eye, EyeOff, ArrowRight, CheckCircle, Check, Circle } from "lucide-react";
+import { Lock, Eye, EyeOff, ArrowRight, CheckCircle, Check, Circle } from "@/lib/premiumIcons";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageLoader } from "@/components/PageLoader";
 

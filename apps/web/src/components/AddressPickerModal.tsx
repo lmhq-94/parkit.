@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { MapPin, Search, XCircle } from "lucide-react";
+import { MapPin, Search, XCircle } from "@/lib/premiumIcons";
 import dynamic from "next/dynamic";
 import { useTranslation } from "@/hooks/useTranslation";
 

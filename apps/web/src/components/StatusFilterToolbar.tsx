@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, Check } from "lucide-react";
+import { ChevronDown, Check } from "@/lib/premiumIcons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTheme } from "next-themes";
 

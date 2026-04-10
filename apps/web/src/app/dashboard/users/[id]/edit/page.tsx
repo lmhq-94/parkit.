@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, MailOpen, Phone, Clock, Shield, ArrowRight } from "lucide-react";
+import { User, MailOpen, Phone, Clock, Shield, ArrowRight } from "@/lib/premiumIcons";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";

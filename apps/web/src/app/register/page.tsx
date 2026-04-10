@@ -16,9 +16,7 @@ import {
   AlertOctagon,
   Check,
   X,
-  Mail,
-  Lock,
-} from "lucide-react";
+} from "@/lib/premiumIcons";
 import { FcGoogle } from "react-icons/fc";
 import { FaSquareFacebook, FaMicrosoft } from "react-icons/fa6";
 import { LoadingSpinner } from "@/components/LoadingSpinner";

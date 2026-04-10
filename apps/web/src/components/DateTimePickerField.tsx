@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { Calendar, ChevronLeft, ChevronRight, XCircle, Clock } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, XCircle, Clock } from "@/lib/premiumIcons";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface DateTimePickerFieldProps {

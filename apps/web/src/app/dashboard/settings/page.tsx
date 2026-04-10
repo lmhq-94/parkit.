@@ -13,7 +13,7 @@ import {
   Building,
   RotateCcw,
   CheckCircle,
-} from "lucide-react";
+} from "@/lib/premiumIcons";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";

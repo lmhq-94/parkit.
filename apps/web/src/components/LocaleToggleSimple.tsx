@@ -2,7 +2,7 @@
 
 import { createPortal } from "react-dom";
 import { useLocaleStore } from "@/lib/store";
-import { Globe } from "lucide-react";
+import { Globe } from "@/lib/premiumIcons";
 import { useState, useRef, useEffect } from "react";
 
 export function LocaleToggleSimple() {

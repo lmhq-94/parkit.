@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Bell, Check, Trash } from "lucide-react";
+import { Bell, Check, Trash } from "@/lib/premiumIcons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/lib/toastStore";
 import { useAuthStore, useDashboardStore } from "@/lib/store";

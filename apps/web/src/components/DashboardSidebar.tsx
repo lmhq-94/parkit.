@@ -7,7 +7,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuthStore, useDashboardStore, SIDEBAR_COLLAPSED_KEY } from "@/lib/store";
-import { getAvatarColor, isSuperAdmin, isAdmin } from "@/lib/auth";
+import { isSuperAdmin, isAdmin } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
 import { DefaultBanner } from "@/components/DefaultBanner";
 import { apiClient } from "@/lib/api";
@@ -28,9 +28,7 @@ import {
   ChevronRight,
   ChevronDown,
   Building,
-  Plus,
-  LogOut,
-} from "lucide-react";
+} from "@/lib/premiumIcons";
 
 function SidebarTooltip({
   show,
@@ -304,22 +302,26 @@ function CompanySelector({
       <div className="relative flex items-center gap-3">
         {!hideAvatar && (
           <div
-            className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center text-xs font-semibold border border-white/20 overflow-hidden bg-input-bg"
+            className="w-9 h-9 rounded-lg shrink-0 flex items-center justify-center text-xs font-semibold overflow-hidden"
             style={
               !logoImageUrl?.trim()
                 ? {
-                    backgroundColor: selectedCompanyId ? (getAvatarColor(selectedCompanyId) ?? "var(--input-bg)") : "transparent",
-                    color: "white",
+                    backgroundColor: selectedCompanyId ? (isDark ? "hsla(220, 10%, 35%, 1)" : "hsla(220, 10%, 88%, 1)") : "transparent",
+                    color: isDark ? "hsla(220, 10%, 85%, 1)" : "hsla(220, 10%, 45%, 1)",
+                    border: `2px solid ${selectedCompanyId ? (isDark ? "hsla(220, 15%, 45%, 0.4)" : "hsla(220, 15%, 75%, 0.6)") : "transparent"}`,
                   }
-                : undefined
+                : {
+                    border: "2px solid transparent",
+                    boxShadow: "inset 0 2px 4px rgba(0,0,0,0.1)",
+                  }
             }
           >
             {logoImageUrl?.trim() ? (
-              <Image src={logoImageUrl} alt="" width={40} height={40} className="w-full h-full object-cover object-center" key={logoImageUrl} />
+              <Image src={logoImageUrl} alt="" width={36} height={36} className="w-full h-full object-cover object-center" key={logoImageUrl} />
             ) : selectedCompanyId ? (
               selectedInitials
             ) : (
-              <Building className={`w-4 h-4 ${isDark ? "text-white/60" : "text-slate-500"}`} />
+              <Building className={`w-[18px] h-[18px] ${isDark ? "text-white/60" : "text-slate-500"}`} />
             )}
           </div>
         )}

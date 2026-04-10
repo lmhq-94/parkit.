@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Building, Plus } from "lucide-react";
+import { Building, Plus } from "@/lib/premiumIcons";
 import Link from "next/link";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getStoredUser, isSuperAdmin } from "@/lib/auth";

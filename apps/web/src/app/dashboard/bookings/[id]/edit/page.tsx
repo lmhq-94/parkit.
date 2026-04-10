@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Users, Car, MapPin, ArrowRight } from "lucide-react";
+import { Users, Car, MapPin, ArrowRight } from "@/lib/premiumIcons";
 import { SelectField } from "@/components/SelectField";
 import { DateTimePickerField } from "@/components/DateTimePickerField";
 import { useTranslation } from "@/hooks/useTranslation";

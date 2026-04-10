@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { MailOpen, UserPlus } from "lucide-react";
+import { MailOpen, UserPlus } from "@/lib/premiumIcons";
 import { useRouter } from "next/navigation";
 import type { ICellRendererParams } from "ag-grid-community";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";

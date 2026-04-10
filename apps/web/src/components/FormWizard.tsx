@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ArrowRight, Check, AlertOctagon } from "lucide-react";
+import { ChevronLeft, ArrowRight, Check, AlertOctagon } from "@/lib/premiumIcons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 

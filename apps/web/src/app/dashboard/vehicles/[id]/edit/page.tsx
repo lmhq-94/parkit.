@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Car, Hash, Globe, ArrowRight, Users } from "lucide-react";
+import { Car, Hash, Globe, ArrowRight, Users } from "@/lib/premiumIcons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";

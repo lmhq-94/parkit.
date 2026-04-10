@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Plus, Tag, Navigation, Radius, Trash, Clock, Coins } from "lucide-react";
+import { MapPin, Plus, Tag, Navigation, Radius, Trash, Clock, Coins } from "@/lib/premiumIcons";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";

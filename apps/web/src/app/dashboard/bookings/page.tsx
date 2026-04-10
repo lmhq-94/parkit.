@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { Plus, QrCode } from "lucide-react";
+import { Plus, QrCode } from "@/lib/premiumIcons";
 import { useRouter } from "next/navigation";
 import { BookingQRModal } from "@/components/BookingQRModal";
 import { PageLoader } from "@/components/PageLoader";

@@ -9,7 +9,7 @@ import { isSuperAdmin } from "@/lib/auth";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ArrowRight, Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "@/lib/premiumIcons";
 import { FcGoogle } from "react-icons/fc";
 import { FaSquareFacebook, FaMicrosoft } from "react-icons/fa6";
 import { LoadingSpinner } from "@/components/LoadingSpinner";

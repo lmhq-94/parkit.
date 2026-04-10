@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, XCircle, Crop } from "lucide-react";
+import { Upload, XCircle, Crop } from "@/lib/premiumIcons";
 import { ImageCropEditor } from "@/components/ImageCropEditor";
 
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";

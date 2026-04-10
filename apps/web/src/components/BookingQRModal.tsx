@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useCallback } from "react";
-import { XCircle } from "lucide-react";
+import { XCircle } from "@/lib/premiumIcons";
 import dynamic from "next/dynamic";
 import { useTranslation } from "@/hooks/useTranslation";
 

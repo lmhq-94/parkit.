@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocaleStore } from "@/lib/store";
-import { Globe, Check } from "lucide-react";
+import { Globe, Check } from "@/lib/premiumIcons";
 import { apiClient } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useState, useRef, useEffect } from "react";

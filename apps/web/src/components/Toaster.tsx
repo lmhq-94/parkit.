@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useToastStore } from "@/lib/toastStore";
-import { Check, AlertOctagon, Info, XCircle } from "lucide-react";
+import { Check, AlertOctagon, Info, XCircle } from "@/lib/premiumIcons";
 
 export function Toaster() {
   const toasts = useToastStore((s) => s.toasts);

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { User, MailOpen, CreditCard, Briefcase } from "lucide-react";
+import { User, MailOpen, CreditCard, Briefcase } from "@/lib/premiumIcons";
 import { FormWizard } from "@/components/FormWizard";
 import { MultiSelectField } from "@/components/MultiSelectField";
 import { SelectField } from "@/components/SelectField";

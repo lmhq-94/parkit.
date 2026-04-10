@@ -17,7 +17,7 @@ import {
   Settings2,
   SlidersHorizontal,
   RotateCcw,
-} from "lucide-react";
+} from "@/lib/premiumIcons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useAuthStore, useDashboardStore, useLocaleStore } from "@/lib/store";

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTheme } from "next-themes";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@/lib/premiumIcons";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ThemeToggleSimple } from "@/components/ThemeToggleSimple";

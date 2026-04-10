@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { User, MailOpen, Phone, Clock, Shield } from "lucide-react";
+import { User, MailOpen, Phone, Clock, Shield } from "@/lib/premiumIcons";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";

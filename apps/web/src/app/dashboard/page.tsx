@@ -16,7 +16,7 @@ import {
   TrendingUp,
   Car,
   ChevronRight,
-} from "lucide-react";
+} from "@/lib/premiumIcons";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";

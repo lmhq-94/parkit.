@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   Building, Receipt, Mail, Phone, Globe,
   DollarSign, Clock, MapPin,
-} from "lucide-react";
+} from "@/lib/premiumIcons";
 import { FormWizard } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";

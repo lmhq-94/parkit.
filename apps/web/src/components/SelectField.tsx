@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown, Search } from "@/lib/premiumIcons";
 import { useTheme } from "next-themes";
 
 interface SelectFieldProps {

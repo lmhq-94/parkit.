@@ -2,12 +2,12 @@
 
 import Image from "next/image";
 import { getIndustryIcon } from "@/lib/companyIcons";
-import type { LucideIcon } from "lucide-react";
+import type { PremiumIcon } from "@/lib/premiumIcons";
 
 /**
  * Banner estilo Microsoft/Google: avatar/logo en círculo a la izquierda
  * y nombre de empresa a la derecha. Misma estructura con o sin imagen de fondo.
- * Si no hay logo, muestra un icono de Lucide basado en el businessActivity.
+ * Si no hay logo, muestra un icono premium acorde a la actividad del negocio.
  * 
  * V2: Diseño premium con glassmorphism mejorado y gradientes elegantes.
  */
@@ -36,7 +36,7 @@ export function DefaultBanner({
   /** Industry/business activity to determine the icon */
   businessActivity?: string | null;
 }) {
-  const IndustryIcon: LucideIcon = getIndustryIcon(businessActivity);
+  const IndustryIcon: PremiumIcon = getIndustryIcon(businessActivity);
   const hasBackgroundImage = Boolean(backgroundImageUrl?.trim());
 
   return (

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
-import { Pencil, XCircle } from "lucide-react";
+import { Pencil, XCircle } from "@/lib/premiumIcons";
 
 export interface RowDetailModalProps {
   title: string;

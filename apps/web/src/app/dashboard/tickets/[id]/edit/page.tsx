@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Users, Car, MapPin, ArrowRight, User } from "lucide-react";
+import { Users, Car, MapPin, ArrowRight, User } from "@/lib/premiumIcons";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";

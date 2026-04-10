@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { MailOpen, Plus } from "lucide-react";
+import { MailOpen, Plus } from "@/lib/premiumIcons";
 import { useRouter } from "next/navigation";
 import type { ICellRendererParams } from "ag-grid-community";
 import { PageLoader } from "@/components/PageLoader";

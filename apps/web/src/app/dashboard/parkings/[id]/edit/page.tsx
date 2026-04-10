@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { MapPin, Tag, Navigation, Radius, ArrowRight, Plus, Trash, Clock, Coins } from "lucide-react";
+import { MapPin, Tag, Navigation, Radius, ArrowRight, Plus, Trash, Clock, Coins } from "@/lib/premiumIcons";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";

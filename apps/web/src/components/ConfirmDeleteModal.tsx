@@ -2,7 +2,7 @@
 
 import { createPortal } from "react-dom";
 import { useEffect } from "react";
-import { AlertOctagon } from "lucide-react";
+import { AlertOctagon } from "@/lib/premiumIcons";
 
 export function ConfirmDeleteModal({
   open,

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, MailOpen, CreditCard, Activity, ArrowRight, Briefcase } from "lucide-react";
+import { User, MailOpen, CreditCard, Activity, ArrowRight, Briefcase } from "@/lib/premiumIcons";
 import { MultiSelectField } from "@/components/MultiSelectField";
 import { DatePickerField } from "@/components/DatePickerField";
 import { SelectField } from "@/components/SelectField";
