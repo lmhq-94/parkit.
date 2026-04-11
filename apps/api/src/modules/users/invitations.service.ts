@@ -1,7 +1,7 @@
 import { prisma } from "../../shared/prisma";
 import { SystemRole, InvitationStatus } from "@prisma/client";
 import { signToken } from "../auth/auth.utils";
-import { sendInvitationAdminEmail } from "../../shared/email/invitationAdminEmail";
+import { sendInvitationStaffEmail } from "../../shared/email/invitationStaffEmail";
 import { sendInvitationEmployeeEmail } from "../../shared/email/invitationEmployeeEmail";
 
 export class InvitationsService {
@@ -66,7 +66,7 @@ export class InvitationsService {
         invitationLink: registerUrl,
       });
     } else {
-      await sendInvitationAdminEmail({
+      await sendInvitationStaffEmail({
         to: email,
         companyName,
         invitationLink: registerUrl,

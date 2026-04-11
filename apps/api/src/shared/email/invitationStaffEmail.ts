@@ -1,5 +1,5 @@
 /**
- * Sends a corporate benefit invitation email for employees.
+ * Sends a staff/admin invitation email.
  */
 
 const INVITATION_BASE_URL =
@@ -8,12 +8,12 @@ const FROM_EMAIL =
   process.env.INVITATION_FROM_EMAIL || "Parkit <onboarding@resend.dev>";
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "soporte@parkitcr.com";
 
-export interface SendInvitationEmployeeParams {
+export interface SendInvitationStaffParams {
   to: string;
   firstName?: string;
   lastName?: string;
   token?: string;
-  companyName: string;
+  companyName?: string;
   invitationLink: string;
 }
 
@@ -22,15 +22,21 @@ function buildInviteLink(token: string): string {
   return `${base}/accept-invite?token=${encodeURIComponent(token)}`;
 }
 
-export async function sendInvitationEmployeeEmail(
-  params: SendInvitationEmployeeParams,
+export async function sendInvitationStaffEmail(
+  params: SendInvitationStaffParams,
 ): Promise<{ sent: boolean; error?: string }> {
   const { to, firstName: _firstName, lastName: _lastName, token, companyName, invitationLink } = params;
 
   const isDevelopment = process.env.NODE_ENV !== "production";
   const actualTo = isDevelopment ? "luis.herrera506@gmail.com" : to;
 
-  const companyDisplay = (companyName || "tu empresa").trim();
+  if (isDevelopment && to !== actualTo) {
+    console.log(
+      `📧 [DEV MODE] Redirecting invitation email from ${to} → ${actualTo}`,
+    );
+  }
+
+  const companyDisplay = (companyName || "").trim();
   const inviteLink = invitationLink || buildInviteLink(token || "");
 
 
@@ -56,7 +62,6 @@ export async function sendInvitationEmployeeEmail(
         .brand-text { font-size: 32px !important; }
         .hero { padding: 36px 28px !important; }
         h2 { font-size: 22px !important; }
-        .store-badge { height: 38px !important; }
       }
     </style>
   </head>
@@ -86,36 +91,34 @@ export async function sendInvitationEmployeeEmail(
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                   <tr>
                     <td style="padding-bottom: 28px;">
-                      <h2 style="font-size: 22px; font-weight: 600; margin: 0; color: #0f172a; letter-spacing: -0.01em; line-height: 1.3;">Tu parqueo está listo</h2>
+                      <h2 style="font-size: 22px; font-weight: 600; margin: 0; color: #0f172a; letter-spacing: -0.01em; line-height: 1.3;">Te damos la bienvenida</h2>
                     </td>
                   </tr>
                   <tr>
                     <td style="padding-bottom: 28px;">
                       <p style="font-size: 15px; line-height: 1.6; color: #475569; margin: 0;">
-                        <strong style="color: #0f172a; font-weight: 600;">${companyDisplay}</strong> te ha invitado a utilizar Parkit. Gestiona tus reservaciones de parqueo de forma inteligente.
+                        Has sido invitado a unirte a <strong style="color: #0f172a; font-weight: 600;">${companyDisplay || "Parkit"}</strong> con privilegios de administración. Configura tu acceso para empezar a gestionar la plataforma.
                       </p>
                     </td>
                   </tr>
                   <tr>
                     <td style="padding-bottom: 28px;">
-                      <p style="margin: 0 0 10px; font-size: 14px; color: #475569; line-height: 1.6;">
-                        <strong>1.</strong> Crea tu cuenta haciendo clic en el botón de abajo.<br>
-                        <strong>2.</strong> Una vez registrado, te mostraremos cómo descargar la app.<br>
-                        <strong>3.</strong> Empieza a reservar y gestionar tus espacios de parqueo.
+                      <p style="font-size: 14px; color: #475569; margin: 0; line-height: 1.6;">
+                        <strong>Nota:</strong> Este enlace caduca en 7 días por seguridad.
                       </p>
                     </td>
                   </tr>
                   <tr>
                     <td style="padding-bottom: 20px;">
-                      <a href="${inviteLink}" target="_blank" style="background-color: #2563eb; color: #ffffff; padding: 16px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15px; display: inline-block;">
-                        Crear mi cuenta →
+                      <a href="${inviteLink}" target="_blank" style="background-color: #2563eb; color: #ffffff; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">
+                        Configurar acceso
                       </a>
                     </td>
                   </tr>
                   <tr>
                     <td>
                       <p style="font-size: 13px; color: #64748b; margin: 0; line-height: 1.5;">
-                        Después de crear tu cuenta, te guiaremos para descargar la aplicación en tu dispositivo.
+                        ¿No esperabas esta invitación? Simplemente ignora este correo.
                       </p>
                     </td>
                   </tr>
@@ -156,7 +159,7 @@ export async function sendInvitationEmployeeEmail(
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: [actualTo],
-        subject: `Tu Beneficio de Parqueo en ${companyDisplay} - Parkit`,
+        subject: `Invitación al equipo de Parkit${companyDisplay ? ` - ${companyDisplay}` : ""}`,
         html: html,
       }),
     });
