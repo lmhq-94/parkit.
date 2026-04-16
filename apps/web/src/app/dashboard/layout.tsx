@@ -410,7 +410,8 @@ function DashboardLayoutInner({
                             </span>
                           </div>
 
-                          <div className="h-px mx-3 bg-slate-100 dark:bg-slate-800" />
+                          {/* Only show divider when My Profile is visible */}
+                          {selectedCompanyId && <div className="h-px mx-3 bg-slate-100 dark:bg-slate-800" />}
 
                           {/* Only show My Profile when a company is selected */}
                           {selectedCompanyId && (

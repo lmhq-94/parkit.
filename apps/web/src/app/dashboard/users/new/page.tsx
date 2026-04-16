@@ -123,7 +123,7 @@ export default function NewUserPage() {
   const steps = [
     {
       title: t("users.sectionMain"),
-      description: t("users.sectionMainDesc"),
+      description: "Se enviará una invitación por email al nuevo usuario",
       badge: "required" as const,
       accentColor: "violet",
       isValid: () => !!(form.firstName.trim() && form.lastName.trim() && form.email.trim()),

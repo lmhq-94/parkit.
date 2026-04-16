@@ -255,7 +255,7 @@ export default function ValetsPage() {
         renderRowDetail={
           superAdmin
             ? (valet) => (
-                <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
+                <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3">
                   {valet.user?.pendingInvitation && (
                     <>
                       <DetailSectionLabel text={t("tables.employees.pendingInvitation")} />

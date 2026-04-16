@@ -200,7 +200,7 @@ export default function CompaniesPage() {
         }
         renderRowDetail={(company) => (
           <div className="rounded-xl bg-input-bg/80 px-4 py-4">
-            <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
+            <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3">
               <DetailSectionLabel text={t("common.additionalInfo")} />
               <DetailField
                 label={t("companies.legalName")}

@@ -268,12 +268,6 @@ function RegisterForm() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
-              <div className="p-4 rounded-lg border border-red-500/20 bg-red-500/5 text-sm text-red-600 dark:text-red-400 flex items-center gap-3">
-                <AlertOctagon className="w-4 h-4 flex-shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="firstName" className={LABEL_BASE}>
@@ -329,15 +323,11 @@ function RegisterForm() {
 
               {/* Password Requirements */}
               {password && (
-                <div className="mt-3 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <PasswordRequirement label={t("auth.passwordReqMinLength")} met={req.minLength} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <PasswordRequirement label={t("auth.passwordReqUppercase")} met={req.hasUppercase} />
-                    <PasswordRequirement label={t("auth.passwordReqLowercase")} met={req.hasLowercase} />
-                    <PasswordRequirement label={t("auth.passwordReqNumber")} met={req.hasNumber} />
-                  </div>
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <PasswordRequirement label={t("auth.passwordReqMinLength")} met={req.minLength} />
+                  <PasswordRequirement label={t("auth.passwordReqUppercase")} met={req.hasUppercase} />
+                  <PasswordRequirement label={t("auth.passwordReqLowercase")} met={req.hasLowercase} />
+                  <PasswordRequirement label={t("auth.passwordReqNumber")} met={req.hasNumber} />
                 </div>
               )}
             </div>
@@ -377,6 +367,12 @@ function RegisterForm() {
                 </>
               )}
             </button>
+            {error && (
+              <div className="p-4 rounded-lg border border-red-500/20 bg-red-500/5 text-sm text-red-600 dark:text-red-400 flex items-center gap-3">
+                <AlertOctagon className="w-4 h-4 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
           </form>
 
           {/* Divider */}

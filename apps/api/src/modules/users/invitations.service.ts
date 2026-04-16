@@ -1,6 +1,6 @@
 import { prisma } from "../../shared/prisma";
 import { SystemRole, InvitationStatus } from "@prisma/client";
-import { signToken } from "../auth/auth.utils";
+import { signInvitationToken } from "../auth/auth.utils";
 import { sendInvitationStaffEmail } from "../../shared/email/invitationStaffEmail";
 import { sendInvitationEmployeeEmail } from "../../shared/email/invitationEmployeeEmail";
 
@@ -11,7 +11,7 @@ export class InvitationsService {
    */
   static async sendInvitation(data: {
     email: string;
-    companyId: string;
+    companyId: string | null;
     role: SystemRole;
     invitedByUserId: string;
   }) {
@@ -30,45 +30,51 @@ export class InvitationsService {
     expiresAt.setDate(expiresAt.getDate() + 7);
 
     // Create unique token for this invitation
-    const token = signToken({
+    const token = signInvitationToken({
       email,
       companyId,
       role,
-      type: "INVITATION",
     });
 
     // Create record in Invitation table
+    const invitationData: Record<string, unknown> = {
+      email,
+      role,
+      token,
+      invitedByUserId,
+      expiresAt,
+      status: InvitationStatus.PENDING,
+    };
+    if (companyId) {
+      invitationData.companyId = companyId;
+    }
     const invitation = await prisma.invitation.create({
-      data: {
-        email,
-        companyId,
-        role,
-        token,
-        invitedByUserId,
-        expiresAt,
-        status: InvitationStatus.PENDING,
-      },
-      include: {
-        company: {
-          select: { commercialName: true, legalName: true },
-        },
-      },
+      data: invitationData,
     });
 
-    const companyName = invitation.company.commercialName || invitation.company.legalName;
+    // Fetch company name if companyId exists
+    let companyName: string | null = null;
+    if (companyId) {
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: { commercialName: true, legalName: true },
+      });
+      companyName = company?.commercialName || company?.legalName || null;
+    }
+
     const registerUrl = `${process.env.WEB_APP_URL || "http://localhost:3000"}/register?token=${token}`;
 
     // Send the appropriate email based on role
     if (role === SystemRole.CUSTOMER) {
       await sendInvitationEmployeeEmail({
         to: email,
-        companyName,
+        companyName: companyName || "Parkit",
         invitationLink: registerUrl,
       });
     } else {
       await sendInvitationStaffEmail({
         to: email,
-        companyName,
+        companyName: companyName || "Parkit",
         invitationLink: registerUrl,
       });
     }
@@ -97,7 +103,7 @@ export class InvitationsService {
 
   static async sendInvitationsBatch(data: {
     emails: string[];
-    companyId: string;
+    companyId: string | null;
     role: SystemRole;
     invitedByUserId: string;
   }) {

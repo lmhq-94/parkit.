@@ -86,11 +86,6 @@ export default function ForgotPasswordPage() {
             </div>
           ) : (
             <>
-              {error && (
-                <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400" role="alert">
-                  {error}
-                </div>
-              )}
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5">{t("auth.email")}</label>
@@ -107,6 +102,11 @@ export default function ForgotPasswordPage() {
                 <button type="submit" disabled={isSubmitting} className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:pointer-events-none transition-all">
                   {isSubmitting ? <LoadingSpinner size="sm" variant="white" /> : t("auth.sendResetLink")}
                 </button>
+                {error && (
+                  <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400" role="alert">
+                    {error}
+                  </div>
+                )}
               </form>
               <Link href="/login" className="mt-6 flex items-center justify-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
                 <ArrowLeft className="h-4 w-4" />

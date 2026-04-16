@@ -47,6 +47,22 @@ export class UsersController {
 
   static async createSuperAdmin(req: Request, res: Response) {
     try {
+      const { email, firstName: _firstName, lastName: _lastName, password } = req.body;
+      
+      // Si no se proporciona contraseña, enviar invitación por email
+      const isInvitation = !password || password === "";
+      
+      if (isInvitation) {
+        const invitation = await InvitationsService.sendInvitation({
+          email: email.toLowerCase().trim(),
+          companyId: null, // SUPER_ADMIN no tiene compañía
+          role: SystemRole.SUPER_ADMIN,
+          invitedByUserId: req.user.userId,
+        });
+        return created(res, invitation);
+      }
+      
+      // Si se proporciona contraseña, crear usuario directamente (comportamiento anterior)
       const user = await UsersService.createSuperAdmin(req.body);
       const {
         passwordHash: _passwordHash,
@@ -66,6 +82,21 @@ export class UsersController {
     try {
       const companyId = req.user.companyId!;
       const body = req.body as CreateUserInput;
+      
+      // Si no se proporciona contraseña, enviar invitación por email
+      const isInvitation = !body.password || body.password === "";
+      
+      if (isInvitation) {
+        const invitation = await InvitationsService.sendInvitation({
+          email: body.email.toLowerCase().trim(),
+          companyId,
+          role: (body.systemRole as SystemRole) || SystemRole.STAFF,
+          invitedByUserId: req.user.userId,
+        });
+        return created(res, invitation);
+      }
+      
+      // Si se proporciona contraseña, crear usuario directamente (comportamiento anterior)
       const user = await UsersService.create(companyId, body);
 
       // Don't expose invitation token or password hash in API response

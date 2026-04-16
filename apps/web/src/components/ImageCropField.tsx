@@ -136,7 +136,7 @@ export function ImageCropField({
       >
         <button
           type="button"
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
           aria-label={t("common.close")}
           onClick={() => setPendingCrop(null)}
         />

@@ -200,6 +200,14 @@ export class AuthService {
         });
       }
 
+      // If registering an ADMIN, activate the company
+      if (role === "ADMIN" && companyId) {
+        await tx.company.update({
+          where: { id: companyId },
+          data: { status: "ACTIVE" },
+        });
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (tx as any).invitation.update({
         where: { id: invitation.id },

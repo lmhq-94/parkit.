@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { UserCircle, MailOpen, Shield } from "@/lib/premiumIcons";
+import { UserCircle, MailOpen } from "@/lib/premiumIcons";
 import { FormWizard } from "@/components/FormWizard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
@@ -16,7 +16,7 @@ const defaultForm = {
   firstName: "",
   lastName: "",
   email: "",
-  password: "",
+  password: undefined,
 };
 
 export default function NewSuperAdminPage() {
@@ -55,7 +55,7 @@ export default function NewSuperAdminPage() {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         email: form.email.trim(),
-        password: form.password.trim() ? form.password : undefined,
+        password: undefined, // No enviar password para usar flujo de invitación
       });
       showSuccess(t("common.createSuccessShort"));
       router.push("/dashboard/profile");
@@ -71,7 +71,7 @@ export default function NewSuperAdminPage() {
   const steps = [
     {
       title: t("superAdmins.newSuperAdmin"),
-      description: t("superAdmins.newSuperAdminDescription"),
+      description: "Se enviará una invitación por email al nuevo super administrador",
       badge: "required" as const,
       accentColor: "violet",
       isValid: () => !!(form.firstName.trim() && form.lastName.trim() && form.email.trim()),
@@ -100,14 +100,6 @@ export default function NewSuperAdminPage() {
               <input type="email" value={form.email} onChange={set("email")} placeholder={t("common.placeholderEmail")} className={IL} aria-invalid={!!errors.email} />
             </div>
             <div className="min-h-[1.25rem] mt-1">{errors.email && <p className="text-sm text-red-500" role="alert">{errors.email}</p>}</div>
-          </div>
-          <div className="sm:col-span-2 lg:col-span-3">
-            <label className={LABEL}>{t("users.password")}</label>
-            <div className="relative group">
-              <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="password" value={form.password} onChange={set("password")} placeholder={t("common.placeholderPassword")} className={IL} autoComplete="new-password" />
-            </div>
-            <p className="text-xs premium-subtitle mt-1">{t("superAdmins.invitationNote")}</p>
           </div>
         </div>
       ),

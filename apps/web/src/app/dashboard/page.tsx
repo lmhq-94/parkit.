@@ -521,7 +521,7 @@ export default function DashboardPage() {
                               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-60 ${
                                 days === d
                                   ? "bg-company-primary-subtle text-company-primary border border-company-primary-muted"
-                                  : "text-company-tertiary hover:bg-company-tertiary-subtle hover:text-text-primary border border-transparent"
+                                  : "text-text-secondary hover:bg-company-primary-subtle/50 hover:text-company-primary border border-transparent"
                               }`}
                             >
                               {t(d === 7 ? "dashboard.rangeLast7" : d === 14 ? "dashboard.rangeLast14" : "dashboard.rangeLast30")}
@@ -534,7 +534,7 @@ export default function DashboardPage() {
                               setCustomRangeJustOpened(true);
                             }}
                             disabled={loading}
-                            className="px-3 py-2 rounded-md text-sm font-medium text-company-tertiary hover:bg-company-tertiary-subtle hover:text-text-primary border border-transparent transition-colors disabled:opacity-60"
+                            className="px-3 py-2 rounded-md text-sm font-medium text-text-secondary hover:bg-company-primary-subtle/50 hover:text-company-primary border border-transparent transition-colors disabled:opacity-60"
                           >
                             {t("dashboard.rangeCustom")}
                           </button>

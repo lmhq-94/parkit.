@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Building, Plus } from "@/lib/premiumIcons";
+import { Sparkles, Plus } from "@/lib/premiumIcons";
 import Link from "next/link";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getStoredUser, isSuperAdmin } from "@/lib/auth";
@@ -40,29 +40,29 @@ export default function NoCompaniesPage() {
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-32 h-32 bg-gradient-to-br from-company-primary/30 via-company-primary/10 to-transparent rounded-full blur-3xl animate-pulse" />
           </div>
-          
+
           {/* Secondary glow ring */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-24 h-24 bg-gradient-to-tr from-company-primary/20 to-company-primary/5 rounded-full blur-2xl" />
           </div>
-          
+
           {/* Large icon without container */}
           <div className="relative flex items-center justify-center">
-            <Building
-              className="h-14 w-14 text-slate-300 dark:text-slate-700"
-              strokeWidth={1.2}
+            <Sparkles
+              className="h-14 w-14 text-company-primary"
+              strokeWidth={1.5}
             />
           </div>
         </div>
-        
+
         {/* Premium typography with refined hierarchy */}
         <div className="space-y-4 mb-10">
           <h1 className="text-[1.75rem] md:text-[2rem] premium-title premium-title-glow">
-            {t("companies.noCompanies")}
+            {t("companies.noCompaniesTitle")}
           </h1>
-          
+
           <p className="premium-subtitle text-base leading-relaxed max-w-sm mx-auto">
-            {t("companies.noCompaniesDescription")}
+            {t("companies.noCompaniesPositiveDescription")}
           </p>
         </div>
         
@@ -70,22 +70,13 @@ export default function NoCompaniesPage() {
         <div className="flex justify-center mb-8">
           <Link
             href="/dashboard/companies/new?first=1"
-            className="group inline-flex items-center gap-2 justify-center rounded-lg bg-indigo-600 px-6 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-page transition-all"
+            className="group inline-flex items-center gap-2 justify-center rounded-lg bg-company-primary px-6 py-3 text-sm font-medium text-white hover:bg-company-primary/90 focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-all"
           >
             <Plus className="h-5 w-5 transition-transform duration-300 group-hover:rotate-90" />
-            <span>{t("companies.createCompany")}</span>
+            <span>{t("companies.createFirstCompany")}</span>
           </Link>
         </div>
-        
-        {/* Refined footer hint with subtle styling */}
-        <div className="flex items-center justify-center gap-2">
-          <div className="h-px w-8 bg-gradient-to-r from-transparent to-text-muted/20" />
-          <p className="text-xs text-slate-500 dark:text-slate-500 font-medium tracking-wide uppercase">
-            {t("companies.noCompaniesHint")}
-          </p>
-          <div className="h-px w-8 bg-gradient-to-l from-transparent to-text-muted/20" />
-        </div>
-        
+
       </div>
       
       {/* Legal links - absolute bottom */}

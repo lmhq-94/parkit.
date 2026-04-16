@@ -143,7 +143,7 @@ export default function VehiclesPage() {
           const widthM = dims?.widthCm != null ? Number((dims.widthCm / 100).toFixed(2)) : null;
           const heightM = dims?.heightCm != null ? Number((dims.heightCm / 100).toFixed(2)) : null;
           return (
-            <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
+            <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3">
               <DetailSectionLabel text={t("common.additionalInfo")} />
               <DetailField label={t("vehicles.color")} value={formatVehicleColorLabel(vehicle.color, locale)} />
               {lengthM != null && <DetailField label={t("vehicles.lengthM")} value={`${lengthM} m`} />}

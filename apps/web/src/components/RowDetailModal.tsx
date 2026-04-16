@@ -144,9 +144,9 @@ export function DetailField({
         className={
           multiline
             ? "text-sm text-slate-900 dark:text-slate-50 font-medium leading-relaxed break-words whitespace-pre-wrap"
-            : "text-sm text-slate-900 dark:text-slate-50 font-medium leading-relaxed"
+            : "text-sm text-slate-900 dark:text-slate-50 font-medium leading-relaxed truncate"
         }
-        title={multiline ? str : undefined}
+        title={str}
       >
         {href ? (
           <a href={href} className="text-company-primary hover:underline">

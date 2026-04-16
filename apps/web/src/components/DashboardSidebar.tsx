@@ -10,6 +10,7 @@ import { useAuthStore, useDashboardStore, SIDEBAR_COLLAPSED_KEY } from "@/lib/st
 import { isSuperAdmin, isAdmin } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
 import { DefaultBanner } from "@/components/DefaultBanner";
+import { getIndustryIcon } from "@/lib/companyIcons";
 import { apiClient } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
@@ -318,7 +319,7 @@ function CompanySelector({
             }
           >
             {logoImageUrl?.trim() ? (
-              <Image src={logoImageUrl} alt="" width={36} height={36} className="w-full h-full object-cover object-center" key={logoImageUrl} />
+              <Image src={logoImageUrl} alt="" width={512} height={512} className="w-full h-full object-cover object-center" key={logoImageUrl} />
             ) : selectedCompanyId ? (
               selectedInitials
             ) : (
@@ -397,6 +398,28 @@ export function DashboardSidebar() {
   const hasCustomBanner =
     typeof brandingBanner === "string" && brandingBanner.trim().length > 0;
   const effectiveBannerSrc = hasCustomBanner ? brandingBanner! : bannerDefaultSrc;
+
+  // Obtener colores de la compañía para el banner
+  const getThemeDefaultColors = (dark: boolean) => ({
+    primary: dark ? "#3b82f6" : "#2563eb",
+    secondary: dark ? "#8b5cf6" : "#7c3aed",
+    tertiary: dark ? "#06b6d4" : "#0891b2",
+  });
+  const defaults = getThemeDefaultColors(isDark);
+  const primary =
+    (isDark
+      ? (companyBranding?.primaryColorDark?.trim() || companyBranding?.primaryColor?.trim())
+      : companyBranding?.primaryColor?.trim()) || defaults.primary;
+  const secondary =
+    (isDark
+      ? (companyBranding?.secondaryColorDark?.trim() || companyBranding?.secondaryColor?.trim())
+      : companyBranding?.secondaryColor?.trim()) || defaults.secondary;
+  const tertiary =
+    (isDark
+      ? (companyBranding?.tertiaryColorDark?.trim() || companyBranding?.tertiaryColor?.trim())
+      : companyBranding?.tertiaryColor?.trim()) || defaults.tertiary;
+  const companyColors = { primary, secondary, tertiary };
+  const IndustryIcon = getIndustryIcon(companyBranding?.businessActivity);
 
   const bannerVariant = hasCustomBanner ? (bannerIsDark ?? isDark) : isDark;
 
@@ -609,17 +632,17 @@ export function DashboardSidebar() {
       </div>
 
       {/* Company banner + selector (SUPER_ADMIN) o banner con avatar (ADMIN) */}
-      {!collapsed && (
+      {hasCompanies ? (
         <>
-          {hasCompanies ? (
+          {!collapsed ? (
             <>
               {superAdmin ? (
                 <div className="border-b border-card-border/25 dark:border-white/[0.04] shrink-0">
                   <DefaultBanner
                     companyName={selectedCompanyName || t("sidebar.company")}
                     logoImageUrl={companyBranding?.logoImageUrl}
-                    subtitle={t("sidebar.companyTagline")}
                     businessActivity={companyBranding?.businessActivity}
+                    companyColors={companyColors}
                     isDark={hasCustomBanner ? bannerVariant : isDark}
                     backgroundImageUrl={hasCustomBanner ? effectiveBannerSrc : null}
                     renderRight={
@@ -646,8 +669,8 @@ export function DashboardSidebar() {
                   <DefaultBanner
                     companyName={adminCompanyName || t("companies.single") || "Company"}
                     logoImageUrl={companyBranding?.logoImageUrl}
-                    subtitle={t("sidebar.companyTagline")}
                     businessActivity={companyBranding?.businessActivity}
+                    companyColors={companyColors}
                     isDark={hasCustomBanner ? bannerVariant : isDark}
                     backgroundImageUrl={hasCustomBanner ? effectiveBannerSrc : null}
                   />
@@ -655,21 +678,52 @@ export function DashboardSidebar() {
               )}
             </>
           ) : (
-            <div className="border-b border-card-border/25 dark:border-white/[0.04] px-3 py-3 shrink-0">
-              <Link
-                href="/dashboard/companies/new?first=1"
-                className="group relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-text-muted hover:bg-input-bg hover:text-text-secondary"
+            <div className="px-3 py-7 shrink-0 flex justify-center">
+              <div
+                className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center transition-all duration-300"
+                style={{
+                  backgroundColor: companyBranding?.logoImageUrl?.trim()
+                    ? (isDark ? "rgba(30,41,59,0.9)" : "#ffffff")
+                    : (isDark ? "hsla(220, 10%, 35%, 1)" : "hsla(220, 10%, 88%, 1)"),
+                  border: companyBranding?.logoImageUrl?.trim()
+                    ? (isDark ? "1.5px solid rgba(255,255,255,0.2)" : "1.5px solid rgba(0,0,0,0.08)")
+                    : `2px solid ${isDark ? "hsla(220, 15%, 45%, 0.4)" : "hsla(220, 15%, 75%, 0.6)"}`,
+                  boxShadow: companyBranding?.logoImageUrl?.trim()
+                    ? (isDark
+                        ? "0 6px 16px -4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15), 0 0 0 1px rgba(255,255,255,0.05)"
+                        : "0 6px 16px -4px rgba(0,0,0,0.15), 0 1px 2px rgba(255,255,255,1) inset, 0 0 0 1px rgba(255,255,255,0.5)")
+                    : "0 3px 10px -3px rgba(0,0,0,0.1)",
+                }}
               >
-                <span className="flex items-center justify-center w-9 h-9 rounded-lg shrink-0 transition-all duration-200 bg-company-primary/10 text-company-primary group-hover:bg-company-primary/15">
-                  <Building className="w-5 h-5" />
-                </span>
-                <span className="font-medium truncate">
-                  {t("companies.createCompany")}
-                </span>
-              </Link>
+                {companyBranding?.logoImageUrl?.trim() ? (
+                  <Image
+                    src={companyBranding.logoImageUrl}
+                    alt=""
+                    width={512}
+                    height={512}
+                    className="w-full h-full object-cover object-center"
+                  />
+                ) : (
+                  <IndustryIcon className="w-[18px] h-[18px]" strokeWidth={1.5} />
+                )}
+              </div>
             </div>
           )}
         </>
+      ) : (
+        <div className="border-b border-card-border/25 dark:border-white/[0.04] px-3 py-3 shrink-0">
+          <Link
+            href="/dashboard/companies/new?first=1"
+            className="group relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-text-muted hover:bg-input-bg hover:text-text-secondary"
+          >
+            <span className="flex items-center justify-center w-9 h-9 rounded-lg shrink-0 transition-all duration-200 bg-company-primary/10 text-company-primary group-hover:bg-company-primary/15">
+              <Building className="w-5 h-5" />
+            </span>
+            <span className="font-medium truncate">
+              {t("companies.createCompany")}
+            </span>
+          </Link>
+        </div>
       )}
 
       {/* Nav groups: flex-1 + min-h-0 so only this area scrolls, not the whole sidebar */}
@@ -678,7 +732,7 @@ export function DashboardSidebar() {
           {navGroups.map((group) => (
             <div key={group.label}>
               {!collapsed && (
-                <p className="px-3 mb-3 text-[10px] font-bold uppercase tracking-[0.15em] text-company-tertiary/70">
+                <p className="px-3 mb-3 text-[10px] font-bold uppercase tracking-[0.15em] text-text-secondary">
                   {group.label}
                 </p>
               )}
@@ -700,7 +754,7 @@ export function DashboardSidebar() {
                         }`}>
                         <Icon
                           className={`w-[18px] h-[18px] transition-all duration-300 ${
-                            isActive ? "text-company-primary scale-105" : "text-company-tertiary group-hover:text-company-secondary group-hover:scale-105"
+                            isActive ? "text-company-primary scale-105" : "text-text-secondary group-hover:text-company-primary group-hover:scale-105"
                           }`}
                         />
                       </span>
@@ -708,7 +762,7 @@ export function DashboardSidebar() {
                         <>
                           <span
                             className={`font-medium truncate transition-colors duration-300 ${
-                              isActive ? "text-text-primary font-semibold" : "text-company-tertiary group-hover:text-company-secondary"
+                              isActive ? "text-text-primary font-semibold" : "text-text-secondary group-hover:text-company-primary"
                             }`}
                           >
                             {item.label}
@@ -743,8 +797,8 @@ export function DashboardSidebar() {
                             collapsed ? "justify-center mx-1" : "mx-1"
                           } ${
                             isActive
-                              ? "bg-gradient-to-r from-company-primary/10 via-company-primary/5 to-transparent text-text-primary shadow-[0_1px_3px_-1px_rgba(0,0,0,0.05)]"
-                              : "text-text-muted hover:bg-gradient-to-r hover:from-input-bg/80 hover:to-transparent hover:text-text-secondary"
+                              ? "bg-gradient-to-r from-company-primary/10 via-company-primary/5 to-transparent text-text-primary shadow-[0_1px 3px_-1px_rgba(0,0,0,0.05)]"
+                              : "text-text-secondary hover:bg-gradient-to-r hover:from-input-bg/80 hover:to-transparent hover:text-company-primary"
                           }`}
                         >
                           {linkContent}

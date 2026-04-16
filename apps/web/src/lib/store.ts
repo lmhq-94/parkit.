@@ -124,6 +124,7 @@ interface DashboardStore {
 
 const SELECTED_COMPANY_KEY = "parkit_selected_company_id";
 const SELECTED_COMPANY_NAME_KEY = "parkit_selected_company_name";
+const COMPANY_BRANDING_KEY = "parkit_company_branding";
 
 export const useDashboardStore = create<DashboardStore>((set) => ({
   sidebarOpen: false,
@@ -156,8 +157,27 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
   bumpCompanies: () => set((s) => ({ companiesVersion: s.companiesVersion + 1 })),
   parkingsVersion: 0,
   bumpParkings: () => set((s) => ({ parkingsVersion: s.parkingsVersion + 1 })),
-  companyBranding: null,
-  setCompanyBranding: (b) => set({ companyBranding: b }),
+  companyBranding:
+    typeof window !== "undefined"
+      ? (() => {
+          try {
+            const stored = localStorage.getItem(COMPANY_BRANDING_KEY);
+            return stored ? (JSON.parse(stored) as CompanyBranding) : null;
+          } catch {
+            return null;
+          }
+        })()
+      : null,
+  setCompanyBranding: (b) => {
+    if (typeof window !== "undefined") {
+      if (b) {
+        localStorage.setItem(COMPANY_BRANDING_KEY, JSON.stringify(b));
+      } else {
+        localStorage.removeItem(COMPANY_BRANDING_KEY);
+      }
+    }
+    set({ companyBranding: b });
+  },
   brandingCache: {},
   setBrandingInCache: (companyId, b) =>
     set((s) => ({

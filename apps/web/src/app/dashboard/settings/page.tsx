@@ -160,16 +160,16 @@ function DevicePreviews({ form, t, companyName, selectedCompanyId }: { form: Bra
       <div className="space-y-2">
         <p className="text-xs font-medium text-text-muted">{t("settings.desktopView")}</p>
         <div className="rounded-xl border border-card-border bg-card overflow-hidden shadow-lg">
-          <div
-            className="h-32 relative"
-            style={{
-              background: form.bannerImageUrl
-                ? `url(${form.bannerImageUrl}) center/cover`
-                : undefined,
-              backgroundColor: form.bannerImageUrl ? undefined : isDark ? "#0f172a" : "#f8fafc",
-            }}
-          >
-            {!form.bannerImageUrl && (
+          <div className="h-32 relative">
+            {form.bannerImageUrl ? (
+              <Image
+                src={form.bannerImageUrl}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="3840px"
+              />
+            ) : (
               <>
                 <div
                   className="absolute inset-0"
@@ -214,16 +214,14 @@ function DevicePreviews({ form, t, companyName, selectedCompanyId }: { form: Bra
                 style={{ boxShadow: `0 8px 32px -8px ${colors.primary}40` }}
               >
                 {form.logoImageUrl ? (
-                  <Image src={form.logoImageUrl} alt="" fill className="object-cover" sizes="80px" />
+                  <Image src={form.logoImageUrl} alt="" fill className="object-cover" sizes="512px" />
                 ) : selectedCompanyId ? (
                   <Building2 className="w-10 h-10" style={{ color: colors.primary }} />
                 ) : (
                   <UserCircle className="w-10 h-10" style={{ color: colors.primary }} />
                 )}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-base font-semibold text-text-primary truncate drop-shadow-md">{companyName || t("settings.previewCompany")}</p>
-                <p className="text-xs text-text-secondary drop-shadow-sm">{t("settings.previewLabel")}</p>
+              <div className="flex-1 min-w-0 -mt-1">
               </div>
             </div>
             <div className="flex gap-2">
@@ -250,16 +248,16 @@ function DevicePreviews({ form, t, companyName, selectedCompanyId }: { form: Bra
         <div className="col-span-2 space-y-2">
           <p className="text-xs font-medium text-text-muted">{t("settings.tabletView")}</p>
           <div className="rounded-xl border border-card-border bg-card overflow-hidden shadow-lg transform scale-85 origin-top">
-            <div
-              className="h-24 relative"
-              style={{
-                background: form.bannerImageUrl
-                  ? `url(${form.bannerImageUrl}) center/cover`
-                  : undefined,
-                backgroundColor: form.bannerImageUrl ? undefined : isDark ? "#0f172a" : "#f8fafc",
-              }}
-            >
-              {!form.bannerImageUrl && (
+            <div className="h-24 relative">
+              {form.bannerImageUrl ? (
+                <Image
+                  src={form.bannerImageUrl}
+                  alt=""
+                  fill
+                  className="object-cover"
+                  sizes="3840px"
+                />
+              ) : (
                 <>
                   <div
                     className="absolute inset-0"
@@ -304,16 +302,14 @@ function DevicePreviews({ form, t, companyName, selectedCompanyId }: { form: Bra
                   style={{ boxShadow: `0 6px 24px -6px ${colors.primary}40` }}
                 >
                   {form.logoImageUrl ? (
-                    <Image src={form.logoImageUrl} alt="" fill className="object-cover" sizes="56px" />
+                    <Image src={form.logoImageUrl} alt="" fill className="object-cover" sizes="512px" />
                   ) : selectedCompanyId ? (
                     <Building2 className="w-7 h-7" style={{ color: colors.primary }} />
                   ) : (
                     <UserCircle className="w-7 h-7" style={{ color: colors.primary }} />
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-text-primary truncate drop-shadow-md">{companyName || t("settings.previewCompany")}</p>
-                  <p className="text-xs text-text-secondary drop-shadow-sm">{t("settings.previewLabel")}</p>
+                <div className="flex-1 min-w-0 -mt-0.5">
                 </div>
               </div>
               <div className="flex gap-2">
@@ -334,16 +330,16 @@ function DevicePreviews({ form, t, companyName, selectedCompanyId }: { form: Bra
         <div className="col-span-1 space-y-2">
           <p className="text-xs font-medium text-text-muted">{t("settings.mobileView")}</p>
           <div className="rounded-xl border border-card-border bg-card overflow-hidden shadow-lg transform scale-65 origin-top">
-            <div
-              className="h-16 relative"
-              style={{
-                background: form.bannerImageUrl
-                  ? `url(${form.bannerImageUrl}) center/cover`
-                  : undefined,
-                backgroundColor: form.bannerImageUrl ? undefined : isDark ? "#0f172a" : "#f8fafc",
-              }}
-            >
-              {!form.bannerImageUrl && (
+            <div className="h-16 relative">
+              {form.bannerImageUrl ? (
+                <Image
+                  src={form.bannerImageUrl}
+                  alt=""
+                  fill
+                  className="object-cover"
+                  sizes="3840px"
+                />
+              ) : (
                 <>
                   <div
                     className="absolute inset-0"
@@ -388,15 +384,14 @@ function DevicePreviews({ form, t, companyName, selectedCompanyId }: { form: Bra
                   style={{ boxShadow: `0 4px 16px -4px ${colors.primary}40` }}
                 >
                   {form.logoImageUrl ? (
-                    <Image src={form.logoImageUrl} alt="" fill className="object-cover" sizes="40px" />
+                    <Image src={form.logoImageUrl} alt="" fill className="object-cover" sizes="512px" />
                   ) : selectedCompanyId ? (
                     <Building2 className="w-5 h-5" style={{ color: colors.primary }} />
                   ) : (
                     <UserCircle className="w-5 h-5" style={{ color: colors.primary }} />
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-text-primary truncate drop-shadow-md">{companyName || t("settings.previewCompany")}</p>
+                <div className="flex-1 min-w-0 -mt-0.5">
                 </div>
               </div>
             </div>

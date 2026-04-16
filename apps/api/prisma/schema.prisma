@@ -195,7 +195,7 @@ model User {
 model Invitation {
   id              String           @id @default(uuid())
   email           String
-  companyId       String
+  companyId       String?          // Optional for SUPER_ADMIN invitations
   role            SystemRole       @default(CUSTOMER)
   token           String           @unique
   status          InvitationStatus @default(PENDING)
@@ -206,7 +206,7 @@ model Invitation {
   updatedAt DateTime @updatedAt
 
   // relations
-  company   Company @relation(fields: [companyId], references: [id])
+  company   Company? @relation(fields: [companyId], references: [id])
   invitedBy User    @relation("InvitedBy", fields: [invitedByUserId], references: [id])
 
   @@index([email, companyId])

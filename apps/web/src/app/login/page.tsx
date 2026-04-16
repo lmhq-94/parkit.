@@ -238,7 +238,6 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {error && <p className="text-xs text-red-600 dark:text-red-400 text-center">{error}</p>}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5">{t("auth.email")}</label>
               <input
@@ -278,6 +277,7 @@ export default function LoginPage() {
             <button type="submit" disabled={isSubmitting} className="group w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:pointer-events-none transition-all">
               {isSubmitting ? <LoadingSpinner size="sm" variant="white" /> : <>{t("auth.signIn")}<ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" /></>}
             </button>
+            {error && <p className="text-xs text-red-600 dark:text-red-400 text-center">{error}</p>}
           </form>
 
           {/* Divider */}
