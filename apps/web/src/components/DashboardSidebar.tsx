@@ -302,7 +302,7 @@ function CompanySelector({
       <div className="relative flex items-center gap-3">
         {!hideAvatar && (
           <div
-            className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center text-xs font-semibold overflow-hidden"
+            className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold overflow-hidden"
             style={
               !logoImageUrl?.trim()
                 ? {

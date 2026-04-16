@@ -178,6 +178,7 @@ export function ImageCropField({
               cancelLabel={t("settings.cropCancel")}
               hintText={t("settings.cropHint")}
               aspectLabel={isLogo ? "1:1" : "5:1"}
+              circular={isLogo}
             />
           </div>
         </div>
@@ -187,12 +188,12 @@ export function ImageCropField({
 
   // Contenido cuando hay imagen
   const previewContent = value ? (
-    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start lg:items-center">
+    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 items-start lg:items-center">
       {/* Main Upload Area */}
       <div className="flex flex-col gap-4 flex-1 min-w-0 w-full lg:w-auto order-1">
-        <div className={`overflow-hidden bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 w-full flex items-center justify-center ${isLogo ? "rounded-lg max-w-[220px] aspect-square" : "rounded-lg max-w-[500px]"}`}>
+        <div className={`overflow-hidden bg-input-bg ring-1 ring-black/5 dark:ring-white/5 shrink-0 w-full flex items-center justify-center ${isLogo ? "rounded-full max-w-[220px] aspect-square" : "rounded-lg max-w-[500px]"}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={value} alt="" className={`w-full h-full object-cover object-center ${isLogo ? "rounded-lg" : "rounded-lg"}`} style={!isLogo ? { aspectRatio: "5/1" } : undefined} />
+          <img src={value} alt="" className={`w-full h-full object-cover object-center ${isLogo ? "rounded-full" : "rounded-lg"}`} style={!isLogo ? { aspectRatio: "5/1" } : undefined} />
         </div>
         {/* Actions */}
         <div className="flex items-center gap-3 shrink-0 pt-0.5">
@@ -209,9 +210,9 @@ export function ImageCropField({
       <div className="shrink-0 order-2">
         <div className="flex flex-col items-center justify-center gap-2">
           <p className="text-xs text-text-muted uppercase tracking-wider font-medium">vista previa en el sistema</p>
-          <div className={`overflow-hidden bg-input-bg ring-1 ring-black/5 dark:ring-white/5 flex items-center justify-center ${isLogo ? "rounded-lg w-16 h-16" : "rounded-lg w-full max-w-[280px] h-16"}`}>
+          <div className={`overflow-hidden bg-input-bg ring-1 ring-black/5 dark:ring-white/5 flex items-center justify-center ${isLogo ? "rounded-full w-16 h-16" : "rounded-lg w-full max-w-[280px] h-16"}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={value} alt="" className={`w-full h-full object-cover object-center ${isLogo ? "rounded-lg" : "rounded-lg"}`} />
+            <img src={value} alt="" className={`w-full h-full object-cover object-center ${isLogo ? "rounded-full" : "rounded-lg"}`} />
           </div>
         </div>
       </div>

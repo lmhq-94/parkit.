@@ -106,7 +106,7 @@ export function DefaultBanner({
       {/* Izquierda: avatar/logo o icono de industria - estilo consistente con perfil */}
       <div className={`relative z-10 shrink-0 pl-4 ${hasBackgroundImage ? "drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]" : ""}`}>
         <div
-          className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center transition-all duration-300"
+          className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center transition-all duration-300"
           style={{
             backgroundColor: logoImageUrl?.trim()
               ? (isDark ? "rgba(30,41,59,0.8)" : "#ffffff")

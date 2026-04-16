@@ -334,7 +334,7 @@ function DashboardLayoutInner({
                         const hasAvatar = (user.avatarUrl ?? user.avatar)?.trim();
                         return (
                               <div
-                            className={`relative w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center shrink-0 transition-transform duration-300 ease-out ${
+                            className={`relative w-9 h-9 rounded-full overflow-hidden flex items-center justify-center shrink-0 transition-transform duration-300 ease-out ${
                               userMenuOpen ? "scale-95" : "group-hover:scale-105"
                             }`}
                             style={{

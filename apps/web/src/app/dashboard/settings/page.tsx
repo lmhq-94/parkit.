@@ -8,9 +8,9 @@ import {
   Copy,
   Palette,
   ImageIcon,
-  Sparkles,
   Eye,
-  Building,
+  Building2,
+  UserCircle,
   RotateCcw,
   CheckCircle,
 } from "@/lib/premiumIcons";
@@ -133,7 +133,7 @@ function ColorInput({
   );
 }
 
-function BrandingPreview({ form, t, companyName }: { form: BrandingConfig; t: (key: string, vars?: Record<string, string | number>) => string; companyName: string | null }) {
+function DevicePreviews({ form, t, companyName, selectedCompanyId }: { form: BrandingConfig; t: (key: string, vars?: Record<string, string | number>) => string; companyName: string | null; selectedCompanyId: string | null }) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
@@ -155,93 +155,257 @@ function BrandingPreview({ form, t, companyName }: { form: BrandingConfig; t: (k
 
 
   return (
-    <div className="rounded-2xl border border-card-border bg-card shadow-lg overflow-hidden">
-      {/* Banner Preview */}
-      <div
-        className="h-28 relative"
-        style={{
-          background: form.bannerImageUrl
-            ? `url(${form.bannerImageUrl}) center/cover`
-            : `linear-gradient(135deg, ${colors.primary}25 0%, ${colors.secondary}20 50%, ${colors.tertiary}15 100%)`,
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/5" />
+    <div className="space-y-10">
+      {/* Desktop Preview - Full Row */}
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-text-muted">{t("settings.desktopView")}</p>
+        <div className="rounded-xl border border-card-border bg-card overflow-hidden shadow-lg">
+          <div
+            className="h-32 relative"
+            style={{
+              background: form.bannerImageUrl
+                ? `url(${form.bannerImageUrl}) center/cover`
+                : undefined,
+              backgroundColor: form.bannerImageUrl ? undefined : isDark ? "#0f172a" : "#f8fafc",
+            }}
+          >
+            {!form.bannerImageUrl && (
+              <>
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: isDark
+                      ? "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)"
+                      : "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)",
+                  }}
+                />
+                <div
+                  className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-40"
+                  style={{
+                    background: isDark
+                      ? "radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%)"
+                      : "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)",
+                  }}
+                />
+                <div
+                  className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full blur-3xl opacity-30"
+                  style={{
+                    background: isDark
+                      ? "radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)"
+                      : "radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)",
+                  }}
+                />
+                <div
+                  className="absolute inset-0 pointer-events-none opacity-[0.03]"
+                  style={{
+                    backgroundImage: isDark
+                      ? "repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.1) 35px, rgba(255,255,255,0.1) 70px)"
+                      : "repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(0,0,0,0.08) 35px, rgba(0,0,0,0.08) 70px)",
+                  }}
+                />
+              </>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/5" />
+          </div>
+          <div className="p-5 pt-0">
+            <div className="flex items-center gap-4 -mt-10 mb-4">
+              <div
+                className="w-20 h-20 rounded-full border-[3px] border-card flex items-center justify-center overflow-hidden bg-card relative shadow-xl"
+                style={{ boxShadow: `0 8px 32px -8px ${colors.primary}40` }}
+              >
+                {form.logoImageUrl ? (
+                  <Image src={form.logoImageUrl} alt="" fill className="object-cover" sizes="80px" />
+                ) : selectedCompanyId ? (
+                  <Building2 className="w-10 h-10" style={{ color: colors.primary }} />
+                ) : (
+                  <UserCircle className="w-10 h-10" style={{ color: colors.primary }} />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-base font-semibold text-text-primary truncate drop-shadow-md">{companyName || t("settings.previewCompany")}</p>
+                <p className="text-xs text-text-secondary drop-shadow-sm">{t("settings.previewLabel")}</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <div
+                className="h-10 flex-1 rounded-lg shadow-md ring-1 ring-black/5 dark:ring-white/10"
+                style={{ backgroundColor: colors.primary }}
+              />
+              <div
+                className="h-10 flex-1 rounded-lg shadow-md ring-1 ring-black/5 dark:ring-white/10"
+                style={{ backgroundColor: colors.secondary }}
+              />
+              <div
+                className="h-10 flex-1 rounded-lg shadow-md ring-1 ring-black/5 dark:ring-white/10"
+                style={{ backgroundColor: colors.tertiary }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Content Preview */}
-      <div className="p-5 pt-0">
-        <div className="flex flex-col gap-3 -mt-10 mb-5">
-          {/* Logo Preview */}
-          <div
-            className="w-20 h-20 rounded-2xl border-[3px] border-card flex items-center justify-center overflow-hidden bg-card relative shadow-xl"
-            style={{ boxShadow: `0 8px 32px -8px ${colors.primary}40` }}
-          >
-            {form.logoImageUrl ? (
-              <Image src={form.logoImageUrl} alt="" fill className="object-cover" sizes="80px" />
-            ) : (
-              <Building className="w-10 h-10" style={{ color: colors.primary }} />
-            )}
-          </div>
-
-          <div className="pt-2">
-            <p className="font-semibold text-text-primary">{companyName || t("settings.previewCompany")}</p>
-            <p className="text-xs premium-subtitle">{t("settings.previewLabel")}</p>
+      {/* Mobile & Tablet Preview - Shared Row */}
+      <div className="grid grid-cols-3 gap-4">
+        {/* Tablet Preview */}
+        <div className="col-span-2 space-y-2">
+          <p className="text-xs font-medium text-text-muted">{t("settings.tabletView")}</p>
+          <div className="rounded-xl border border-card-border bg-card overflow-hidden shadow-lg transform scale-85 origin-top">
+            <div
+              className="h-24 relative"
+              style={{
+                background: form.bannerImageUrl
+                  ? `url(${form.bannerImageUrl}) center/cover`
+                  : undefined,
+                backgroundColor: form.bannerImageUrl ? undefined : isDark ? "#0f172a" : "#f8fafc",
+              }}
+            >
+              {!form.bannerImageUrl && (
+                <>
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: isDark
+                        ? "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)"
+                        : "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)",
+                    }}
+                  />
+                  <div
+                    className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-40"
+                    style={{
+                      background: isDark
+                        ? "radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%)"
+                        : "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)",
+                    }}
+                  />
+                  <div
+                    className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full blur-3xl opacity-30"
+                    style={{
+                      background: isDark
+                        ? "radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)"
+                        : "radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)",
+                    }}
+                  />
+                  <div
+                    className="absolute inset-0 pointer-events-none opacity-[0.03]"
+                    style={{
+                      backgroundImage: isDark
+                        ? "repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.1) 35px, rgba(255,255,255,0.1) 70px)"
+                        : "repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(0,0,0,0.08) 35px, rgba(0,0,0,0.08) 70px)",
+                    }}
+                  />
+                </>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/5" />
+            </div>
+            <div className="p-4 pt-0">
+              <div className="flex items-center gap-3 -mt-8 mb-3">
+                <div
+                  className="w-14 h-14 rounded-full border-[3px] border-card flex items-center justify-center overflow-hidden bg-card relative shadow-xl"
+                  style={{ boxShadow: `0 6px 24px -6px ${colors.primary}40` }}
+                >
+                  {form.logoImageUrl ? (
+                    <Image src={form.logoImageUrl} alt="" fill className="object-cover" sizes="56px" />
+                  ) : selectedCompanyId ? (
+                    <Building2 className="w-7 h-7" style={{ color: colors.primary }} />
+                  ) : (
+                    <UserCircle className="w-7 h-7" style={{ color: colors.primary }} />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-text-primary truncate drop-shadow-md">{companyName || t("settings.previewCompany")}</p>
+                  <p className="text-xs text-text-secondary drop-shadow-sm">{t("settings.previewLabel")}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <div
+                  className="h-8 flex-1 rounded-lg shadow-sm ring-1 ring-black/5 dark:ring-white/10"
+                  style={{ backgroundColor: colors.primary }}
+                />
+                <div
+                  className="h-8 flex-1 rounded-lg shadow-sm ring-1 ring-black/5 dark:ring-white/10"
+                  style={{ backgroundColor: colors.secondary }}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Color Palette Preview */}
-        <div className="space-y-3">
-          <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">{t("settings.colorPaletteLabel")}</p>
-          <div className="flex gap-2">
+        {/* Mobile Preview */}
+        <div className="col-span-1 space-y-2">
+          <p className="text-xs font-medium text-text-muted">{t("settings.mobileView")}</p>
+          <div className="rounded-xl border border-card-border bg-card overflow-hidden shadow-lg transform scale-65 origin-top">
             <div
-              className="h-10 flex-1 rounded-lg shadow-md ring-1 ring-black/5 dark:ring-white/10"
-              style={{ backgroundColor: colors.primary }}
-            />
-            <div
-              className="h-10 flex-1 rounded-lg shadow-md ring-1 ring-black/5 dark:ring-white/10"
-              style={{ backgroundColor: colors.secondary }}
-            />
-            <div
-              className="h-10 flex-1 rounded-lg shadow-md ring-1 ring-black/5 dark:ring-white/10"
-              style={{ backgroundColor: colors.tertiary }}
-            />
-          </div>
-        </div>
-
-        {/* Sample Button Preview */}
-        <div className="mt-5 flex gap-2.5">
-          <div
-            className="flex-1 py-2.5 rounded-lg text-sm font-medium text-center shadow-lg"
-            style={{ backgroundColor: colors.primary, color: "#fff", boxShadow: `0 4px 14px -4px ${colors.primary}50` }}
-          >
-            {t("settings.primaryAction")}
-          </div>
-          <div
-            className="flex-1 py-2.5 rounded-lg text-sm font-medium text-center shadow-md"
-            style={{
-              backgroundColor: colors.secondary,
-              color: isDark ? "#fff" : "#1e293b",
-              boxShadow: `0 2px 8px -2px ${colors.secondary}40`,
-            }}
-          >
-            {t("settings.secondary")}
-          </div>
-          <div
-            className="flex-1 py-2.5 rounded-lg text-sm font-medium text-center shadow-sm"
-            style={{
-              backgroundColor: colors.tertiary,
-              color: isDark ? "#fff" : "#1e293b",
-              boxShadow: `0 1px 4px -1px ${colors.tertiary}30`,
-            }}
-          >
-            {t("settings.tertiary")}
+              className="h-16 relative"
+              style={{
+                background: form.bannerImageUrl
+                  ? `url(${form.bannerImageUrl}) center/cover`
+                  : undefined,
+                backgroundColor: form.bannerImageUrl ? undefined : isDark ? "#0f172a" : "#f8fafc",
+              }}
+            >
+              {!form.bannerImageUrl && (
+                <>
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: isDark
+                        ? "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)"
+                        : "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)",
+                    }}
+                  />
+                  <div
+                    className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-40"
+                    style={{
+                      background: isDark
+                        ? "radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%)"
+                        : "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)",
+                    }}
+                  />
+                  <div
+                    className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full blur-3xl opacity-30"
+                    style={{
+                      background: isDark
+                        ? "radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)"
+                        : "radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)",
+                    }}
+                  />
+                  <div
+                    className="absolute inset-0 pointer-events-none opacity-[0.03]"
+                    style={{
+                      backgroundImage: isDark
+                        ? "repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.1) 35px, rgba(255,255,255,0.1) 70px)"
+                        : "repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(0,0,0,0.08) 35px, rgba(0,0,0,0.08) 70px)",
+                    }}
+                  />
+                </>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/5" />
+            </div>
+            <div className="p-3 pt-0">
+              <div className="flex items-center gap-2 -mt-6 mb-2">
+                <div
+                  className="w-10 h-10 rounded-full border-[2px] border-card flex items-center justify-center overflow-hidden bg-card relative shadow-lg"
+                  style={{ boxShadow: `0 4px 16px -4px ${colors.primary}40` }}
+                >
+                  {form.logoImageUrl ? (
+                    <Image src={form.logoImageUrl} alt="" fill className="object-cover" sizes="40px" />
+                  ) : selectedCompanyId ? (
+                    <Building2 className="w-5 h-5" style={{ color: colors.primary }} />
+                  ) : (
+                    <UserCircle className="w-5 h-5" style={{ color: colors.primary }} />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-text-primary truncate drop-shadow-md">{companyName || t("settings.previewCompany")}</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
 export default function SettingsPage() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
@@ -717,9 +881,9 @@ export default function SettingsPage() {
                 </div>
               ) : activeTab === "preview" ? (
                 <div className="space-y-8">
-                  {/* Row 1: Live Preview */}
-                  <div>
-                    <div className="flex items-center gap-3 mb-4">
+                  {/* Live Preview Section */}
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3">
                       <div className="p-2 rounded-xl bg-company-primary/10">
                         <Eye className="w-5 h-5 text-company-primary" />
                       </div>
@@ -728,32 +892,11 @@ export default function SettingsPage() {
                         <p className="text-sm premium-subtitle">{t("settings.previewLabel")}</p>
                       </div>
                     </div>
-                    <div className="max-w-3xl">
-                      <BrandingPreview form={form} t={t} companyName={selectedCompanyName} />
-                    </div>
-                  </div>
-
-                  {/* Row 2: Pro Tips */}
-                  <div className="flex items-start gap-4">
-                    <div className="p-2.5 rounded-xl bg-company-primary/10 shrink-0">
-                      <Sparkles className="w-5 h-5 text-company-primary" />
-                    </div>
-                    <div>
-                      <h2 className="text-base premium-section-title mb-2">{t("settings.proTips")}</h2>
-                      <ul className="text-sm text-text-muted space-y-2">
-                        <li className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-company-primary mt-1.5 shrink-0" />
-                          {t("settings.tipContrast")}
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-company-primary mt-1.5 shrink-0" />
-                          {t("settings.tipSimple")}
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-company-primary mt-1.5 shrink-0" />
-                          {t("settings.tipTest")}
-                        </li>
-                      </ul>
+                    <div className="space-y-8 pl-1">
+                      {/* Device Previews */}
+                      <div>
+                        <DevicePreviews form={form} t={t} companyName={selectedCompanyName} selectedCompanyId={selectedCompanyId} />
+                      </div>
                     </div>
                   </div>
                 </div>
