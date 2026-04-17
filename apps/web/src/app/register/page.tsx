@@ -13,12 +13,8 @@ import {
   EyeOff,
   ArrowRight,
   CheckCircle,
-  AlertOctagon,
   Check,
   X,
-  GoogleIcon,
-  FacebookIcon,
-  MicrosoftIcon,
 } from "@/lib/premiumIcons";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageLoader } from "@/components/PageLoader";
@@ -54,6 +50,7 @@ function RegisterForm() {
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -65,9 +62,18 @@ function RegisterForm() {
   useEffect(() => setMounted(true), []);
   const logoVariant = mounted && resolvedTheme === "dark" ? "onDark" : "default";
 
-  const handleOAuthLogin = (provider: string) => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/auth/${provider}`;
-  };
+  // Prevent hydration mismatch by not rendering theme-dependent styles until mounted
+  const isDark = mounted && resolvedTheme === 'dark';
+
+  // Fetch email from token to enable proper password saving
+  useEffect(() => {
+    if (!token?.trim()) return;
+    apiClient.get<{ email: string }>(`/auth/invitations/validate?token=${token.trim()}`)
+      .then((data) => setEmail(data.email))
+      .catch(() => {
+        // If token is invalid, error will be shown on form submission
+      });
+  }, [token]);
 
   useEffect(() => {
     if (!success) return;
@@ -107,28 +113,66 @@ function RegisterForm() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
-        <div className="w-full max-w-[360px] text-center">
-          <div className="mb-8 flex justify-center">
-            <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-8 h-8 text-emerald-500" />
+      <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden px-4">
+
+        {/* Full screen animated gradient background */}
+        <div className="absolute inset-0 -z-10 overflow-hidden">
+          {/* Base gradient */}
+          <div
+            className="absolute inset-0 transition-all duration-700"
+            style={{
+              background: isDark
+                ? 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 25%, #16213e 50%, #1a1a2e 75%, #0a0a1a 100%)'
+                : 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #dbeafe 50%, #e0f2fe 75%, #f0f9ff 100%)',
+            }}
+          />
+
+          {/* Blob shapes */}
+          <div className="absolute -top-40 -left-40 w-[600px] h-[600px]" style={{ background: isDark ? 'linear-gradient(135deg, #1e3a8a 0%, #312e81 50%, #1e1b4b 100%)' : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%)', borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%', filter: 'blur(60px)', opacity: isDark ? 0.6 : 0.7, animation: 'lava-morph-1 20s ease-in-out infinite' }} />
+          <div className="absolute top-1/3 -right-32 w-[500px] h-[500px]" style={{ background: isDark ? 'linear-gradient(225deg, #3730a3 0%, #4338ca 50%, #1e3a5f 100%)' : 'linear-gradient(225deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%)', borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%', filter: 'blur(50px)', opacity: isDark ? 0.5 : 0.65, animation: 'lava-morph-2 25s ease-in-out infinite' }} />
+          <div className="absolute bottom-20 left-1/4 w-[450px] h-[450px]" style={{ background: isDark ? 'linear-gradient(45deg, #1e1b4b 0%, #312e81 50%, #1e3a8a 100%)' : 'linear-gradient(45deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%)', borderRadius: '70% 30% 50% 50% / 30% 50% 50% 70%', filter: 'blur(70px)', opacity: isDark ? 0.55 : 0.75, animation: 'lava-morph-3 22s ease-in-out infinite' }} />
+          <div className="absolute top-1/2 right-1/4 w-[400px] h-[400px]" style={{ background: isDark ? 'linear-gradient(315deg, #4338ca 0%, #3730a3 50%, #312e81 100%)' : 'linear-gradient(315deg, #4338ca 0%, #4f46e5 50%, #6366f1 100%)', borderRadius: '40% 60% 60% 40% / 60% 40% 60% 40%', filter: 'blur(55px)', opacity: isDark ? 0.45 : 0.6, animation: 'lava-morph-4 18s ease-in-out infinite' }} />
+          <div className="absolute bottom-1/3 left-10 w-[350px] h-[350px]" style={{ background: isDark ? 'linear-gradient(135deg, #312e81 0%, #1e1b4b 100%)' : 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)', borderRadius: '50% 50% 40% 60% / 50% 40% 60% 50%', filter: 'blur(45px)', opacity: isDark ? 0.4 : 0.6, animation: 'lava-morph-5 24s ease-in-out infinite' }} />
+          <div className="absolute top-1/4 right-1/5 w-[300px] h-[300px]" style={{ background: isDark ? 'linear-gradient(180deg, #4c1d95 0%, #5b21b6 50%, #312e81 100%)' : 'linear-gradient(180deg, #6d28d9 0%, #7c3aed 50%, #8b5cf6 100%)', borderRadius: '60% 40% 70% 30% / 40% 60% 30% 70%', filter: 'blur(40px)', opacity: isDark ? 0.35 : 0.65, animation: 'lava-morph-6 28s ease-in-out infinite' }} />
+          <div className="absolute bottom-1/4 left-1/3 w-[280px] h-[280px]" style={{ background: isDark ? 'linear-gradient(45deg, #1e3a8a 0%, #3730a3 100%)' : 'linear-gradient(45deg, #2563eb 0%, #3b82f6 100%)', borderRadius: '40% 60% 50% 50% / 50% 40% 50% 60%', filter: 'blur(35px)', opacity: isDark ? 0.3 : 0.55, animation: 'lava-morph-7 30s ease-in-out infinite' }} />
+
+          {/* Overlay */}
+          <div className="absolute inset-0 transition-all duration-700" style={{ background: isDark ? 'radial-gradient(ellipse at center, transparent 0%, rgba(10,10,26,0.4) 100%)' : 'radial-gradient(ellipse at center, transparent 0%, rgba(255,255,255,0.3) 100%)' }} />
+        </div>
+
+        {/* TOP RIGHT: Theme and Locale toggles */}
+        <div className="absolute top-4 right-4 z-30 hidden md:flex items-center gap-3">
+          <ThemeToggleSimple />
+          <LocaleToggle />
+        </div>
+
+        {/* MAIN: Centered Form with Logo */}
+        <main className="w-full max-w-[480px] relative z-10">
+          {/* Premium Glass Card Container */}
+          <div className="bg-white/90 dark:bg-slate-900/70 backdrop-blur-2xl rounded-lg border border-white/50 dark:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-8 md:p-10">
+            {/* Logo and Title */}
+            <div className="flex flex-col items-center mb-10">
+              <Logo variant={logoVariant} className="text-5xl mb-5" />
+              <div className="mb-8 flex justify-center">
+                <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-8 h-8 text-emerald-500" />
+                </div>
+              </div>
+              <h1 className="text-[1.75rem] leading-tight premium-title premium-title-glow mb-2">{t("auth.registrationComplete")}</h1>
+              <p className="premium-subtitle text-sm text-center">{t("auth.redirectingToLogin", { seconds: redirectSeconds })}</p>
+            </div>
+
+            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-emerald-500 h-full transition-all duration-1000 ease-linear"
+                style={{ width: `${((REDIRECT_DELAY_SECONDS - redirectSeconds) / REDIRECT_DELAY_SECONDS) * 100}%` }}
+              />
             </div>
           </div>
-          <h1 className="text-[1.75rem] leading-tight premium-title premium-title-glow mb-2">{t("auth.registrationComplete")}</h1>
-          <p className="premium-subtitle text-sm mb-4">{t("auth.redirectingToLogin", { seconds: redirectSeconds })}</p>
-          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
-            <div
-              className="bg-emerald-500 h-full transition-all duration-1000 ease-linear"
-              style={{ width: `${((REDIRECT_DELAY_SECONDS - redirectSeconds) / REDIRECT_DELAY_SECONDS) * 100}%` }}
-            />
-          </div>
-        </div>
+        </main>
       </div>
     );
   }
-
-  // Prevent hydration mismatch by not rendering theme-dependent styles until mounted
-  const isDark = mounted && resolvedTheme === 'dark';
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden px-4">
@@ -250,6 +294,14 @@ function RegisterForm() {
 
       {/* TOP RIGHT: Theme and Locale toggles */}
       <div className="absolute top-4 right-4 z-30 hidden md:flex items-center gap-3">
+        <Link href="/terms" className="text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
+          {t("privacy.footerTerms")}
+        </Link>
+        <span className="text-slate-400 dark:text-slate-500">•</span>
+        <Link href="/privacy" className="text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
+          {t("privacy.footerPrivacy")}
+        </Link>
+        <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1" />
         <ThemeToggleSimple />
         <LocaleToggle />
       </div>
@@ -268,6 +320,17 @@ function RegisterForm() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Hidden email input for browser password manager to save correct username */}
+            {email && (
+              <input
+                type="email"
+                value={email}
+                readOnly
+                autoComplete="username"
+                className="hidden"
+                tabIndex={-1}
+              />
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="firstName" className={LABEL_BASE}>
@@ -296,7 +359,6 @@ function RegisterForm() {
                   onChange={(e) => setLastName(e.target.value)}
                   className={INPUT_BASE}
                   placeholder={t("common.placeholderLastName")}
-                  autoComplete="family-name"
                 />
               </div>
             </div>
@@ -367,51 +429,13 @@ function RegisterForm() {
                 </>
               )}
             </button>
+
             {error && (
-              <div className="p-4 rounded-lg border border-red-500/20 bg-red-500/5 text-sm text-red-600 dark:text-red-400 flex items-center gap-3">
-                <AlertOctagon className="w-4 h-4 flex-shrink-0" />
-                <span>{error}</span>
+              <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400" role="alert">
+                {error}
               </div>
             )}
           </form>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200 dark:border-slate-700" />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-[#F2F3FE] dark:bg-[#161C3F] px-2 text-slate-500 dark:text-slate-400">{t("auth.orContinueWith")}</span>
-            </div>
-          </div>
-
-          {/* OAuth Providers - Horizontal row */}
-          <div className="flex items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={() => handleOAuthLogin("google")}
-              className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
-              title={t("auth.continueWithGoogle")}
-            >
-              <GoogleIcon className="h-6 w-6 text-red-500" />
-            </button>
-            <button
-              type="button"
-              onClick={() => handleOAuthLogin("microsoft")}
-              className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
-              title={t("auth.continueWithMicrosoft")}
-            >
-              <MicrosoftIcon className="h-6 w-6 text-blue-600" />
-            </button>
-            <button
-              type="button"
-              onClick={() => handleOAuthLogin("facebook")}
-              className="flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
-              title={t("auth.continueWithFacebook")}
-            >
-              <FacebookIcon className="h-6 w-6 text-blue-600" />
-            </button>
-          </div>
 
           <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 text-center">
             <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -423,28 +447,9 @@ function RegisterForm() {
           </div>
         </div>
 
-        {/* Footer - Outside card, part of natural flow */}
-        <div className="mt-8 mb-4 text-center">
-          <div className="max-w-[480px] mx-auto space-y-3">
-            <p className="text-xs text-black dark:text-slate-400">
-              {t("auth.supportHint")}{" "}
-              <a href="mailto:soporte@parkitcr.com" className="font-bold text-black dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
-                {t("auth.supportLinkLabel")}
-              </a>
-            </p>
-
-            <div className="flex items-center justify-center gap-3 text-[11px] text-black dark:text-slate-500">
-              <span>© {new Date().getFullYear()} Parkit</span>
-              <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
-              <Link href="/terms" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
-                {t("privacy.footerTerms")}
-              </Link>
-              <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
-              <Link href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
-                {t("privacy.footerPrivacy")}
-              </Link>
-            </div>
-          </div>
+        {/* Minimal Footer */}
+        <div className="mt-6 text-center">
+          <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">© {new Date().getFullYear()} Parkit. {t("footer.allRightsReserved")}</p>
         </div>
       </main>
     </div>

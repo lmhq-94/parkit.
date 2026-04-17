@@ -131,65 +131,66 @@ export function FormWizard({
         </div>
       </div>
 
-      {/* ── Stepper (above separator line) ─ */}
-      {steps.length > 1 && (
-        <div className="select-none flex items-center justify-center gap-2 pt-2 pb-1">
-          {steps.map((s, i) => {
-            const done = i < current;
-            const active = i === current;
-            return (
-              <React.Fragment key={i}>
-                <div className="flex flex-col items-center gap-1">
-                  <span
-                    className={[
-                      "flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-semibold transition-all duration-300",
-                      done
-                        ? "bg-company-primary text-white"
-                        : active
-                        ? "border border-company-primary text-company-primary bg-company-primary-subtle"
-                        : "border border-slate-200 dark:border-slate-600 text-slate-400 dark:text-slate-500",
-                    ].join(" ")}
-                  >
-                    {done ? <Check className="w-3 h-3" strokeWidth={3} /> : i + 1}
-                  </span>
-                  <span
-                    className={[
-                      "text-[11px] font-medium whitespace-nowrap transition-colors duration-200 hidden md:block",
-                      active ? "text-text-primary" : done ? "text-company-primary" : "text-text-muted/50",
-                    ].join(" ")}
-                  >
-                    {s.title}
-                  </span>
-                </div>
-                {i < steps.length - 1 && (
-                  <div className="flex-1 min-w-[32px] md:min-w-[64px] max-w-[120px] h-[1px] rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600/60 shrink-0">
-                    <div
-                      className="h-full rounded-full bg-company-primary transition-all duration-500 ease-out"
-                      style={{ width: i < current ? "100%" : "0%" }}
-                    />
-                  </div>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
-      )}
-
       {/* ── Action bar (below separator line) ─ */}
-      <div className="mt-4 flex flex-col gap-3 pt-4 border-t border-slate-200/60 dark:border-slate-700/50">
-        <div className="flex items-center justify-between gap-4">
-          <div className="hidden sm:flex flex-col gap-1">
-            {footerNote && (
-              <p className="text-xs text-text-muted">
-                {footerNote}
-              </p>
-            )}
-            {step.badge === "required" && (
-              <p className="text-xs text-text-muted/50">
-                {t("common.requiredNote")}
-              </p>
-            )}
-          </div>
+      <div className="mt-4 flex flex-col gap-3">
+        {/* ── Notes above divider ─ */}
+        <div className="flex flex-col gap-1 pb-3 border-b border-slate-200/60 dark:border-slate-700/50">
+          {footerNote && (
+            <p className="text-xs text-text-muted">
+              {footerNote}
+            </p>
+          )}
+          {step.badge === "required" && (
+            <p className="text-xs text-text-muted/50">
+              {t("common.requiredNote")}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between gap-4 pt-3">
+          {/* ── Stepper (left side) ─ */}
+          {steps.length > 1 && (
+            <div className="select-none flex items-center gap-3 flex-shrink-0 pr-8">
+              {steps.map((s, i) => {
+                const done = i < current;
+                const active = i === current;
+                return (
+                  <React.Fragment key={i}>
+                    <div className="flex flex-col items-center gap-1">
+                      <span
+                        className={[
+                          "flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-semibold transition-all duration-300",
+                          done
+                            ? "bg-company-primary text-white"
+                            : active
+                            ? "border border-company-primary text-company-primary bg-company-primary-subtle"
+                            : "border border-slate-200 dark:border-slate-600 text-slate-400 dark:text-slate-500",
+                        ].join(" ")}
+                      >
+                        {done ? <Check className="w-3 h-3" strokeWidth={3} /> : i + 1}
+                      </span>
+                      <span
+                        className={[
+                          "text-[11px] font-medium whitespace-nowrap transition-colors duration-200 hidden md:block",
+                          active ? "text-text-primary" : done ? "text-company-primary" : "text-text-muted/50",
+                        ].join(" ")}
+                      >
+                        {s.title}
+                      </span>
+                    </div>
+                    {i < steps.length - 1 && (
+                      <div className="flex-1 min-w-[48px] md:min-w-[96px] max-w-[180px] h-[1px] rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600/60 shrink-0">
+                        <div
+                          className="h-full rounded-full bg-company-primary transition-all duration-500 ease-out"
+                          style={{ width: i < current ? "100%" : "0%" }}
+                        />
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          )}
 
           <div className="flex items-center gap-2.5 ml-auto">
           {current === 0 ? (

@@ -56,7 +56,7 @@ export class VehiclesService {
       include: {
         owners: {
           include: {
-            client: {
+            customer: {
               select: {
                 id: true,
                 user: {
@@ -82,7 +82,7 @@ export class VehiclesService {
       include: {
         owners: {
           include: {
-            client: {
+            customer: {
               select: {
                 id: true,
                 userId: true,
@@ -149,7 +149,7 @@ export class VehiclesService {
       include: {
         owners: {
           include: {
-            client: true,
+            customer: true,
           },
         },
       },
@@ -186,7 +186,7 @@ export class VehiclesService {
       include: {
         owners: {
           include: {
-            client: {
+            customer: {
               select: {
                 id: true,
                 user: {
@@ -218,7 +218,7 @@ export class VehiclesService {
       include: {
         owners: {
           include: {
-            client: {
+            customer: {
               select: {
                 id: true,
                 user: {

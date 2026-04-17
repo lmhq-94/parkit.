@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useAuthStore, useDashboardStore, SIDEBAR_COLLAPSED_KEY } from "@/lib/store";
+import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { isSuperAdmin, isAdmin } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
 import { DefaultBanner } from "@/components/DefaultBanner";
@@ -101,9 +101,6 @@ function SidebarTooltip({
   );
 }
 
-const SELECTED_COMPANY_KEY = "parkit_selected_company_id";
-const SELECTED_COMPANY_NAME_KEY = "parkit_selected_company_name";
-
 /** Luminancia media (0–1) de la mitad inferior del banner. Null si no se pudo analizar (ej. CORS). */
 function getBannerLuminance(imageSrc: string): Promise<number | null> {
   return new Promise((resolve) => {
@@ -132,9 +129,9 @@ function getBannerLuminance(imageSrc: string): Promise<number | null> {
         for (let y = Math.floor(h / 2); y < h; y++) {
           for (let x = 0; x < w; x++) {
             const i = (y * w + x) * 4;
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
+            const r = data[i] ?? 0;
+            const g = data[i + 1] ?? 0;
+            const b = data[i + 2] ?? 0;
             const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
             sum += luminance;
             count++;
@@ -228,7 +225,7 @@ function CompanySelector({
   const companyInitials = (name: string) => {
     const n = (name || "").trim();
     const parts = n.split(/\s+/);
-    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    if (parts.length >= 2 && parts[0] && parts[1]) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     if (n.length >= 2) return n.slice(0, 2).toUpperCase();
     if (n.length === 1) return n[0].toUpperCase();
     return "?";
@@ -327,31 +324,40 @@ function CompanySelector({
             )}
           </div>
         )}
-        <button
-          ref={triggerRef}
-          type="button"
-          onClick={() => { if (!open) updatePosition(); setOpen((o) => !o); }}
-          className={`flex-1 flex items-center min-w-0 ${hideAvatar ? "pl-4" : "pl-3"} pr-9 py-2.5 rounded-lg text-left text-sm transition-all duration-300 ease-out ${
-            highContrast
-              ? `bg-white/25 hover:bg-white/35 ${isDark ? "text-white" : "text-slate-800"} border border-white/30 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.08),0_1px_2px_rgba(255,255,255,0.3)_inset] backdrop-blur-xl hover:shadow-[0_6px_20px_-4px_rgba(0,0,0,0.1)] hover:border-white/50 hover:scale-[1.02]`
-              : isDark
-                ? "bg-white/10 hover:bg-white/20 text-white border border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.2)] backdrop-blur-sm hover:shadow-[0_4px_16px_rgba(0,0,0,0.3)]"
-                : "bg-white/25 text-slate-800 border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.06),0_1px_2px_rgba(255,255,255,0.4)_inset,0_8px_16px_rgba(255,255,255,0.1)_inset] backdrop-blur-2xl hover:shadow-[0_8px_32px_rgba(0,0,0,0.1),0_1px_2px_rgba(255,255,255,0.5)_inset] hover:bg-white/35 hover:border-white/90"
-          } ${open ? "ring-2 ring-company-primary/40 shadow-[0_0_20px_rgba(var(--company-primary-rgb),0.2)]" : ""} ${highContrast ? "max-w-[220px] justify-center text-center" : ""}`}
-        >
-          <span className="truncate flex-1 font-medium">
-            {selectedCompanyName || (
-              <span className={highContrast ? "text-slate-500" : isDark ? "text-white/60" : "text-slate-500"}>
-                {placeholder}
-              </span>
-            )}
-          </span>
-        </button>
-        <ChevronDown
-          className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-all duration-300 ease-out ${
-            open ? "rotate-180" : ""
-          } ${highContrast ? "text-slate-500" : isDark ? "text-white/70" : "text-slate-500"}`}
-        />
+        <div className={hideAvatar ? "absolute -right-2 top-1/2 -translate-y-1/2" : "flex-1"}>
+          <button
+            ref={triggerRef}
+            type="button"
+            onClick={() => { if (!open) updatePosition(); setOpen((o) => !o); }}
+            className={`flex items-center min-w-0 ${hideAvatar ? "pl-4" : "pl-3"} ${hideAvatar ? "pr-8" : "pr-9"} ${hideAvatar ? "py-1.5" : "py-2.5"} rounded-lg text-left text-sm transition-all duration-300 ease-out ${
+              hideAvatar
+                ? `px-3 py-1.5 rounded-lg backdrop-blur-md hover:scale-[1.02]`
+                : highContrast
+                  ? `bg-white/25 hover:bg-white/35 ${isDark ? "text-white" : "text-slate-800"} border border-white/30 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.08),0_1px_2px_rgba(255,255,255,0.3)_inset] backdrop-blur-xl hover:shadow-[0_6px_20px_-4px_rgba(0,0,0,0.1)] hover:border-white/50 hover:scale-[1.02]`
+                  : isDark
+                    ? "bg-white/10 hover:bg-white/20 text-white border border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.2)] backdrop-blur-sm hover:shadow-[0_4px_16px_rgba(0,0,0,0.3)]"
+                    : "bg-white/25 text-slate-800 border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.06),0_1px_2px_rgba(255,255,255,0.4)_inset,0_8px_16px_rgba(255,255,255,0.1)_inset] backdrop-blur-2xl hover:shadow-[0_8px_32px_rgba(0,0,0,0.1),0_1px_2px_rgba(255,255,255,0.5)_inset] hover:bg-white/35 hover:border-white/90"
+            } ${open ? "ring-2 ring-company-primary/40 shadow-[0_0_20px_rgba(var(--company-primary-rgb),0.2)]" : ""} ${highContrast ? "max-w-[220px] justify-center text-center" : ""}`}
+            style={hideAvatar ? {
+              backgroundColor: isDark ? "rgba(30, 41, 59, 0.9)" : "rgba(255, 255, 255, 0.9)",
+              boxShadow: isDark ? "0 2px 8px -2px rgba(0, 0, 0, 0.3)" : "0 2px 8px -2px rgba(0, 0, 0, 0.1)",
+              border: isDark ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid rgba(0, 0, 0, 0.05)",
+            } : undefined}
+          >
+            <span className={`truncate flex-1 ${hideAvatar ? "text-xs font-medium" : "font-medium"}`} style={hideAvatar ? { color: 'var(--text-primary)' } : undefined}>
+              {selectedCompanyName || (
+                <span className={highContrast ? "text-slate-500" : isDark ? "text-white/60" : "text-slate-500"}>
+                  {placeholder}
+                </span>
+              )}
+            </span>
+          </button>
+          <ChevronDown
+            className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-all duration-300 ease-out ${
+              open ? "rotate-180" : ""
+            } ${hideAvatar ? "w-3 h-3" : "w-4 h-4"} ${hideAvatar ? (isDark ? "text-white/50" : "text-slate-400") : (highContrast ? "text-slate-500" : isDark ? "text-white/70" : "text-slate-500")}`}
+          />
+        </div>
       </div>
       {dropdown}
     </>
@@ -376,7 +382,6 @@ export function DashboardSidebar() {
     parkingsVersion,
     companyBranding,
   } = useDashboardStore();
-  const [mounted, setMounted] = useState(false);
   const [companies, setCompanies] = useState<{ id: string; commercialName?: string; legalName?: string; requiresCustomerApp?: boolean }[]>([]);
   const [adminCompanyName, setAdminCompanyName] = useState<string | null>(null);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
@@ -385,9 +390,9 @@ export function DashboardSidebar() {
 
   const superAdmin = isSuperAdmin(user);
   const admin = isAdmin(user);
-  // SUPER_ADMIN: has companies if loaded list has entries. ADMIN/STAFF: always have a company; do not show "create company" while /companies/me loads (avoids flicker).
+  // SUPER_ADMIN: has companies if loaded list has entries OR if a company is selected in store. ADMIN/STAFF: always have a company.
   const hasCompanies = superAdmin
-    ? companies.length > 0
+    ? companies.length > 0 || Boolean(selectedCompanyId)
     : Boolean(adminCompanyName) || Boolean(user?.id);
   const isDark = resolvedTheme === "dark";
 
@@ -424,10 +429,6 @@ export function DashboardSidebar() {
   const bannerVariant = hasCustomBanner ? (bannerIsDark ?? isDark) : isDark;
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
     if (!hasCustomBanner || !effectiveBannerSrc) return;
     let cancelled = false;
     getBannerLuminance(effectiveBannerSrc).then((luminance) => {
@@ -437,20 +438,6 @@ export function DashboardSidebar() {
       cancelled = true;
     };
   }, [hasCustomBanner, effectiveBannerSrc]);
-
-  // Hydrate collapsed state from localStorage (only matters on first load; store already has it while navigating)
-  useEffect(() => {
-    if (!mounted) return;
-    const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
-    setSidebarCollapsed(stored === "true");
-  }, [mounted, setSidebarCollapsed]);
-
-  useEffect(() => {
-    if (!mounted) return;
-    const id = localStorage.getItem(SELECTED_COMPANY_KEY);
-    const name = localStorage.getItem(SELECTED_COMPANY_NAME_KEY);
-    if (id && name) setSelectedCompany(id, name);
-  }, [mounted, setSelectedCompany]);
 
   useEffect(() => {
     if (!superAdmin) return;
@@ -467,13 +454,14 @@ export function DashboardSidebar() {
     const currentExists = currentId && companies.some((c) => c.id === currentId);
     if (currentExists) return;
     const first = companies[0];
+    if (!first) return;
     const name = first.commercialName || first.legalName || first.id;
     setSelectedCompany(first.id, name, first.requiresCustomerApp);
   }, [superAdmin, companies, setSelectedCompany]);
 
   // For ADMIN: fetch company (name and id) and, if none is selected, set it so layout can load branding
   useEffect(() => {
-    if (!mounted || !user || superAdmin) return;
+    if (!user || superAdmin) return;
     apiClient
       .get<{ id?: string; commercialName?: string; legalName?: string; email?: string; requiresCustomerApp?: boolean }>("/companies/me")
       .then((company) => {
@@ -486,7 +474,7 @@ export function DashboardSidebar() {
       .catch(() => {
         setAdminCompanyName(null);
       });
-  }, [mounted, user?.id, superAdmin, setSelectedCompany, user]);
+  }, [user?.id, superAdmin, setSelectedCompany, user]);
 
   // Unread notifications count for sidebar badge (refreshes on navigation)
   useEffect(() => {
@@ -566,11 +554,6 @@ export function DashboardSidebar() {
     ];
   }, [t, hasBookableParkings, admin, superAdmin]);
 
-  // Don't render sidebar if no companies exist
-  if (!hasCompanies) {
-    return null;
-  }
-
   return (
     <>
       {/* Mobile overlay */}
@@ -637,7 +620,7 @@ export function DashboardSidebar() {
           {!collapsed ? (
             <>
               {superAdmin ? (
-                <div className="border-b border-card-border/25 dark:border-white/[0.04] shrink-0">
+                <div className="border-b border-card-border/25 dark:border-white/[0.04] shrink-0 relative">
                   <DefaultBanner
                     companyName={selectedCompanyName || t("sidebar.company")}
                     logoImageUrl={companyBranding?.logoImageUrl}
@@ -646,28 +629,26 @@ export function DashboardSidebar() {
                     isDark={hasCustomBanner ? bannerVariant : isDark}
                     backgroundImageUrl={hasCustomBanner ? effectiveBannerSrc : null}
                     renderRight={
-                      <div className="flex w-full justify-center">
-                        <CompanySelector
-                          companies={companies}
-                          selectedCompanyId={selectedCompanyId}
-                          selectedCompanyName={selectedCompanyName}
-                          onSelect={handleSelectCompany}
-                          placeholder={t("sidebar.selectCompany")}
-                          allCompaniesLabel={t("sidebar.allCompanies")}
-                          emptyLabel={t("companies.noCompanies")}
-                          isDark={hasCustomBanner ? bannerVariant : isDark}
-                          logoImageUrl={companyBranding?.logoImageUrl}
-                          hideAvatar
-                          highContrast
-                        />
-                      </div>
+                      <CompanySelector
+                        companies={companies}
+                        selectedCompanyId={selectedCompanyId}
+                        selectedCompanyName={selectedCompanyName}
+                        onSelect={handleSelectCompany}
+                        placeholder={t("sidebar.selectCompany")}
+                        allCompaniesLabel={t("sidebar.allCompanies")}
+                        emptyLabel={t("companies.noCompanies")}
+                        isDark={hasCustomBanner ? bannerVariant : isDark}
+                        logoImageUrl={companyBranding?.logoImageUrl}
+                        hideAvatar
+                        highContrast
+                      />
                     }
                   />
                 </div>
-              ) : (
-                <div className="border-b border-card-border/25 dark:border-white/[0.04] shrink-0">
+              ) : (adminCompanyName || selectedCompanyName) ? (
+                <div className="border-b border-card-border/25 dark:border-white/[0.04] shrink-0 relative">
                   <DefaultBanner
-                    companyName={adminCompanyName || t("companies.single") || "Company"}
+                    companyName={adminCompanyName || selectedCompanyName || "Company"}
                     logoImageUrl={companyBranding?.logoImageUrl}
                     businessActivity={companyBranding?.businessActivity}
                     companyColors={companyColors}
@@ -675,7 +656,7 @@ export function DashboardSidebar() {
                     backgroundImageUrl={hasCustomBanner ? effectiveBannerSrc : null}
                   />
                 </div>
-              )}
+              ) : null}
             </>
           ) : (
             <div className="px-3 py-7 shrink-0 flex justify-center">
@@ -825,7 +806,7 @@ export function DashboardSidebar() {
           </div>
         ) : (
           <div className="flex justify-center">
-            <span className="text-[8px] text-text-muted dark:text-company-tertiary/40">©{String(new Date().getFullYear()).slice(-2)}</span>
+            <span className="text-[8px] text-text-muted dark:text-company-tertiary/40">© {new Date().getFullYear()}</span>
           </div>
         )}
       </footer>

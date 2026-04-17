@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import { apiClient, getApiErrorMessage, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useAuthStore, useLocaleStore, useDashboardStore } from "@/lib/store";
@@ -16,6 +16,7 @@ import { LocaleToggle } from "@/components/LocaleToggle";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { resolvedTheme, setTheme } = useTheme();
   const { t } = useTranslation();
   const { login, setError, error } = useAuthStore();
@@ -28,6 +29,14 @@ export default function LoginPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const logoVariant = mounted && resolvedTheme === "dark" ? "onDark" : "default";
+
+  // Pre-fill email from query parameter if present
+  useEffect(() => {
+    const emailParam = searchParams.get("email");
+    if (emailParam) {
+      setFormData((prev) => ({ ...prev, email: emailParam }));
+    }
+  }, [searchParams]);
 
   const handleOAuthLogin = (provider: string) => {
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/auth/${provider}`;
@@ -222,6 +231,14 @@ export default function LoginPage() {
 
       {/* TOP RIGHT: Theme and Locale toggles */}
       <div className="absolute top-4 right-4 z-30 hidden md:flex items-center gap-3">
+        <Link href="/terms" className="text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
+          {t("privacy.footerTerms")}
+        </Link>
+        <span className="text-slate-400 dark:text-slate-500">•</span>
+        <Link href="/privacy" className="text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
+          {t("privacy.footerPrivacy")}
+        </Link>
+        <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1" />
         <ThemeToggleSimple />
         <LocaleToggle />
       </div>
@@ -319,32 +336,13 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 text-center">
-            <p className="text-sm text-slate-500 dark:text-slate-400">{t("auth.dontHaveAccount")} <Link href="/register" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 underline-offset-2 hover:underline transition-colors">{t("auth.registerNow")}</Link></p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{t("auth.dontHaveAccount")} <Link href="/request-access" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 underline-offset-2 hover:underline transition-colors">{t("auth.requestAccess")}</Link></p>
           </div>
         </div>
 
-        {/* Footer - Outside card, part of natural flow */}
-        <div className="mt-8 mb-4 text-center">
-          <div className="max-w-[480px] mx-auto space-y-3">
-            <p className="text-xs text-black dark:text-slate-400">
-              {t("auth.supportHint")}{" "}
-              <a href="mailto:soporte@parkitcr.com" className="font-bold text-black dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">
-                {t("auth.supportLinkLabel")}
-              </a>
-            </p>
-
-            <div className="flex items-center justify-center gap-3 text-[11px] text-black dark:text-slate-500">
-              <span>© {new Date().getFullYear()} Parkit</span>
-              <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
-              <Link href="/terms" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
-                {t("privacy.footerTerms")}
-              </Link>
-              <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
-              <Link href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
-                {t("privacy.footerPrivacy")}
-              </Link>
-            </div>
-          </div>
+        {/* Minimal Footer */}
+        <div className="mt-6 text-center">
+          <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">© {new Date().getFullYear()} Parkit. {t("footer.allRightsReserved")}</p>
         </div>
       </main>
     </div>

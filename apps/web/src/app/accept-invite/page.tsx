@@ -23,6 +23,7 @@ function AcceptInviteForm() {
   const { resolvedTheme } = useTheme();
   const { t } = useTranslation();
   const [mounted, setMounted] = useState(false);
+  const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -36,6 +37,20 @@ function AcceptInviteForm() {
   const logoVariant = mounted && resolvedTheme === "dark" ? "onDark" : "default";
 
   useEffect(() => {
+    if (!token?.trim()) return;
+    const fetchEmail = async () => {
+      try {
+        const response = await apiClient.get<{ email: string }>(`/auth/invitations/validate?token=${encodeURIComponent(token.trim())}`);
+        setEmail(response.email);
+      } catch (err) {
+        // Silently fail, user will see error when trying to submit
+        console.error("Failed to validate invitation token:", err);
+      }
+    };
+    fetchEmail();
+  }, [token]);
+
+  useEffect(() => {
     if (!success) return;
     const id = setInterval(() => {
       setRedirectSeconds((s) => Math.max(0, s - 1));
@@ -46,9 +61,10 @@ function AcceptInviteForm() {
   useEffect(() => {
     if (!success) return;
     if (redirectSeconds <= 0) {
-      router.push("/login");
+      const loginUrl = email ? `/login?email=${encodeURIComponent(email)}` : "/login";
+      router.push(loginUrl);
     }
-  }, [success, redirectSeconds, router]);
+  }, [success, redirectSeconds, router, email]);
 
   const req = checkPasswordRequirements(password);
 
@@ -100,6 +116,14 @@ function AcceptInviteForm() {
 
   const TopRightToggles = () => (
     <div className="absolute top-4 right-4 z-30 hidden md:flex items-center gap-3">
+      <Link href="/terms" className="text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
+        {t("privacy.footerTerms")}
+      </Link>
+      <span className="text-slate-400 dark:text-slate-500">•</span>
+      <Link href="/privacy" className="text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
+        {t("privacy.footerPrivacy")}
+      </Link>
+      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1" />
       <ThemeToggleSimple />
       <LocaleToggle />
     </div>
@@ -107,15 +131,8 @@ function AcceptInviteForm() {
 
   const BottomSection = () => (
     <div className="fixed bottom-0 left-0 right-0 py-4 px-4 text-center z-20">
-      <div className="max-w-[480px] mx-auto space-y-2">
+      <div className="max-w-[480px] mx-auto">
         <p className="text-xs text-slate-600 dark:text-slate-400">{t("auth.supportHint")}{" "}<a href="mailto:soporte@parkitcr.com" className="font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">{t("auth.supportLinkLabel")}</a></p>
-        <div className="flex items-center justify-center gap-3 text-[10px] text-slate-500 dark:text-slate-400">
-          <span>© {new Date().getFullYear()} Parkit. {t("footer.allRightsReserved")}</span>
-          <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
-          <Link href="/terms" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">{t("footer.terms")}</Link>
-          <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600" />
-          <Link href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">{t("footer.privacyPolicy")}</Link>
-        </div>
       </div>
     </div>
   );
@@ -136,6 +153,11 @@ function AcceptInviteForm() {
           </div>
           <BottomSection />
         </main>
+
+        {/* Minimal Footer */}
+        <div className="mt-6 text-center">
+          <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">© {new Date().getFullYear()} Parkit. {t("footer.allRightsReserved")}</p>
+        </div>
       </div>
     );
   }
@@ -160,6 +182,11 @@ function AcceptInviteForm() {
           </div>
           <BottomSection />
         </main>
+
+        {/* Minimal Footer */}
+        <div className="mt-6 text-center">
+          <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">© {new Date().getFullYear()} Parkit. {t("footer.allRightsReserved")}</p>
+        </div>
       </div>
     );
   }
@@ -177,13 +204,22 @@ function AcceptInviteForm() {
             <p className="premium-subtitle text-sm text-center">{t("auth.acceptInviteDescription")}</p>
           </div>
 
-          {error && (
-            <div className="mb-6 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400" role="alert">
-              {error}
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-5">
+            {email && (
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5">{t("auth.email")}</label>
+                <div className="relative">
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={email}
+                    readOnly
+                    className="w-full px-3.5 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 text-sm cursor-not-allowed"
+                  />
+                </div>
+              </div>
+            )}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5">{t("auth.password")}</label>
               <div className="relative">
@@ -237,6 +273,12 @@ function AcceptInviteForm() {
               {isSubmitting ? <LoadingSpinner size="sm" variant="white" /> : <>{t("auth.setPassword")}<ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" /></>}
             </button>
 
+            {error && (
+              <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400" role="alert">
+                {error}
+              </div>
+            )}
+
             <p className="text-center">
               <Link href="/login" className="group text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 inline-flex items-center gap-1">
                 {t("auth.backToSignIn")}
@@ -247,6 +289,11 @@ function AcceptInviteForm() {
         </div>
         <BottomSection />
       </main>
+
+      {/* Minimal Footer */}
+      <div className="mt-6 text-center">
+        <p className="text-[10px] text-slate-400 dark:text-slate-500">© {new Date().getFullYear()} Parkit. All rights reserved.</p>
+      </div>
     </div>
   );
 }

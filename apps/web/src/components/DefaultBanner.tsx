@@ -46,7 +46,7 @@ export function DefaultBanner({
     <div
       className={`relative overflow-hidden w-full min-h-[5.5rem] flex items-center ${className}`}
       style={{
-        backgroundColor: hasBackgroundImage ? undefined : isDark ? "#0f172a" : "#f8fafc",
+        backgroundColor: hasBackgroundImage ? undefined : isDark ? "#0a0a1a" : "#f0f9ff",
       }}
     >
       {/* Fondo premium con gradientes estáticos tipo "animated" pero sin animar */}
@@ -67,45 +67,24 @@ export function DefaultBanner({
         </>
       ) : (
         <>
-          {/* Capa base sutil */}
-          <div 
-            className="absolute inset-0"
+          {/* Base gradient */}
+          <div
+            className="absolute inset-0 transition-all duration-700"
             style={{
               background: isDark
-                ? "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)"
-                : "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)",
+                ? 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 25%, #16213e 50%, #1a1a2e 75%, #0a0a1a 100%)'
+                : 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #dbeafe 50%, #e0f2fe 75%, #f0f9ff 100%)',
             }}
           />
-          
-          {/* Gradiente decorativo 1 - esquina superior derecha */}
-          <div
-            className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-40"
-            style={{
-              background: isDark
-                ? "radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%)"
-                : "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)",
-            }}
-          />
-          
-          {/* Gradiente decorativo 2 - esquina inferior izquierda */}
-          <div
-            className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full blur-3xl opacity-30"
-            style={{
-              background: isDark
-                ? "radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)"
-                : "radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)",
-            }}
-          />
-          
-          {/* Líneas diagonales decorativas sutiles */}
-          <div
-            className="absolute inset-0 pointer-events-none opacity-[0.03]"
-            style={{
-              backgroundImage: isDark
-                ? "repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.1) 35px, rgba(255,255,255,0.1) 70px)"
-                : "repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(0,0,0,0.08) 35px, rgba(0,0,0,0.08) 70px)",
-            }}
-          />
+
+          {/* Blob shapes - scaled for banner (static) */}
+          <div className="absolute -top-6 -right-6 w-[90px] h-[90px]" style={{ background: isDark ? 'linear-gradient(135deg, #1e3a8a 0%, #312e81 50%, #1e1b4b 100%)' : 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%)', borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%', filter: 'blur(16px)', opacity: isDark ? 0.35 : 0.3 }} />
+          <div className="absolute top-1/3 -right-4 w-[85px] h-[85px]" style={{ background: isDark ? 'linear-gradient(225deg, #3730a3 0%, #4338ca 50%, #1e3a5f 100%)' : 'linear-gradient(225deg, #6366f1 0%, #818cf8 50%, #a78bfa 100%)', borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%', filter: 'blur(14px)', opacity: isDark ? 0.3 : 0.25 }} />
+          <div className="absolute bottom-2 left-1/4 w-[75px] h-[75px]" style={{ background: isDark ? 'linear-gradient(45deg, #1e1b4b 0%, #312e81 50%, #1e3a8a 100%)' : 'linear-gradient(45deg, #8b5cf6 0%, #a78bfa 50%, #c4b5fd 100%)', borderRadius: '70% 30% 50% 50% / 30% 50% 50% 70%', filter: 'blur(12px)', opacity: isDark ? 0.25 : 0.2 }} />
+          <div className="absolute top-1/2 right-1/5 w-[65px] h-[65px]" style={{ background: isDark ? 'linear-gradient(315deg, #4338ca 0%, #3730a3 50%, #312e81 100%)' : 'linear-gradient(315deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%)', borderRadius: '40% 60% 60% 40% / 60% 40% 60% 40%', filter: 'blur(10px)', opacity: isDark ? 0.2 : 0.15 }} />
+
+          {/* Overlay */}
+          <div className="absolute inset-0 transition-all duration-700" style={{ background: isDark ? 'radial-gradient(ellipse at center, transparent 0%, rgba(10,10,26,0.3) 100%)' : 'radial-gradient(ellipse at center, transparent 0%, rgba(255,255,255,0.2) 100%)' }} />
         </>
       )}
 
@@ -143,48 +122,26 @@ export function DefaultBanner({
       </div>
 
       {/* Derecha: contenido personalizado o título premium */}
-      <div className={`relative z-10 flex-1 min-w-0 pl-3 pr-4 flex justify-center ${hasBackgroundImage ? "drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]" : ""}`}>
+      <div className={`relative z-10 flex-1 min-w-0 pl-3 ${hasBackgroundImage ? "drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]" : ""}`}>
         {renderRight ? (
           renderRight
         ) : (
-          <div
-            className="inline-flex flex-col gap-0.5 rounded-xl px-4 py-2.5 backdrop-blur-2xl transition-all duration-300 hover:scale-[1.02]"
-            style={{
-              backgroundColor: isDark
-                ? "rgba(15,23,42,0.75)"
-                : "rgba(255,255,255,0.85)",
-              border: isDark
-                ? "1px solid rgba(255,255,255,0.15)"
-                : "1px solid rgba(255,255,255,0.9)",
-              boxShadow: isDark
-                ? "0 12px 40px -12px rgba(0,0,0,0.5), 0 4px 12px -4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)"
-                : "0 12px 40px -12px rgba(0,0,0,0.15), 0 4px 12px -4px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,1)",
-            }}
-          >
-            <p className="text-sm font-bold truncate tracking-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-              {companyName || "Company"}
-            </p>
-            {subtitle && (
-              <p className="text-[11px] truncate font-semibold tracking-wide text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                {subtitle}
-              </p>
-            )}
-            {/* Indicador premium más prominente */}
+          <div className="absolute -right-2 top-1/2 -translate-y-1/2">
             <div
-              className="mt-1.5 w-12 h-0.5 rounded-full"
+              className="px-3 py-1.5 rounded-lg backdrop-blur-md"
               style={{
-                background: companyColors
-                  ? `linear-gradient(90deg, ${companyColors.primary}cc, ${companyColors.secondary}99)`
-                  : (isDark
-                      ? "linear-gradient(90deg, rgba(59,130,246,0.8), rgba(139,92,246,0.6))"
-                      : "linear-gradient(90deg, rgba(59,130,246,0.7), rgba(139,92,246,0.5))"),
-                boxShadow: companyColors
-                  ? `0 0 8px ${companyColors.primary}66`
-                  : (isDark
-                      ? "0 0 8px rgba(59,130,246,0.5)"
-                      : "0 0 8px rgba(59,130,246,0.3)"),
+                backgroundColor: isDark ? "rgba(30, 41, 59, 0.9)" : "rgba(255, 255, 255, 0.9)",
+                boxShadow: isDark ? "0 2px 8px -2px rgba(0, 0, 0, 0.3)" : "0 2px 8px -2px rgba(0, 0, 0, 0.1)",
+                border: isDark ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid rgba(0, 0, 0, 0.05)",
               }}
-            />
+            >
+              <p 
+                className="text-xs font-medium truncate"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                {companyName || "Company"}
+              </p>
+            </div>
           </div>
         )}
       </div>

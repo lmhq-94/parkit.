@@ -2,7 +2,7 @@
 
 This project includes two Expo-based mobile apps under `apps/mobile/`:
 
-- `mobile-client/` – Customer-facing app for end users.
+- `mobile-customer/` – Customer-facing app for end users.
 - `mobile-valet/` – Valet/operations app for staff.
 
 ## Prerequisites
@@ -15,7 +15,7 @@ This project includes two Expo-based mobile apps under `apps/mobile/`:
 From the repo root:
 
 ```bash
-cd apps/mobile/mobile-client
+cd apps/mobile/mobile-customer
 npm install
 npm run start   # or: npm run android / npm run ios / npm run web
 ```

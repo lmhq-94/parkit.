@@ -3485,8 +3485,8 @@ async function main() {
     where: { email: superAdminEmail },
     update: {
       companyId: null,
-      firstName: "Administrador",
-      lastName: "del Sistema",
+      firstName: "Sys",
+      lastName: "Admin",
       passwordHash,
       systemRole: "SUPER_ADMIN",
       timezone: "America/Costa_Rica",
@@ -3497,8 +3497,8 @@ async function main() {
     create: {
       id: "b8e5d9b5-6g35-5c77-0g95-d6ec1g9f7b12",
       companyId: null,
-      firstName: "Administrador",
-      lastName: "del Sistema",
+      firstName: "Sys",
+      lastName: "Admin",
       email: superAdminEmail,
       passwordHash,
       systemRole: "SUPER_ADMIN",

@@ -13,7 +13,7 @@ import { LocaleToggle } from "@/components/LocaleToggle";
 import { Logo } from "@/components/Logo";
 import { HelpModal } from "@/components/HelpModal";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useAuthStore, useDashboardStore } from "@/lib/store";
+import { useAuthStore, useDashboardStore, getBrandingFromCache } from "@/lib/store";
 import type { CompanyBranding } from "@/lib/store";
 import { getAvatarHSLColors, getFullName, getShortName, isSuperAdmin } from "@/lib/auth";
 import { apiClient } from "@/lib/api";
@@ -185,7 +185,6 @@ function DashboardLayoutInner({
 
   const selectedCompanyId = useDashboardStore((s: any) => s.selectedCompanyId);
   const setCompanyBranding = useDashboardStore((s: any) => s.setCompanyBranding);
-  const getBrandingFromCache = useDashboardStore((s: any) => s.getBrandingFromCache);
   const setBrandingInCache = useDashboardStore((s: any) => s.setBrandingInCache);
   const { theme, setTheme } = useTheme();
 
@@ -230,7 +229,7 @@ function DashboardLayoutInner({
         const current = useDashboardStore.getState().companyBranding;
         if (!current) setCompanyBranding(null);
       });
-  }, [selectedCompanyId, user, setCompanyBranding, getBrandingFromCache, setBrandingInCache]);
+  }, [selectedCompanyId, user, setCompanyBranding, setBrandingInCache]);
 
   return (
     <ProtectedRoute>

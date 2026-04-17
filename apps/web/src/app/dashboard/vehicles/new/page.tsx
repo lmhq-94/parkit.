@@ -359,10 +359,12 @@ export default function NewVehiclePage() {
               <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
               <input
                 type="number"
+                inputMode="numeric"
                 min={1900}
                 max={new Date().getFullYear() + 1}
                 value={form.year}
                 onChange={setIntegerField("year")}
+                onFocus={(e) => e.target.select()}
                 placeholder={t("common.placeholderYear")}
                 className={IL}
                 aria-invalid={!!errors.year}
@@ -404,9 +406,11 @@ export default function NewVehiclePage() {
                 type="number"
                 inputMode="decimal"
                 min={0}
+                max={20}
                 step={0.01}
                 value={form.lengthM}
                 onChange={setDecimalField("lengthM")}
+                onFocus={(e) => e.target.select()}
                 placeholder={t("vehicles.lengthM")}
                 className={IL_UNIT}
                 aria-invalid={!!errors.lengthM}
@@ -431,9 +435,11 @@ export default function NewVehiclePage() {
                 type="number"
                 inputMode="decimal"
                 min={0}
+                max={5}
                 step={0.01}
                 value={form.widthM}
                 onChange={setDecimalField("widthM")}
+                onFocus={(e) => e.target.select()}
                 placeholder={t("vehicles.widthM")}
                 className={IL_UNIT}
                 aria-invalid={!!errors.widthM}
@@ -458,9 +464,11 @@ export default function NewVehiclePage() {
                 type="number"
                 inputMode="decimal"
                 min={0}
+                max={5}
                 step={0.01}
                 value={form.heightM}
                 onChange={setDecimalField("heightM")}
+                onFocus={(e) => e.target.select()}
                 placeholder={t("vehicles.heightM")}
                 className={IL_UNIT}
                 aria-invalid={!!errors.heightM}
@@ -485,9 +493,11 @@ export default function NewVehiclePage() {
                 type="number"
                 inputMode="decimal"
                 min={0}
+                max={10000}
                 step={0.1}
                 value={form.weightKg}
                 onChange={setDecimalField("weightKg")}
+                onFocus={(e) => e.target.select()}
                 placeholder={t("vehicles.weightKg")}
                 className={IL_UNIT}
                 aria-invalid={!!errors.weightKg}

@@ -119,7 +119,6 @@ interface DashboardStore {
   /** Caché de branding por companyId para mostrar al instante al cambiar de empresa (super admin). */
   brandingCache: Record<string, CompanyBranding>;
   setBrandingInCache: (companyId: string, b: CompanyBranding) => void;
-  getBrandingFromCache: (companyId: string) => CompanyBranding | undefined;
 }
 
 const SELECTED_COMPANY_KEY = "parkit_selected_company_id";
@@ -129,7 +128,10 @@ const COMPANY_BRANDING_KEY = "parkit_company_branding";
 export const useDashboardStore = create<DashboardStore>((set) => ({
   sidebarOpen: false,
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
-  sidebarCollapsed: true,
+  sidebarCollapsed:
+    typeof window !== "undefined"
+      ? localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true"
+      : false,
   setSidebarCollapsed: (collapsed) => {
     if (typeof window !== "undefined") {
       localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(collapsed));
@@ -183,5 +185,9 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
     set((s) => ({
       brandingCache: { ...s.brandingCache, [companyId]: b ?? null },
     })),
-  getBrandingFromCache: (companyId) => useDashboardStore.getState().brandingCache[companyId],
 }));
+
+// Helper function to get branding from cache (outside store to avoid circular dependency)
+export const getBrandingFromCache = (companyId: string): CompanyBranding | undefined => {
+  return useDashboardStore.getState().brandingCache[companyId];
+};

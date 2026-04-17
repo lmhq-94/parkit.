@@ -85,6 +85,7 @@ enum NotificationStatus {
 enum InvitationStatus {
   PENDING
   ACCEPTED
+  CANCELLED
   EXPIRED
 }
 
@@ -127,8 +128,8 @@ model BankCard {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  bank            Bank?    @relation(fields: [bankId], references: [id], onDelete: SetNull)
-  clients         Client[] @relation("ClientBankCards")
+  bank            Bank?      @relation(fields: [bankId], references: [id], onDelete: SetNull)
+  customers       Customer[] @relation("CustomerBankCards")
 
   @@index([bankId, isActive, sortOrder])
 }
@@ -153,9 +154,9 @@ model Company {
   updatedAt DateTime @updatedAt
 
   // relations
-  users    User[]
-  clients  Client[]
-  valets   Valet[]
+  users     User[]
+  customers Customer[]
+  valets    Valet[]
   parkings Parking[]
   vehicles Vehicle[]
   bookings Booking[]
@@ -183,9 +184,9 @@ model User {
   updatedAt DateTime @updatedAt
 
   // relations
-  company          Company?          @relation(fields: [companyId], references: [id])
-  client           Client?
-  valet            Valet?
+  company   Company?   @relation(fields: [companyId], references: [id])
+  customer Customer?
+  valet     Valet?
   auditLogs        AuditLog[]
   notificationLogs NotificationLog[]
   oneTimeCodes     OneTimeCode[]
@@ -218,7 +219,7 @@ model Invitation {
  * |--------------------------------------------------------------------------
  */
 
-model Client {
+model Customer {
   id             String @id @default(uuid())
   companyId      String
   userId         String @unique
@@ -229,12 +230,12 @@ model Client {
   updatedAt DateTime @updatedAt
 
   // relations
-  company   Company         @relation(fields: [companyId], references: [id])
-  user      User            @relation(fields: [userId], references: [id])
-  vehicles  ClientVehicle[]
+  company   Company           @relation(fields: [companyId], references: [id])
+  user      User              @relation(fields: [userId], references: [id])
+  vehicles  CustomerVehicle[]
   bookings  Booking[]
   tickets   Ticket[]
-  bankCards BankCard[] @relation("ClientBankCards")
+  bankCards BankCard[] @relation("CustomerBankCards")
 }
 
 model Valet {
@@ -279,8 +280,7 @@ model Parking {
   geofenceRadius     Float       @default(50)
   type               ParkingType @default(OPEN)
   totalSlots         Int
-  freeBenefitMinutes Int         @default(0)
-  pricePerExtraHour  Decimal?    @db.Decimal(12, 2)
+  dailyPricingConfig Json?       // Configuración por día: {monday: {freeBenefitMinutes: 180, pricePerHour: 1000}, tuesday: {...}, ...}
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -327,23 +327,23 @@ model Vehicle {
   updatedAt DateTime @updatedAt
 
   // relations
-  company  Company         @relation(fields: [companyId], references: [id])
-  owners   ClientVehicle[]
+  company  Company           @relation(fields: [companyId], references: [id])
+  owners   CustomerVehicle[]
   tickets  Ticket[]
   bookings Booking[]
 
   @@unique([plate, countryCode])
 }
 
-model ClientVehicle {
-  id        String  @id @default(uuid())
-  clientId  String
-  vehicleId String
-  isPrimary Boolean @default(false)
+model CustomerVehicle {
+  id         String  @id @default(uuid())
+  customerId String
+  vehicleId  String
+  isPrimary  Boolean @default(false)
 
   // relations
-  client  Client  @relation(fields: [clientId], references: [id])
-  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+  vehicle  Vehicle  @relation(fields: [vehicleId], references: [id])
 }
 
 /**
@@ -422,9 +422,9 @@ model Booking {
   updatedAt DateTime @updatedAt
 
   // relations
-  company Company @relation(fields: [companyId], references: [id])
-  client  Client  @relation(fields: [clientId], references: [id])
-  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+  company  Company  @relation(fields: [companyId], references: [id])
+  customer Customer @relation(fields: [clientId], references: [id])
+  vehicle  Vehicle  @relation(fields: [vehicleId], references: [id])
   parking Parking @relation(fields: [parkingId], references: [id])
   ticket  Ticket?
 }
@@ -446,11 +446,11 @@ model Ticket {
   exitTime  DateTime?
 
   // relations
-  company     Company            @relation(fields: [companyId], references: [id])
-  booking     Booking?           @relation(fields: [bookingId], references: [id])
-  parking     Parking            @relation(fields: [parkingId], references: [id])
-  vehicle     Vehicle            @relation(fields: [vehicleId], references: [id])
-  client      Client             @relation(fields: [clientId], references: [id])
+  company  Company   @relation(fields: [companyId], references: [id])
+  booking  Booking?  @relation(fields: [bookingId], references: [id])
+  parking  Parking   @relation(fields: [parkingId], references: [id])
+  vehicle  Vehicle   @relation(fields: [vehicleId], references: [id])
+  customer Customer  @relation(fields: [clientId], references: [id])
   slot        ParkingSlot?       @relation(fields: [slotId], references: [id])
   assignments TicketAssignment[]
   damages     DamageReport[]

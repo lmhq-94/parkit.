@@ -27,6 +27,22 @@ async function valetStaffRoleForUser(userId: string) {
 }
 
 export class AuthService {
+  static async validateInvitation(token: string) {
+    const payload = verifyInvitationToken(token);
+    const { email, companyId, role } = payload;
+
+    // Check if invitation exists and is pending
+    const invitation = await prisma.invitation.findUnique({
+      where: { token, status: "PENDING" },
+    });
+
+    if (!invitation || invitation.expiresAt < new Date()) {
+      throw new Error("Invalid or expired invitation");
+    }
+
+    return { email, companyId, role };
+  }
+
   static async register(data: RegisterDTO) {
     const existingUser = await prisma.user.findUnique({
       where: { email: data.email },
@@ -191,7 +207,7 @@ export class AuthService {
       });
 
       if (role === "CUSTOMER") {
-        await tx.client.create({
+        await tx.customer.create({
           data: {
             userId: newUser.id,
             companyId,

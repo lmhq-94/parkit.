@@ -457,7 +457,28 @@ body {
 [data-dashboard] input:focus,
 [data-dashboard] button:focus-visible,
 [data-dashboard] [role="button"]:focus-visible {
-  --tw-ring-color: var(--company-primary, #0ea5e9);
+  outline: none;
+  ring: 2px solid var(--company-primary, #0ea5e9);
+  ring-offset: 2px;
+}
+
+/* Override browser autofill styling for consistent input backgrounds */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #1e293b inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 /* Leaflet: ensure map container has height so tiles are visible */

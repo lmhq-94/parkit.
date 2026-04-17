@@ -1,6 +1,6 @@
 import { prisma } from "../../shared/prisma";
 
-interface CreateClientDTO {
+interface CreateCustomerDTO {
   userId: string;
   governmentId: string;
   emergencyPhone?: {
@@ -10,7 +10,7 @@ interface CreateClientDTO {
   };
 }
 
-interface UpdateClientDTO {
+interface UpdateCustomerDTO {
   governmentId?: string;
   emergencyPhone?: {
     name: string;
@@ -24,17 +24,17 @@ interface AddVehicleDTO {
   isPrimary?: boolean;
 }
 
-export class ClientsService {
-  static async create(companyId: string, data: CreateClientDTO) {
-    const existingClient = await prisma.client.findFirst({
+export class CustomersService {
+  static async create(companyId: string, data: CreateCustomerDTO) {
+    const existingCustomer = await prisma.customer.findFirst({
       where: { governmentId: data.governmentId },
     });
 
-    if (existingClient) {
-      throw new Error("Client with this government ID already exists");
+    if (existingCustomer) {
+      throw new Error("Customer with this government ID already exists");
     }
 
-    return prisma.client.create({
+    return prisma.customer.create({
       data: {
         companyId,
         userId: data.userId,
@@ -68,7 +68,7 @@ export class ClientsService {
   }
 
   static async list(companyId: string) {
-    return prisma.client.findMany({
+    return prisma.customer.findMany({
       where: { companyId },
       include: {
         user: {
@@ -95,9 +95,9 @@ export class ClientsService {
     });
   }
 
-  static async getById(companyId: string, clientId: string) {
-    return prisma.client.findFirst({
-      where: { id: clientId, companyId },
+  static async getById(companyId: string, customerId: string) {
+    return prisma.customer.findFirst({
+      where: { id: customerId, companyId },
       include: {
         user: {
           select: {
@@ -136,11 +136,11 @@ export class ClientsService {
 
   static async update(
     companyId: string,
-    clientId: string,
-    data: UpdateClientDTO
+    customerId: string,
+    data: UpdateCustomerDTO
   ) {
-    return prisma.client.update({
-      where: { id: clientId },
+    return prisma.customer.update({
+      where: { id: customerId },
       data: {
         governmentId: data.governmentId,
         emergencyPhone: data.emergencyPhone || undefined,
@@ -156,10 +156,10 @@ export class ClientsService {
     });
   }
 
-  static async getVehicles(companyId: string, clientId: string) {
-    return prisma.clientVehicle.findMany({
+  static async getVehicles(companyId: string, customerId: string) {
+    return prisma.customerVehicle.findMany({
       where: {
-        client: { id: clientId, companyId },
+        customer: { id: customerId, companyId },
       },
       include: {
         vehicle: {
@@ -177,27 +177,27 @@ export class ClientsService {
 
   static async addVehicle(
     companyId: string,
-    clientId: string,
+    customerId: string,
     data: AddVehicleDTO
   ) {
-    const clientExists = await prisma.client.findFirst({
-      where: { id: clientId, companyId },
+    const customerExists = await prisma.customer.findFirst({
+      where: { id: customerId, companyId },
     });
 
-    if (!clientExists) {
-      throw new Error("Client not found");
+    if (!customerExists) {
+      throw new Error("Customer not found");
     }
 
     if (data.isPrimary) {
-      await prisma.clientVehicle.updateMany({
-        where: { clientId },
+      await prisma.customerVehicle.updateMany({
+        where: { customerId },
         data: { isPrimary: false },
       });
     }
 
-    return prisma.clientVehicle.create({
+    return prisma.customerVehicle.create({
       data: {
-        clientId,
+        customerId,
         vehicleId: data.vehicleId,
         isPrimary: data.isPrimary || false,
       },
@@ -215,8 +215,8 @@ export class ClientsService {
   }
 
   /**
-   * Find or create a Client for the given user in the company, then add the vehicle.
-   * Used when assigning a vehicle to a customer (User CUSTOMER) who may not have a Client record yet.
+   * Find or create a Customer for the given user in the company, then add the vehicle.
+   * Used when assigning a vehicle to a customer (User CUSTOMER) who may not have a Customer record yet.
    */
   static async addVehicleByUserId(
     companyId: string,
@@ -225,7 +225,7 @@ export class ClientsService {
   ) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: { client: true },
+      include: { customer: true },
     });
     if (!user) {
       throw new Error("User not found");
@@ -237,11 +237,11 @@ export class ClientsService {
       throw new Error("User does not belong to this company");
     }
 
-    let client = await prisma.client.findFirst({
+    let customer = await prisma.customer.findFirst({
       where: { userId, companyId },
     });
-    if (!client) {
-      client = await prisma.client.create({
+    if (!customer) {
+      customer = await prisma.customer.create({
         data: {
           companyId,
           userId,
@@ -250,6 +250,6 @@ export class ClientsService {
       });
     }
 
-    return this.addVehicle(companyId, client.id, data);
+    return this.addVehicle(companyId, customer.id, data);
   }
 }

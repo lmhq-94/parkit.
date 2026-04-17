@@ -64,6 +64,48 @@ export function AddressPickerMap({ lat, lon, showMarker = true, geofenceRadius, 
   const center: [number, number] = [lat, lon];
   const radiusM = geofenceRadius != null && geofenceRadius > 0 ? geofenceRadius : undefined;
 
+  useEffect(() => {
+    // Inject custom zoom control styles only once
+    if (typeof document === "undefined") return;
+    
+    const styleId = "leaflet-zoom-custom-styles";
+    if (document.getElementById(styleId)) return;
+
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.textContent = `
+      .leaflet-control-zoom {
+        border: 2px solid var(--input-border, #e2e8f0) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+        margin: 10px !important;
+      }
+      .leaflet-control-zoom a {
+        background-color: var(--input-bg, #ffffff) !important;
+        color: var(--text-primary, #1e293b) !important;
+        border-bottom: 1px solid var(--input-border, #e2e8f0) !important;
+        width: 36px !important;
+        height: 36px !important;
+        line-height: 36px !important;
+        font-size: 18px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+      }
+      .leaflet-control-zoom a:last-child {
+        border-bottom: none !important;
+      }
+      .leaflet-control-zoom a:hover {
+        background-color: var(--company-primary, #2563eb) !important;
+        color: white !important;
+        transform: scale(1.05) !important;
+      }
+      .leaflet-control-zoom a:active {
+        transform: scale(0.95) !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }, []);
+
   return (
     <div className="w-full space-y-1">
       <div
@@ -77,6 +119,7 @@ export function AddressPickerMap({ lat, lon, showMarker = true, geofenceRadius, 
           style={{ height: MAP_HEIGHT }}
           scrollWheelZoom
           attributionControl={false}
+          zoomControl
         >
           <TileLayer url={OSM_URL} />
           {radiusM != null && (

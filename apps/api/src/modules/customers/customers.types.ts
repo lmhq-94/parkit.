@@ -1,17 +1,17 @@
 import type { Prisma } from "@prisma/client";
 
-export interface CreateClientDTO {
+export interface CreateCustomerDTO {
   userId: string;
   governmentId: string;
   emergencyPhone?: Prisma.InputJsonValue;
 }
 
-export interface UpdateClientDTO {
+export interface UpdateCustomerDTO {
   governmentId?: string;
   emergencyPhone?: Prisma.InputJsonValue;
 }
 
-export interface ClientResponse {
+export interface CustomerResponse {
   id: string;
   userId: string;
   governmentId: string;

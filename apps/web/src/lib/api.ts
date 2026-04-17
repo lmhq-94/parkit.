@@ -194,6 +194,10 @@ const API_MESSAGE_TO_I18N_KEY: Record<string, string> = {
   "Request failed": "apiErrors.requestFailed",
   "Invalid credentials": "auth.invalidCredentials",
   "Invalid or expired reset link. Request a new one from the login page.": "auth.resetLinkInvalid",
+  "Invalid invitation": "auth.inviteInvalid",
+  "Invitation expired": "auth.inviteExpired",
+  "Invitation cancelled": "auth.inviteCancelled",
+  "Invalid or expired invitation": "auth.inviteExpiredOrInvalid",
 };
 
 /**

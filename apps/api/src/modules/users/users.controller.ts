@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { UsersService } from "./users.service";
-import { ClientsService } from "../clients/clients.service";
+import { CustomersService } from "../customers/customers.service";
 import { parseQueryParamArray } from "../../shared/utils/queryParser";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
 import type { CreateUserInput } from "../../shared/validators";
@@ -264,12 +264,12 @@ export class UsersController {
   static async addVehicle(req: Request, res: Response) {
     try {
       const id = String(req.params.id);
-      const clientVehicle = await ClientsService.addVehicleByUserId(
+      const customerVehicle = await CustomersService.addVehicleByUserId(
         req.user.companyId!,
         id,
         req.body
       );
-      return created(res, clientVehicle);
+      return created(res, customerVehicle);
     } catch (error: unknown) {
       return fail(
         res,

@@ -126,7 +126,7 @@ interface TicketFilters {
 export class TicketsService {
   static async create(companyId: string, data: CreateTicketDTO) {
     const include = {
-      client: {
+      customer: {
         select: {
           user: {
             select: {
@@ -247,7 +247,7 @@ export class TicketsService {
             name: data.bankCard.name,
             type: data.bankCard.type as CardType,
             bankId: data.bankCard.bankId,
-            clients: { connect: { id: data.clientId } },
+            customers: { connect: { id: data.clientId } },
           },
         });
       }
@@ -352,12 +352,12 @@ export class TicketsService {
       });
     });
 
-    const userEmail = result.client?.user?.email;
+    const userEmail = result.customer?.user?.email;
     if (userEmail) {
       sendTicketCheckInEmail({
         to: userEmail,
-        firstName: result.client?.user?.firstName ?? "",
-        lastName: result.client?.user?.lastName ?? "",
+        firstName: result.customer?.user?.firstName ?? "",
+        lastName: result.customer?.user?.lastName ?? "",
         ticketCode: result.ticketCode ?? "",
         locationName: result.parking?.name ?? undefined,
         plateNumber: result.vehicle?.plate ?? undefined,
@@ -405,7 +405,7 @@ export class TicketsService {
             address: true,
           },
         },
-        client: {
+        customer: {
           select: {
             user: {
               select: {
@@ -441,7 +441,7 @@ export class TicketsService {
       where: { id: ticketId, companyId },
       include: {
         vehicle: true,
-        client: {
+        customer: {
           include: {
             user: true,
           },
@@ -723,7 +723,7 @@ export class TicketsService {
       where: { id: ticketId, companyId },
       include: {
         vehicle: true,
-        client: { include: { user: true } },
+        customer: { include: { user: true } },
         parking: true,
         company: true,
       },
@@ -740,7 +740,7 @@ export class TicketsService {
       },
       include: {
         vehicle: true,
-        client: { include: { user: true } },
+        customer: { include: { user: true } },
         parking: true,
         company: true,
       },
@@ -754,19 +754,23 @@ export class TicketsService {
     const mins = diffMins % 60;
     const totalDuration = `${hours}h ${mins}m`;
 
-    const freeMins = updated.parking.freeBenefitMinutes || 0;
+    // Parse pricing config from dailyPricingConfig JSON
+    const dayOfWeek = entry.toLocaleString('en-US', { weekday: 'long' }).toLowerCase();
+    const pricingConfig = (updated.parking.dailyPricingConfig as Record<string, unknown> | null) || {};
+    const dayConfig = (pricingConfig[dayOfWeek] as Record<string, unknown>) || {};
+    const freeMins = Number(dayConfig.freeBenefitMinutes || 0);
     const billableMins = Math.max(0, diffMins - freeMins);
     const billableHours = Math.ceil(billableMins / 60);
-    const rate = Number(updated.parking.pricePerExtraHour || 0);
+    const rate = Number(dayConfig.pricePerHour || dayConfig.pricePerExtraHour || 0);
     const totalPrice = (billableHours * rate).toFixed(2);
     const currency = updated.company.currency || "CRC";
 
-    const userEmail = updated.client?.user?.email;
+    const userEmail = updated.customer?.user?.email;
     if (userEmail) {
       sendTicketCheckOutEmail({
         to: userEmail,
-        firstName: updated.client?.user?.firstName ?? "",
-        lastName: updated.client?.user?.lastName ?? "",
+        firstName: updated.customer?.user?.firstName ?? "",
+        lastName: updated.customer?.user?.lastName ?? "",
         ticketCode: updated.ticketCode ?? "",
         totalPrice: `${currency} ${totalPrice}`,
         totalDuration,

@@ -45,6 +45,23 @@ export class AuthController {
     }
   }
 
+  static async validateInvitation(req: Request, res: Response) {
+    try {
+      const { token } = req.query;
+      if (!token || typeof token !== "string") {
+        return fail(res, 400, "Token is required");
+      }
+      const result = await AuthService.validateInvitation(token);
+      return ok(res, result);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
   static async registerInvited(req: Request, res: Response) {
     try {
       const result = await AuthService.registerInvited(req.body);

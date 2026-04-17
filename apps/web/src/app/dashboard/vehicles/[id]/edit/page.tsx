@@ -341,10 +341,12 @@ export default function EditVehiclePage() {
                 <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
                 <input
                   type="number"
+                  inputMode="numeric"
                   min={1900}
                   max={new Date().getFullYear() + 1}
                   value={form.year}
                   onChange={setIntegerField("year")}
+                  onFocus={(e) => e.target.select()}
                   placeholder={t("common.placeholderYear")}
                   className={IL}
                   aria-invalid={!!errors.year}
@@ -400,21 +402,21 @@ export default function EditVehiclePage() {
               <label className={LABEL}>{t("vehicles.lengthCm")}</label>
               <div className="relative group">
                 <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                <input type="number" inputMode="numeric" min={1} max={9999} value={form.lengthCm} onChange={(e) => setForm((p) => ({ ...p, lengthCm: e.target.value.replace(/\D/g, "") }))} placeholder="cm" className={IL} />
+                <input type="number" inputMode="numeric" min={1} max={9999} value={form.lengthCm} onChange={(e) => setForm((p) => ({ ...p, lengthCm: e.target.value.replace(/\D/g, "") }))} onFocus={(e) => e.target.select()} placeholder="cm" className={IL} />
               </div>
             </div>
             <div>
               <label className={LABEL}>{t("vehicles.widthCm")}</label>
               <div className="relative group">
                 <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                <input type="number" inputMode="numeric" min={1} max={9999} value={form.widthCm} onChange={(e) => setForm((p) => ({ ...p, widthCm: e.target.value.replace(/\D/g, "") }))} placeholder="cm" className={IL} />
+                <input type="number" inputMode="numeric" min={1} max={9999} value={form.widthCm} onChange={(e) => setForm((p) => ({ ...p, widthCm: e.target.value.replace(/\D/g, "") }))} onFocus={(e) => e.target.select()} placeholder="cm" className={IL} />
               </div>
             </div>
             <div>
               <label className={LABEL}>{t("vehicles.heightCm")}</label>
               <div className="relative group">
                 <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                <input type="number" inputMode="numeric" min={1} max={9999} value={form.heightCm} onChange={(e) => setForm((p) => ({ ...p, heightCm: e.target.value.replace(/\D/g, "") }))} placeholder="cm" className={IL} />
+                <input type="number" inputMode="numeric" min={1} max={9999} value={form.heightCm} onChange={(e) => setForm((p) => ({ ...p, heightCm: e.target.value.replace(/\D/g, "") }))} onFocus={(e) => e.target.select()} placeholder="cm" className={IL} />
               </div>
             </div>
           </div>

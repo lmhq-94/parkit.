@@ -37,19 +37,16 @@ export class InvitationsService {
     });
 
     // Create record in Invitation table
-    const invitationData: Record<string, unknown> = {
-      email,
-      role,
-      token,
-      invitedByUserId,
-      expiresAt,
-      status: InvitationStatus.PENDING,
-    };
-    if (companyId) {
-      invitationData.companyId = companyId;
-    }
     const invitation = await prisma.invitation.create({
-      data: invitationData,
+      data: {
+        email,
+        role,
+        token,
+        invitedByUserId,
+        expiresAt,
+        status: InvitationStatus.PENDING,
+        ...(companyId && { companyId }),
+      },
     });
 
     // Fetch company name if companyId exists
@@ -97,7 +94,7 @@ export class InvitationsService {
   static async revoke(invitationId: string, companyId: string) {
     return prisma.invitation.updateMany({
       where: { id: invitationId, companyId, status: InvitationStatus.PENDING },
-      data: { status: InvitationStatus.EXPIRED }, // revoked
+      data: { status: InvitationStatus.CANCELLED },
     });
   }
 

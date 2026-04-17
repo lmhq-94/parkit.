@@ -66,7 +66,7 @@ export async function requireCompany(
     where: { id: req.user.userId },
     include: {
       valet: true,
-      client: true,
+      customer: true,
     },
   });
 
@@ -79,8 +79,8 @@ export async function requireCompany(
     return next();
   }
 
-  if (user.client?.companyId) {
-    req.user.companyId = user.client.companyId;
+  if (user.customer?.companyId) {
+    req.user.companyId = user.customer.companyId;
     return next();
   }
 

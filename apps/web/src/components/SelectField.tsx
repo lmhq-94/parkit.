@@ -136,7 +136,7 @@ export function SelectField({ value, onChange, icon: Icon, children, className, 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar…"
-              className="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-100/80 dark:bg-slate-800/80 rounded-xl outline-none text-slate-700 dark:text-slate-300 placeholder:text-slate-400 border border-transparent focus:border-company-primary/30 transition-colors"
+              className="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-100/80 dark:bg-slate-800/80 rounded-xl outline-none text-slate-700 dark:text-slate-300 placeholder:text-text-muted border border-transparent focus:border-company-primary/30 transition-colors"
             />
           </div>
         )}
@@ -179,11 +179,7 @@ export function SelectField({ value, onChange, icon: Icon, children, className, 
           onClick={handleOpen}
           aria-invalid={ariaInvalid}
           className={[
-            "w-full py-3 rounded-lg border bg-input-bg text-sm text-left transition-colors cursor-pointer",
-            open
-              ? "border-company-primary ring-1 ring-company-primary/20 ring-inset text-text-primary"
-              : "border-input-border text-text-primary hover:border-company-primary-muted",
-            Icon ? "pl-10 pr-9" : "pl-4 pr-9",
+            "text-sm font-medium truncate",
             !value ? "text-text-muted" : "",
           ].join(" ")}
         >

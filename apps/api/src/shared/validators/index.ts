@@ -208,14 +208,14 @@ export const ValetMePresenceSchema = z.object({
 
 export type ValetMePresenceInput = z.infer<typeof ValetMePresenceSchema>;
 
-// Clients
-export const CreateClientSchema = z.object({
-  name: z.string().min(1, "Client name required"),
+// Customers
+export const CreateCustomerSchema = z.object({
+  name: z.string().min(1, "Customer name required"),
   email: z.string().email("Invalid email").optional(),
   phone: z.string().optional(),
 });
 
-export const UpdateClientSchema = z.object({
+export const UpdateCustomerSchema = z.object({
   name: z.string().min(1).optional(),
   email: z.string().email().optional(),
   phone: z.string().optional(),
@@ -226,8 +226,8 @@ export const AddVehicleToUserSchema = z.object({
   isPrimary: z.boolean().optional(),
 });
 
-export type CreateClientInput = z.infer<typeof CreateClientSchema>;
-export type UpdateClientInput = z.infer<typeof UpdateClientSchema>;
+export type CreateCustomerInput = z.infer<typeof CreateCustomerSchema>;
+export type UpdateCustomerInput = z.infer<typeof UpdateCustomerSchema>;
 
 const VehicleDimensionsSchema = z.object({
   lengthCm: z.number().positive().optional(),

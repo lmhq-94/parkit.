@@ -14,8 +14,6 @@ interface CreateParkingDTO {
   type?: ParkingType;
   slots: CreateParkingSlotDTO[];
   geofenceRadius?: number;
-  freeBenefitMinutes?: number;
-  pricePerExtraHour?: number;
 }
 
 interface UpdateParkingDTO {
@@ -25,8 +23,6 @@ interface UpdateParkingDTO {
   longitude?: number;
   type?: ParkingType;
   totalSlots?: number;
-  freeBenefitMinutes?: number;
-  pricePerExtraHour?: number;
 }
 
 export class ParkingsService {
@@ -44,8 +40,6 @@ export class ParkingsService {
           geofenceRadius: data.geofenceRadius,
           type: data.type || "OPEN",
           totalSlots,
-          freeBenefitMinutes: data.freeBenefitMinutes ?? 0,
-          pricePerExtraHour: data.pricePerExtraHour != null ? data.pricePerExtraHour : undefined,
         },
       });
       if (slots.length > 0) {
@@ -152,8 +146,6 @@ export class ParkingsService {
         longitude: data.longitude,
         ...(data.type !== undefined ? { type: data.type } : {}),
         ...(data.totalSlots !== undefined ? { totalSlots: data.totalSlots } : {}),
-        ...(data.freeBenefitMinutes !== undefined ? { freeBenefitMinutes: data.freeBenefitMinutes } : {}),
-        ...(data.pricePerExtraHour !== undefined ? { pricePerExtraHour: data.pricePerExtraHour } : {}),
       },
       include: {
         slots: true,

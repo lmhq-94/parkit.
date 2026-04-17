@@ -133,7 +133,7 @@ function ColorInput({
   );
 }
 
-function DevicePreviews({ form, t, companyName, selectedCompanyId }: { form: BrandingConfig; t: (key: string, vars?: Record<string, string | number>) => string; companyName: string | null; selectedCompanyId: string | null }) {
+function DevicePreviews({ form, t, companyName: _companyName, selectedCompanyId }: { form: BrandingConfig; t: (key: string, vars?: Record<string, string | number>) => string; companyName: string | null; selectedCompanyId: string | null }) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 

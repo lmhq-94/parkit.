@@ -329,6 +329,8 @@ interface DashboardDataTablePageProps<T> {
   refreshToken?: number;
   /** Callback al hacer clic en Editar (opcional). Si se pasa, se muestra el botón Editar. */
   onEdit?: (row: T) => void;
+  /** Función opcional para determinar si el botón Editar debe mostrarse para una fila específica. */
+  canEdit?: (row: T) => boolean;
   /** Callback al hacer clic en Ver (opcional). Si se pasa junto con renderRowDetail, se ignora; usar renderRowDetail para expandir fila. */
   onView?: (row: T) => void;
   /** Contenido a mostrar al expandir la fila. Si se pasa, se muestra botón expandir en lugar del botón Ver. */
@@ -349,14 +351,16 @@ interface DashboardDataTablePageProps<T> {
   onUpdate?: (row: T) => void | Promise<void>;
   /** Callback para crear un registro nuevo (opcional). Si se pasa, se muestra el botón Agregar y una fila editable temporal. */
   onCreate?: (draft: Partial<T>) => void | Promise<void>;
-  /** Botones de acción extra en la columna Actions (icono, etiqueta, onClick por fila). */
-  customActions?: Array<{ icon: React.ReactNode; label: string; onClick: (row: T) => void }>;
+  /** Botones de acción extra en la columna Actions (icono, etiqueta, onClick por fila). Puede ser un array estático o una función que retorna el array por fila. */
+  customActions?: Array<{ icon: React.ReactNode; label: string; onClick: (row: T) => void }> | ((row: T) => Array<{ icon: React.ReactNode; label: string; onClick: (row: T) => void }>);
 }
 
 function ActionsCellRenderer<T extends { id?: string | number }>(
   params: ICellRendererParams<T> & {
   onView?: (row: T) => void;
   onEdit?: (row: T) => void;
+  /** Función opcional para determinar si el botón Editar debe mostrarse para esta fila. */
+  canEdit?: (row: T) => boolean;
   /** Al hacer clic en Eliminar se llama esto (abre modal en el padre). */
   onRequestDelete?: (row: T) => void;
   viewLabel: string;
@@ -375,16 +379,18 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
   customActions?: Array<{ icon: React.ReactNode; label: string; onClick: (row: T) => void }>;
   }
 ) {
-  const { data, onView, onEdit, onRequestDelete, viewLabel, editLabel, deleteLabel, saveLabel, cancelLabel, firstEditableColId, onCreate, onCancelCreate, renderRowDetail, customActions } = params;
+  const { data, onView, onEdit, canEdit, onRequestDelete, viewLabel, editLabel, deleteLabel, saveLabel, cancelLabel, firstEditableColId, onCreate, onCancelCreate, renderRowDetail, customActions } = params;
   const [saving, setSaving] = useState(false);
 
   if (!data) return null;
   const isNew = Boolean((data as unknown as { __isNew?: boolean }).__isNew);
   const hasView = !isNew && typeof onView === "function" && renderRowDetail == null;
-  const hasEdit = !isNew && (typeof onEdit === "function" || firstEditableColId != null);
+  const canEditRow = typeof canEdit === "function" ? canEdit(data) : true;
+  const hasEdit = !isNew && canEditRow && (typeof onEdit === "function" || firstEditableColId != null);
   const hasDelete = typeof onRequestDelete === "function";
   const hasCreate = isNew && typeof onCreate === "function";
-  const hasCustomActions = !isNew && Array.isArray(customActions) && customActions.length > 0;
+  const resolvedCustomActions = typeof customActions === "function" ? (customActions as (row: T) => Array<{ icon: React.ReactNode; label: string; onClick: (row: T) => void }>)(data) : customActions;
+  const hasCustomActions = !isNew && Array.isArray(resolvedCustomActions) && resolvedCustomActions.length > 0;
 
   const handleEdit = () => {
     if (typeof onEdit === "function") {
@@ -447,7 +453,7 @@ function ActionsCellRenderer<T extends { id?: string | number }>(
           <Eye className="w-4 h-4" />
         </button>
       )}
-      {hasCustomActions && customActions!.map((action, idx) => (
+      {hasCustomActions && resolvedCustomActions!.map((action, idx) => (
         <button
           key={idx}
           type="button"
@@ -507,6 +513,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
   refreshToken,
   onView,
   onEdit,
+  canEdit,
   onDelete,
   getConfirmDeleteMessage,
   onUpdate,
@@ -872,6 +879,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
         cellRendererParams: {
           onView: onView ?? undefined,
           onEdit: onEdit ? handleEditRow : undefined,
+          canEdit: canEdit ?? undefined,
           onRequestDelete: onDelete ? onRequestDelete : undefined,
           viewLabel: t(locale, "common.view"),
           editLabel: t(locale, "common.edit"),
@@ -887,7 +895,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
       });
     }
     return dataCols;
-  }, [columns, locale, onView, onEdit, onDelete, onCreate, onRequestDelete, handleCreate, onUpdate, renderRowDetail, hasRowDetail, expandedRowId, customActions, handleEditRow]);
+  }, [columns, locale, onView, onEdit, canEdit, onDelete, onCreate, onRequestDelete, handleCreate, onUpdate, renderRowDetail, hasRowDetail, expandedRowId, customActions, handleEditRow]);
 
   const hasEditableColumns = useMemo(
     () => columns.some((c) => Boolean(c.editable && c.field)),

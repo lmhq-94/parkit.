@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { MailOpen, UserPlus } from "@/lib/premiumIcons";
+import { MailOpen, UserPlus, XCircle } from "@/lib/premiumIcons";
 import { useRouter } from "next/navigation";
 import type { ICellRendererParams } from "ag-grid-community";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
@@ -10,6 +10,7 @@ import { StatusFilterToolbar } from "@/components/StatusFilterToolbar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
+import { useToast } from "@/lib/toastStore";
 import { formatPhoneInternational } from "@/lib/inputMasks";
 import { formatDateTimeDisplay } from "@/lib/dateFormat";
 import { makeTzLabel } from "@/lib/companyOptions";
@@ -62,6 +63,7 @@ type UserRow = {
 
 export default function UsersPage() {
   const { t, tWithCompany, tEnum } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const selectedCompanyName = useDashboardStore((s) => s.selectedCompanyName);
   const router = useRouter();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -172,6 +174,18 @@ export default function UsersPage() {
     setRefreshToken((prev) => prev + 1);
   }, []);
 
+  const handleCancelInvitation = useCallback(async (row: UserRow) => {
+    if (!row.id) return;
+    try {
+      await apiClient.post(`/users/invitations/${row.id}/revoke`);
+      showSuccess(t("users.invitationCancelled"));
+      setRefreshToken((prev) => prev + 1);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : t("common.error");
+      showError(errorMessage);
+    }
+  }, [showSuccess, showError, t]);
+
   return (
     <>
       <DashboardDataTablePage<UserRow>
@@ -221,8 +235,23 @@ export default function UsersPage() {
             <DetailField label={t("tables.employees.lastLogin")} value={user.lastLogin ? formatDateTimeDisplay(new Date(user.lastLogin), t) : undefined} />
           </dl>
         )}
-        onEdit={(row: UserRow) => !row.pendingInvitation && router.push(`/dashboard/users/${row.id}/edit`)}
+        onEdit={(row: UserRow) => {
+          if (row.pendingInvitation) return;
+          router.push(`/dashboard/users/${row.id}/edit`);
+        }}
+        canEdit={(row: UserRow) => !row.pendingInvitation}
         onUpdate={onUpdate}
+        customActions={(row: UserRow) =>
+          row.pendingInvitation
+            ? [
+                {
+                  icon: <XCircle className="w-4 h-4" />,
+                  label: t("users.cancelInvitation"),
+                  onClick: () => handleCancelInvitation(row),
+                },
+              ]
+            : []
+        }
         headerAction={
           <button
             type="button"

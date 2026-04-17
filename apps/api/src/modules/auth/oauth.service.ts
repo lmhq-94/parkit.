@@ -350,37 +350,20 @@ export class OAuthService {
   }
 
   /**
-   * Find existing user by OAuth provider info or create new user
+   * Find existing user by OAuth provider info (only login, no registration)
    */
   private static async findOrCreateOAuthUser(userInfo: OAuthUserInfo): Promise<{ user: AuthUserResponse; token: string }> {
-    // Try to find user by email first
-    let user = await prisma.user.findUnique({
+    // Try to find user by email
+    const user = await prisma.user.findUnique({
       where: { email: userInfo.email },
     });
 
-    if (user) {
-      // User exists - update OAuth provider info if needed
-      // Note: You might want to store provider info in a separate table
-      // For now, we just authenticate the existing user
-      
-      // Check if user was originally created with password
-      if (user.passwordHash) {
-        // User has password - allow OAuth login
-      }
-    } else {
-      // Create new user from OAuth data
-      user = await prisma.user.create({
-        data: {
-          email: userInfo.email,
-          firstName: userInfo.firstName || userInfo.email.split("@")[0],
-          lastName: userInfo.lastName || "",
-          // No password - OAuth users authenticate via provider
-          passwordHash: "",
-          systemRole: "ADMIN", // Default role - adjust as needed
-        },
-      });
+    if (!user) {
+      // User does not exist - OAuth registration not allowed
+      throw new Error("OAuth registration is not enabled. Please request an invitation to access the system.");
     }
 
+    // User exists - authenticate them
     // Generate JWT token
     const token = signToken({
       userId: user.id,

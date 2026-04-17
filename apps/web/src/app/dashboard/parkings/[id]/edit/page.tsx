@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Tag, Navigation, Radius, ArrowRight, Plus, Trash, Clock, Coins, Building, World } from "@/lib/premiumIcons";
+import { Tag, Navigation, Radius, ArrowRight, Plus, Trash, Clock, Building, World } from "@/lib/premiumIcons";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -25,9 +25,6 @@ type SlotRow = { id: string; label: string; slotType: (typeof SLOT_TYPES)[number
 const defaultForm = {
   name: "", address: "", type: "OPEN",
   latitude: "", longitude: "", geofenceRadius: "",
-  freeBenefitHours: "0",
-  freeBenefitMinutes: "0",
-  pricePerExtraHour: "",
 };
 
 export default function EditParkingPage() {
@@ -35,7 +32,7 @@ export default function EditParkingPage() {
   const { showSuccess, showError } = useToast();
   const router = useRouter();
   const params = useParams();
-  const bumpParkings = useDashboardStore((s) => s.bumpParkings);
+  const bumpParkings = useDashboardStore((s: { bumpParkings: () => void }) => s.bumpParkings);
   const id = params.id as string;
   const [form, setForm] = useState(defaultForm);
   const [initialForm, setInitialForm] = useState(defaultForm);
@@ -45,13 +42,30 @@ export default function EditParkingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [addressPickerOpen, setAddressPickerOpen] = useState(false);
-  const [companyCurrency, setCompanyCurrency] = useState<string | null>(null);
+  const [_companyCurrency, setCompanyCurrency] = useState<string | null>(null);
   const [chargesParking, setChargesParking] = useState(false);
+  const [quickApplyMinutes, setQuickApplyMinutes] = useState(180);
+  const [quickApplyPrice, setQuickApplyPrice] = useState(1000);
+  const [dailyPricingConfig, setDailyPricingConfig] = useState<{
+    monday: { freeBenefitMinutes: number; pricePerHour: number };
+    tuesday: { freeBenefitMinutes: number; pricePerHour: number };
+    wednesday: { freeBenefitMinutes: number; pricePerHour: number };
+    thursday: { freeBenefitMinutes: number; pricePerHour: number };
+    friday: { freeBenefitMinutes: number; pricePerHour: number };
+    saturday: { freeBenefitMinutes: number; pricePerHour: number };
+    sunday: { freeBenefitMinutes: number; pricePerHour: number };
+  }>({
+    monday: { freeBenefitMinutes: 0, pricePerHour: 0 },
+    tuesday: { freeBenefitMinutes: 0, pricePerHour: 0 },
+    wednesday: { freeBenefitMinutes: 0, pricePerHour: 0 },
+    thursday: { freeBenefitMinutes: 0, pricePerHour: 0 },
+    friday: { freeBenefitMinutes: 0, pricePerHour: 0 },
+    saturday: { freeBenefitMinutes: 0, pricePerHour: 0 },
+    sunday: { freeBenefitMinutes: 0, pricePerHour: 0 },
+  });
   const [fieldErrors, setFieldErrors] = useState<{
     name?: string;
     address?: string;
-    freeBenefitTime?: string;
-    pricePerExtraHour?: string;
   }>({});
 
   useEffect(() => {
@@ -61,26 +75,29 @@ export default function EditParkingPage() {
         if (data) {
           const company = data.company as { currency?: string | null } | undefined;
           if (company?.currency != null) setCompanyCurrency(company.currency);
-          const benefitRaw = data.freeBenefitMinutes != null ? Number(data.freeBenefitMinutes) : 0;
-          const benefitMinutes = Number.isFinite(benefitRaw) ? Math.max(0, Math.floor(benefitRaw)) : 0;
-          const benefitHours = Math.floor(benefitMinutes / 60);
-          const benefitRemainder = benefitMinutes % 60;
           const loadedForm = {
-            name: String(data.name ?? ""),
-            address: String(data.address ?? ""),
-            type: String(data.type ?? "OPEN"),
+            name: data.name != null ? String(data.name) : "",
+            address: data.address != null ? String(data.address) : "",
+            type: data.type != null ? String(data.type) : "OPEN",
             latitude: data.latitude != null ? String(data.latitude) : "",
             longitude: data.longitude != null ? String(data.longitude) : "",
             geofenceRadius: data.geofenceRadius != null ? String(data.geofenceRadius) : "",
-            freeBenefitHours: String(benefitHours),
-            freeBenefitMinutes: String(benefitRemainder),
-            pricePerExtraHour: data.pricePerExtraHour != null && data.pricePerExtraHour !== "" ? String(data.pricePerExtraHour) : "",
           };
           setForm(loadedForm);
           setInitialForm(loadedForm);
-          const hasBilling =
-            (data.pricePerExtraHour != null && data.pricePerExtraHour !== "") ||
-            (data.freeBenefitMinutes != null && Number(data.freeBenefitMinutes) > 0);
+          if (data.dailyPricingConfig != null && typeof data.dailyPricingConfig === "object") {
+            const config = data.dailyPricingConfig as Record<string, { freeBenefitMinutes?: number; pricePerHour?: number }>;
+            setDailyPricingConfig({
+              monday: { freeBenefitMinutes: config.monday?.freeBenefitMinutes || 0, pricePerHour: config.monday?.pricePerHour || 0 },
+              tuesday: { freeBenefitMinutes: config.tuesday?.freeBenefitMinutes || 0, pricePerHour: config.tuesday?.pricePerHour || 0 },
+              wednesday: { freeBenefitMinutes: config.wednesday?.freeBenefitMinutes || 0, pricePerHour: config.wednesday?.pricePerHour || 0 },
+              thursday: { freeBenefitMinutes: config.thursday?.freeBenefitMinutes || 0, pricePerHour: config.thursday?.pricePerHour || 0 },
+              friday: { freeBenefitMinutes: config.friday?.freeBenefitMinutes || 0, pricePerHour: config.friday?.pricePerHour || 0 },
+              saturday: { freeBenefitMinutes: config.saturday?.freeBenefitMinutes || 0, pricePerHour: config.saturday?.pricePerHour || 0 },
+              sunday: { freeBenefitMinutes: config.sunday?.freeBenefitMinutes || 0, pricePerHour: config.sunday?.pricePerHour || 0 },
+            });
+          }
+          const hasBilling = data.dailyPricingConfig != null;
           setChargesParking(Boolean(hasBilling));
         }
         const slotData = await apiClient.get<Array<{ id: string; label: string; slotType?: string }>>(`/parkings/${id}/slots`);
@@ -105,7 +122,7 @@ export default function EditParkingPage() {
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm(p => ({ ...p, [k]: e.target.value }));
 
-  const setNumberField = (k: keyof typeof defaultForm, max?: number) =>
+  const _setNumberField = (k: keyof typeof defaultForm, max?: number) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const raw = e.target.value.replace(/[^\d]/g, "");
       if (raw === "") {
@@ -129,7 +146,51 @@ export default function EditParkingPage() {
       setter(capped);
     };
 
-  const setDecimalField = (k: keyof typeof defaultForm) =>
+  const formatMoney = (value: number): string => {
+    return value.toLocaleString("en-US");
+  };
+
+  const parseMoney = (formatted: string): number => {
+    const cleaned = formatted.replace(/[^\d]/g, "");
+    return cleaned ? parseInt(cleaned, 10) || 0 : 0;
+  };
+
+  const formatTime = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}:${mins.toString().padStart(2, "0")}`;
+  };
+
+  const parseTime = (hhmm: string): number => {
+    const parts = hhmm.split(":");
+    if (parts.length !== 2) return 0;
+    const hours = parseInt(parts[0] || "0", 10) || 0;
+    const mins = parseInt(parts[1] || "0", 10) || 0;
+    return hours * 60 + mins;
+  };
+
+  const setTimeValue = (setter: (value: number) => void) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      const cleaned = value.replace(/[^\d:]/g, "");
+      const parts = cleaned.split(":");
+      if (parts.length > 2) {
+        setter(parseTime(parts[0] + ":" + (parts[1] || "0")));
+        return;
+      }
+      if (parts.length === 2 && parts[1] && parts[1].length > 2) {
+        setter(parseTime(parts[0] + ":" + parts[1].slice(0, 2)));
+        return;
+      }
+      if (parts.length === 2 && parts[0] && parts[1]) {
+        const minutes = parseTime(cleaned);
+        if (minutes <= 1440) {
+          setter(minutes);
+        }
+      }
+    };
+
+  const _setDecimalField = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const normalized = e.target.value.replace(",", ".");
       let cleaned = normalized.replace(/[^\d.]/g, "");
@@ -204,39 +265,23 @@ export default function EditParkingPage() {
   };
 
   const handleSubmit = async () => {
-    const requiresBilling = chargesParking;
+    const _requiresBilling = chargesParking;
 
     const nextErrors: typeof fieldErrors = {};
     if (!form.name.trim()) nextErrors.name = t("validation.required");
     if (!form.address.trim()) nextErrors.address = t("validation.required");
-    if (requiresBilling) {
-      if (!form.freeBenefitHours.trim() || !form.freeBenefitMinutes.trim()) {
-        nextErrors.freeBenefitTime = t("validation.required");
-      }
-      if (!form.pricePerExtraHour.trim()) nextErrors.pricePerExtraHour = t("validation.required");
-    }
     setFieldErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
-    setSubmitting(true); setError(null);
-    try {
-      const hours = Math.max(0, parseInt(form.freeBenefitHours, 10) || 0);
-      const minutes = Math.min(59, Math.max(0, parseInt(form.freeBenefitMinutes, 10) || 0));
-      const freeBenefitMinutes =
-        requiresBilling ? (hours * 60 + minutes) : undefined;
-      const priceExtra =
-        requiresBilling && form.pricePerExtraHour !== ""
-          ? Number(form.pricePerExtraHour)
-          : undefined;
 
+    try {
+      const _slotList = slots.map((s) => ({ label: s.label, slotType: s.slotType }));
       await apiClient.patch(`/parkings/${id}`, {
-        name: form.name.trim(),
-        address: form.address.trim(),
+        name: form.name,
+        address: form.address,
         type: form.type,
         latitude: form.latitude !== "" ? Number(form.latitude) : undefined,
         longitude: form.longitude !== "" ? Number(form.longitude) : undefined,
         geofenceRadius: form.geofenceRadius !== "" ? Number(form.geofenceRadius) : undefined,
-        freeBenefitMinutes,
-        pricePerExtraHour: priceExtra,
+        dailyPricingConfig: chargesParking ? dailyPricingConfig : null,
       });
       if (slots.length > 0) {
         const slotList = slots.map((s) => ({
@@ -265,15 +310,7 @@ export default function EditParkingPage() {
       JSON.stringify(slotsSnapshot(slots)) !== JSON.stringify(slotsSnapshot(initialSlots)),
     [form, initialForm, slots, initialSlots]
   );
-  const isValid = (() => {
-    if (!form.name.trim() || !form.address.trim() || !form.type) return false;
-    if (!chargesParking) return true;
-    return (
-      form.freeBenefitHours.trim() !== "" &&
-      form.freeBenefitMinutes.trim() !== "" &&
-      form.pricePerExtraHour.trim() !== ""
-    );
-  })();
+  const isValid = useMemo(() => form.address.trim() !== "", [form]);
 
   if (loading) {
     return (
@@ -358,7 +395,7 @@ export default function EditParkingPage() {
                     <p className="text-sm font-medium text-text-secondary">
                       {t("parkings.chargesSwitchLabel")}
                     </p>
-                    <p className="text-xs text-text-muted mt-0.5">
+                    <p className="text-xs text-text-muted/60 mt-0.5">
                       {t("parkings.chargesSwitchHint")}
                     </p>
                   </div>
@@ -367,96 +404,191 @@ export default function EditParkingPage() {
                     role="switch"
                     aria-checked={chargesParking}
                     onClick={() => setChargesParking((v) => !v)}
-                    className={`relative w-10 h-6 rounded-full shrink-0 transition-colors focus:outline-none focus:ring-1 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page ${
-                      chargesParking ? "bg-company-primary" : "bg-input-border"
+                    className={`relative w-14 h-8 rounded-full shrink-0 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-company-primary/50 focus:ring-offset-2 focus:ring-offset-page ${
+                      chargesParking ? "bg-company-primary shadow-lg shadow-company-primary/20" : "bg-input-border"
                     }`}
                   >
                     <span
-                      className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                        chargesParking ? "translate-x-5" : "translate-x-0"
+                      className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${
+                        chargesParking ? "translate-x-6" : "translate-x-0"
                       }`}
                     />
                   </button>
-                </div>
               </div>
+            </div>
 
-              {chargesParking && (
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <label className={LABEL}>{t("parkings.freeBenefitTime")}</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <div className="relative group">
-                          <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                          <input
-                            type="number"
-                            min={0}
-                            inputMode="numeric"
-                            value={form.freeBenefitHours}
-                            onChange={setNumberField("freeBenefitHours")}
-                            placeholder="0"
-                            className={IL}
-                            aria-invalid={!!fieldErrors.freeBenefitTime}
-                          />
-                        </div>
-                        <p className="mt-1 text-xs text-text-muted">{t("parkings.freeBenefitHoursLabel")}</p>
-                      </div>
-                      <div>
-                        <div className="relative group">
-                          <input
-                            type="number"
-                            min={0}
-                            max={59}
-                            inputMode="numeric"
-                            value={form.freeBenefitMinutes}
-                            onChange={setNumberField("freeBenefitMinutes", 59)}
-                            placeholder="0"
-                            className={INPUT}
-                            aria-invalid={!!fieldErrors.freeBenefitTime}
-                          />
-                        </div>
-                        <p className="mt-1 text-xs text-text-muted">{t("parkings.freeBenefitMinutesLabel")}</p>
-                      </div>
-                    </div>
-                    <p className="mt-2 text-xs text-text-muted">{t("parkings.freeBenefitTimeHint")}</p>
-                    <div className="min-h-[1.25rem] mt-1">
-                      {fieldErrors.freeBenefitTime && (
-                        <p className="text-sm text-red-500" role="alert">
-                          {fieldErrors.freeBenefitTime}
-                        </p>
-                      )}
+            {chargesParking && (
+              <div className="sm:col-span-2 lg:col-span-3">
+                <div className="flex flex-wrap gap-3 mb-4">
+                  <div className="flex-1 min-w-[140px]">
+                    <label className="text-xs font-medium text-text-muted/80 mb-1 block">{t("parkings.quickApplyMinutes")}</label>
+                    <div className="relative group">
+                      <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={formatTime(quickApplyMinutes)}
+                        onChange={(e) => setTimeValue(setQuickApplyMinutes)(e)}
+                        placeholder="4:00"
+                        className={IL}
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted/60 pointer-events-none group-focus-within:text-company-primary/40 transition-colors">min</span>
                     </div>
                   </div>
-
-                  <div>
-                    <label className={LABEL}>{t("parkings.pricePerExtraHour")}</label>
-                    <div className="relative group flex items-center gap-2">
-                      <div className="flex-1 relative">
-                        <Coins className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                        <input
-                          type="number"
-                          min={0}
-                          step="any"
-                          value={form.pricePerExtraHour}
-                          onChange={setDecimalField("pricePerExtraHour")}
-                          placeholder="0"
-                          className={IL}
-                          aria-invalid={!!fieldErrors.pricePerExtraHour}
-                        />
-                      </div>
-                      {companyCurrency != null && companyCurrency !== "" && (
-                        <span className="shrink-0 text-sm font-medium text-text-secondary tabular-nums">
-                          {companyCurrency}
-                        </span>
-                      )}
+                  <div className="flex-1 min-w-[140px]">
+                    <label className="text-xs font-medium text-text-muted/80 mb-1 block">{t("parkings.quickApplyPrice")}</label>
+                    <div className="relative group">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-text-muted/60 pointer-events-none group-focus-within:text-company-primary/40 transition-colors">₡</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={formatMoney(quickApplyPrice)}
+                        onChange={(e) => setQuickApplyPrice(parseMoney(e.target.value))}
+                        placeholder="1,000"
+                        className={IL}
+                      />
                     </div>
-                    <p className="mt-1 text-xs text-text-muted">{t("parkings.pricePerExtraHourHint")}</p>
-                    <div className="min-h-[1.25rem] mt-1">
-                      {fieldErrors.pricePerExtraHour && (
-                        <p className="text-sm text-red-500" role="alert">
-                          {fieldErrors.pricePerExtraHour}
-                        </p>
-                      )}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const config = {
+                        freeBenefitMinutes: quickApplyMinutes,
+                        pricePerHour: quickApplyPrice
+                      };
+                      setDailyPricingConfig({
+                        monday: config,
+                        tuesday: config,
+                        wednesday: config,
+                        thursday: config,
+                        friday: config,
+                        saturday: config,
+                        sunday: config,
+                      });
+                    }}
+                    className="shrink-0 px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-secondary text-sm font-medium hover:bg-company-primary-subtle hover:border-company-primary-muted hover:text-company-primary transition-colors"
+                  >
+                    {t("parkings.applyToAll")}
+                  </button>
+                  <button
+                      type="button"
+                      onClick={() => {
+                        const config = {
+                          freeBenefitMinutes: parseInt(quickApplyMinutes) || 0,
+                          pricePerHour: parseInt(quickApplyPrice) || 0
+                        };
+                        setDailyPricingConfig({
+                          monday: config,
+                          tuesday: config,
+                          wednesday: config,
+                          thursday: config,
+                          friday: config,
+                          saturday: dailyPricingConfig.saturday,
+                          sunday: dailyPricingConfig.sunday,
+                        });
+                      }}
+                      className="shrink-0 px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-secondary text-sm font-medium hover:bg-company-primary-subtle hover:border-company-primary-muted hover:text-company-primary transition-colors"
+                    >
+                      {t("parkings.applyToWeekdays")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const config = {
+                          freeBenefitMinutes: parseInt(quickApplyMinutes) || 0,
+                          pricePerHour: parseInt(quickApplyPrice) || 0
+                        };
+                        setDailyPricingConfig({
+                          monday: dailyPricingConfig.monday,
+                          tuesday: dailyPricingConfig.tuesday,
+                          wednesday: dailyPricingConfig.wednesday,
+                          thursday: dailyPricingConfig.thursday,
+                          friday: dailyPricingConfig.friday,
+                          saturday: config,
+                          sunday: config,
+                        });
+                      }}
+                      className="shrink-0 px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-secondary text-sm font-medium hover:bg-company-primary-subtle hover:border-company-primary-muted hover:text-company-primary transition-colors"
+                    >
+                      {t("parkings.applyToWeekend")}
+                    </button>
+                </div>
+
+                  <div className="rounded-lg border border-input-border bg-input-bg/50 p-4">
+                    <div className="grid grid-cols-7 gap-2">
+                      {[
+                        { key: 'monday', label: t("parkings.monday") },
+                        { key: 'tuesday', label: t("parkings.tuesday") },
+                        { key: 'wednesday', label: t("parkings.wednesday") },
+                        { key: 'thursday', label: t("parkings.thursday") },
+                        { key: 'friday', label: t("parkings.friday") },
+                        { key: 'saturday', label: t("parkings.saturday") },
+                        { key: 'sunday', label: t("parkings.sunday") },
+                      ].map((day) => (
+                        <div key={day.key} className="flex flex-col gap-2">
+                          <div className="text-xs font-medium text-text-primary text-center">{day.label}</div>
+                          <div className="relative group">
+                            <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={formatTime(dailyPricingConfig[day.key as keyof typeof dailyPricingConfig].freeBenefitMinutes)}
+                              onChange={(e) => setDailyPricingConfig({
+                                ...dailyPricingConfig,
+                                [day.key]: {
+                                  ...dailyPricingConfig[day.key as keyof typeof dailyPricingConfig],
+                                  freeBenefitMinutes: parseTime(e.target.value),
+                                },
+                              })}
+                              onFocus={(e) => e.target.select()}
+                              placeholder="0:00"
+                              className={IL}
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted/60 pointer-events-none group-focus-within:text-company-primary/40 transition-colors">min</span>
+                          </div>
+                          <div className="relative group">
+                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-text-muted/60 pointer-events-none group-focus-within:text-company-primary/40 transition-colors">₡</span>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={formatMoney(dailyPricingConfig[day.key as keyof typeof dailyPricingConfig].pricePerHour)}
+                              onChange={(e) => setDailyPricingConfig({
+                                ...dailyPricingConfig,
+                                [day.key]: {
+                                  ...dailyPricingConfig[day.key as keyof typeof dailyPricingConfig],
+                                  pricePerHour: parseMoney(e.target.value),
+                                },
+                              })}
+                              onFocus={(e) => e.target.select()}
+                              placeholder="1,000"
+                              className={IL}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-4">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const config = { freeBenefitMinutes: 0, pricePerHour: 0 };
+                          setDailyPricingConfig({
+                            monday: config,
+                            tuesday: config,
+                            wednesday: config,
+                            thursday: config,
+                            friday: config,
+                            saturday: config,
+                            sunday: config,
+                          });
+                        }}
+                        className="shrink-0 px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-secondary text-sm font-medium hover:bg-company-primary-subtle hover:border-company-primary-muted hover:text-company-primary transition-colors"
+                      >
+                        {t("parkings.clearAll")}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -492,8 +624,11 @@ export default function EditParkingPage() {
                 type="number"
                 min={1}
                 max={100}
+                inputMode="numeric"
+                step={1}
                 value={batchCount}
                 onChange={setIntegerValue(setBatchCount, 1, 100)}
+                onFocus={(e) => e.target.select()}
                 className={INPUT}
               />
             </div>
@@ -586,21 +721,21 @@ export default function EditParkingPage() {
               <label className={LABEL}>{t("parkings.latitude")}</label>
               <div className="relative group">
                 <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                <input type="number" step="any" value={form.latitude} readOnly placeholder={t("common.placeholderLatitude")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
+                <input type="number" step="any" inputMode="decimal" min={-90} max={90} value={form.latitude} readOnly placeholder={t("common.placeholderLatitude")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
               </div>
             </div>
             <div>
               <label className={LABEL}>{t("parkings.longitude")}</label>
               <div className="relative group">
                 <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                <input type="number" step="any" value={form.longitude} readOnly placeholder={t("common.placeholderLongitude")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
+                <input type="number" step="any" inputMode="decimal" min={-180} max={180} value={form.longitude} readOnly placeholder={t("common.placeholderLongitude")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
               </div>
             </div>
             <div>
               <label className={LABEL}>{t("parkings.geofenceRadius")}</label>
               <div className="relative group">
                 <Radius className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                <input type="number" min={1} value={form.geofenceRadius} readOnly placeholder={t("common.placeholderRadius")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
+                <input type="number" min={1} max={10000} inputMode="numeric" step={1} value={form.geofenceRadius} readOnly onFocus={(e) => e.target.select()} placeholder={t("common.placeholderRadius")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
               </div>
             </div>
           </div>

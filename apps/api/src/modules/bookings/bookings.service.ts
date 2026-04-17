@@ -24,7 +24,7 @@ interface BookingFilters {
 }
 
 const bookingInclude = {
-  client: {
+  customer: {
     select: {
       id: true,
       user: {
@@ -85,7 +85,7 @@ export class BookingsService {
         clientId: filters.clientId,
       },
       include: {
-        client: {
+        customer: {
           select: {
             id: true,
             user: {
@@ -118,7 +118,7 @@ export class BookingsService {
     return prisma.booking.findFirst({
       where: { id: bookingId, companyId },
       include: {
-        client: {
+        customer: {
           select: {
             id: true,
             user: {
@@ -147,7 +147,7 @@ export class BookingsService {
             address: true,
             latitude: true,
             longitude: true,
-            freeBenefitMinutes: true,
+            dailyPricingConfig: true,
           },
         },
         ticket: {
@@ -180,7 +180,7 @@ export class BookingsService {
         parkingId: data.parkingId,
       },
       include: {
-        client: true,
+        customer: true,
         vehicle: true,
         parking: true,
       },
@@ -194,7 +194,7 @@ export class BookingsService {
         status: BookingStatus.CANCELLED,
       },
       include: {
-        client: true,
+        customer: true,
         vehicle: true,
       },
     });

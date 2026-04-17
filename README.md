@@ -174,7 +174,7 @@ parkit/
 │   │   └── .eslintrc.cjs
 │   ├── web/                          # Web admin dashboard (Next.js)
 │   └── mobile/                       # Mobile apps (React Native)
-│       ├── mobile-client/            # Customer-facing app
+│       ├── mobile-customer/            # Customer-facing app
 │       └── mobile-valet/             # Valet/operations app
 ├── packages/
 │   └── shared/                        # Shared types, UI components & utilities

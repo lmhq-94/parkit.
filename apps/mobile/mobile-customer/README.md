@@ -32,7 +32,7 @@ Expo-based React Native app for Parkit customers to manage bookings and tickets.
 ### Installation
 
 ```bash
-cd apps/mobile-client
+cd apps/mobile/mobile-customer
 npm install
 ```
 

@@ -1,16 +1,16 @@
 import { Request, Response } from "express";
-import { ClientsService } from "./clients.service";
+import { CustomersService } from "./customers.service";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
 
-export class ClientsController {
+export class CustomersController {
   static async create(req: Request, res: Response) {
     try {
-      const client = await ClientsService.create(
+      const customer = await CustomersService.create(
         req.user.companyId!,
         req.body
       );
 
-      return created(res, client);
+      return created(res, customer);
     } catch (error: unknown) {
       return fail(
         res,
@@ -22,9 +22,9 @@ export class ClientsController {
 
   static async list(req: Request, res: Response) {
     try {
-      const clients = await ClientsService.list(req.user.companyId!);
+      const customers = await CustomersService.list(req.user.companyId!);
 
-      return ok(res, clients);
+      return ok(res, customers);
     } catch (error: unknown) {
       return fail(
         res,
@@ -37,16 +37,16 @@ export class ClientsController {
   static async getById(req: Request, res: Response) {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-      const client = await ClientsService.getById(
+      const customer = await CustomersService.getById(
         req.user.companyId!,
         id
       );
 
-      if (!client) {
-        return notFound(res, "Client not found");
+      if (!customer) {
+        return notFound(res, "Customer not found");
       }
 
-      return ok(res, client);
+      return ok(res, customer);
     } catch (error: unknown) {
       return fail(
         res,
@@ -59,13 +59,13 @@ export class ClientsController {
   static async update(req: Request, res: Response) {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-      const client = await ClientsService.update(
+      const customer = await CustomersService.update(
         req.user.companyId!,
         id,
         req.body
       );
 
-      return ok(res, client);
+      return ok(res, customer);
     } catch (error: unknown) {
       return fail(
         res,
@@ -78,7 +78,7 @@ export class ClientsController {
   static async getVehicles(req: Request, res: Response) {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-      const vehicles = await ClientsService.getVehicles(
+      const vehicles = await CustomersService.getVehicles(
         req.user.companyId!,
         id
       );
@@ -96,13 +96,13 @@ export class ClientsController {
   static async addVehicle(req: Request, res: Response) {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-      const clientVehicle = await ClientsService.addVehicle(
+      const customerVehicle = await CustomersService.addVehicle(
         req.user.companyId!,
         id,
         req.body
       );
 
-      return created(res, clientVehicle);
+      return created(res, customerVehicle);
     } catch (error: unknown) {
       return fail(
         res,
