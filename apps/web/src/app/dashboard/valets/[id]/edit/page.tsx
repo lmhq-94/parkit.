@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { UserCircle, MailOpen, CreditCard, Activity, ArrowRight, ClipboardText, Car } from "@/lib/premiumIcons";
@@ -39,6 +39,8 @@ export default function EditValetPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [footerShadow, setFooterShadow] = useState(false);
+  const contentScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     apiClient.get<Record<string, unknown>>(`/valets/${id}`)
@@ -73,6 +75,14 @@ export default function EditValetPage() {
       .catch(() => { setError(t("common.loadingData")); showError(t("common.loadError")); })
       .finally(() => setLoading(false));
   }, [id, showError, t]);
+
+  const handleContentScroll = () => {
+    const el = contentScrollRef.current;
+    if (el) {
+      const isAtBottom = el.scrollHeight - el.scrollTop === el.clientHeight;
+      setFooterShadow(!isAtBottom);
+    }
+  };
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -123,19 +133,24 @@ export default function EditValetPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col pt-6 pb-8 px-4 md:px-10 lg:px-12 w-full gap-5">
+    <div className="flex-1 flex flex-col pt-6 px-4 md:px-10 lg:px-12 w-full gap-5">
       {error && (
         <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
           {error}
         </div>
       )}
 
+      <div
+        ref={contentScrollRef}
+        onScroll={handleContentScroll}
+        className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden min-h-0 pb-8"
+      >
+        <div className="md:px-0 lg:px-0 w-full gap-5">
       {/* Sección — datos del empleado */}
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm premium-section-title">{t("valets.sectionEmployee")}</p>
-            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">{t("common.requiredBadge")}</span>
           </div>
           <p className="text-xs premium-subtitle mt-1">{t("valets.sectionEmployeeDesc")}</p>
         </div>
@@ -207,13 +222,48 @@ export default function EditValetPage() {
         </div>
         <div className="p-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <div>
+            <div className="sm:col-span-2 lg:col-span-3">
               <label className={LABEL}>{t("valets.staffRole")}</label>
-              <SelectField value={form.staffRole} onChange={set("staffRole")} icon={form.staffRole === "DRIVER" ? Car : ClipboardText}>
-                {STAFF_ROLES.map((r) => (
-                  <option key={r} value={r}>{tEnum("valetStaffRole", r)}</option>
-                ))}
-              </SelectField>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setForm(p => ({ ...p, staffRole: "RECEPTIONIST" }))}
+                  className={`flex flex-col items-start gap-1.5 rounded-lg border px-4 py-3 text-left text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-company-primary ${
+                    form.staffRole === "RECEPTIONIST"
+                      ? "border-company-primary bg-company-primary-muted text-company-primary"
+                      : "border-input-border bg-input-bg text-text-primary hover:border-company-primary-muted"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <ClipboardText className="w-4 h-4" />
+                    <span className="font-medium">
+                      {tEnum("valetStaffRole", "RECEPTIONIST")}
+                    </span>
+                  </div>
+                  <span className={form.staffRole === "RECEPTIONIST" ? "text-xs text-text-secondary" : "text-xs text-text-muted"}>
+                    {t("valets.staffRoleReceptionistDesc")}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm(p => ({ ...p, staffRole: "DRIVER" }))}
+                  className={`flex flex-col items-start gap-1.5 rounded-lg border px-4 py-3 text-left text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-company-primary ${
+                    form.staffRole === "DRIVER"
+                      ? "border-company-primary bg-company-primary-muted text-company-primary"
+                      : "border-input-border bg-input-bg text-text-primary hover:border-company-primary-muted"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Car className="w-4 h-4" />
+                    <span className="font-medium">
+                      {tEnum("valetStaffRole", "DRIVER")}
+                    </span>
+                  </div>
+                  <span className={form.staffRole === "DRIVER" ? "text-xs text-text-secondary" : "text-xs text-text-muted"}>
+                    {t("valets.staffRoleDriverDesc")}
+                  </span>
+                </button>
+              </div>
             </div>
             <div>
               <SelectField value={form.currentStatus} onChange={set("currentStatus")} icon={Activity}>
@@ -223,11 +273,19 @@ export default function EditValetPage() {
           </div>
         </div>
       </div>
+        </div>
+      </div>
 
-      {/* Acciones */}
-      <div className="mt-auto flex items-center justify-between gap-4 pt-2">
-        <p className="text-xs text-text-muted hidden sm:block">{t("common.requiredNote")}</p>
-        <div className="flex items-center gap-3 ml-auto">
+      <header
+        className={`shrink-0 sticky bottom-0 z-10 flex flex-col bg-page border-t border-card-border transition-all duration-200 ${
+          footerShadow 
+            ? "pb-3 md:pb-5 shadow-[0_-1px_3px_0_rgba(0,0,0,0.06),0_-1px_2px_-1px_rgba(0,0,0,0.06)] dark:shadow-[0_-1px_3px_0_rgba(0,0,0,0.2),0_-1px_2px_-1px_rgba(0,0,0,0.15)]" 
+            : "pb-3 md:pb-5"
+        }`}
+      >
+        <div className="flex items-center justify-between gap-4 pt-4 px-4 md:px-8 lg:px-10">
+          <p className="text-xs text-text-muted">{t("common.requiredNote")}</p>
+          <div className="flex items-center gap-3 ml-auto">
           <Link href="/dashboard/valets"
             className="px-5 py-3 rounded-lg border border-company-secondary-muted text-sm font-medium text-company-secondary hover:bg-company-secondary-subtle hover:text-company-secondary transition-colors">
             {t("common.cancel")}
@@ -240,6 +298,7 @@ export default function EditValetPage() {
           </button>
         </div>
       </div>
+      </header>
     </div>
   );
 }

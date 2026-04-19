@@ -66,7 +66,7 @@ export function DefaultBanner({
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" aria-hidden />
         </>
       ) : (
-        <>
+        <div className="absolute inset-0 overflow-hidden">
           {/* Base gradient */}
           <div
             className="absolute inset-0 transition-all duration-700"
@@ -77,15 +77,18 @@ export function DefaultBanner({
             }}
           />
 
-          {/* Blob shapes - scaled for banner (static) */}
-          <div className="absolute -top-6 -right-6 w-[90px] h-[90px]" style={{ background: isDark ? 'linear-gradient(135deg, #1e3a8a 0%, #312e81 50%, #1e1b4b 100%)' : 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%)', borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%', filter: 'blur(16px)', opacity: isDark ? 0.35 : 0.3 }} />
-          <div className="absolute top-1/3 -right-4 w-[85px] h-[85px]" style={{ background: isDark ? 'linear-gradient(225deg, #3730a3 0%, #4338ca 50%, #1e3a5f 100%)' : 'linear-gradient(225deg, #6366f1 0%, #818cf8 50%, #a78bfa 100%)', borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%', filter: 'blur(14px)', opacity: isDark ? 0.3 : 0.25 }} />
-          <div className="absolute bottom-2 left-1/4 w-[75px] h-[75px]" style={{ background: isDark ? 'linear-gradient(45deg, #1e1b4b 0%, #312e81 50%, #1e3a8a 100%)' : 'linear-gradient(45deg, #8b5cf6 0%, #a78bfa 50%, #c4b5fd 100%)', borderRadius: '70% 30% 50% 50% / 30% 50% 50% 70%', filter: 'blur(12px)', opacity: isDark ? 0.25 : 0.2 }} />
-          <div className="absolute top-1/2 right-1/5 w-[65px] h-[65px]" style={{ background: isDark ? 'linear-gradient(315deg, #4338ca 0%, #3730a3 50%, #312e81 100%)' : 'linear-gradient(315deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%)', borderRadius: '40% 60% 60% 40% / 60% 40% 60% 40%', filter: 'blur(10px)', opacity: isDark ? 0.2 : 0.15 }} />
+          {/* Blob shapes - scaled for sidebar banner (smaller, slower constant movement) */}
+          <div className="absolute top-0 left-0 w-[120px] h-[120px]" style={{ background: isDark ? 'linear-gradient(135deg, #1e3a8a 0%, #312e81 50%, #1e1b4b 100%)' : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%)', borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%', filter: 'blur(12px)', opacity: isDark ? 0.6 : 0.7, animation: 'lava-morph-1 60s ease-in-out infinite' }} />
+          <div className="absolute top-1/4 right-0 w-[100px] h-[100px]" style={{ background: isDark ? 'linear-gradient(225deg, #3730a3 0%, #4338ca 50%, #1e3a5f 100%)' : 'linear-gradient(225deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%)', borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%', filter: 'blur(10px)', opacity: isDark ? 0.5 : 0.65, animation: 'lava-morph-2 75s ease-in-out infinite' }} />
+          <div className="absolute bottom-0 left-1/4 w-[80px] h-[80px]" style={{ background: isDark ? 'linear-gradient(45deg, #1e1b4b 0%, #312e81 50%, #1e3a8a 100%)' : 'linear-gradient(45deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%)', borderRadius: '70% 30% 50% 50% / 30% 50% 50% 70%', filter: 'blur(15px)', opacity: isDark ? 0.55 : 0.75, animation: 'lava-morph-3 66s ease-in-out infinite' }} />
+          <div className="absolute top-1/2 right-1/4 w-[70px] h-[70px]" style={{ background: isDark ? 'linear-gradient(315deg, #4338ca 0%, #3730a3 50%, #312e81 100%)' : 'linear-gradient(315deg, #4338ca 0%, #4f46e5 50%, #6366f1 100%)', borderRadius: '40% 60% 60% 40% / 60% 40% 60% 40%', filter: 'blur(11px)', opacity: isDark ? 0.45 : 0.6, animation: 'lava-morph-4 54s ease-in-out infinite' }} />
+          <div className="absolute bottom-1/4 left-0 w-[60px] h-[60px]" style={{ background: isDark ? 'linear-gradient(135deg, #312e81 0%, #1e1b4b 100%)' : 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)', borderRadius: '50% 50% 40% 60% / 50% 40% 60% 50%', filter: 'blur(9px)', opacity: isDark ? 0.4 : 0.6, animation: 'lava-morph-5 72s ease-in-out infinite' }} />
+          <div className="absolute top-1/4 right-1/5 w-[50px] h-[50px]" style={{ background: isDark ? 'linear-gradient(180deg, #4c1d95 0%, #5b21b6 50%, #312e81 100%)' : 'linear-gradient(180deg, #6d28d9 0%, #7c3aed 50%, #8b5cf6 100%)', borderRadius: '60% 40% 70% 30% / 40% 60% 30% 70%', filter: 'blur(8px)', opacity: isDark ? 0.35 : 0.65, animation: 'lava-morph-6 84s ease-in-out infinite' }} />
+          <div className="absolute bottom-0 left-1/3 w-[40px] h-[40px]" style={{ background: isDark ? 'linear-gradient(45deg, #1e3a8a 0%, #3730a3 100%)' : 'linear-gradient(45deg, #2563eb 0%, #3b82f6 100%)', borderRadius: '40% 60% 50% 50% / 50% 40% 50% 60%', filter: 'blur(7px)', opacity: isDark ? 0.3 : 0.55, animation: 'lava-morph-7 90s ease-in-out infinite' }} />
 
           {/* Overlay */}
-          <div className="absolute inset-0 transition-all duration-700" style={{ background: isDark ? 'radial-gradient(ellipse at center, transparent 0%, rgba(10,10,26,0.3) 100%)' : 'radial-gradient(ellipse at center, transparent 0%, rgba(255,255,255,0.2) 100%)' }} />
-        </>
+          <div className="absolute inset-0 transition-all duration-700" style={{ background: isDark ? 'radial-gradient(ellipse at center, transparent 0%, rgba(10,10,26,0.4) 100%)' : 'radial-gradient(ellipse at center, transparent 0%, rgba(255,255,255,0.3) 100%)' }} />
+        </div>
       )}
 
       {/* Izquierda: avatar/logo o icono de industria - estilo consistente con perfil */}
@@ -93,18 +96,9 @@ export function DefaultBanner({
         <div
           className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center transition-all duration-300"
           style={{
-            backgroundColor: logoImageUrl?.trim()
-              ? (isDark ? "rgba(30,41,59,0.9)" : "#ffffff")
-              : (isDark ? "hsla(220, 10%, 35%, 1)" : "hsla(220, 10%, 88%, 1)"),
-            border: logoImageUrl?.trim()
-              ? (isDark ? "1.5px solid rgba(255,255,255,0.2)" : "1.5px solid rgba(0,0,0,0.08)")
-              : `2px solid ${isDark ? "hsla(220, 15%, 45%, 0.4)" : "hsla(220, 15%, 75%, 0.6)"}`,
-            boxShadow: logoImageUrl?.trim()
-              ? (isDark
-                  ? "0 6px 16px -4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15), 0 0 0 1px rgba(255,255,255,0.05)"
-                  : "0 6px 16px -4px rgba(0,0,0,0.15), 0 1px 2px rgba(255,255,255,1) inset, 0 0 0 1px rgba(255,255,255,0.5)")
-              : "0 3px 10px -3px rgba(0,0,0,0.1)",
-            color: isDark ? "#e2e8f0" : "#475569",
+            backgroundColor: isDark ? '#1e293b' : '#ffffff',
+            border: '3px solid var(--card-border)',
+            boxShadow: `0 8px 32px -8px ${companyColors?.primary ? companyColors.primary + '40' : 'rgba(0,0,0,0.1)'}`,
           }}
         >
           {logoImageUrl?.trim() ? (
@@ -116,7 +110,7 @@ export function DefaultBanner({
               className="w-full h-full object-cover object-center"
             />
           ) : (
-            <IndustryIcon className="w-[18px] h-[18px]" strokeWidth={1.5} />
+            <IndustryIcon className="w-[18px] h-[18px]" strokeWidth={2} style={{ color: companyColors?.primary }} />
           )}
         </div>
       </div>

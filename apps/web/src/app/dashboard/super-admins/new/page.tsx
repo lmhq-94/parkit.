@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserCircle, MailOpen } from "@/lib/premiumIcons";
-import { FormWizard } from "@/components/FormWizard";
+import { FormWizard, type WizardStep } from "@/components/FormWizard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
@@ -68,11 +68,10 @@ export default function NewSuperAdminPage() {
     }
   };
 
-  const steps = [
+  const steps: WizardStep[] = [
     {
       title: t("superAdmins.newSuperAdmin"),
       description: "Se enviará una invitación por email al nuevo super administrador",
-      badge: "required" as const,
       accentColor: "violet",
       isValid: () => !!(form.firstName.trim() && form.lastName.trim() && form.email.trim()),
       content: (
@@ -114,6 +113,7 @@ export default function NewSuperAdminPage() {
       submitLabel={t("superAdmins.createSuperAdmin")}
       cancelHref="/dashboard/profile"
       error={error}
+      footerNote={t("common.requiredNote")}
       onValidateBeforeAction={validateStep}
     />
   );

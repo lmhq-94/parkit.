@@ -139,9 +139,9 @@ model Company {
   legalName      String
   commercialName String?
   taxId          String        @unique
-  industry       String?
-  countryCode    String        @default("CR")
-  currency       String        @default("CRC")
+  industry       String
+  countryCode    String
+  currency       String
   timezone       String        @default("UTC")
   email          String?
   contactPhone   String?
@@ -275,8 +275,8 @@ model Parking {
   companyId          String
   name               String
   address            String
-  latitude           Float?
-  longitude          Float?
+  latitude           Float
+  longitude          Float
   geofenceRadius     Float       @default(50)
   type               ParkingType @default(OPEN)
   totalSlots         Int

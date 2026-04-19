@@ -101,7 +101,7 @@ function RequestAccessForm() {
             </span>
             <h1 className="text-[1.35rem] premium-title mb-2">{t("auth.requestAccessSuccess")}</h1>
             <p className="premium-subtitle text-sm mb-6">{t("auth.requestAccessSuccessDescription")}</p>
-            <a href="mailto:soporte@parkitcr.com" className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+            <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`} className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
               <Mail className="w-4 h-4" />
               {t("auth.contactSupport")}
             </a>

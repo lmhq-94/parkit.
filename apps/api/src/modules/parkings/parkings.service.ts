@@ -14,6 +14,7 @@ interface CreateParkingDTO {
   type?: ParkingType;
   slots: CreateParkingSlotDTO[];
   geofenceRadius?: number;
+  dailyPricingConfig?: Record<string, unknown> | null;
 }
 
 interface UpdateParkingDTO {
@@ -23,6 +24,7 @@ interface UpdateParkingDTO {
   longitude?: number;
   type?: ParkingType;
   totalSlots?: number;
+  dailyPricingConfig?: Record<string, unknown> | null;
 }
 
 export class ParkingsService {
@@ -40,6 +42,8 @@ export class ParkingsService {
           geofenceRadius: data.geofenceRadius,
           type: data.type || "OPEN",
           totalSlots,
+          // @ts-expect-error - Prisma JsonValue type is complex, data is validated
+          dailyPricingConfig: data.dailyPricingConfig,
         },
       });
       if (slots.length > 0) {
@@ -146,6 +150,7 @@ export class ParkingsService {
         longitude: data.longitude,
         ...(data.type !== undefined ? { type: data.type } : {}),
         ...(data.totalSlots !== undefined ? { totalSlots: data.totalSlots } : {}),
+        ...(data.dailyPricingConfig !== undefined ? { dailyPricingConfig: data.dailyPricingConfig } : {}),
       },
       include: {
         slots: true,

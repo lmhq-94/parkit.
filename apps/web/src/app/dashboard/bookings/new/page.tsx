@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Users, Car, MapPin } from "@/lib/premiumIcons";
-import { FormWizard } from "@/components/FormWizard";
+import { FormWizard, type WizardStep } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { DateTimePickerField } from "@/components/DateTimePickerField";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -102,11 +102,10 @@ export default function NewBookingPage() {
     <div className="h-[46px] rounded-lg bg-input-bg border border-input-border animate-pulse" />
   );
 
-  const steps = [
+  const steps: WizardStep[] = [
     {
       title: t("bookings.sectionMain"),
       description: t("bookings.sectionMainDesc"),
-      badge: "required" as const,
       accentColor: "teal",
       isValid: () =>
         !!(form.clientId && form.vehicleId && form.parkingId && form.scheduledEntryTime) &&
@@ -212,6 +211,7 @@ export default function NewBookingPage() {
       submitLabel={t("bookings.createBooking")}
       cancelHref="/dashboard/bookings"
       error={error}
+      footerNote={t("common.requiredNote")}
       onValidateBeforeAction={validateStep}
     />
   );

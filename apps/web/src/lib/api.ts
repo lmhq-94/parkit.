@@ -41,6 +41,7 @@ class ApiClient {
       headers: {
         "Content-Type": "application/json",
       },
+      timeout: 10000, // 10 second timeout to prevent indefinite loading
     });
 
     // Add request interceptor to include JWT token and x-company-id for SUPER_ADMIN

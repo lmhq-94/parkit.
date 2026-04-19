@@ -3479,8 +3479,8 @@ async function main() {
   // Flow: SUPER_ADMIN creates companies via API, picks one in the company selector (x-company-id),
   // and everything created afterward (users, parkings, etc.) is linked to that company.
   // Create or update the system superadmin with complete profile
-  const superAdminEmail = process.env.SUPPORT_EMAIL || "soporte@parkitcr.com";
-  const superAdminPhone = process.env.SUPER_ADMIN_PHONE || "+50662164040";
+  const superAdminEmail = process.env.SUPPORT_EMAIL;
+  const superAdminPhone = process.env.SUPER_ADMIN_PHONE;
   await prisma.user.upsert({
     where: { email: superAdminEmail },
     update: {

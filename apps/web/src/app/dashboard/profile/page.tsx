@@ -16,6 +16,7 @@ import {
   Camera,
   SlidersHorizontal,
   RotateCcw,
+  World,
 } from "@/lib/premiumIcons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
@@ -166,9 +167,8 @@ export default function ProfilePage() {
           };
           setForm(loaded);
           setInitialForm(loaded);
-          // Apply loaded preferences immediately
-          setTheme(loaded.theme);
-          setLocale(loaded.locale);
+          // Don't apply theme/locale automatically here to prevent interfering with header changes
+          // User's manual changes from header should take precedence
         }
       } catch {
         if (!cancelled) {
@@ -182,7 +182,7 @@ export default function ProfilePage() {
     return () => {
       cancelled = true;
     };
-  }, [selectedCompanyId, showError, t, user, setTheme, setLocale]);
+  }, [selectedCompanyId, showError, t, user]);
 
   const set =
     (k: keyof typeof defaultForm) =>
@@ -654,11 +654,32 @@ export default function ProfilePage() {
             type="button"
             onClick={() => {
               setReverting(true);
-              setForm(initialForm);
-              hasLocalEditsRef.current = false;
+              // Only revert fields of the active tab
+              if (activeTab === "info") {
+                setForm((p) => ({
+                  ...p,
+                  firstName: defaultForm.firstName,
+                  lastName: defaultForm.lastName,
+                  email: defaultForm.email,
+                  phone: defaultForm.phone,
+                  timezone: defaultForm.timezone,
+                }));
+              } else if (activeTab === "avatar") {
+                setForm((p) => ({
+                  ...p,
+                  avatarUrl: defaultForm.avatarUrl,
+                }));
+              } else if (activeTab === "preferences") {
+                setForm((p) => ({
+                  ...p,
+                  theme: defaultForm.theme,
+                  locale: defaultForm.locale,
+                }));
+              }
+              hasLocalEditsRef.current = true;
               setTimeout(() => setReverting(false), 300);
             }}
-            disabled={!isDirty || submitting || reverting}
+            disabled={submitting || reverting}
             className="group flex items-center gap-2 px-4 py-2.5 rounded-lg border border-card-border text-sm font-medium text-text-secondary hover:text-red-500 hover:border-red-200 hover:bg-red-50/50 dark:hover:bg-red-500/10 transition-all disabled:opacity-50 disabled:pointer-events-none disabled:hover:text-text-secondary disabled:hover:border-card-border disabled:hover:bg-transparent dark:disabled:hover:bg-transparent"
           >
             {reverting ? (

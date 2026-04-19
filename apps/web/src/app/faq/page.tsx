@@ -11,6 +11,9 @@ import { useTranslation } from "@/hooks/useTranslation";
 function FaqItem({ question, answer }: { question: string; answer: string }) {
   const [isOpen, setIsOpen] = useState(false);
 
+  // Replace {{supportEmail}} placeholder with environment variable
+  const formattedAnswer = answer.replace(/{{supportEmail}}/g, process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "soporte@parkitcr.com");
+
   return (
     <div className="border-b border-slate-200 dark:border-slate-700 last:border-0">
       <button
@@ -32,7 +35,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
         }`}
       >
         <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
-          {answer}
+          {formattedAnswer}
         </p>
       </div>
     </div>
@@ -138,7 +141,7 @@ export default function FaqPage() {
               <p className="text-slate-600 dark:text-slate-400 text-sm text-center">
                 {t("faq.contactPrompt")}{" "}
                 <a
-                  href="mailto:soporte@parkitcr.com"
+                  href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`}
                   className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
                 >
                   {t("faq.contactLink")}

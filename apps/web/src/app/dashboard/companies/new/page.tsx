@@ -6,7 +6,7 @@ import {
   Building, Receipt, Mail, Phone, Globe,
   DollarSign, Clock, World, Navigation,
 } from "@/lib/premiumIcons";
-import { FormWizard } from "@/components/FormWizard";
+import { FormWizard, type WizardStep } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -72,7 +72,7 @@ export default function NewCompanyPage() {
 
   // Determine cancel href: if first flow and no companies, go to no-companies page
   const cancelHref = isFirstCompanyFlow && hasExistingCompanies === false
-    ? "/dashboard/no-companies"
+    ? "/no-companies"
     : "/dashboard/companies";
 
   const set = (k: keyof typeof defaultForm) =>
@@ -98,8 +98,12 @@ export default function NewCompanyPage() {
     const e4 = required(t, form.commercialName?.trim()); if (e4) next.commercialName = e4;
     const e5 = required(t, form.email?.trim()); if (e5) next.email = e5;
     else if (form.email.trim()) { const ee = validateEmail(t, form.email); if (ee) next.email = ee; }
+    const e8 = required(t, form.legalAddress?.trim()); if (e8) next.legalAddress = e8;
+    const e6 = required(t, form.countryCode); if (e6) next.countryCode = e6;
+    const e7 = required(t, form.currency); if (e7) next.currency = e7;
     if (!form.requiresCustomerApp) {
-      next.requiresCustomerApp = required(t, form.requiresCustomerApp);
+      const reqError = required(t, form.requiresCustomerApp);
+      if (reqError) next.requiresCustomerApp = reqError;
     }
     if (form.contactPhone.trim()) { const ep = validatePhone(t, form.contactPhone); if (ep) next.contactPhone = ep; }
     setErrors(next);
@@ -120,6 +124,7 @@ export default function NewCompanyPage() {
       const ec = required(t, form.commercialName?.trim()); if (ec) next.commercialName = ec;
       const em = required(t, form.email?.trim()); if (em) next.email = em;
       else if (form.email.trim()) { const ee = validateEmail(t, form.email); if (ee) next.email = ee; }
+      const ea = required(t, form.legalAddress?.trim()); if (ea) next.legalAddress = ea;
       if (form.contactPhone.trim()) { const ep = validatePhone(t, form.contactPhone); if (ep) next.contactPhone = ep; }
       setErrors(next);
       return Object.keys(next).length === 0;
@@ -127,7 +132,8 @@ export default function NewCompanyPage() {
     if (stepIndex === 3) {
       const next: Partial<Record<keyof typeof defaultForm, string>> = {};
       if (!form.requiresCustomerApp) {
-        next.requiresCustomerApp = required(t, form.requiresCustomerApp);
+        const reqError = required(t, form.requiresCustomerApp);
+        if (reqError) next.requiresCustomerApp = reqError;
       }
       setErrors(next);
       return Object.keys(next).length === 0;
@@ -165,11 +171,10 @@ export default function NewCompanyPage() {
     }
   };
 
-  const steps = [
+  const steps: WizardStep[] = [
     {
       title: t("companies.sectionMain"),
       description: t("companies.sectionMainDesc"),
-      badge: "required" as const,
       accentColor: "sky",
       isValid: () => !!(form.legalName.trim() && form.taxId.trim()),
       content: (
@@ -198,7 +203,6 @@ export default function NewCompanyPage() {
     {
       title: t("companies.sectionContact"),
       description: t("companies.sectionContactDesc"),
-      badge: "required" as const,
       accentColor: "indigo",
       isValid: () => !!(form.commercialName?.trim() && form.email?.trim()),
       content: (
@@ -213,11 +217,11 @@ export default function NewCompanyPage() {
             <input type="tel" value={form.contactPhone} onChange={(e) => setForm((p) => ({ ...p, contactPhone: formatPhoneWithCountryCode(e.target.value, form.countryCode) }))} placeholder={`+${COUNTRY_DIAL_CODES[form.countryCode] || "1"}`} className={IL} aria-invalid={!!errors.contactPhone} />
           </Field>
           <div className="sm:col-span-2 lg:col-span-3">
-            <label className={LABEL}>{t("companies.legalAddress")}</label>
+            <label className={LABEL}>{t("companies.legalAddress")} <span className="text-company-primary">*</span></label>
             <div className="flex gap-2">
               <div className="relative group flex-1">
                 <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-                <input value={form.legalAddress} readOnly placeholder={t("common.placeholderAddress")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
+                <input value={form.legalAddress} readOnly placeholder={t("common.placeholderAddress")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} aria-invalid={!!errors.legalAddress} />
               </div>
               <button
                 type="button"
@@ -228,6 +232,7 @@ export default function NewCompanyPage() {
                 {t("companies.pickAddressOnMap")}
               </button>
             </div>
+            {errors.legalAddress && <p className="text-sm text-red-500 mt-1" role="alert">{errors.legalAddress}</p>}
           </div>
         </div>
       ),
@@ -240,14 +245,14 @@ export default function NewCompanyPage() {
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <div>
-            <label className={LABEL}>{t("companies.countryCode")}</label>
+            <label className={LABEL}>{t("companies.countryCode")} <span className="text-company-primary">*</span></label>
             <SelectField value={form.countryCode} onChange={set("countryCode")} icon={Globe}>
               <option value="">{t("common.selectPlaceholder")}</option>
               {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
             </SelectField>
           </div>
           <div>
-            <label className={LABEL}>{t("companies.currency")}</label>
+            <label className={LABEL}>{t("companies.currency")} <span className="text-company-primary">*</span></label>
             <SelectField value={form.currency} onChange={set("currency")} icon={DollarSign}>
               <option value="">{t("common.selectPlaceholder")}</option>
               {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
@@ -266,7 +271,6 @@ export default function NewCompanyPage() {
     {
       title: t("companies.channelTitle"),
       description: t("companies.channelDescription"),
-      badge: "required" as const,
       accentColor: "amber",
       isValid: () => true,
       content: (
@@ -318,6 +322,7 @@ export default function NewCompanyPage() {
         submitLabel={t("companies.createCompany")}
         cancelHref={cancelHref}
         error={error}
+        footerNote={t("common.requiredNote")}
         onValidateBeforeAction={validateStep}
       />
       <AddressPickerModal

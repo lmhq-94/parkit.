@@ -28,7 +28,6 @@ import {
   THEME_DEFAULT_TERTIARY_DARK,
 } from "@/lib/themeDefaults";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { PageLoader } from "@/components/PageLoader";
 import { ImageCropField } from "@/components/ImageCropField";
 import { useToast } from "@/lib/toastStore";
 
@@ -159,7 +158,7 @@ function DevicePreviews({ form, t, companyName: _companyName, selectedCompanyId 
       {/* Desktop Preview - Full Row */}
       <div className="space-y-2">
         <p className="text-xs font-medium text-text-muted">{t("settings.desktopView")}</p>
-        <div className="rounded-xl border border-card-border bg-card overflow-hidden shadow-lg">
+        <div className="rounded-xl border border-card-border overflow-hidden shadow-sm">
           <div className="h-32 relative">
             {form.bannerImageUrl ? (
               <Image
@@ -170,48 +169,37 @@ function DevicePreviews({ form, t, companyName: _companyName, selectedCompanyId 
                 sizes="3840px"
               />
             ) : (
-              <>
+              <div className="absolute inset-0 overflow-hidden">
+                {/* Base gradient */}
                 <div
-                  className="absolute inset-0"
+                  className="absolute inset-0 transition-all duration-700"
                   style={{
                     background: isDark
-                      ? "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)"
-                      : "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)",
+                      ? 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 25%, #16213e 50%, #1a1a2e 75%, #0a0a1a 100%)'
+                      : 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #dbeafe 50%, #e0f2fe 75%, #f0f9ff 100%)',
                   }}
                 />
-                <div
-                  className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-40"
-                  style={{
-                    background: isDark
-                      ? "radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%)"
-                      : "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)",
-                  }}
-                />
-                <div
-                  className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full blur-3xl opacity-30"
-                  style={{
-                    background: isDark
-                      ? "radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)"
-                      : "radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)",
-                  }}
-                />
-                <div
-                  className="absolute inset-0 pointer-events-none opacity-[0.03]"
-                  style={{
-                    backgroundImage: isDark
-                      ? "repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.1) 35px, rgba(255,255,255,0.1) 70px)"
-                      : "repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(0,0,0,0.08) 35px, rgba(0,0,0,0.08) 70px)",
-                  }}
-                />
-              </>
+
+                {/* Blob shapes - scaled for banner preview */}
+                <div className="absolute top-0 left-0 w-[300px] h-[300px]" style={{ background: isDark ? 'linear-gradient(135deg, #1e3a8a 0%, #312e81 50%, #1e1b4b 100%)' : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%)', borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%', filter: 'blur(15px)', opacity: isDark ? 0.6 : 0.7, animation: 'lava-morph-1 60s ease-in-out infinite' }} />
+                <div className="absolute top-1/4 right-0 w-[280px] h-[280px]" style={{ background: isDark ? 'linear-gradient(225deg, #3730a3 0%, #4338ca 50%, #1e3a5f 100%)' : 'linear-gradient(225deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%)', borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%', filter: 'blur(12px)', opacity: isDark ? 0.5 : 0.65, animation: 'lava-morph-2 75s ease-in-out infinite' }} />
+                <div className="absolute bottom-0 left-1/4 w-[240px] h-[240px]" style={{ background: isDark ? 'linear-gradient(45deg, #1e1b4b 0%, #312e81 50%, #1e3a8a 100%)' : 'linear-gradient(45deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%)', borderRadius: '70% 30% 50% 50% / 30% 50% 50% 70%', filter: 'blur(18px)', opacity: isDark ? 0.55 : 0.75, animation: 'lava-morph-3 66s ease-in-out infinite' }} />
+                <div className="absolute top-1/2 right-1/4 w-[220px] h-[220px]" style={{ background: isDark ? 'linear-gradient(315deg, #4338ca 0%, #3730a3 50%, #312e81 100%)' : 'linear-gradient(315deg, #4338ca 0%, #4f46e5 50%, #6366f1 100%)', borderRadius: '40% 60% 60% 40% / 60% 40% 60% 40%', filter: 'blur(14px)', opacity: isDark ? 0.45 : 0.6, animation: 'lava-morph-4 54s ease-in-out infinite' }} />
+                <div className="absolute bottom-1/4 left-0 w-[190px] h-[190px]" style={{ background: isDark ? 'linear-gradient(135deg, #312e81 0%, #1e1b4b 100%)' : 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)', borderRadius: '50% 50% 40% 60% / 50% 40% 60% 50%', filter: 'blur(11px)', opacity: isDark ? 0.4 : 0.6, animation: 'lava-morph-5 72s ease-in-out infinite' }} />
+                <div className="absolute top-1/4 right-1/5 w-[160px] h-[160px]" style={{ background: isDark ? 'linear-gradient(180deg, #4c1d95 0%, #5b21b6 50%, #312e81 100%)' : 'linear-gradient(180deg, #6d28d9 0%, #7c3aed 50%, #8b5cf6 100%)', borderRadius: '60% 40% 70% 30% / 40% 60% 30% 70%', filter: 'blur(10px)', opacity: isDark ? 0.35 : 0.65, animation: 'lava-morph-6 84s ease-in-out infinite' }} />
+                <div className="absolute bottom-0 left-1/3 w-[140px] h-[140px]" style={{ background: isDark ? 'linear-gradient(45deg, #1e3a8a 0%, #3730a3 100%)' : 'linear-gradient(45deg, #2563eb 0%, #3b82f6 100%)', borderRadius: '40% 60% 50% 50% / 50% 40% 50% 60%', filter: 'blur(9px)', opacity: isDark ? 0.3 : 0.55, animation: 'lava-morph-7 90s ease-in-out infinite' }} />
+
+                {/* Overlay */}
+                <div className="absolute inset-0 transition-all duration-700" style={{ background: isDark ? 'radial-gradient(ellipse at center, transparent 0%, rgba(10,10,26,0.4) 100%)' : 'radial-gradient(ellipse at center, transparent 0%, rgba(255,255,255,0.3) 100%)' }} />
+              </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/5" />
           </div>
           <div className="p-5 pt-0">
             <div className="flex items-center gap-4 -mt-10 mb-4">
               <div
-                className="w-20 h-20 rounded-full border-[3px] border-card flex items-center justify-center overflow-hidden bg-card relative shadow-xl"
-                style={{ boxShadow: `0 8px 32px -8px ${colors.primary}40` }}
+                className="w-20 h-20 rounded-full border-[3px] border-card flex items-center justify-center overflow-hidden relative shadow-xl"
+                style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', boxShadow: `0 8px 32px -8px ${colors.primary}40` }}
               >
                 {form.logoImageUrl ? (
                   <Image src={form.logoImageUrl} alt="" fill className="object-cover" sizes="512px" />
@@ -247,7 +235,7 @@ function DevicePreviews({ form, t, companyName: _companyName, selectedCompanyId 
         {/* Tablet Preview */}
         <div className="col-span-2 space-y-2">
           <p className="text-xs font-medium text-text-muted">{t("settings.tabletView")}</p>
-          <div className="rounded-xl border border-card-border bg-card overflow-hidden shadow-lg transform scale-85 origin-top">
+          <div className="rounded-xl border border-card-border bg-card overflow-hidden shadow-sm transform scale-85 origin-top">
             <div className="h-24 relative">
               {form.bannerImageUrl ? (
                 <Image
@@ -258,48 +246,37 @@ function DevicePreviews({ form, t, companyName: _companyName, selectedCompanyId 
                   sizes="3840px"
                 />
               ) : (
-                <>
+                <div className="absolute inset-0 overflow-hidden">
+                  {/* Base gradient */}
                   <div
-                    className="absolute inset-0"
+                    className="absolute inset-0 transition-all duration-700"
                     style={{
                       background: isDark
-                        ? "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)"
-                        : "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)",
+                        ? 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 25%, #16213e 50%, #1a1a2e 75%, #0a0a1a 100%)'
+                        : 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #dbeafe 50%, #e0f2fe 75%, #f0f9ff 100%)',
                     }}
                   />
-                  <div
-                    className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-40"
-                    style={{
-                      background: isDark
-                        ? "radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%)"
-                        : "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)",
-                    }}
-                  />
-                  <div
-                    className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full blur-3xl opacity-30"
-                    style={{
-                      background: isDark
-                        ? "radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)"
-                        : "radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)",
-                    }}
-                  />
-                  <div
-                    className="absolute inset-0 pointer-events-none opacity-[0.03]"
-                    style={{
-                      backgroundImage: isDark
-                        ? "repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.1) 35px, rgba(255,255,255,0.1) 70px)"
-                        : "repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(0,0,0,0.08) 35px, rgba(0,0,0,0.08) 70px)",
-                    }}
-                  />
-                </>
+
+                  {/* Blob shapes - scaled for banner preview */}
+                  <div className="absolute top-0 left-0 w-[250px] h-[250px]" style={{ background: isDark ? 'linear-gradient(135deg, #1e3a8a 0%, #312e81 50%, #1e1b4b 100%)' : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%)', borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%', filter: 'blur(15px)', opacity: isDark ? 0.6 : 0.7, animation: 'lava-morph-1 40s ease-in-out infinite' }} />
+                  <div className="absolute top-1/4 right-0 w-[220px] h-[220px]" style={{ background: isDark ? 'linear-gradient(225deg, #3730a3 0%, #4338ca 50%, #1e3a5f 100%)' : 'linear-gradient(225deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%)', borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%', filter: 'blur(12px)', opacity: isDark ? 0.5 : 0.65, animation: 'lava-morph-2 50s ease-in-out infinite' }} />
+                  <div className="absolute bottom-0 left-1/4 w-[190px] h-[190px]" style={{ background: isDark ? 'linear-gradient(45deg, #1e1b4b 0%, #312e81 50%, #1e3a8a 100%)' : 'linear-gradient(45deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%)', borderRadius: '70% 30% 50% 50% / 30% 50% 50% 70%', filter: 'blur(18px)', opacity: isDark ? 0.55 : 0.75, animation: 'lava-morph-3 44s ease-in-out infinite' }} />
+                  <div className="absolute top-1/2 right-1/4 w-[170px] h-[170px]" style={{ background: isDark ? 'linear-gradient(315deg, #4338ca 0%, #3730a3 50%, #312e81 100%)' : 'linear-gradient(315deg, #4338ca 0%, #4f46e5 50%, #6366f1 100%)', borderRadius: '40% 60% 60% 40% / 60% 40% 60% 40%', filter: 'blur(14px)', opacity: isDark ? 0.45 : 0.6, animation: 'lava-morph-4 36s ease-in-out infinite' }} />
+                  <div className="absolute bottom-1/4 left-0 w-[150px] h-[150px]" style={{ background: isDark ? 'linear-gradient(135deg, #312e81 0%, #1e1b4b 100%)' : 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)', borderRadius: '50% 50% 40% 60% / 50% 40% 60% 50%', filter: 'blur(11px)', opacity: isDark ? 0.4 : 0.6, animation: 'lava-morph-5 48s ease-in-out infinite' }} />
+                  <div className="absolute top-1/4 right-1/5 w-[130px] h-[130px]" style={{ background: isDark ? 'linear-gradient(180deg, #4c1d95 0%, #5b21b6 50%, #312e81 100%)' : 'linear-gradient(180deg, #6d28d9 0%, #7c3aed 50%, #8b5cf6 100%)', borderRadius: '60% 40% 70% 30% / 40% 60% 30% 70%', filter: 'blur(10px)', opacity: isDark ? 0.35 : 0.65, animation: 'lava-morph-6 56s ease-in-out infinite' }} />
+                  <div className="absolute bottom-0 left-1/3 w-[110px] h-[110px]" style={{ background: isDark ? 'linear-gradient(45deg, #1e3a8a 0%, #3730a3 100%)' : 'linear-gradient(45deg, #2563eb 0%, #3b82f6 100%)', borderRadius: '40% 60% 50% 50% / 50% 40% 50% 60%', filter: 'blur(9px)', opacity: isDark ? 0.3 : 0.55, animation: 'lava-morph-7 60s ease-in-out infinite' }} />
+
+                  {/* Overlay */}
+                  <div className="absolute inset-0 transition-all duration-700" style={{ background: isDark ? 'radial-gradient(ellipse at center, transparent 0%, rgba(10,10,26,0.4) 100%)' : 'radial-gradient(ellipse at center, transparent 0%, rgba(255,255,255,0.3) 100%)' }} />
+                </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/5" />
             </div>
             <div className="p-4 pt-0">
               <div className="flex items-center gap-3 -mt-8 mb-3">
                 <div
-                  className="w-14 h-14 rounded-full border-[3px] border-card flex items-center justify-center overflow-hidden bg-card relative shadow-xl"
-                  style={{ boxShadow: `0 6px 24px -6px ${colors.primary}40` }}
+                  className="w-14 h-14 rounded-full border-[3px] border-card flex items-center justify-center overflow-hidden relative shadow-xl"
+                  style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', boxShadow: `0 6px 24px -6px ${colors.primary}40` }}
                 >
                   {form.logoImageUrl ? (
                     <Image src={form.logoImageUrl} alt="" fill className="object-cover" sizes="512px" />
@@ -329,7 +306,7 @@ function DevicePreviews({ form, t, companyName: _companyName, selectedCompanyId 
         {/* Mobile Preview */}
         <div className="col-span-1 space-y-2">
           <p className="text-xs font-medium text-text-muted">{t("settings.mobileView")}</p>
-          <div className="rounded-xl border border-card-border bg-card overflow-hidden shadow-lg transform scale-65 origin-top">
+          <div className="rounded-xl border border-card-border bg-card overflow-hidden shadow-sm transform scale-65 origin-top">
             <div className="h-16 relative">
               {form.bannerImageUrl ? (
                 <Image
@@ -340,48 +317,37 @@ function DevicePreviews({ form, t, companyName: _companyName, selectedCompanyId 
                   sizes="3840px"
                 />
               ) : (
-                <>
+                <div className="absolute inset-0 overflow-hidden">
+                  {/* Base gradient */}
                   <div
-                    className="absolute inset-0"
+                    className="absolute inset-0 transition-all duration-700"
                     style={{
                       background: isDark
-                        ? "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)"
-                        : "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)",
+                        ? 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 25%, #16213e 50%, #1a1a2e 75%, #0a0a1a 100%)'
+                        : 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #dbeafe 50%, #e0f2fe 75%, #f0f9ff 100%)',
                     }}
                   />
-                  <div
-                    className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-40"
-                    style={{
-                      background: isDark
-                        ? "radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%)"
-                        : "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)",
-                    }}
-                  />
-                  <div
-                    className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full blur-3xl opacity-30"
-                    style={{
-                      background: isDark
-                        ? "radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)"
-                        : "radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)",
-                    }}
-                  />
-                  <div
-                    className="absolute inset-0 pointer-events-none opacity-[0.03]"
-                    style={{
-                      backgroundImage: isDark
-                        ? "repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.1) 35px, rgba(255,255,255,0.1) 70px)"
-                        : "repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(0,0,0,0.08) 35px, rgba(0,0,0,0.08) 70px)",
-                    }}
-                  />
-                </>
+
+                  {/* Blob shapes - scaled for banner preview */}
+                  <div className="absolute top-0 left-0 w-[180px] h-[180px]" style={{ background: isDark ? 'linear-gradient(135deg, #1e3a8a 0%, #312e81 50%, #1e1b4b 100%)' : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%)', borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%', filter: 'blur(15px)', opacity: isDark ? 0.6 : 0.7, animation: 'lava-morph-1 25s ease-in-out infinite' }} />
+                  <div className="absolute top-1/4 right-0 w-[160px] h-[160px]" style={{ background: isDark ? 'linear-gradient(225deg, #3730a3 0%, #4338ca 50%, #1e3a5f 100%)' : 'linear-gradient(225deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%)', borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%', filter: 'blur(12px)', opacity: isDark ? 0.5 : 0.65, animation: 'lava-morph-2 30s ease-in-out infinite' }} />
+                  <div className="absolute bottom-0 left-1/4 w-[140px] h-[140px]" style={{ background: isDark ? 'linear-gradient(45deg, #1e1b4b 0%, #312e81 50%, #1e3a8a 100%)' : 'linear-gradient(45deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%)', borderRadius: '70% 30% 50% 50% / 30% 50% 50% 70%', filter: 'blur(18px)', opacity: isDark ? 0.55 : 0.75, animation: 'lava-morph-3 28s ease-in-out infinite' }} />
+                  <div className="absolute top-1/2 right-1/4 w-[130px] h-[130px]" style={{ background: isDark ? 'linear-gradient(315deg, #4338ca 0%, #3730a3 50%, #312e81 100%)' : 'linear-gradient(315deg, #4338ca 0%, #4f46e5 50%, #6366f1 100%)', borderRadius: '40% 60% 60% 40% / 60% 40% 60% 40%', filter: 'blur(14px)', opacity: isDark ? 0.45 : 0.6, animation: 'lava-morph-4 24s ease-in-out infinite' }} />
+                  <div className="absolute bottom-1/4 left-0 w-[110px] h-[110px]" style={{ background: isDark ? 'linear-gradient(135deg, #312e81 0%, #1e1b4b 100%)' : 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)', borderRadius: '50% 50% 40% 60% / 50% 40% 60% 50%', filter: 'blur(11px)', opacity: isDark ? 0.4 : 0.6, animation: 'lava-morph-5 32s ease-in-out infinite' }} />
+                  <div className="absolute top-1/4 right-1/5 w-[90px] h-[90px]" style={{ background: isDark ? 'linear-gradient(180deg, #4c1d95 0%, #5b21b6 50%, #312e81 100%)' : 'linear-gradient(180deg, #6d28d9 0%, #7c3aed 50%, #8b5cf6 100%)', borderRadius: '60% 40% 70% 30% / 40% 60% 30% 70%', filter: 'blur(10px)', opacity: isDark ? 0.35 : 0.65, animation: 'lava-morph-6 36s ease-in-out infinite' }} />
+                  <div className="absolute bottom-0 left-1/3 w-[80px] h-[80px]" style={{ background: isDark ? 'linear-gradient(45deg, #1e3a8a 0%, #3730a3 100%)' : 'linear-gradient(45deg, #2563eb 0%, #3b82f6 100%)', borderRadius: '40% 60% 50% 50% / 50% 40% 50% 60%', filter: 'blur(9px)', opacity: isDark ? 0.3 : 0.55, animation: 'lava-morph-7 40s ease-in-out infinite' }} />
+
+                  {/* Overlay */}
+                  <div className="absolute inset-0 transition-all duration-700" style={{ background: isDark ? 'radial-gradient(ellipse at center, transparent 0%, rgba(10,10,26,0.4) 100%)' : 'radial-gradient(ellipse at center, transparent 0%, rgba(255,255,255,0.3) 100%)' }} />
+                </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/5" />
             </div>
             <div className="p-3 pt-0">
               <div className="flex items-center gap-2 -mt-6 mb-2">
                 <div
-                  className="w-10 h-10 rounded-full border-[2px] border-card flex items-center justify-center overflow-hidden bg-card relative shadow-lg"
-                  style={{ boxShadow: `0 4px 16px -4px ${colors.primary}40` }}
+                  className="w-10 h-10 rounded-full border-[3px] border-card flex items-center justify-center overflow-hidden relative shadow-xl"
+                  style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', boxShadow: `0 8px 32px -8px ${colors.primary}40` }}
                 >
                   {form.logoImageUrl ? (
                     <Image src={form.logoImageUrl} alt="" fill className="object-cover" sizes="512px" />
@@ -425,6 +391,7 @@ export default function SettingsPage() {
   const [initialForm, setInitialForm] = useState<BrandingConfig>(defaultForm);
 
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [reverting, setReverting] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -469,7 +436,10 @@ export default function SettingsPage() {
       } catch {
         if (!cancelled) setLoadError(t("settings.saveError"));
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setInitialLoad(false);
+        }
       }
     })();
     return () => {
@@ -539,42 +509,66 @@ export default function SettingsPage() {
   const handleRevertToDefault = async () => {
     setReverting(true);
     try {
-      const serverPayload = {
-        bannerImageUrl: null,
-        logoImageUrl: null,
-        primaryColor: THEME_DEFAULT_PRIMARY_LIGHT,
-        primaryColorDark: THEME_DEFAULT_PRIMARY_DARK,
-        secondaryColor: THEME_DEFAULT_SECONDARY_LIGHT,
-        secondaryColorDark: THEME_DEFAULT_SECONDARY_DARK,
-        tertiaryColor: THEME_DEFAULT_TERTIARY_LIGHT,
-        tertiaryColorDark: THEME_DEFAULT_TERTIARY_DARK,
-      };
+      // Only revert fields of the active tab
+      const serverPayload: Partial<BrandingConfig> = {};
+      
+      if (activeTab === "visual") {
+        serverPayload.bannerImageUrl = null;
+        serverPayload.logoImageUrl = null;
+      } else if (activeTab === "colors") {
+        serverPayload.primaryColor = THEME_DEFAULT_PRIMARY_LIGHT;
+        serverPayload.primaryColorDark = THEME_DEFAULT_PRIMARY_DARK;
+        serverPayload.secondaryColor = THEME_DEFAULT_SECONDARY_LIGHT;
+        serverPayload.secondaryColorDark = THEME_DEFAULT_SECONDARY_DARK;
+        serverPayload.tertiaryColor = THEME_DEFAULT_TERTIARY_LIGHT;
+        serverPayload.tertiaryColorDark = THEME_DEFAULT_TERTIARY_DARK;
+      }
 
       await apiClient.patch("/companies/me", {
         brandingConfig: serverPayload,
       });
 
-      const defaultBranding = {
+      // Merge with current branding to preserve other fields
+      const updatedBranding = {
+        ...currentBranding,
         ...serverPayload,
         businessActivity: currentBranding?.businessActivity ?? null,
       };
 
-      setCompanyBranding(defaultBranding);
-      if (selectedCompanyId) setBrandingInCache(selectedCompanyId, defaultBranding);
+      setCompanyBranding(updatedBranding);
+      if (selectedCompanyId) setBrandingInCache(selectedCompanyId, updatedBranding);
 
       // Form state uses empty strings for image URLs (UI inputs need strings)
-      const revertedForm: BrandingConfig = {
-        bannerImageUrl: "",
-        logoImageUrl: "",
-        primaryColor: serverPayload.primaryColor,
-        primaryColorDark: serverPayload.primaryColorDark,
-        secondaryColor: serverPayload.secondaryColor,
-        secondaryColorDark: serverPayload.secondaryColorDark,
-        tertiaryColor: serverPayload.tertiaryColor,
-        tertiaryColorDark: serverPayload.tertiaryColorDark,
-      };
-      setForm(revertedForm);
-      setInitialForm(revertedForm);
+      setForm((p) => ({
+        ...p,
+        ...(activeTab === "visual" && {
+          bannerImageUrl: "",
+          logoImageUrl: "",
+        }),
+        ...(activeTab === "colors" && {
+          primaryColor: THEME_DEFAULT_PRIMARY_LIGHT,
+          primaryColorDark: THEME_DEFAULT_PRIMARY_DARK,
+          secondaryColor: THEME_DEFAULT_SECONDARY_LIGHT,
+          secondaryColorDark: THEME_DEFAULT_SECONDARY_DARK,
+          tertiaryColor: THEME_DEFAULT_TERTIARY_LIGHT,
+          tertiaryColorDark: THEME_DEFAULT_TERTIARY_DARK,
+        }),
+      }));
+      setInitialForm((p) => ({
+        ...p,
+        ...(activeTab === "visual" && {
+          bannerImageUrl: "",
+          logoImageUrl: "",
+        }),
+        ...(activeTab === "colors" && {
+          primaryColor: THEME_DEFAULT_PRIMARY_LIGHT,
+          primaryColorDark: THEME_DEFAULT_PRIMARY_DARK,
+          secondaryColor: THEME_DEFAULT_SECONDARY_LIGHT,
+          secondaryColorDark: THEME_DEFAULT_SECONDARY_DARK,
+          tertiaryColor: THEME_DEFAULT_TERTIARY_LIGHT,
+          tertiaryColorDark: THEME_DEFAULT_TERTIARY_DARK,
+        }),
+      }));
       showSuccess(t("settings.saveSuccess"));
     } catch {
       showError(t("settings.saveError"));
@@ -583,18 +577,45 @@ export default function SettingsPage() {
     }
   };
 
-  if (loading) {
+  if (initialLoad) {
     return (
-      <div className="flex-1 flex flex-col pt-14 pb-8 px-4 md:px-10 lg:px-12 w-full">
-        <div className="flex flex-1 items-center justify-center">
-          <PageLoader />
+      <div className="flex flex-col flex-1 min-h-0 pt-4 pb-6 px-4 md:px-8 lg:px-10 w-full">
+        {/* Skeleton Tab Navigation */}
+        <div className="flex items-center gap-1 p-0.5 rounded-lg bg-input-bg border border-card-border mb-6 w-64 h-10 animate-pulse" />
+
+        {/* Skeleton Settings Content */}
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pb-4">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+            <div className="space-y-6 xl:col-span-12">
+              <div className="space-y-8">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-slate-200 dark:bg-slate-700 w-10 h-10 animate-pulse" />
+                    <div className="space-y-2">
+                      <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-48 animate-pulse" />
+                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-64 animate-pulse" />
+                    </div>
+                  </div>
+                  <div className="space-y-8 pl-1">
+                    <div className="h-32 bg-slate-200 dark:bg-slate-700 rounded-xl animate-pulse" />
+                    <div className="h-32 bg-slate-200 dark:bg-slate-700 rounded-xl animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 pt-4 pb-6 px-4 md:px-8 lg:px-10 w-full">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+      className="flex flex-col flex-1 min-h-0 pt-4 pb-6 px-4 md:px-8 lg:px-10 w-full"
+    >
       {loadError && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -905,7 +926,7 @@ export default function SettingsPage() {
         <button
           type="button"
           onClick={handleRevertToDefault}
-          disabled={!isDirty || reverting || submitting}
+          disabled={reverting || submitting}
           className="group flex items-center gap-2 px-4 py-2.5 rounded-lg border border-card-border text-sm font-medium text-text-secondary hover:text-red-500 hover:border-red-200 hover:bg-red-50/50 dark:hover:bg-red-500/10 transition-all disabled:opacity-50 disabled:pointer-events-none disabled:hover:text-text-secondary disabled:hover:border-card-border disabled:hover:bg-transparent dark:disabled:hover:bg-transparent"
         >
           {reverting ? (
@@ -933,6 +954,6 @@ export default function SettingsPage() {
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

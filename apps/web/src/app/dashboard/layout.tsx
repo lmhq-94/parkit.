@@ -10,12 +10,11 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LocaleToggle } from "@/components/LocaleToggle";
-import { Logo } from "@/components/Logo";
 import { HelpModal } from "@/components/HelpModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore, useDashboardStore, getBrandingFromCache } from "@/lib/store";
 import type { CompanyBranding } from "@/lib/store";
-import { getAvatarHSLColors, getFullName, getShortName, isSuperAdmin } from "@/lib/auth";
+import { getFullName, getShortName, isSuperAdmin } from "@/lib/auth";
 import { apiClient } from "@/lib/api";
 import { useTheme } from "next-themes";
 import { useLocaleStore } from "@/lib/store";
@@ -38,7 +37,6 @@ type PathHeader = {
 
 const PATH_HEADERS: Record<string, PathHeader> = {
   "/dashboard": { title: "dashboard.title", description: "dashboard.summary" },
-  "/dashboard/no-companies": { title: "companies.title", description: "companies.newCompanyDescription" },
   "/dashboard/profile": { title: "profile.title", description: "profile.description" },
   "/dashboard/super-admins/new": { title: "superAdmins.newSuperAdmin", description: "superAdmins.newSuperAdminDescription", backHref: "/dashboard/profile", backLabel: "profile.title" },
   "/dashboard/settings": { title: "settings.title", description: "settings.description" },
@@ -100,7 +98,6 @@ function DashboardLayoutInner({
     (pathname ?? "") === "/dashboard/companies/new" && searchParams?.get("first") === "1";
   const isNewPage = Boolean(header.backHref) && !isFirstCompanyFlow;
   const isCompaniesPage = (pathname ?? "") === "/dashboard/companies";
-  const isNoCompaniesPage = (pathname ?? "") === "/dashboard/no-companies";
   const useMyCompany = isCompaniesPage && !isSuperAdmin(user);
   let titleKey = useMyCompany && header.titleMyCompany ? header.titleMyCompany : header.title;
   let descriptionKey = useMyCompany && header.descriptionMyCompany ? header.descriptionMyCompany : header.description;
@@ -184,6 +181,7 @@ function DashboardLayoutInner({
   }, [userMenuOpen]);
 
   const selectedCompanyId = useDashboardStore((s: any) => s.selectedCompanyId);
+  const companyBranding = useDashboardStore((s: any) => s.companyBranding);
   const setCompanyBranding = useDashboardStore((s: any) => s.setCompanyBranding);
   const setBrandingInCache = useDashboardStore((s: any) => s.setBrandingInCache);
   const { theme, setTheme } = useTheme();
@@ -270,19 +268,13 @@ function DashboardLayoutInner({
                       </h1>
                     </div>
                   ) : (
-                    isNoCompaniesPage ? (
-                      <Logo className="text-3xl" />
-                    ) : (
-                      <h1 className="text-xl md:text-2xl lg:text-[1.75rem] premium-title truncate">
-                        {t(titleKey)}
-                      </h1>
-                    )
+                    <h1 className="text-xl md:text-2xl lg:text-[1.75rem] premium-title truncate">
+                      {t(titleKey)}
+                    </h1>
                   )}
-                  {!isNoCompaniesPage && (
-                    <p className="premium-subtitle text-sm md:text-[0.95rem] mt-1.5 md:mt-2 max-w-2xl truncate hidden sm:block">
-                      {descriptionText}
-                    </p>
-                  )}
+                  <p className="premium-subtitle text-sm md:text-[0.95rem] mt-1.5 md:mt-2 max-w-2xl truncate hidden sm:block">
+                    {descriptionText}
+                  </p>
                 </div>
               </div>
             <div className="flex items-center gap-3 shrink-0 ml-auto">
@@ -298,7 +290,7 @@ function DashboardLayoutInner({
                   />
                 </>
               )}
-              {/* Theme and Locale toggles moved inside user menu for mobile optimization */}
+              {/* Theme and Locale toggles */}
               <div className="hidden md:flex items-center gap-3">
                 <ThemeToggle />
                 <LocaleToggle />
@@ -329,7 +321,6 @@ function DashboardLayoutInner({
                       title={getFullName(user) || user.email}
                     >
                       {(() => {
-                        const avatarColors = getAvatarHSLColors(user.id, theme === "dark");
                         const hasAvatar = (user.avatarUrl ?? user.avatar)?.trim();
                         return (
                               <div
@@ -337,13 +328,9 @@ function DashboardLayoutInner({
                               userMenuOpen ? "scale-95" : "group-hover:scale-105"
                             }`}
                             style={{
-                              backgroundColor: hasAvatar ? undefined : avatarColors.bg,
-                              border: hasAvatar
-                                ? '1px solid rgba(0,0,0,0.06)'
-                                : `2px solid ${avatarColors.border}`,
-                              boxShadow: hasAvatar
-                                ? '0 4px 12px -2px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)'
-                                : '0 2px 8px -2px rgba(0,0,0,0.08)',
+                              backgroundColor: theme === "dark" ? '#1e293b' : '#ffffff',
+                              border: '3px solid var(--card-border)',
+                              boxShadow: '0 8px 32px -8px rgba(0,0,0,0.1)',
                             }}
                           >
                             {hasAvatar ? (
@@ -358,7 +345,7 @@ function DashboardLayoutInner({
                             ) : (
                               <User
                                 className="w-[18px] h-[18px]"
-                                style={{ color: avatarColors.fg }}
+                                style={{ color: companyBranding?.primaryColor || (theme === "dark" ? '#e2e8f0' : '#475569') }}
                               />
                             )}
                           </div>
@@ -459,7 +446,7 @@ function DashboardLayoutInner({
                               <div className="flex items-center gap-1 p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800">
                                 <button
                                   type="button"
-                                  onClick={() => {
+                                  onClick={(_e) => {
                                     setLocale("es");
                                     apiClient.patch("/users/me", { appPreferences: { locale: "es" } }).catch(() => {});
                                   }}
@@ -469,7 +456,7 @@ function DashboardLayoutInner({
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => {
+                                  onClick={(_e) => {
                                     setLocale("en");
                                     apiClient.patch("/users/me", { appPreferences: { locale: "en" } }).catch(() => {});
                                   }}

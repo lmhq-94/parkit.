@@ -2,15 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { Plus } from "@/lib/premiumIcons";
 import { useRouter } from "next/navigation";
-import { PageLoader } from "@/components/PageLoader";
-
-const DashboardDataTablePage = dynamic(
-  () => import("@/components/DashboardDataTablePage").then((m) => ({ default: m.DashboardDataTablePage })),
-  { ssr: false, loading: () => <div className="flex flex-1 items-center justify-center p-8"><PageLoader /></div> }
-);
+import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
@@ -59,7 +53,8 @@ export default function VehiclesPage() {
       setHasEligibleEmployees(false);
       return;
     }
-    (async () => {
+    // Defer this check to avoid blocking initial render
+    const timer = setTimeout(async () => {
       try {
         const params = new URLSearchParams();
         params.set("excludeValets", "true");
@@ -73,9 +68,10 @@ export default function VehiclesPage() {
       } catch {
         if (!cancelled) setHasEligibleEmployees(false);
       }
-    })();
+    }, 100); // Small delay to allow initial render
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [canManage]);
 
@@ -107,9 +103,9 @@ export default function VehiclesPage() {
         field: "brand" as const,
         editable: canManage,
         cellEditorCatalogType: "make",
-        valueSetter: (row, value) => {
-          (row as VehicleRow).brand = value as string;
-          (row as VehicleRow).model = "";
+        valueSetter: (row: VehicleRow, value: unknown) => {
+          row.brand = value as string;
+          row.model = "";
         },
       },
       {

@@ -132,7 +132,7 @@ function AcceptInviteForm() {
   const BottomSection = () => (
     <div className="fixed bottom-0 left-0 right-0 py-4 px-4 text-center z-20">
       <div className="max-w-[480px] mx-auto">
-        <p className="text-xs text-slate-600 dark:text-slate-400">{t("auth.supportHint")}{" "}<a href="mailto:soporte@parkitcr.com" className="font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">{t("auth.supportLinkLabel")}</a></p>
+        <p className="text-xs text-slate-600 dark:text-slate-400">{t("auth.supportHint")}{" "}<a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`} className="font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline-offset-2 hover:underline transition-colors">{t("auth.supportLinkLabel")}</a></p>
       </div>
     </div>
   );

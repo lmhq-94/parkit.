@@ -96,7 +96,7 @@ function ResetPasswordForm() {
           <p className="text-xs text-text-muted">
             {t("auth.supportHint")}{" "}
             <a
-              href="mailto:soporte@parkitcr.com"
+              href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`}
               className="font-medium text-company-primary hover:text-company-primary underline-offset-2 hover:underline"
             >
               {t("auth.supportLinkLabel")}
@@ -135,7 +135,7 @@ function ResetPasswordForm() {
           <p className="text-xs text-text-muted">
             {t("auth.supportHint")}{" "}
             <a
-              href="mailto:soporte@parkitcr.com"
+              href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`}
               className="font-medium text-company-primary hover:text-company-primary underline-offset-2 hover:underline"
             >
               {t("auth.supportLinkLabel")}
@@ -272,7 +272,7 @@ function ResetPasswordForm() {
         <p className="text-xs text-text-muted">
           {t("auth.supportHint")}{" "}
           <a
-            href="mailto:soporte@parkitcr.com"
+            href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`}
             className="font-medium text-company-primary hover:text-company-primary underline-offset-2 hover:underline"
           >
             {t("auth.supportLinkLabel")}

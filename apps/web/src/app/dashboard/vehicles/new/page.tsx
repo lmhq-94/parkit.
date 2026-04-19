@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Car, Hash, Globe, Users, Ruler, Weight } from "@/lib/premiumIcons";
-import { FormWizard } from "@/components/FormWizard";
+import { FormWizard, type WizardStep } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { BrandModelComboField } from "@/components/BrandModelComboField";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -267,11 +267,10 @@ export default function NewVehiclePage() {
     }
   };
 
-  const steps = [
+  const steps: WizardStep[] = [
     {
       title: t("vehicles.sectionMain"),
       description: t("vehicles.sectionMainDesc"),
-      badge: "required" as const,
       accentColor: "blue",
       isValid: () => !!(form.plate.trim() && form.brand.trim() && form.model.trim() && form.year.trim() && form.clientId.trim()),
       content: (
@@ -393,7 +392,6 @@ export default function NewVehiclePage() {
     {
       title: t("vehicles.sectionExtra"),
       description: t("vehicles.sectionExtraDesc"),
-      badge: "required" as const,
       accentColor: "sky",
       isValid: () => !!(form.lengthM.trim() && form.widthM.trim() && form.heightM.trim() && form.weightKg.trim()),
       content: (
@@ -526,6 +524,7 @@ export default function NewVehiclePage() {
       submitting={submitting}
       submitLabel={t("vehicles.createVehicle")}
       cancelHref="/dashboard/vehicles"
+      footerNote={t("common.requiredNote")}
       onValidateBeforeAction={validateStep}
       onBeforeNext={async (fromStep, toStep) => {
         if (fromStep === 0 && toStep === 1 && form.brand.trim() && form.model.trim()) {

@@ -179,6 +179,7 @@ export function SelectField({ value, onChange, icon: Icon, children, className, 
           onClick={handleOpen}
           aria-invalid={ariaInvalid}
           className={[
+            "w-full pl-10 pr-10 py-3 rounded-lg border border-input-border bg-input-bg text-sm transition-all duration-200 ease-out focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary/20 focus:ring-inset placeholder:text-text-muted text-left",
             "text-sm font-medium truncate",
             !value ? "text-text-muted" : "",
           ].join(" ")}

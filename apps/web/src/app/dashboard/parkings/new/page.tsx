@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Tag, Navigation, Radius, Trash, Clock, Building, World } from "@/lib/premiumIcons";
-import { FormWizard } from "@/components/FormWizard";
+import { Plus, Tag, Navigation, CircleDashed, Trash, Clock, Building, World } from "@/lib/premiumIcons";
+import { FormWizard, type WizardStep } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { AddressPickerModal } from "@/components/AddressPickerModal";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -36,6 +36,25 @@ const defaultSlot = (): SlotRow => ({
   slotType: "REGULAR",
 });
 
+// Helper functions
+const formatTime = (minutes: number): string => {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours}:${mins.toString().padStart(2, "0")}`;
+};
+
+const getTimeUnit = (minutes: number): string => {
+  return minutes < 60 ? "min" : "h";
+};
+
+const parseTime = (hhmm: string): number => {
+  const parts = hhmm.split(":");
+  if (parts.length !== 2) return 0;
+  const hours = parseInt(parts[0] || "0", 10) || 0;
+  const mins = parseInt(parts[1] || "0", 10) || 0;
+  return hours * 60 + mins;
+};
+
 export default function NewParkingPage() {
   const { t, tEnum } = useTranslation();
   const { showSuccess, showError } = useToast();
@@ -48,8 +67,46 @@ export default function NewParkingPage() {
   const [error, setError] = useState<string | null>(null);
   const [addressPickerOpen, setAddressPickerOpen] = useState(false);
   const [chargesParking, setChargesParking] = useState(true);
-  const [quickApplyMinutes, setQuickApplyMinutes] = useState(180);
+  const [quickApplyMinutes, setQuickApplyMinutes] = useState(240);
   const [quickApplyPrice, setQuickApplyPrice] = useState(1000);
+  const [quickApplyTimeInput, setQuickApplyTimeInput] = useState(formatTime(240));
+  const [companyCurrency, setCompanyCurrency] = useState<string>("CRC");
+
+  // Fetch company currency and adjust default price
+  useEffect(() => {
+    (async () => {
+      try {
+        const company = await apiClient.get<{ currency?: string }>("/companies/me");
+        if (company?.currency) {
+          setCompanyCurrency(company.currency);
+          // If not CRC, set default price to 0 to avoid conversion issues
+          if (company.currency !== "CRC") {
+            setQuickApplyPrice(0);
+            setDailyPricingConfig({
+              monday: { freeBenefitMinutes: 240, pricePerHour: 0 },
+              tuesday: { freeBenefitMinutes: 240, pricePerHour: 0 },
+              wednesday: { freeBenefitMinutes: 240, pricePerHour: 0 },
+              thursday: { freeBenefitMinutes: 240, pricePerHour: 0 },
+              friday: { freeBenefitMinutes: 240, pricePerHour: 0 },
+              saturday: { freeBenefitMinutes: 240, pricePerHour: 0 },
+              sunday: { freeBenefitMinutes: 240, pricePerHour: 0 },
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch company currency:", error);
+      }
+    })();
+  }, []);
+  const [dailyTimeInputs, setDailyTimeInputs] = useState({
+    monday: "4:00",
+    tuesday: "4:00",
+    wednesday: "4:00",
+    thursday: "4:00",
+    friday: "4:00",
+    saturday: "4:00",
+    sunday: "4:00",
+  });
   const [dailyPricingConfig, setDailyPricingConfig] = useState<{
     monday: { freeBenefitMinutes: number; pricePerHour: number };
     tuesday: { freeBenefitMinutes: number; pricePerHour: number };
@@ -59,17 +116,22 @@ export default function NewParkingPage() {
     saturday: { freeBenefitMinutes: number; pricePerHour: number };
     sunday: { freeBenefitMinutes: number; pricePerHour: number };
   }>({
-    monday: { freeBenefitMinutes: 0, pricePerHour: 0 },
-    tuesday: { freeBenefitMinutes: 0, pricePerHour: 0 },
-    wednesday: { freeBenefitMinutes: 0, pricePerHour: 0 },
-    thursday: { freeBenefitMinutes: 0, pricePerHour: 0 },
-    friday: { freeBenefitMinutes: 0, pricePerHour: 0 },
-    saturday: { freeBenefitMinutes: 0, pricePerHour: 0 },
-    sunday: { freeBenefitMinutes: 0, pricePerHour: 0 },
+    monday: { freeBenefitMinutes: 240, pricePerHour: 1000 },
+    tuesday: { freeBenefitMinutes: 240, pricePerHour: 1000 },
+    wednesday: { freeBenefitMinutes: 240, pricePerHour: 1000 },
+    thursday: { freeBenefitMinutes: 240, pricePerHour: 1000 },
+    friday: { freeBenefitMinutes: 240, pricePerHour: 1000 },
+    saturday: { freeBenefitMinutes: 240, pricePerHour: 1000 },
+    sunday: { freeBenefitMinutes: 240, pricePerHour: 1000 },
   });
   const [fieldErrors, setFieldErrors] = useState<{
     name?: string;
     address?: string;
+    latitude?: string;
+    longitude?: string;
+    geofenceRadius?: string;
+    slots?: string;
+    dailyPricingConfig?: string;
   }>({});
 
 
@@ -98,42 +160,68 @@ export default function NewParkingPage() {
     return cleaned ? parseInt(cleaned, 10) || 0 : 0;
   };
 
-  const formatTime = (minutes: number): string => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours}:${mins.toString().padStart(2, "0")}`;
-  };
-
-  const parseTime = (hhmm: string): number => {
-    const parts = hhmm.split(":");
-    if (parts.length !== 2) return 0;
-    const hours = parseInt(parts[0] || "0", 10) || 0;
-    const mins = parseInt(parts[1] || "0", 10) || 0;
-    return hours * 60 + mins;
-  };
-
-  const setTimeValue = (setter: (value: number) => void) =>
+  const setTimeValue = (inputSetter: (value: string) => void, valueSetter: (value: number) => void) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      // Allow typing numbers and colons only
+      // Allow typing numbers and colons freely
       const cleaned = value.replace(/[^\d:]/g, "");
-      // Ensure only one colon
-      const parts = cleaned.split(":");
-      if (parts.length > 2) {
-        setter(parseTime(parts[0] + ":" + (parts[1] || "0")));
-        return;
+      
+      // Remove colon and re-format based on digit count
+      const digitsOnly = cleaned.replace(/:/g, "");
+      
+      // Limit to max 4 digits
+      if (digitsOnly.length > 4) {
+        return; // Don't allow more than 4 digits
       }
-      if (parts.length === 2 && parts[1] && parts[1].length > 2) {
-        setter(parseTime(parts[0] + ":" + parts[1].slice(0, 2)));
-        return;
+      
+      // Auto-insert colon based on digit count
+      let displayValue = digitsOnly;
+      if (digitsOnly.length === 3) {
+        displayValue = digitsOnly.slice(0, 1) + ":" + digitsOnly.slice(1, 3);
+      } else if (digitsOnly.length === 4) {
+        displayValue = digitsOnly.slice(0, 2) + ":" + digitsOnly.slice(2, 4);
       }
-      // Auto-convert to minutes when valid format
-      if (parts.length === 2 && parts[0] && parts[1]) {
-        const minutes = parseTime(cleaned);
+      
+      inputSetter(displayValue);
+      
+      // Parse and update actual value when valid
+      const displayParts = displayValue.split(":");
+      if (displayParts.length === 2 && displayParts[0] && displayParts[1]) {
+        const minutes = parseTime(displayValue);
         if (minutes <= 1440) {
-          setter(minutes);
+          valueSetter(minutes);
         }
+      } else if (displayParts.length === 1 && displayParts[0]) {
+        const numStr = displayParts[0];
+        // If 3-4 digits, treat as HH:MM (e.g., "435" = "4:35")
+        if (numStr.length === 3) {
+          const hours = parseInt(numStr.slice(0, 1), 10);
+          const mins = parseInt(numStr.slice(1, 3), 10);
+          if (!isNaN(hours) && !isNaN(mins)) {
+            valueSetter(hours * 60 + mins);
+          }
+        } else if (numStr.length >= 4) {
+          const hours = parseInt(numStr.slice(0, 2), 10);
+          const mins = parseInt(numStr.slice(2, 4), 10);
+          if (!isNaN(hours) && !isNaN(mins)) {
+            valueSetter(hours * 60 + mins);
+          }
+        } else {
+          // 1-2 digits, treat as hours with 0 minutes
+          const num = parseInt(numStr, 10);
+          if (!isNaN(num)) {
+            valueSetter(num * 60);
+          }
+        }
+      } else if (!digitsOnly) {
+        valueSetter(0);
       }
+    };
+
+  const handleTimeBlur = (inputSetter: (value: string) => void, currentValue: number) =>
+    () => {
+      // Format the value on blur
+      inputSetter(formatTime(currentValue));
     };
 
   const setSlot = (id: string, updates: Partial<SlotRow>) => {
@@ -184,6 +272,11 @@ export default function NewParkingPage() {
     const nextErrors: typeof fieldErrors = {};
     if (!form.name.trim()) nextErrors.name = t("validation.required");
     if (!form.address.trim()) nextErrors.address = t("validation.required");
+    if (!form.latitude) nextErrors.latitude = t("validation.required");
+    if (!form.longitude) nextErrors.longitude = t("validation.required");
+    if (!form.geofenceRadius) nextErrors.geofenceRadius = t("validation.required");
+    if (slots.length === 0) nextErrors.slots = t("validation.required");
+    if (chargesParking && !dailyPricingConfig) nextErrors.dailyPricingConfig = t("validation.required");
     if (!step3Valid) {
       // Keep slot errors at global level (wizard already shows error), no per-field detail here.
     }
@@ -199,9 +292,9 @@ export default function NewParkingPage() {
         name: form.name,
         address: form.address,
         type: form.type,
-        latitude: form.latitude !== "" ? Number(form.latitude) : undefined,
-        longitude: form.longitude !== "" ? Number(form.longitude) : undefined,
-        geofenceRadius: form.geofenceRadius !== "" ? Number(form.geofenceRadius) : undefined,
+        latitude: Number(form.latitude),
+        longitude: Number(form.longitude),
+        geofenceRadius: Number(form.geofenceRadius),
         dailyPricingConfig: chargesParking ? dailyPricingConfig : null,
         slots: slotList,
       });
@@ -217,7 +310,9 @@ export default function NewParkingPage() {
   };
 
   const step1Valid = form.name.trim() !== "" && form.address.trim() !== "" && form.type !== "";
-  const step2Valid = form.address.trim() !== "";
+  const step2Valid = chargesParking 
+    ? Object.values(dailyPricingConfig).some(config => config.pricePerHour > 0)
+    : true;
   const step3Valid = slots.length > 0 && slots.every((s) => s.label.trim().length > 0);
 
   const validateStep = (stepIndex: number): boolean => {
@@ -235,11 +330,10 @@ export default function NewParkingPage() {
     return true;
   };
 
-  const steps = [
+  const steps: WizardStep[] = [
     {
       title: t("parkings.sectionMain"),
       description: t("parkings.sectionMainDesc"),
-      badge: "required" as const,
       accentColor: "orange",
       isValid: () => step1Valid,
       content: (
@@ -288,7 +382,6 @@ export default function NewParkingPage() {
     {
       title: t("parkings.sectionBilling"),
       description: t("parkings.sectionBillingDesc"),
-      badge: "optional" as const,
       accentColor: "blue",
       isValid: () => step2Valid,
       content: (
@@ -323,6 +416,7 @@ export default function NewParkingPage() {
 
           {chargesParking && (
             <div className="sm:col-span-2 lg:col-span-3">
+              {fieldErrors.dailyPricingConfig && <p className="text-sm text-red-500 mb-4" role="alert">{fieldErrors.dailyPricingConfig}</p>}
               <div className="flex flex-wrap gap-3 mb-4">
                 <div className="flex-1 min-w-[140px]">
                   <label className="text-xs font-medium text-text-muted/80 mb-1 block">{t("parkings.quickApplyMinutes")}</label>
@@ -331,18 +425,19 @@ export default function NewParkingPage() {
                     <input
                       type="text"
                       inputMode="numeric"
-                      value={formatTime(quickApplyMinutes)}
-                      onChange={(e) => setTimeValue(setQuickApplyMinutes)(e)}
+                      value={quickApplyTimeInput}
+                      onChange={(e) => setTimeValue(setQuickApplyTimeInput, setQuickApplyMinutes)(e)}
+                      onBlur={handleTimeBlur(setQuickApplyTimeInput, quickApplyMinutes)}
                       placeholder="4:00"
                       className={IL}
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted/60 pointer-events-none group-focus-within:text-company-primary/40 transition-colors">min</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted/60 pointer-events-none group-focus-within:text-company-primary/40 transition-colors">{getTimeUnit(quickApplyMinutes)}</span>
                   </div>
                 </div>
                 <div className="flex-1 min-w-[140px]">
                   <label className="text-xs font-medium text-text-muted/80 mb-1 block">{t("parkings.quickApplyPrice")}</label>
                   <div className="relative group">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-text-muted/60 pointer-events-none group-focus-within:text-company-primary/40 transition-colors">₡</span>
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-text-muted/60 pointer-events-none group-focus-within:text-company-primary/40 transition-colors">{companyCurrency === "CRC" ? "₡" : companyCurrency === "USD" ? "$" : companyCurrency === "EUR" ? "€" : companyCurrency}</span>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -372,6 +467,17 @@ export default function NewParkingPage() {
                       saturday: config,
                       sunday: config,
                     });
+                    // Also update the raw input states
+                    const formattedTime = formatTime(quickApplyMinutes);
+                    setDailyTimeInputs({
+                      monday: formattedTime,
+                      tuesday: formattedTime,
+                      wednesday: formattedTime,
+                      thursday: formattedTime,
+                      friday: formattedTime,
+                      saturday: formattedTime,
+                      sunday: formattedTime,
+                    });
                   }}
                   className="shrink-0 px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-secondary text-sm font-medium hover:bg-company-primary-subtle hover:border-company-primary-muted hover:text-company-primary transition-colors"
                 >
@@ -393,6 +499,16 @@ export default function NewParkingPage() {
                       saturday: dailyPricingConfig.saturday,
                       sunday: dailyPricingConfig.sunday,
                     });
+                    // Also update the raw input states for weekdays
+                    const formattedTime = formatTime(quickApplyMinutes);
+                    setDailyTimeInputs((prev) => ({
+                      ...prev,
+                      monday: formattedTime,
+                      tuesday: formattedTime,
+                      wednesday: formattedTime,
+                      thursday: formattedTime,
+                      friday: formattedTime,
+                    }));
                   }}
                   className="shrink-0 px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-secondary text-sm font-medium hover:bg-company-primary-subtle hover:border-company-primary-muted hover:text-company-primary transition-colors"
                 >
@@ -414,6 +530,13 @@ export default function NewParkingPage() {
                       saturday: config,
                       sunday: config,
                     });
+                    // Also update the raw input states for weekend
+                    const formattedTime = formatTime(quickApplyMinutes);
+                    setDailyTimeInputs((prev) => ({
+                      ...prev,
+                      saturday: formattedTime,
+                      sunday: formattedTime,
+                    }));
                   }}
                   className="shrink-0 px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-secondary text-sm font-medium hover:bg-company-primary-subtle hover:border-company-primary-muted hover:text-company-primary transition-colors"
                 >
@@ -439,22 +562,106 @@ export default function NewParkingPage() {
                         <input
                           type="text"
                           inputMode="numeric"
-                          value={formatTime(dailyPricingConfig[day.key as keyof typeof dailyPricingConfig].freeBenefitMinutes)}
-                          onChange={(e) => setDailyPricingConfig({
-                            ...dailyPricingConfig,
-                            [day.key]: {
-                              ...dailyPricingConfig[day.key as keyof typeof dailyPricingConfig],
-                              freeBenefitMinutes: parseTime(e.target.value),
-                            },
-                          })}
+                          value={dailyTimeInputs[day.key as keyof typeof dailyTimeInputs]}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // Allow typing numbers and colons freely
+                            const cleaned = value.replace(/[^\d:]/g, "");
+                            
+                            // Remove colon and re-format based on digit count
+                            const digitsOnly = cleaned.replace(/:/g, "");
+                            
+                            // Limit to max 4 digits
+                            if (digitsOnly.length > 4) {
+                              return; // Don't allow more than 4 digits
+                            }
+                            
+                            // Auto-insert colon based on digit count
+                            let displayValue = digitsOnly;
+                            if (digitsOnly.length === 3) {
+                              displayValue = digitsOnly.slice(0, 1) + ":" + digitsOnly.slice(1, 3);
+                            } else if (digitsOnly.length === 4) {
+                              displayValue = digitsOnly.slice(0, 2) + ":" + digitsOnly.slice(2, 4);
+                            }
+                            
+                            setDailyTimeInputs((prev) => ({ ...prev, [day.key]: displayValue }));
+                            
+                            const displayParts = displayValue.split(":");
+                            if (displayParts.length === 2 && displayParts[0] && displayParts[1]) {
+                              const minutes = parseTime(displayValue);
+                              if (minutes <= 1440) {
+                                setDailyPricingConfig((prev) => ({
+                                  ...prev,
+                                  [day.key]: {
+                                    ...prev[day.key as keyof typeof prev],
+                                    freeBenefitMinutes: minutes,
+                                  },
+                                }));
+                              }
+                            } else if (displayParts.length === 1 && displayParts[0]) {
+                              const numStr = displayParts[0];
+                              // If 3-4 digits, treat as HH:MM (e.g., "435" = "4:35")
+                              if (numStr.length === 3) {
+                                const hours = parseInt(numStr.slice(0, 1), 10);
+                                const mins = parseInt(numStr.slice(1, 3), 10);
+                                if (!isNaN(hours) && !isNaN(mins)) {
+                                  setDailyPricingConfig((prev) => ({
+                                    ...prev,
+                                    [day.key]: {
+                                      ...prev[day.key as keyof typeof prev],
+                                      freeBenefitMinutes: hours * 60 + mins,
+                                    },
+                                  }));
+                                }
+                              } else if (numStr.length >= 4) {
+                                const hours = parseInt(numStr.slice(0, 2), 10);
+                                const mins = parseInt(numStr.slice(2, 4), 10);
+                                if (!isNaN(hours) && !isNaN(mins)) {
+                                  setDailyPricingConfig((prev) => ({
+                                    ...prev,
+                                    [day.key]: {
+                                      ...prev[day.key as keyof typeof prev],
+                                      freeBenefitMinutes: hours * 60 + mins,
+                                    },
+                                  }));
+                                }
+                              } else {
+                                // 1-2 digits, treat as hours with 0 minutes
+                                const num = parseInt(numStr, 10);
+                                if (!isNaN(num)) {
+                                  setDailyPricingConfig((prev) => ({
+                                    ...prev,
+                                    [day.key]: {
+                                      ...prev[day.key as keyof typeof prev],
+                                      freeBenefitMinutes: num * 60,
+                                    },
+                                  }));
+                                }
+                              }
+                            } else if (!digitsOnly) {
+                              setDailyPricingConfig((prev) => ({
+                                ...prev,
+                                [day.key]: {
+                                  ...prev[day.key as keyof typeof prev],
+                                  freeBenefitMinutes: 0,
+                                },
+                              }));
+                            }
+                          }}
+                          onBlur={() => {
+                            setDailyTimeInputs((prev) => ({
+                              ...prev,
+                              [day.key]: formatTime(dailyPricingConfig[day.key as keyof typeof dailyPricingConfig].freeBenefitMinutes),
+                            }));
+                          }}
                           onFocus={(e) => e.target.select()}
                           placeholder="0:00"
                           className={IL}
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted/60 pointer-events-none group-focus-within:text-company-primary/40 transition-colors">min</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted/60 pointer-events-none group-focus-within:text-company-primary/40 transition-colors">{getTimeUnit(dailyPricingConfig[day.key as keyof typeof dailyPricingConfig].freeBenefitMinutes)}</span>
                       </div>
                       <div className="relative group">
-                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-text-muted/60 pointer-events-none group-focus-within:text-company-primary/40 transition-colors">₡</span>
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-text-muted/60 pointer-events-none group-focus-within:text-company-primary/40 transition-colors">{companyCurrency === "CRC" ? "₡" : companyCurrency === "USD" ? "$" : companyCurrency === "EUR" ? "€" : companyCurrency}</span>
                         <input
                           type="text"
                           inputMode="numeric"
@@ -503,13 +710,13 @@ export default function NewParkingPage() {
     {
       title: t("parkings.sectionSlots"),
       description: t("parkings.sectionSlotsDesc"),
-      badge: "required" as const,
       accentColor: "blue",
       isValid: () => step3Valid,
       content: (
         <div className="space-y-5">
+          {fieldErrors.slots && <p className="text-sm text-red-500" role="alert">{fieldErrors.slots}</p>}
           {/* Agregar varios a la vez */}
-          <div className="flex flex-wrap items-end gap-3 p-4 rounded-xl bg-input-bg/60 border border-input-border">
+          <div className="flex flex-wrap items-end gap-3">
             <div className="flex-1 min-w-[120px]">
               <label className={LABEL}>{t("parkings.slotPrefixPlaceholder")}</label>
               <input
@@ -619,24 +826,33 @@ export default function NewParkingPage() {
       content: (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <div>
-            <label className={LABEL}>{t("parkings.latitude")}</label>
+            <label className={LABEL}>{t("parkings.latitude")} <span className="text-company-primary">*</span></label>
             <div className="relative group">
               <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="number" step="any" inputMode="decimal" min={-90} max={90} value={form.latitude} readOnly placeholder={t("common.placeholderLatitude")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
+              <input type="number" step="any" inputMode="decimal" min={-90} max={90} value={form.latitude} readOnly placeholder={t("common.placeholderLatitude")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} aria-invalid={!!fieldErrors.latitude} />
+            </div>
+            <div className="min-h-[1.25rem] mt-1">
+              {fieldErrors.latitude && <p className="text-sm text-red-500" role="alert">{fieldErrors.latitude}</p>}
             </div>
           </div>
           <div>
-            <label className={LABEL}>{t("parkings.longitude")}</label>
+            <label className={LABEL}>{t("parkings.longitude")} <span className="text-company-primary">*</span></label>
             <div className="relative group">
               <Navigation className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="number" step="any" inputMode="decimal" min={-180} max={180} value={form.longitude} readOnly placeholder={t("common.placeholderLongitude")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
+              <input type="number" step="any" inputMode="decimal" min={-180} max={180} value={form.longitude} readOnly placeholder={t("common.placeholderLongitude")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} aria-invalid={!!fieldErrors.longitude} />
+            </div>
+            <div className="min-h-[1.25rem] mt-1">
+              {fieldErrors.longitude && <p className="text-sm text-red-500" role="alert">{fieldErrors.longitude}</p>}
             </div>
           </div>
           <div>
-            <label className={LABEL}>{t("parkings.geofenceRadius")}</label>
+            <label className={LABEL}>{t("parkings.geofenceRadius")} <span className="text-company-primary">*</span></label>
             <div className="relative group">
-              <Radius className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
-              <input type="number" min={1} max={10000} inputMode="numeric" step={1} value={form.geofenceRadius} readOnly onFocus={(e) => e.target.select()} placeholder={t("common.placeholderRadius")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} />
+              <CircleDashed className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-company-primary transition-colors pointer-events-none" />
+              <input type="number" min={1} max={10000} inputMode="numeric" step={1} value={form.geofenceRadius} readOnly onFocus={(e) => e.target.select()} placeholder={t("common.placeholderRadius")} className={IL + " cursor-pointer"} onClick={() => setAddressPickerOpen(true)} aria-invalid={!!fieldErrors.geofenceRadius} />
+            </div>
+            <div className="min-h-[1.25rem] mt-1">
+              {fieldErrors.geofenceRadius && <p className="text-sm text-red-500" role="alert">{fieldErrors.geofenceRadius}</p>}
             </div>
           </div>
         </div>
@@ -653,6 +869,7 @@ export default function NewParkingPage() {
         submitLabel={t("parkings.createParking")}
         cancelHref="/dashboard/parkings"
         error={error}
+        footerNote={t("common.requiredNote")}
         onValidateBeforeAction={validateStep}
       />
       <AddressPickerModal

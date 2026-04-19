@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { UserCircle, MailOpen, Phone, Clock, Shield } from "@/lib/premiumIcons";
-import { FormWizard } from "@/components/FormWizard";
+import { FormWizard, type WizardStep } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
@@ -120,11 +120,10 @@ export default function NewUserPage() {
     } finally { setSubmitting(false); }
   };
 
-  const steps = [
+  const steps: WizardStep[] = [
     {
       title: t("users.sectionMain"),
       description: "Se enviará una invitación por email al nuevo usuario",
-      badge: "required" as const,
       accentColor: "violet",
       isValid: () => !!(form.firstName.trim() && form.lastName.trim() && form.email.trim()),
       content: (
@@ -212,7 +211,12 @@ export default function NewUserPage() {
       submitLabel={t("users.createUser")}
       cancelHref="/dashboard/users"
       error={error}
-      footerNote={t("users.invitationNote")}
+      footerNote={
+        <>
+          <span className="text-xs text-text-muted">{t("users.invitationNote")}</span>
+          <span className="text-xs text-text-muted">{t("common.requiredNote")}</span>
+        </>
+      }
       onValidateBeforeAction={validateStep}
     />
   );

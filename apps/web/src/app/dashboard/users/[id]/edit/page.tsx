@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { UserCircle, MailOpen, Phone, Clock, Shield, ArrowRight } from "@/lib/premiumIcons";
@@ -45,6 +45,8 @@ export default function EditUserPage() {
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof typeof defaultForm, string>>>({});
   const [phoneCountry, setPhoneCountry] = useState<string>("CR");
+  const [footerShadow, setFooterShadow] = useState(false);
+  const contentScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -89,6 +91,14 @@ export default function EditUserPage() {
       }
     })();
   }, [id, showError, t, user, selectedCompanyId]);
+
+  const handleContentScroll = () => {
+    const el = contentScrollRef.current;
+    if (el) {
+      const isAtBottom = el.scrollHeight - el.scrollTop === el.clientHeight;
+      setFooterShadow(!isAtBottom);
+    }
+  };
 
   const set = (k: keyof typeof defaultForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm(p => ({ ...p, [k]: e.target.value }));
@@ -143,18 +153,23 @@ export default function EditUserPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col pt-6 pb-8 px-4 md:px-10 lg:px-12 w-full gap-5">
+    <div className="flex-1 flex flex-col pt-6 px-4 md:px-10 lg:px-12 w-full gap-5">
       {error && (
         <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
           {error}
         </div>
       )}
 
+      <div
+        ref={contentScrollRef}
+        onScroll={handleContentScroll}
+        className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden min-h-0 pb-8"
+      >
+        <div className="md:px-0 lg:px-0 w-full gap-5">
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm premium-section-title">{t("users.sectionMain")}</p>
-            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">{t("common.requiredBadge")}</span>
           </div>
           <p className="text-xs premium-subtitle mt-1">{t("users.sectionMainDesc")}</p>
         </div>
@@ -230,10 +245,19 @@ export default function EditUserPage() {
           </div>
         </div>
       </div>
+        </div>
+      </div>
 
-      <div className="mt-auto flex items-center justify-between gap-4 pt-2">
-        <p className="text-xs text-text-muted hidden sm:block">{t("common.requiredNote")}</p>
-        <div className="flex items-center gap-3 ml-auto">
+      <header
+        className={`shrink-0 sticky bottom-0 z-10 flex flex-col bg-page border-t border-card-border transition-all duration-200 ${
+          footerShadow 
+            ? "pb-3 md:pb-5 shadow-[0_-1px_3px_0_rgba(0,0,0,0.06),0_-1px_2px_-1px_rgba(0,0,0,0.06)] dark:shadow-[0_-1px_3px_0_rgba(0,0,0,0.2),0_-1px_2px_-1px_rgba(0,0,0,0.15)]" 
+            : "pb-3 md:pb-5"
+        }`}
+      >
+        <div className="flex items-center justify-between gap-4 pt-4 px-4 md:px-8 lg:px-10">
+          <p className="text-xs text-text-muted">{t("common.requiredNote")}</p>
+          <div className="flex items-center gap-3 ml-auto">
           <Link href="/dashboard/users"
             className="px-5 py-3 rounded-lg border border-input-border text-sm font-medium text-text-secondary hover:bg-input-bg hover:text-text-primary transition-colors">
             {t("common.cancel")}
@@ -244,6 +268,7 @@ export default function EditUserPage() {
           </button>
         </div>
       </div>
+      </header>
     </div>
   );
 }

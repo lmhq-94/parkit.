@@ -4,7 +4,7 @@
 
 const FROM_EMAIL =
   process.env.TICKET_CHECKIN_FROM_EMAIL || "Parkit <onboarding@resend.dev>";
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "soporte@parkitcr.com";
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL;
 
 export interface SendTicketCheckInParams {
   to: string;

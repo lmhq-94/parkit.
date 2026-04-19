@@ -283,6 +283,10 @@ export const CreateParkingSchema = z.object({
   latitude: z.number().optional(),
   longitude: z.number().optional(),
   geofenceRadius: z.number().optional(),
+  dailyPricingConfig: z.record(z.object({
+    freeBenefitMinutes: z.number().int().min(0),
+    pricePerHour: z.number().min(0),
+  })).optional(),
   freeBenefitMinutes: z.number().int().min(0).optional(),
   pricePerExtraHour: z.number().min(0).optional(),
 });

@@ -179,7 +179,7 @@ export default function LoginPage() {
         // form flash before dashboard loads.
         // Navigate directly to no-companies if super admin with no companies.
         if (superAdminUser && !selectedId && !hasCompanies) {
-          router.push("/dashboard/no-companies");
+          router.push("/no-companies");
         } else {
           router.push("/dashboard");
         }

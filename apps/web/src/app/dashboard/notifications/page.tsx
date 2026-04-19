@@ -7,7 +7,6 @@ import { useToast } from "@/lib/toastStore";
 import { useAuthStore, useDashboardStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
-import { PageLoader } from "@/components/PageLoader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 type NotificationItem = {
@@ -46,6 +45,7 @@ export default function NotificationsPage() {
   const selectedCompanyId = useDashboardStore((s: { selectedCompanyId: string | null }) => s.selectedCompanyId);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<NotificationItem | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -63,6 +63,7 @@ export default function NotificationsPage() {
       showToastError(t("common.loadError"));
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
   }, [user?.id, showToastError, t]);
 
@@ -93,11 +94,22 @@ export default function NotificationsPage() {
     }
   }, [pendingDelete, load]);
 
-  if (loading && items.length === 0) {
+  if (initialLoad) {
     return (
       <div className="flex-1 flex flex-col pt-14 pb-8 px-4 md:px-10 lg:px-12 w-full">
-        <div className="flex flex-1 items-center justify-center">
-          <PageLoader />
+        <div className="space-y-2">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border border-border bg-card/60 animate-pulse">
+              <div className="flex-1 min-w-0">
+                <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded mb-2 w-3/4" />
+                <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/2" />
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="h-9 w-20 bg-slate-200 dark:bg-slate-700 rounded-lg" />
+                <div className="h-9 w-20 bg-slate-200 dark:bg-slate-700 rounded-lg" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );

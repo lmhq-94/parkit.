@@ -3,12 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserCircle, MailOpen, CreditCard, ClipboardText, Car } from "@/lib/premiumIcons";
-import { FormWizard } from "@/components/FormWizard";
+import { FormWizard, type WizardStep } from "@/components/FormWizard";
 import { MultiSelectField } from "@/components/MultiSelectField";
-import { SelectField } from "@/components/SelectField";
 import { DatePickerField } from "@/components/DatePickerField";
 import { useTranslation } from "@/hooks/useTranslation";
-import { apiClient } from "@/lib/api";
+import { apiClient, getTranslatedApiErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toastStore";
 import { LICENSE_TYPES } from "@/lib/companyOptions";
 import { required, email as validateEmail } from "@/lib/validation";
@@ -84,11 +83,10 @@ export default function NewValetPage() {
     }
   };
 
-  const steps = [
+  const steps: WizardStep[] = [
     {
       title: t("valets.sectionEmployee"),
       description: t("valets.sectionEmployeeDesc"),
-      badge: "required" as const,
       accentColor: "emerald",
       isValid: () => !!(form.firstName.trim() && form.lastName.trim() && form.email.trim()),
       content: (
@@ -117,24 +115,48 @@ export default function NewValetPage() {
             </div>
             <div className="min-h-[1.25rem] mt-1">{errors.email && <p className="text-sm text-red-500" role="alert">{errors.email}</p>}</div>
           </div>
-          <div>
+          <div className="sm:col-span-2 lg:col-span-3">
             <label className={LABEL}>{t("valets.staffRole")} <span className="text-red-500">*</span></label>
-            <SelectField
-              value={form.staffRole}
-              onChange={(e) =>
-                setForm((p) => ({
-                  ...p,
-                  staffRole: e.target.value as (typeof STAFF_ROLES)[number],
-                }))
-              }
-              icon={form.staffRole === "DRIVER" ? Car : ClipboardText}
-            >
-              {STAFF_ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {tEnum("valetStaffRole", r)}
-                </option>
-              ))}
-            </SelectField>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setForm(p => ({ ...p, staffRole: "RECEPTIONIST" }))}
+                className={`flex flex-col items-start gap-1.5 rounded-lg border px-4 py-3 text-left text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-company-primary ${
+                  form.staffRole === "RECEPTIONIST"
+                    ? "border-company-primary bg-company-primary-muted text-company-primary"
+                    : "border-input-border bg-input-bg text-text-primary hover:border-company-primary-muted"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <ClipboardText className="w-4 h-4" />
+                  <span className="font-medium">
+                    {tEnum("valetStaffRole", "RECEPTIONIST")}
+                  </span>
+                </div>
+                <span className={form.staffRole === "RECEPTIONIST" ? "text-xs text-text-secondary" : "text-xs text-text-muted"}>
+                  {t("valets.staffRoleReceptionistDesc")}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm(p => ({ ...p, staffRole: "DRIVER" }))}
+                className={`flex flex-col items-start gap-1.5 rounded-lg border px-4 py-3 text-left text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-company-primary ${
+                  form.staffRole === "DRIVER"
+                    ? "border-company-primary bg-company-primary-muted text-company-primary"
+                    : "border-input-border bg-input-bg text-text-primary hover:border-company-primary-muted"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Car className="w-4 h-4" />
+                  <span className="font-medium">
+                    {tEnum("valetStaffRole", "DRIVER")}
+                  </span>
+                </div>
+                <span className={form.staffRole === "DRIVER" ? "text-xs text-text-secondary" : "text-xs text-text-muted"}>
+                  {t("valets.staffRoleDriverDesc")}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       ),
@@ -178,7 +200,12 @@ export default function NewValetPage() {
       submitLabel={t("valets.createValet")}
       cancelHref="/dashboard/valets"
       error={error}
-      footerNote={t("users.invitationNote")}
+      footerNote={
+        <>
+          <span className="text-xs text-text-muted">{t("users.invitationNote")}</span>
+          <span className="text-xs text-text-muted">{t("common.requiredNote")}</span>
+        </>
+      }
       onValidateBeforeAction={validateStep}
     />
   );

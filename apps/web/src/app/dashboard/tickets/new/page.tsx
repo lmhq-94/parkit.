@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Users, Car, MapPin, User } from "@/lib/premiumIcons";
-import { FormWizard } from "@/components/FormWizard";
+import { FormWizard, type WizardStep } from "@/components/FormWizard";
 import { SelectField } from "@/components/SelectField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
@@ -132,11 +132,10 @@ export default function NewTicketPage() {
   const step2Valid =
     !!form.receptorValetId && !errors.receptorValetId;
 
-  const steps = [
+  const steps: WizardStep[] = [
     {
       title: t("tickets.sectionMain"),
       description: t("tickets.sectionMainDesc"),
-      badge: "required" as const,
       accentColor: "rose",
       isValid: () => step1Valid,
       content: (
@@ -195,7 +194,6 @@ export default function NewTicketPage() {
     {
       title: t("tickets.sectionAssignments"),
       description: t("tickets.sectionAssignmentsDesc"),
-      badge: "required" as const,
       accentColor: "rose",
       isValid: () => step2Valid,
       content: (
@@ -268,6 +266,10 @@ export default function NewTicketPage() {
     <span className="text-xs text-text-muted">{t("tickets.entryTicketNote")}</span>
   );
 
+  const requiredNote = (
+    <span className="text-xs text-text-muted">{t("common.requiredNote")}</span>
+  );
+
   return (
     <FormWizard
       steps={steps}
@@ -276,7 +278,12 @@ export default function NewTicketPage() {
       submitLabel={t("tickets.createTicket")}
       cancelHref="/dashboard/tickets"
       error={error}
-      footerNote={entryTicketNote}
+      footerNote={
+        <>
+          {entryTicketNote}
+          {requiredNote}
+        </>
+      }
       onValidateBeforeAction={validateStep}
     />
   );

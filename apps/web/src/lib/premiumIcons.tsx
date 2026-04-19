@@ -36,6 +36,7 @@ import {
   IconChevronsLeft,
   IconChevronsRight,
   IconCircleCheck,
+  IconCircleDashed,
   IconClipboardText,
   IconCircleX,
   IconClock,
@@ -46,6 +47,7 @@ import {
   IconCurrencyDollar,
   IconDeviceDesktop,
   IconDeviceGamepad2,
+  IconDeviceMobile,
   IconDoorExit,
   IconDownload,
   IconEdit,
@@ -194,6 +196,7 @@ export const Briefcase = wrap(IconBriefcase);
 export const Car = wrap(IconCar);
 export const ClipboardText = wrap(IconClipboardText);
 export const Laptop = wrap(IconDeviceDesktop);
+export const DeviceMobile = wrap(IconDeviceMobile);
 export const Stethoscope = wrap(IconHeart);
 export const Truck = wrap(IconTruck);
 export const Utensils = wrap(IconTools);
@@ -282,6 +285,7 @@ export const Gavel = wrap(IconGavel);
 // Misc
 export const Award = wrap(IconCircleCheck);
 export const Circle = wrap(IconCoin);
+export const CircleDashed = wrap(IconCircleDashed);
 export const Globe = wrap(IconGlobe);
 export const Radius = wrap(IconCoin);
 export const World = wrap(IconWorld);

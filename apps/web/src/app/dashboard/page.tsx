@@ -23,7 +23,6 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { DatePickerField } from "@/components/DatePickerField";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { PageLoader } from "@/components/PageLoader";
 
 const DashboardTicketsChart = dynamic(
   () =>
@@ -183,15 +182,52 @@ export default function DashboardPage() {
       !redirectingNoCompanies
     ) {
       setRedirectingNoCompanies(true);
-      router.replace("/dashboard/no-companies");
+      router.replace("/no-companies");
     }
   }, [superAdmin, selectedCompanyId, stats, redirectingNoCompanies, router]);
 
-  // Full spinner only on initial load (no data). When changing days, keep UI and only refresh data.
+  // Show skeleton on initial load instead of blocking
   if (loading && !stats) {
     return (
-      <div className="flex flex-1 items-center justify-center p-8">
-        <PageLoader />
+      <div className="pt-4 md:pt-6 px-4 md:px-10 lg:px-12 pb-4 md:pb-10 lg:pb-12 w-full flex-1 flex flex-col gap-6 md:gap-8">
+        {/* Skeleton Banner */}
+        <div
+          className="relative overflow-hidden rounded-3xl border border-white/20 p-6 md:p-8 h-48 animate-pulse"
+          style={{
+            background: `
+              linear-gradient(135deg, 
+                color-mix(in srgb, var(--company-primary, #2563eb) 60%, black) 0%,
+                color-mix(in srgb, var(--company-primary, #2563eb) 35%, black) 50%,
+                color-mix(in srgb, var(--company-primary, #2563eb) 18%, black) 100%
+              )
+            `,
+          }}
+        />
+        
+        {/* Skeleton Stat Cards */}
+        <section className="w-full">
+          <div className="flex flex-wrap gap-4">
+            {[
+              { color: "emerald", bg: "bg-emerald-500/15 dark:bg-emerald-400/15" },
+              { color: "amber", bg: "bg-amber-500/15 dark:bg-amber-400/15" },
+              { color: "violet", bg: "bg-violet-500/15 dark:bg-violet-400/15" },
+              { color: "cyan", bg: "bg-cyan-500/15 dark:bg-cyan-400/15" },
+              { color: "rose", bg: "bg-rose-500/15 dark:bg-rose-400/15" },
+              { color: "teal", bg: "bg-teal-500/15 dark:bg-teal-400/15" },
+            ].map((card, i) => (
+              <div key={i} className="flex-1 min-w-[160px] rounded-2xl border border-card-border bg-card p-5 animate-pulse">
+                <div className={`h-4 ${card.bg} rounded mb-2 w-20`} />
+                <div className={`h-8 ${card.bg} rounded w-16`} />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Skeleton Chart and Recent Tickets */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-[320px]">
+          <div className="lg:col-span-2 rounded-2xl border border-card-border bg-card p-6 animate-pulse min-h-[320px]" />
+          <div className="rounded-2xl border border-card-border bg-card p-6 animate-pulse min-h-[320px]" />
+        </section>
       </div>
     );
   }

@@ -2,16 +2,10 @@
 
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { MailOpen, Plus } from "@/lib/premiumIcons";
 import { useRouter } from "next/navigation";
 import type { ICellRendererParams } from "ag-grid-community";
-import { PageLoader } from "@/components/PageLoader";
-
-const DashboardDataTablePage = dynamic(
-  () => import("@/components/DashboardDataTablePage").then((m) => ({ default: m.DashboardDataTablePage })),
-  { ssr: false, loading: () => <div className="flex flex-1 items-center justify-center p-8"><PageLoader /></div> }
-);
+import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
@@ -170,7 +164,7 @@ export default function ValetsPage() {
         render: (valet: { user?: { email?: string } }) => valet.user?.email ?? "—",
         field: "userEmail",
         editable: superAdmin,
-        linkType: "email",
+        linkType: "email" as const,
         valueGetter: (valet: ValetRow) => valet.user?.email,
         valueSetter: (valet: ValetRow, v: unknown) => {
           if (valet.user) valet.user.email = String(v ?? "");
