@@ -10,9 +10,9 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { StatusBar } from "react-native";
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
+import { IconMapPin, IconAlertCircle, IconArrowUndo, IconCircleCheck, IconCar, IconBell } from "@/components/TablerIcons";
 import { t } from "@/lib/i18n";
 import { formatVehicleColorLabel } from "@parkit/shared/src/vehicleColors";
 import api from "@/lib/api";
@@ -653,7 +653,7 @@ export default function TicketsScreen() {
 
           <Text style={styles.locationLabel}>{t(locale, "tickets.locationLabel")}</Text>
           <View style={styles.locationRow}>
-            <Ionicons name="location-sharp" size={24} color={C.primary} style={styles.locationIcon} />
+            <IconMapPin size={24} color={C.primary} style={styles.locationIcon} />
             <Text style={styles.location} maxFontSizeMultiplier={2}>
               {item.parkingName}
             </Text>
@@ -689,7 +689,7 @@ export default function TicketsScreen() {
                 accessibilityHint={t(locale, "tickets.confirmGoParkMessage")}
               >
                 <View style={styles.btnIcon}>
-                  <Ionicons name="warning-outline" size={26} color={C.white} />
+                  <IconAlertCircle size={26} color={C.white} />
                 </View>
                 <Text style={styles.btnText} maxFontSizeMultiplier={2}>
                   {t(locale, "tickets.actionGoPark")}
@@ -703,7 +703,7 @@ export default function TicketsScreen() {
                 accessibilityRole="button"
                 accessibilityHint={t(locale, "tickets.confirmRequestReturnMessage")}
               >
-                <Ionicons name="arrow-undo-outline" size={28} color={C.white} style={styles.btnIcon} />
+                <IconArrowUndo size={28} color={C.white} style={styles.btnIcon} />
                 <Text style={styles.btnText} maxFontSizeMultiplier={2}>
                   {t(locale, "tickets.actionRequestReturn")}
                 </Text>
@@ -716,7 +716,7 @@ export default function TicketsScreen() {
                 accessibilityRole="button"
                 accessibilityHint={t(locale, "tickets.confirmMarkDeliveredMessage")}
               >
-                <Ionicons name="checkmark-circle-outline" size={30} color={C.white} style={styles.btnIcon} />
+                <IconCircleCheck size={30} color={C.white} style={styles.btnIcon} />
                 <Text style={styles.btnText} maxFontSizeMultiplier={2}>
                   {t(locale, "tickets.actionMarkDelivered")}
                 </Text>
@@ -724,7 +724,7 @@ export default function TicketsScreen() {
             )}
             {item.ticketStatus === "DELIVERED" && (
               <View style={styles.completedBox}>
-                <Ionicons name="checkmark-done-circle" size={34} color={C.success} />
+                <IconCircleCheck size={34} color={C.success} />
                 <Text style={styles.completedText} maxFontSizeMultiplier={2}>
                   {t(locale, "tickets.completedLine")}
                 </Text>
@@ -759,7 +759,7 @@ export default function TicketsScreen() {
 
         <Text style={styles.locationLabel}>{t(locale, "tickets.locationLabel")}</Text>
         <View style={styles.locationRow}>
-          <Ionicons name="location-sharp" size={24} color={C.primary} style={styles.locationIcon} />
+          <IconMapPin size={24} color={C.primary} style={styles.locationIcon} />
           <Text style={styles.location} maxFontSizeMultiplier={2}>
             {item.parkingName}
           </Text>
@@ -794,7 +794,7 @@ export default function TicketsScreen() {
               accessibilityRole="button"
               accessibilityHint={t(locale, "tickets.confirmStartMessage")}
             >
-              <Ionicons name="car-outline" size={28} color={C.white} style={styles.btnIcon} />
+              <IconCar size={28} color={C.white} style={styles.btnIcon} />
               <Text style={styles.btnText} maxFontSizeMultiplier={2}>
                 {t(locale, "tickets.actionStart")}
               </Text>
@@ -807,7 +807,7 @@ export default function TicketsScreen() {
               accessibilityRole="button"
               accessibilityHint={t(locale, "tickets.confirmCompleteMessage")}
             >
-              <Ionicons name="checkmark-circle-outline" size={30} color={C.white} style={styles.btnIcon} />
+              <IconCircleCheck size={30} color={C.white} style={styles.btnIcon} />
               <Text style={styles.btnText} maxFontSizeMultiplier={2}>
                 {t(locale, "tickets.actionComplete")}
               </Text>
@@ -815,7 +815,7 @@ export default function TicketsScreen() {
           )}
           {item.status === "completed" && (
             <View style={styles.completedBox}>
-              <Ionicons name="checkmark-done-circle" size={34} color={C.success} />
+              <IconCircleCheck size={34} color={C.success} />
               <Text style={styles.completedText} maxFontSizeMultiplier={2}>
                 {t(locale, "tickets.completedLine")}
               </Text>
@@ -841,7 +841,7 @@ export default function TicketsScreen() {
     }
     return (
       <View style={[styles.centerBox, styles.centerBoxEmpty]}>
-        <Ionicons name="car-outline" size={72} color={C.primary} />
+        <IconCar size={72} color={C.primary} />
         <Text style={styles.emptyTitle}>
           {isDriverUi ? t(locale, "tickets.emptyDriver") : t(locale, "tickets.emptyReception")}
         </Text>
@@ -887,7 +887,7 @@ export default function TicketsScreen() {
               {isDriverUi && queueAlertCount > 0 ? (
                 <View style={styles.queueBanner}>
                   <View style={styles.queueBannerIcon}>
-                    <Ionicons name="notifications-outline" size={22} color={C.primary} />
+                    <IconBell size={22} color={C.primary} />
                   </View>
                   <View style={styles.queueBannerText}>
                     <Text style={styles.queueBannerTitle} maxFontSizeMultiplier={2}>

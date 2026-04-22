@@ -198,6 +198,12 @@ model Invitation {
   email           String
   companyId       String?          // Optional for SUPER_ADMIN invitations
   role            SystemRole       @default(CUSTOMER)
+  
+  // Campos opcionales para valets (cuando role = STAFF)
+  valetStaffRole  ValetStaffRole?
+  licenseNumber   String?
+  licenseExpiry   DateTime?
+  
   token           String           @unique
   status          InvitationStatus @default(PENDING)
   invitedByUserId String

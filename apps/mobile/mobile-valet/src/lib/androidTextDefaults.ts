@@ -4,7 +4,11 @@ import { Platform, Text, TextInput } from "react-native";
  * Reduce el padding extra vertical que Android añade al texto (hinting de fuentes),
  * acercando la caja del glyph a iOS. Sin esto, mismos `fontSize`/`lineHeight` se ven más altos en Android.
  */
-const FONT_FAMILY = "CalSans";
+const FONT_FAMILY = Platform.select({
+  ios: "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+  android: "Roboto, \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
+  default: "system-ui, -apple-system, sans-serif",
+});
 const ANDROID_WEIGHT = "normal";
 
 const baseStyle =
@@ -13,7 +17,7 @@ const baseStyle =
     : { fontFamily: FONT_FAMILY };
 
 const T = Text as typeof Text & {
-  defaultProps?: { includeFontPadding?: boolean };
+  defaultProps?: { includeFontPadding?: boolean; style?: unknown };
 };
 T.defaultProps = {
   ...T.defaultProps,

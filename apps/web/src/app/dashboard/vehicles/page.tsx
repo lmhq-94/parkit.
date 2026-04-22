@@ -1,8 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { Plus } from "@/lib/premiumIcons";
+import { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
@@ -43,37 +41,6 @@ export default function VehiclesPage() {
   const superAdmin = isSuperAdmin(user);
   const canManage = superAdmin || user?.systemRole === "ADMIN";
   const router = useRouter();
-
-  // Show create vehicle button only if company has at least one ADMIN or CUSTOMER employee.
-  const [hasEligibleEmployees, setHasEligibleEmployees] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    if (!canManage) {
-      setHasEligibleEmployees(false);
-      return;
-    }
-    // Defer this check to avoid blocking initial render
-    const timer = setTimeout(async () => {
-      try {
-        const params = new URLSearchParams();
-        params.set("excludeValets", "true");
-        // Customers only (CUSTOMER); vehicles are associated with these beneficiaries.
-        params.append("systemRole", "CUSTOMER");
-        params.set("includeInactives", "true");
-        const users = await apiClient.get<Array<{ id?: string }>>(`/users?${params.toString()}`);
-        if (!cancelled) {
-          setHasEligibleEmployees(Array.isArray(users) && users.length > 0);
-        }
-      } catch {
-        if (!cancelled) setHasEligibleEmployees(false);
-      }
-    }, 100); // Small delay to allow initial render
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [canManage]);
 
   const onUpdate = useCallback(async (row: VehicleRow) => {
     if (!row.id) return;
@@ -152,19 +119,6 @@ export default function VehiclesPage() {
         }}
         onEdit={canManage ? (row) => router.push(`/dashboard/vehicles/${row.id}/edit`) : undefined}
         onUpdate={canManage ? onUpdate : undefined}
-        headerAction={
-          canManage && hasEligibleEmployees
-            ? (
-              <Link
-                href="/dashboard/vehicles/new"
-                className="group inline-flex items-center gap-2 px-4 min-h-[42px] rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors shadow-sm"
-              >
-                <Plus className="w-4 h-4 transition-transform duration-300 group-hover:rotate-90" strokeWidth={2.25} />
-                {t("common.add")}
-              </Link>
-            )
-            : undefined
-        }
       />
     </>
   );

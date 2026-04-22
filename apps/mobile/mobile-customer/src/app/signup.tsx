@@ -1,50 +1,48 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  Pressable,
-  ScrollView,
-  Keyboard,
-  BackHandler,
-  Platform,
-  StatusBar,
-  ActivityIndicator,
-  TouchableOpacity,
-  Animated,
-  Easing,
-  useWindowDimensions,
-  LayoutAnimation,
-  UIManager,
-} from "react-native";
+import { View, Text, StyleSheet, Pressable, StatusBar, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
 import { Logo } from "@parkit/shared";
-import apiClient, { setAuthToken } from "@/lib/api";
-import { saveUser } from "@/lib/auth";
-import { useAuthStore, useLocaleStore } from "@/lib/store";
-import { getHasSeenOnboarding } from "@/lib/onboarding";
+import { useLocaleStore, usePreferencesStore, useAuthStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
-import { Ionicons } from "@expo/vector-icons";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { getAppVersionString } from "@parkit/shared";
 import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
-import { useIsDark } from "@/lib/useIsDark";
+import { useColorScheme, useWindowDimensions } from "react-native";
+import { useMemo, useState } from "react";
+import {
+  initializeGoogleSignIn,
+  signInWithGoogle,
+  signInWithFacebook,
+  signInWithMicrosoft,
+  type OAuthResponse,
+} from "@/lib/oauth";
+import { saveUser } from "@/lib/auth";
+import { setAuthToken } from "@/lib/api";
+import { getHasSeenOnboarding } from "@/lib/onboarding";
+import { GoogleIcon, MicrosoftIcon, FacebookIcon } from "@/components/OAuthIcons";
+import { IconCircleArrowLeft } from "@/components/TablerIcons";
 
-const PRIMARY = "#3B82F6";
-const DARK_BTN = "#1E293B";
-const BORDER_COLOR = "#E2E8F0";
-const TEXT_PRIMARY = "#0F172A";
+const ACCENT = "#3B82F6";
 const TEXT_MUTED = "#64748B";
 const LOGO_SIZE = 72;
 const CONTROL_HEIGHT = 56;
 
+function useIsDark() {
+  const systemScheme = useColorScheme();
+  const preference = usePreferencesStore((s) => s.theme);
+  return preference === "dark"
+    ? true
+    : preference === "light"
+      ? false
+      : systemScheme === "dark";
+}
+
 export default function SignupScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { setUser, setError } = useAuthStore();
   const locale = useLocaleStore((s) => s.locale);
+  const { setUser, setError } = useAuthStore();
   const isDark = useIsDark();
+  const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const { width, height } = useWindowDimensions();
   const shortestSide = Math.min(width, height);
   const isTablet = shortestSide >= 600;
@@ -53,12 +51,55 @@ export default function SignupScreen() {
   const sheetMaxWidth = width;
   const heroMinHeight = Math.round((isLandscape ? height * 0.24 : height * 0.32));
 
+  // Initialize Google Sign-In on mount
+  useState(() => {
+    initializeGoogleSignIn();
+  });
+
+  const handleOAuthSignIn = async (provider: 'google' | 'facebook' | 'microsoft') => {
+    setOauthLoading(provider);
+    setError(null);
+
+    let result: OAuthResponse;
+
+    try {
+      switch (provider) {
+        case 'google':
+          result = await signInWithGoogle();
+          break;
+        case 'facebook':
+          result = await signInWithFacebook();
+          break;
+        case 'microsoft':
+          result = await signInWithMicrosoft();
+          break;
+        default:
+          result = { success: false, error: 'Unknown provider' };
+      }
+
+      if (result.success && result.user && result.token) {
+        await saveUser(result.user as Parameters<typeof saveUser>[0], result.token);
+        setAuthToken(result.token);
+        setUser(result.user as Parameters<typeof setUser>[0], result.token);
+        const hasSeenOnboarding = await getHasSeenOnboarding();
+        router.replace(hasSeenOnboarding ? "/(tabs)" : "/onboarding");
+      } else {
+        setError(result.error || `${provider} sign-in failed`);
+      }
+    } catch (err: any) {
+      const msg = err.message || `${provider} sign-in failed`;
+      setError(msg);
+    } finally {
+      setOauthLoading(null);
+    }
+  };
+
   const styles = useMemo(
     () =>
       StyleSheet.create({
+        rootColumn: { flex: 1 },
         heroStrip: {
           flex: 1,
-          backgroundColor: 'transparent',
         },
         topBar: {
           flexDirection: "row",
@@ -71,31 +112,19 @@ export default function SignupScreen() {
           alignSelf: "center",
           backgroundColor: 'transparent',
         },
-        backBtn: {
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          backgroundColor: isDark ? "rgba(248, 250, 252, 0.12)" : "rgba(15, 23, 42, 0.12)",
-          alignItems: "center",
-          justifyContent: "center",
-          marginLeft: -2,
-        },
         hero: {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
           minHeight: heroMinHeight,
-          backgroundColor: 'transparent',
         },
-        heroSignup: {
-          minHeight: Math.round(heroMinHeight * 0.60),
-        },
-        heroLogo: { marginBottom: 0 },
-        heroBrand: {
+        logoWrap: { alignItems: "center" },
+        logo: { marginBottom: 0 },
+        brandLabel: {
           marginTop: 28,
           fontSize: 15,
-          fontWeight: "600",
-          letterSpacing: 4,
+          fontWeight: "700",
+          letterSpacing: 2,
           color: "#F8FAFC",
           textTransform: "lowercase",
         },
@@ -104,434 +133,230 @@ export default function SignupScreen() {
           borderTopLeftRadius: 28,
           borderTopRightRadius: 28,
           paddingHorizontal: horizontalPadding,
-          paddingTop: 24,
+          paddingTop: 28,
           paddingBottom: 0,
+          alignItems: "stretch",
           width: "100%",
           maxWidth: sheetMaxWidth,
           alignSelf: "center",
         },
-        bottomWrap: {
-          flex: 1,
-          backgroundColor: "transparent",
-          marginTop: -28,
-          zIndex: 1,
-          justifyContent: "flex-end",
+        ctaText: {
+          fontSize: 20,
+          fontWeight: "600",
+          color: "#0F172A",
+          marginBottom: 20,
+          textAlign: "center",
         },
-        formContent: {
-          paddingBottom: 0,
-        },
-        inputsScroll: {},
-        inputsScrollContent: {
-          paddingBottom: 12,
-        },
-        cardHeadline: {
-          fontSize: 26,
-          fontWeight: "700",
-          color: TEXT_PRIMARY,
-          marginBottom: 4,
-          letterSpacing: -0.4,
-        },
-        cardTagline: {
-          fontSize: 15,
-          lineHeight: 21,
-          fontWeight: "500",
-          color: TEXT_MUTED,
-          marginBottom: 24,
-        },
-        inputBlock: { marginBottom: 12 },
-        label: { fontSize: 13, fontWeight: "600", color: "#475569", marginBottom: 6 },
-        inputRow: {
-          flexDirection: "row",
-          alignItems: "center",
-          minHeight: CONTROL_HEIGHT,
-          borderRadius: 14,
-          borderWidth: 1,
-          borderColor: BORDER_COLOR,
-          backgroundColor: "#FFFFFF",
-          paddingLeft: 16,
-          paddingRight: 14,
-        },
-        input: { flex: 1, paddingVertical: 12, fontSize: 15, color: TEXT_PRIMARY },
-        passwordInput: { paddingRight: 10 },
-        inputIconRight: { marginLeft: 10 },
-        eyeWrap: { padding: 4, marginLeft: 6 },
-        errorWrap: {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 8,
-          backgroundColor: "rgba(239, 68, 68, 0.1)",
-          paddingHorizontal: 14,
-          paddingVertical: 12,
-          borderRadius: 12,
-          marginBottom: 12,
-        },
-        errorText: { color: "#EF4444", fontSize: 14, fontWeight: "500" },
-        signupBtn: {
+        btnPrimary: {
+          backgroundColor: ACCENT,
           minHeight: CONTROL_HEIGHT,
           borderRadius: 16,
           alignItems: "center",
           justifyContent: "center",
-          marginTop: 8,
-          marginBottom: 4,
-          backgroundColor: DARK_BTN,
-          ...Platform.select({
-            ios: {
-              shadowColor: PRIMARY,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.35,
-              shadowRadius: 8,
-            },
-            android: { elevation: 4 },
-          }),
+          marginBottom: 14,
+          shadowColor: ACCENT,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.35,
+          shadowRadius: 8,
+          elevation: 4,
         },
-        signupBtnText: { fontSize: 16, fontWeight: "800", color: "#FFFFFF", letterSpacing: 0.5 },
-        btnPressed: { opacity: 0.92 },
-        btnDisabled: { opacity: 0.7 },
-        footer: {
-          flexDirection: "row",
-          flexWrap: "wrap",
-          justifyContent: "center",
+        btnPrimaryText: {
+          fontSize: 16,
+          fontWeight: "600",
+          color: "#FFFFFF",
+          letterSpacing: 0.5,
+        },
+        btnSecondary: {
+          backgroundColor: "#0F172A",
+          minHeight: CONTROL_HEIGHT,
+          borderRadius: 16,
           alignItems: "center",
-          gap: 4,
-          marginTop: 10,
-          paddingTop: 22,
-          paddingBottom: 18,
+          justifyContent: "center",
+          marginBottom: 0,
         },
-        footerText: { fontSize: 12, color: TEXT_MUTED },
-        footerLink: { fontSize: 13, fontWeight: "600", color: PRIMARY },
+        btnSecondaryText: {
+          fontSize: 16,
+          fontWeight: "600",
+          color: "#FFFFFF",
+          letterSpacing: 0.5,
+        },
+        btnPressed: { opacity: 0.9 },
+        versionLabel: {
+          fontSize: 11,
+          fontWeight: "500",
+          color: "#94A3B8",
+          textAlign: "center",
+        },
+        footer: {
+          marginTop: 20,
+          paddingTop: 8,
+          alignItems: 'center',
+        },
+        oauthDivider: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginVertical: 20,
+          paddingHorizontal: 10,
+        },
+        dividerLine: {
+          flex: 1,
+          height: 1,
+          backgroundColor: '#E2E8F0',
+        },
+        dividerText: {
+          marginHorizontal: 10,
+          fontSize: 14,
+          color: TEXT_MUTED,
+          fontWeight: '500',
+        },
+        oauthContainer: {
+          flexDirection: 'row',
+          justifyContent: 'center',
+          gap: 12,
+          marginBottom: 24,
+        },
+        oauthButton: {
+          width: 50,
+          height: 50,
+          borderRadius: 12,
+          backgroundColor: '#FFFFFF',
+          borderWidth: 1,
+          borderColor: '#E2E8F0',
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        oauthButtonPressed: {
+          backgroundColor: '#F1F5F9',
+        },
+        oauthButtonDisabled: {
+          opacity: 0.6,
+        },
+        googleIcon: { display: 'none' },
+        googleCircle: { display: 'none' },
+        microsoftIcon: { display: 'none' },
+        microsoftSquare: { display: 'none' },
+        facebookIcon: { display: 'none' },
       }),
-    [heroMinHeight, horizontalPadding, sheetMaxWidth, isDark]
+    [heroMinHeight, horizontalPadding, sheetMaxWidth]
   );
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setErrorState] = useState<string | null>(null);
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const heroTranslateY = useRef(new Animated.Value(0)).current;
-  const formTranslateY = useRef(new Animated.Value(22)).current;
-  const formOpacity = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
-      UIManager.setLayoutAnimationEnabledExperimental(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    formTranslateY.setValue(22);
-    formOpacity.setValue(0);
-    Animated.parallel([
-      Animated.timing(formTranslateY, {
-        toValue: 0,
-        duration: 360,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(formOpacity, {
-        toValue: 1,
-        duration: 320,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [formOpacity, formTranslateY]);
-
-  useEffect(() => {
-    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
-
-    const showSub = Keyboard.addListener(showEvent, (e) => {
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      setKeyboardVisible(true);
-      setKeyboardHeight(e.endCoordinates?.height ?? 0);
-      Animated.timing(heroTranslateY, {
-        toValue: -56,
-        duration: 220,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }).start();
-    });
-    const hideSub = Keyboard.addListener(hideEvent, () => {
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      setKeyboardVisible(false);
-      setKeyboardHeight(0);
-      Animated.timing(heroTranslateY, {
-        toValue: 0,
-        duration: 220,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }).start();
-    });
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, [heroTranslateY]);
-
-  useEffect(() => {
-    if (Platform.OS !== "android") return;
-    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      router.replace("/welcome");
-      return true;
-    });
-    return () => sub.remove();
-  }, [router]);
-
-  const handleSignup = async () => {
-    setErrorState(null);
-    setError(null);
-    if (!firstName.trim() || !lastName.trim() || !email.trim() || !password) {
-      setErrorState(t(locale, "common.errorFillFields"));
-      return;
-    }
-    if (password.length < 6) {
-      setErrorState(t(locale, "common.errorPasswordLength"));
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await apiClient.post<{ data?: { user: unknown; token: string }; user?: unknown; token?: string }>(
-        "/auth/register",
-        {
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          email: email.trim(),
-          password,
-        }
-      );
-      const data = response.data?.data ?? response.data;
-      const userData = data?.user ?? data;
-      const token = data?.token;
-      if (userData && token) {
-        await saveUser(userData as Parameters<typeof saveUser>[0], token);
-        setAuthToken(token);
-        setUser(userData as Parameters<typeof setUser>[0], token);
-        const hasSeenOnboarding = await getHasSeenOnboarding();
-        router.replace(hasSeenOnboarding ? "/(tabs)" : "/onboarding");
-      } else {
-        setErrorState(t(locale, "common.registrationFailed"));
-      }
-    } catch (err) {
-      const errorMsg =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-          : null;
-      const msg =
-        errorMsg === "Email already in use"
-          ? t(locale, "signup.errorEmailTaken")
-          : errorMsg || t(locale, "common.signupFailed");
-      setErrorState(msg);
-      setError(msg);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const ph = "#94A3B8";
-  const keyboardInputsMaxHeight = Math.max(
-    160,
-    height - keyboardHeight - Math.max(insets.top, 12) - Math.round(height * (isTablet ? 0.30 : 0.36))
-  );
-  const inputsMaxHeight = keyboardVisible
-    ? keyboardInputsMaxHeight
-    : Math.round(height * 0.38);
+  const versionLabel = t(locale, "welcome.version", {
+    version: getAppVersionString() || "â",
+  });
 
   return (
     <AnimatedAuthBackground isDark={isDark}>
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor="transparent" />
-      <KeyboardAvoidingView style={{ flex: 1, backgroundColor: 'transparent' }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-        {/* Keyboard background color matching form */}
-        {keyboardVisible && (
-          <View
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: keyboardHeight,
-              backgroundColor: "#FFFFFF",
-              zIndex: 0,
-            }}
-          />
-        )}
+      <StatusBar barStyle="light-content" backgroundColor="transparent" />
+      <View style={styles.rootColumn}>
         <View style={styles.heroStrip}>
           <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 12) }]}>
-            <TouchableOpacity
-              onPress={() => {
-                if (Platform.OS === "android") {
-                  router.replace("/welcome");
-                  return;
-                }
-                Keyboard.dismiss();
-                requestAnimationFrame(() => {
-                  router.replace("/welcome");
-                });
-              }}
-              style={styles.backBtn}
-              hitSlop={12}
-            >
-              <Ionicons name="chevron-back" size={24} color={isDark ? "#F8FAFC" : "#0F172A"} />
-            </TouchableOpacity>
-          </View>
-
-          <Animated.View
-            style={[
-              styles.hero,
-              styles.heroSignup,
-              keyboardVisible ? { height: 0, opacity: 0, overflow: "hidden" } : null,
-              { transform: [{ translateY: heroTranslateY }] },
-            ]}
-          >
-            <Logo size={LOGO_SIZE} style={styles.heroLogo} darkBackground />
-            <Text style={styles.heroBrand}>parkit</Text>
-          </Animated.View>
-        </View>
-
-        <View
-          style={[
-            styles.bottomWrap,
-            keyboardVisible ? { marginTop: 0, paddingTop: Math.max(insets.top, 12) } : null,
-          ]}
-        >
-          <Animated.View
-            style={{
-              transform: [{ translateY: formTranslateY }],
-              opacity: formOpacity,
-              width: "100%",
-            }}
-          >
-            <View
-              style={[
-                styles.bottomSection,
-                keyboardVisible ? { paddingTop: 16 } : null,
-                { paddingBottom: keyboardVisible ? 0 : 14 },
-              ]}
-            >
-              <View style={styles.formContent}>
-                <Text style={styles.cardHeadline}>{t(locale, "signup.headline")}</Text>
-                <Text style={styles.cardTagline}>{t(locale, "signup.tagline")}</Text>
-                <ScrollView
-                  style={[styles.inputsScroll, { maxHeight: inputsMaxHeight }]}
-                  contentContainerStyle={styles.inputsScrollContent}
-                  scrollEnabled
-                  keyboardShouldPersistTaps="always"
-                  showsVerticalScrollIndicator={false}
-                  bounces={false}
-                >
-                  <View style={styles.inputBlock}>
-                    <Text style={styles.label}>{t(locale, "signup.firstName")}</Text>
-                    <View style={styles.inputRow}>
-                      <TextInput
-                        style={styles.input}
-                        placeholder={t(locale, "signup.placeholderFirstName")}
-                        placeholderTextColor={ph}
-                        value={firstName}
-                        onChangeText={(v) => { setFirstName(v); setErrorState(null); }}
-                        editable={!isLoading}
-                        autoCapitalize="words"
-                      />
-                    </View>
-                  </View>
-
-                  <View style={styles.inputBlock}>
-                    <Text style={styles.label}>{t(locale, "signup.lastName")}</Text>
-                    <View style={styles.inputRow}>
-                      <TextInput
-                        style={styles.input}
-                        placeholder={t(locale, "signup.placeholderLastName")}
-                        placeholderTextColor={ph}
-                        value={lastName}
-                        onChangeText={(v) => { setLastName(v); setErrorState(null); }}
-                        editable={!isLoading}
-                        autoCapitalize="words"
-                      />
-                    </View>
-                  </View>
-
-                  <View style={styles.inputBlock}>
-                    <Text style={styles.label}>{t(locale, "signup.email")}</Text>
-                    <View style={styles.inputRow}>
-                      <TextInput
-                        style={styles.input}
-                        placeholder={t(locale, "signup.placeholderEmail")}
-                        placeholderTextColor={ph}
-                        value={email}
-                        onChangeText={(v) => { setEmail(v); setErrorState(null); }}
-                        editable={!isLoading}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                        autoComplete="email"
-                      />
-                      <Ionicons name="mail-outline" size={20} color={ph} style={styles.inputIconRight} />
-                    </View>
-                  </View>
-
-                  <View style={styles.inputBlock}>
-                    <Text style={styles.label}>{t(locale, "signup.password")}</Text>
-                    <View style={styles.inputRow}>
-                      <TextInput
-                        style={[styles.input, styles.passwordInput]}
-                        placeholder={t(locale, "signup.placeholderPassword")}
-                        placeholderTextColor={ph}
-                        value={password}
-                        onChangeText={(v) => { setPassword(v); setErrorState(null); }}
-                        secureTextEntry={!showPassword}
-                        editable={!isLoading}
-                        autoComplete="password-new"
-                      />
-                      <TouchableOpacity onPress={() => setShowPassword((v) => !v)} hitSlop={8} style={styles.eyeWrap}>
-                        <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={22} color={ph} />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  {error ? (
-                    <View style={styles.errorWrap}>
-                      <Ionicons name="alert-circle" size={18} color="#EF4444" />
-                      <Text style={styles.errorText}>{error}</Text>
-                    </View>
-                  ) : null}
-                </ScrollView>
-
-                <Pressable
-                  onPress={handleSignup}
-                  disabled={isLoading}
-                  style={({ pressed }) => [
-                    styles.signupBtn,
-                    keyboardVisible ? { marginTop: 10 } : null,
-                    pressed && styles.btnPressed,
-                    isLoading && styles.btnDisabled,
-                  ]}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
-                  ) : (
-                    <Text style={styles.signupBtnText}>{t(locale, "signup.submit")}</Text>
-                  )}
-                </Pressable>
-
-                <View
-                  style={[
-                    styles.footer,
-                    keyboardVisible ? { marginBottom: 0, paddingBottom: 16 } : null,
-                  ]}
-                >
-                  <Text style={styles.footerText}>{t(locale, "signup.alreadyHave")}</Text>
-                  <Pressable onPress={() => router.replace("/login")} hitSlop={8}>
-                    <Text style={styles.footerLink}>{t(locale, "signup.login")}</Text>
-                  </Pressable>
-                </View>
-              </View>
+            <View style={{ position: 'absolute', left: Math.max(12, horizontalPadding - 12), top: 32 }}>
+              <Pressable
+                onPress={() => router.replace("/welcome")}
+                hitSlop={8}
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  backgroundColor: isDark ? "rgba(248, 250, 252, 0.12)" : "rgba(15, 23, 42, 0.12)",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <IconCircleArrowLeft size={20} color={isDark ? "#F8FAFC" : "#0F172A"} />
+              </Pressable>
             </View>
-          </Animated.View>
+          </View>
+          <View style={styles.hero}>
+            <View style={styles.logoWrap}>
+              <Logo size={LOGO_SIZE} style={styles.logo} variant="onDark" />
+              <Text style={styles.brandLabel}>parkit</Text>
+            </View>
+          </View>
         </View>
-      </KeyboardAvoidingView>
+
+        <View>
+          <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+            <Text style={styles.ctaText}>{t(locale, "signup.cta")}</Text>
+            <Pressable
+              onPress={() => router.replace("/signup-form")}
+              style={({ pressed }) => [styles.btnPrimary, pressed && styles.btnPressed]}
+            >
+              <Text style={styles.btnPrimaryText}>{t(locale, "signup.emailSignup")}</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => router.replace("/login")}
+              style={({ pressed }) => [styles.btnSecondary, pressed && styles.btnPressed]}
+            >
+              <Text style={styles.btnSecondaryText}>{t(locale, "signup.login")}</Text>
+            </Pressable>
+
+            {/* OAuth Divider */}
+            <View style={styles.oauthDivider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>o</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            {/* OAuth Buttons */}
+            <View style={styles.oauthContainer}>
+              <Pressable
+                onPress={() => handleOAuthSignIn('google')}
+                disabled={oauthLoading !== null}
+                style={({ pressed }) => [
+                  styles.oauthButton,
+                  pressed && styles.oauthButtonPressed,
+                  oauthLoading === 'google' && styles.oauthButtonDisabled,
+                ]}
+              >
+                {oauthLoading === 'google' ? (
+                  <ActivityIndicator size="small" color="#EA4335" />
+                ) : (
+                  <GoogleIcon size={24} />
+                )}
+              </Pressable>
+
+              <Pressable
+                onPress={() => handleOAuthSignIn('microsoft')}
+                disabled={oauthLoading !== null}
+                style={({ pressed }) => [
+                  styles.oauthButton,
+                  pressed && styles.oauthButtonPressed,
+                  oauthLoading === 'microsoft' && styles.oauthButtonDisabled,
+                ]}
+              >
+                {oauthLoading === 'microsoft' ? (
+                  <ActivityIndicator size="small" color="#0078D4" />
+                ) : (
+                  <MicrosoftIcon size={24} color="#0078D4" />
+                )}
+              </Pressable>
+
+              <Pressable
+                onPress={() => handleOAuthSignIn('facebook')}
+                disabled={oauthLoading !== null}
+                style={({ pressed }) => [
+                  styles.oauthButton,
+                  pressed && styles.oauthButtonPressed,
+                  oauthLoading === 'facebook' && styles.oauthButtonDisabled,
+                ]}
+              >
+                {oauthLoading === 'facebook' ? (
+                  <ActivityIndicator size="small" color="#1877F2" />
+                ) : (
+                  <FacebookIcon size={24} color="#1877F2" />
+                )}
+              </Pressable>
+            </View>
+
+            <View style={styles.footer}>
+              <Text style={styles.versionLabel} accessibilityRole="text">
+                {versionLabel}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
     </AnimatedAuthBackground>
   );
 }

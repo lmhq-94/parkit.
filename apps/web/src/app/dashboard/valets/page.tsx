@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import Link from "next/link";
-import { MailOpen, Plus } from "@/lib/premiumIcons";
+import { MailOpen, UserPlus } from "@/lib/premiumIcons";
 import { useRouter } from "next/navigation";
 import type { ICellRendererParams } from "ag-grid-community";
 import { DashboardDataTablePage } from "@/components/DashboardDataTablePage";
 import { DetailField, DetailSectionLabel } from "@/components/RowDetailModal";
+import { InviteValetModal } from "@/components/InviteValetModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiClient } from "@/lib/api";
 import { formatDateTimeDisplay } from "@/lib/dateFormat";
@@ -82,6 +82,7 @@ export default function ValetsPage() {
   const superAdmin = isSuperAdmin(user);
   const router = useRouter();
   const [refreshToken, setRefreshToken] = useState(0);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   /** Filtro de cuenta de usuario: activo / inactivo (antes que disponibilidad). */
   const [accountFilters, setAccountFilters] = useState<string[]>([]);
   /** Filtro de disponibilidad del valet (AVAILABLE / BUSY / AWAY). */
@@ -316,15 +317,23 @@ export default function ValetsPage() {
         onUpdate={superAdmin ? onUpdate : undefined}
         headerAction={
           superAdmin ? (
-            <Link
-              href="/dashboard/valets/new"
+            <button
+              type="button"
+              onClick={() => setIsInviteModalOpen(true)}
               className="group inline-flex items-center gap-2 px-4 min-h-[42px] rounded-lg bg-company-primary text-white text-sm font-medium hover:bg-company-primary focus:outline-none focus:ring-2 focus:ring-company-primary focus:ring-offset-2 focus:ring-offset-page transition-colors shadow-sm"
             >
-              <Plus className="w-4 h-4 transition-transform duration-300 group-hover:rotate-90" strokeWidth={2.25} />
-              {t("common.add")}
-            </Link>
+              <UserPlus className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.25} />
+              {t("users.inviteUser")}
+            </button>
           ) : undefined
         }
+      />
+      <InviteValetModal
+        open={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        onSuccess={() => {
+          setRefreshToken((prev) => prev + 1);
+        }}
       />
     </>
   );

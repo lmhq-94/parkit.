@@ -10,9 +10,9 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { useLocaleStore, useThemeStore, useAccessibilityStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
+import { IconMinus, IconPlus, IconCircleCheck } from "@/components/TablerIcons";
 import type { Locale } from "@parkit/shared";
 import { useMemo } from "react";
 import { useValetTheme, useResponsiveLayout } from "@/theme/valetTheme";
@@ -162,7 +162,7 @@ function AccessibilitySection() {
             onPress={() => textScale > 1 && setTextScale(textScale - 0.05)}
             disabled={textScale <= 1}
           >
-            <Ionicons name="remove" size={28 * textScale} color="#fff" />
+            <IconMinus size={28 * textScale} color="#fff" />
           </Pressable>
           <View style={styles.progressBarTrack}>
             <View
@@ -182,7 +182,7 @@ function AccessibilitySection() {
             onPress={() => textScale < 1.25 && setTextScale(textScale + 0.05)}
             disabled={textScale >= 1.25}
           >
-            <Ionicons name="add" size={28 * textScale} color="#fff" />
+            <IconPlus size={28 * textScale} color="#fff" />
           </Pressable>
         </View>
       </View>
@@ -205,14 +205,14 @@ function AccessibilitySection() {
           <Text style={styles.hint}>{t(locale, "settings.reduceMotionDesc")}</Text>
         </View>
         {reduceMotion && (
-          <Ionicons name="checkmark-circle" size={28 * textScale} color={theme.colors.primary} />
+          <IconCircleCheck size={28 * textScale} color={theme.colors.primary} />
         )}
       </Pressable>
     </>
   );
 }
 
-function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadding: number) {
+function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadding: number, textScale: number) {
   const C = theme.colors;
   const S = theme.space;
   const F = theme.font;
@@ -265,7 +265,7 @@ function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadd
     },
     /** Misma jerarquía visual que `receive` / tickets (legible en ES/EN). */
     sectionTitle: {
-      fontSize: Math.round(F.secondary * 0.85),
+      fontSize: Math.round(F.secondary * 0.85 * textScale),
       fontWeight: "800",
       fontFamily: Fonts.primary,
       color: C.textMuted,
@@ -333,8 +333,8 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const systemScheme = useColorScheme();
   const styles = useMemo(
-    () => createSettingsStyles(theme, responsive.contentMaxWidth, responsive.sectionPadding),
-    [theme, responsive.contentMaxWidth, responsive.sectionPadding]
+    () => createSettingsStyles(theme, responsive.contentMaxWidth, responsive.sectionPadding, textScale),
+    [theme, responsive.contentMaxWidth, responsive.sectionPadding, textScale]
   );
 
   const handleSetLocale = (newLocale: Locale) => {
@@ -408,7 +408,7 @@ export default function SettingsScreen() {
                   )}
                 </View>
                 {isThemeActive(pref) && (
-                  <Ionicons name="checkmark-circle" size={28 * textScale} color={theme.colors.primary} />
+                  <IconCircleCheck size={28 * textScale} color={theme.colors.primary} />
                 )}
               </Pressable>
             ))}
@@ -428,7 +428,7 @@ export default function SettingsScreen() {
             >
               <Text style={styles.localeLabel}>{t(locale, "settings.spanish")}</Text>
               {locale === "es" && (
-                <Ionicons name="checkmark-circle" size={28 * textScale} color={theme.colors.primary} />
+                <IconCircleCheck size={28 * textScale} color={theme.colors.primary} />
               )}
             </Pressable>
             <Pressable
@@ -444,7 +444,7 @@ export default function SettingsScreen() {
             >
               <Text style={styles.localeLabel}>{t(locale, "settings.english")}</Text>
               {locale === "en" && (
-                <Ionicons name="checkmark-circle" size={28 * textScale} color={theme.colors.primary} />
+                <IconCircleCheck size={28 * textScale} color={theme.colors.primary} />
               )}
             </Pressable>
           </View>

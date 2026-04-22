@@ -1,20 +1,20 @@
 export const VEHICLE_COLORS = [
-  { value: "Blanco", label: "Blanco" },
-  { value: "Negro", label: "Negro" },
-  { value: "Gris", label: "Gris" },
-  { value: "Plateado", label: "Plateado" },
-  { value: "Azul", label: "Azul" },
-  { value: "Rojo", label: "Rojo" },
-  { value: "Verde", label: "Verde" },
-  { value: "Amarillo", label: "Amarillo" },
-  { value: "Naranja", label: "Naranja" },
-  { value: "Cafe", label: "Cafe" },
-  { value: "Beige", label: "Beige" },
-  { value: "Dorado", label: "Dorado" },
-  { value: "Morado", label: "Morado" },
+  { value: "Blanco" as const, label: "Blanco" as const },
+  { value: "Negro" as const, label: "Negro" as const },
+  { value: "Gris" as const, label: "Gris" as const },
+  { value: "Plateado" as const, label: "Plateado" as const },
+  { value: "Azul" as const, label: "Azul" as const },
+  { value: "Rojo" as const, label: "Rojo" as const },
+  { value: "Verde" as const, label: "Verde" as const },
+  { value: "Amarillo" as const, label: "Amarillo" as const },
+  { value: "Naranja" as const, label: "Naranja" as const },
+  { value: "Cafe" as const, label: "Cafe" as const },
+  { value: "Beige" as const, label: "Beige" as const },
+  { value: "Dorado" as const, label: "Dorado" as const },
+  { value: "Morado" as const, label: "Morado" as const },
 ] as const;
 
-type VehicleColor = (typeof VEHICLE_COLORS)[number];
+type VehicleColor = { value: string; label: string };
 type VehicleColorValue = VehicleColor["value"];
 type VehicleColorLocale = "es" | "en" | (string & {});
 

@@ -16,7 +16,7 @@ export function DefaultBanner({
   logoImageUrl,
   isDark,
   backgroundImageUrl,
-  subtitle,
+  subtitle: _subtitle,
   className = "",
   renderRight,
   businessActivity,

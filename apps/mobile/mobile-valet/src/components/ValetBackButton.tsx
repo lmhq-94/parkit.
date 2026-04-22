@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet, View, Platform } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Pressable, StyleSheet, View } from "react-native";
 import { useValetTheme } from "@/theme/valetTheme";
+import { IconCircleArrowLeft } from "@/components/TablerIcons";
 
 /**
  * - `auth`: mismo estilo que login (franja oscura).
@@ -18,7 +18,6 @@ export function ValetBackButton({
 }) {
   const theme = useValetTheme();
   const a = theme.auth;
-  const C = theme.colors;
 
   const isAuth = appearance === "auth";
 
@@ -27,24 +26,20 @@ export function ValetBackButton({
       onPress={onPress}
       style={[
         styles.base,
-        isAuth
-          ? { backgroundColor: a.authHeroBackBtnBg }
-          : {
-              backgroundColor: theme.isDark ? "rgba(248, 250, 252, 0.12)" : "rgba(15, 23, 42, 0.07)",
-              borderWidth: 2,
-              borderColor: C.border,
-            },
+        {
+          backgroundColor: "transparent",
+          borderWidth: 0,
+        },
       ]}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       hitSlop={8}
     >
       <View style={styles.iconCenter}>
-        <Ionicons
-          name="chevron-back"
+        <IconCircleArrowLeft
           size={26}
-          color={isAuth ? a.authHeroBackBtnIcon : C.text}
-          style={styles.chevronOptical}
+          color={isAuth ? a.authHeroBackBtnIcon : (theme.isDark ? "#F8FAFC" : "#0F172A")}
+          style={{ marginLeft: 2, marginTop: 1 }}
         />
       </View>
     </Pressable>
@@ -65,8 +60,5 @@ const styles = StyleSheet.create({
     height: 28,
     alignItems: "center",
     justifyContent: "center",
-  },
-  chevronOptical: {
-    marginLeft: Platform.OS === "ios" ? -3 : -2,
   },
 });

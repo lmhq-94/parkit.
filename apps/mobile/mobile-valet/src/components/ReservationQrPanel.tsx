@@ -14,7 +14,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
+import { IconQrCode } from "@/components/TablerIcons";
 import type { Locale } from "@parkit/shared";
 import { t } from "@/lib/i18n";
 import type { useValetTheme } from "@/theme/valetTheme";
@@ -173,7 +173,7 @@ export function ReservationQrPanel({
   if (Platform.OS === "web") {
     return (
       <View style={styles.webFallback}>
-        <Ionicons name="qr-code-outline" size={40} color={theme.colors.textMuted} />
+        <IconQrCode size={40} color={theme.colors.textMuted} />
         <Text style={styles.webFallbackText}>{t(locale, "receive.qrWebHint")}</Text>
       </View>
     );

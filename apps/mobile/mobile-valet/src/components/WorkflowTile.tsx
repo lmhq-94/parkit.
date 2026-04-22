@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useValetTheme, ticketsA11y } from "@/theme/valetTheme";
 import { useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
+import { IconUsersGroup } from "@/components/TablerIcons";
 import { useEffect, useState } from "react";
 import { parkitTilePalette } from "@/lib/homeUtils";
 import api from "@/lib/api";
@@ -64,52 +64,56 @@ export function WorkflowTile({ styles: parentStyles, isDark, textScale }: Workfl
     <View style={[parentStyles.tile, parentStyles.tileWorkflow, localStyles.container]}>
       <View style={localStyles.header}>
         <View style={[localStyles.iconWrap, { backgroundColor: isDark ? "#1E293B" : "#F1F5F9" }]}>
-          <Ionicons name="pulse" size={20} color={P.workflow} />
+          <IconUsersGroup size={20} color={P.workflow} />
         </View>
         <Text style={[localStyles.title, { color: C.text, fontSize: baseFontSize, fontFamily: Fonts.primary }]} numberOfLines={1}>
           {t(locale, "home.workflowTitle")}
         </Text>
       </View>
 
-      <View style={localStyles.statsRow}>
-        <View style={localStyles.stat}>
-          <Text style={[localStyles.statValue, { color: P.workflow, fontSize: baseFontSize }]}>
-            {status?.activeProcesses ?? "—"}
-          </Text>
-          <Text style={[localStyles.statLabel, { color: C.textMuted, fontSize: baseFontSize }]}>
-            {t(locale, "home.active")}
-          </Text>
+      <View style={localStyles.statsContainer}>
+        <View style={localStyles.statsRow}>
+          <View style={localStyles.stat}>
+            <Text style={[localStyles.statValue, { color: P.workflow, fontSize: baseFontSize }]}>
+              {status?.activeProcesses ?? "—"}
+            </Text>
+            <Text style={[localStyles.statLabel, { color: C.textMuted, fontSize: baseFontSize }]}>
+              {t(locale, "home.active")}
+            </Text>
+          </View>
+
+          <View style={[localStyles.divider, { backgroundColor: C.border }]} />
+
+          <View style={localStyles.stat}>
+            <Text style={[localStyles.statValue, { color: C.text, fontSize: baseFontSize }]}>
+              {status?.completedToday ?? "—"}
+            </Text>
+            <Text style={[localStyles.statLabel, { color: C.textMuted, fontSize: baseFontSize }]}>
+              {t(locale, "home.completed")}
+            </Text>
+          </View>
+
+          <View style={[localStyles.divider, { backgroundColor: C.border }]} />
+
+          <View style={localStyles.stat}>
+            <Text style={[localStyles.statValue, { color: C.primary, fontSize: baseFontSize }]}>
+              {status?.pendingTasks ?? "—"}
+            </Text>
+            <Text style={[localStyles.statLabel, { color: C.textMuted, fontSize: baseFontSize }]}>
+              {t(locale, "home.pending")}
+            </Text>
+          </View>
         </View>
 
-        <View style={[localStyles.divider, { backgroundColor: C.border }]} />
+        <View style={[localStyles.horizontalDivider, { backgroundColor: C.border, marginVertical: 8 }]} />
 
-        <View style={localStyles.stat}>
-          <Text style={[localStyles.statValue, { color: C.text, fontSize: baseFontSize }]}>
-            {status?.completedToday ?? "—"}
-          </Text>
-          <Text style={[localStyles.statLabel, { color: C.textMuted, fontSize: baseFontSize }]}>
-            {t(locale, "home.completed")}
-          </Text>
-        </View>
-
-        <View style={[localStyles.divider, { backgroundColor: C.border }]} />
-
-        <View style={localStyles.stat}>
-          <Text style={[localStyles.statValue, { color: C.primary, fontSize: baseFontSize }]}>
-            {status?.pendingTasks ?? "—"}
-          </Text>
-          <Text style={[localStyles.statLabel, { color: C.textMuted, fontSize: baseFontSize }]}>
-            {t(locale, "home.pending")}
+        <View style={localStyles.footer}>
+          <Text style={[localStyles.updateText, { color: C.textMuted, fontSize: Math.round(baseFontSize * 0.75) }]}>
+            {status?.lastUpdated
+              ? `${t(locale, "home.lastUpdate")}: ${new Date(status.lastUpdated).toLocaleTimeString()}`
+              : t(locale, "home.workflowEmpty")}
           </Text>
         </View>
-      </View>
-
-      <View style={[localStyles.footer, { borderTopColor: C.border }]}>
-        <Text style={[localStyles.footerText, { color: C.textMuted, fontSize: baseFontSize }]}>
-          {status?.lastUpdated
-            ? `${t(locale, "home.lastUpdate")}: ${new Date(status.lastUpdated).toLocaleTimeString()}`
-            : t(locale, "home.workflowEmpty")}
-        </Text>
       </View>
     </View>
   );
@@ -122,6 +126,10 @@ const localStyles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "space-between",
     padding: 12,
+  },
+  statsContainer: {
+    width: "100%",
+    alignItems: "center",
   },
   header: {
     flexDirection: "row",
@@ -136,8 +144,16 @@ const localStyles = StyleSheet.create({
     justifyContent: "center",
   },
   title: {
-    flex: 1,
     fontWeight: "800",
+    flex: 1,
+  },
+  footer: {
+    alignItems: "center",
+    paddingTop: 8,
+  },
+  updateText: {
+    fontWeight: "500",
+    textAlign: "center",
   },
   loader: {
     marginLeft: 4,
@@ -146,7 +162,7 @@ const localStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
-    flex: 1,
+    width: "100%",
     marginVertical: 8,
   },
   stat: {
@@ -165,12 +181,9 @@ const localStyles = StyleSheet.create({
     height: 30,
     opacity: 0.5,
   },
-  footer: {
-    borderTopWidth: 1,
-    paddingTop: 8,
-    alignItems: "center",
-  },
-  footerText: {
-    fontWeight: "500",
+  horizontalDivider: {
+    width: "100%",
+    height: 1,
+    opacity: 0.5,
   },
 });

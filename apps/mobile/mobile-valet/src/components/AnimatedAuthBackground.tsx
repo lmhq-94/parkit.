@@ -127,7 +127,7 @@ const LavaBlob = ({ config, index }: { config: BlobConfig; index: number }) => {
 
 export function AnimatedAuthBackground({ isDark, style, children }: Props) {
   const blobs = useMemo(() => (isDark ? getDarkBlobs() : getLightBlobs()), [isDark]);
-  const baseColors = useMemo(() => (isDark ? ["#0a0a1a", "#1a1a2e", "#16213e", "#1a1a2e", "#0a0a1a"] : ["#f0f9ff", "#e0f2fe", "#dbeafe", "#e0f2fe", "#f0f9ff"]), [isDark]) as [string, string, ...string[]];
+  const baseColors = useMemo(() => (isDark ? ["#0a0a1a", "#1a1a2e", "#16213e", "#1a1a2e", "#0a0a1a"] : ["#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF"]), [isDark]) as [string, string, ...string[]];
 
   return (
     <View style={[styles.container, style]}>

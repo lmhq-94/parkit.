@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TextInput, ActivityIndicator, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { IconCircleCheck } from '@/components/TablerIcons';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@parkit/shared';
 import { formatPlate } from '@parkit/shared';
@@ -221,7 +221,7 @@ export function VehiclePlateInput({
         <View style={[styles.card, styles.vehicleFoundCard]}>
           <View style={styles.vehicleFoundHeader}>
             <View style={styles.vehicleFoundBadge}>
-              <Ionicons name="checkmark-circle" size={16} color={C.success} />
+              <IconCircleCheck size={16} color={C.success} />
               <Text style={styles.vehicleFoundBadgeText}>{t(locale, 'receive.foundVehicle')}</Text>
             </View>
           </View>

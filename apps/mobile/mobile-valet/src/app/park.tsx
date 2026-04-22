@@ -14,9 +14,9 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
+import { IconCamera, IconGallery, IconCircleX } from "@/components/TablerIcons";
 import api from "@/lib/api";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
@@ -646,7 +646,7 @@ export default function ParkFlowScreen() {
                       disabled={damagePhotoBusy}
                       accessibilityLabel={t(locale, "receive.damageCameraA11y")}
                     >
-                      <Ionicons name="camera" size={22} color="#fff" />
+                      <IconCamera size={22} color="#fff" />
                       <Text style={styles.primaryBtnText}>{t(locale, "receive.damageTakePhoto")}</Text>
                     </Pressable>
                     <Pressable
@@ -661,7 +661,7 @@ export default function ParkFlowScreen() {
                       disabled={damagePhotoBusy}
                       accessibilityLabel={t(locale, "receive.damageGalleryA11y")}
                     >
-                      <Ionicons name="images-outline" size={22} color={theme.colors.textMuted} />
+                      <IconGallery size={22} color={theme.colors.textMuted} />
                       <Text style={styles.footerSecondaryBtnText}>{t(locale, "receive.damageFromGallery")}</Text>
                     </Pressable>
                   </View>
@@ -689,7 +689,7 @@ export default function ParkFlowScreen() {
                           onPress={() => removeDamagePhotoAt(index)}
                           accessibilityLabel={t(locale, "receive.damageRemovePhotoA11y")}
                         >
-                          <Ionicons name="close-circle" size={28} color="rgba(255,255,255,0.95)" />
+                          <IconCircleX size={28} color="rgba(255,255,255,0.95)" />
                         </Pressable>
                       </View>
                     ))}

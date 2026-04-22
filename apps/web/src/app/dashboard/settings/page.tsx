@@ -390,7 +390,7 @@ export default function SettingsPage() {
   const [form, setForm] = useState<BrandingConfig>(defaultForm);
   const [initialForm, setInitialForm] = useState<BrandingConfig>(defaultForm);
 
-  const [loading, setLoading] = useState(true);
+  const [_loading, _setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [reverting, setReverting] = useState(false);
@@ -437,7 +437,7 @@ export default function SettingsPage() {
         if (!cancelled) setLoadError(t("settings.saveError"));
       } finally {
         if (!cancelled) {
-          setLoading(false);
+          _setLoading(false);
           setInitialLoad(false);
         }
       }

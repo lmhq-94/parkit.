@@ -13,9 +13,9 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useEffect, useState, useCallback, useRef } from "react";
 import React from "react";
+import { IconUser, IconLocationFilled, IconList, IconSettings, IconLogout, IconCar, IconArrowUndo, IconKey, IconKeyOff } from "@/components/TablerIcons";
 import { Logo } from "@parkit/shared";
 import api, { clearAuthToken } from "@/lib/api";
 import { useAuthStore, useLocaleStore, useCompanyStore, useParkingPreferenceStore, useAccessibilityStore } from "@/lib/store";
@@ -29,7 +29,8 @@ import { TICKETS_POLL_MS } from "@/lib/syncConstants";
 import {
   avatarPresenceRingColor,
   HEADER_RADIUS_BOTTOM,
-  HEADER_AVATAR_SIZE,
+  getHeaderSizes,
+  HEADER_LOGO_BASE_SIZE,
 } from "@/lib/homeUtils";
 import { AnimatedGridTile } from "@/components/AnimatedGridTile";
 import { WorkflowTile } from "@/components/WorkflowTile";
@@ -101,6 +102,9 @@ function HomeScreenContent() {
   const { textScale, reduceMotion } = useAccessibilityStore();
   const statusKey = user?.valetCurrentStatus;
   const isAvailable = statusKey === "AVAILABLE";
+
+  // Calculate proportional header sizes based on logo and text scale
+  const headerSizes = getHeaderSizes(HEADER_LOGO_BASE_SIZE, textScale);
 
   useEffect(() => {
     void hydrateParkingPreference();
@@ -224,7 +228,7 @@ function HomeScreenContent() {
     });
   };
 
-  const headerMaxH = Math.min(240, winH * 0.32);
+  const headerMaxH = Math.min(96, winH * 0.12);
 
   const headerGradientSpec = theme.isDark
     ? ({
@@ -270,24 +274,24 @@ function HomeScreenContent() {
           ]}
         >
           <View style={styles.heroToolbarWrap}>
-            <View style={styles.heroToolbar}>
+            <View style={[styles.heroToolbar, { gap: headerSizes.gap }]}>
               <Logo
-                size={32}
+                size={headerSizes.logoSize}
                 variant={theme.isDark ? "onDark" : "onLight"}
                 style={styles.heroLogo}
               />
               <View style={styles.headerUserBlock}>
-                <View style={styles.headerGreetingRow}>
+                <View style={[styles.headerGreetingRow, { gap: headerSizes.gap }]}>
                   <View style={styles.headerGreetingCol}>
                     <Text
-                      style={[styles.headerDisplayName, { color: headerTextPrimary }]}
+                      style={[styles.headerDisplayName, { color: headerTextPrimary, fontSize: Math.round(ticketsA11y.font.status * 0.65) }]}
                       numberOfLines={2}
                       maxFontSizeMultiplier={2}
                     >
                       {displayName}
                     </Text>
                     <Text
-                      style={[styles.headerRoleBelow, { color: headerTextPrimary }]}
+                      style={[styles.headerRoleBelow, { color: headerTextPrimary, fontSize: Math.round(ticketsA11y.font.status * 0.65) }]}
                       numberOfLines={1}
                       maxFontSizeMultiplier={1.5}
                     >
@@ -297,54 +301,78 @@ function HomeScreenContent() {
                   <Pressable
                     style={({ pressed }) => [
                       styles.avatarWrapper,
+                      { width: headerSizes.avatarSize + 4, height: headerSizes.avatarSize + 4 },
                       pressed && styles.avatarPressed,
                     ]}
-                    accessibilityLabel={`${t(locale, "home.profile")} — ${statusLabel}`}
+                    accessibilityLabel={`${t(locale, "home.profile")} - ${statusLabel}`}
                     accessibilityRole="button"
                     onPress={() => router.push("/profile")}
                   >
                     <AvatarPulseView
                       isAvailable={isAvailable}
                       color={avatarPresenceColor}
-                      size={HEADER_AVATAR_SIZE}
+                      size={headerSizes.avatarSize}
                       reduceMotion={reduceMotion}
                     >
                       <View
                         style={[
                           styles.headerAvatarInner,
-                          { backgroundColor: theme.isDark ? C.card : "#FFFFFF" },
+                          { 
+                            backgroundColor: theme.isDark ? C.card : "#FFFFFF",
+                            width: headerSizes.avatarSize,
+                            height: headerSizes.avatarSize,
+                            borderRadius: headerSizes.avatarSize / 2,
+                          },
                         ]}
                       >
                         {avatarUri ? (
                           <Image
                             source={{ uri: avatarUri }}
-                            style={styles.headerAvatarImage}
+                            style={[styles.headerAvatarImage, { 
+                              width: headerSizes.avatarSize,
+                              height: headerSizes.avatarSize,
+                            }]}
                             resizeMode="cover"
                           />
                         ) : (
                           <View style={{ 
-                            width: HEADER_AVATAR_SIZE, 
-                            height: HEADER_AVATAR_SIZE, 
-                            borderRadius: HEADER_AVATAR_SIZE / 2,
+                            width: headerSizes.avatarSize, 
+                            height: headerSizes.avatarSize, 
+                            borderRadius: headerSizes.avatarSize / 2,
                             backgroundColor: theme.isDark ? "rgba(148,163,184,0.15)" : "rgba(100,116,139,0.15)",
                             alignItems: "center",
                             justifyContent: "center"
                           }}>
-                            <Ionicons name="person" size={HEADER_AVATAR_SIZE * 0.5} color={C.textMuted} />
+                            <IconUser size={headerSizes.avatarSize * 0.5} color={C.textMuted} />
                           </View>
                         )}
                       </View>
                     </AvatarPulseView>
                     <View style={[
                       styles.statusDotBadge,
-                      { backgroundColor: avatarPresenceColor },
+                      { 
+                        backgroundColor: avatarPresenceColor,
+                        width: headerSizes.statusDotSize,
+                        height: headerSizes.statusDotSize,
+                        borderRadius: headerSizes.statusDotSize / 2,
+                        borderWidth: headerSizes.statusDotBorderWidth,
+                      },
                       isAvailable && styles.statusDotPulse
                     ]}>
-                      {isAvailable && <View style={styles.statusDotInner} />}
+                      {isAvailable && <View style={[styles.statusDotInner, { 
+                        width: headerSizes.statusDotSize * 0.43,
+                        height: headerSizes.statusDotSize * 0.43,
+                        borderRadius: headerSizes.statusDotSize * 0.215,
+                      }]} />}
                     </View>
                     {(queueAlertCount ?? 0) > 0 && (
-                      <View style={styles.headerBadge}>
-                        <Text style={styles.headerBadgeText}>
+                      <View style={[styles.headerBadge, {
+                        minWidth: headerSizes.badgeSize,
+                        height: headerSizes.badgeSize,
+                        borderRadius: headerSizes.badgeSize / 2,
+                        paddingHorizontal: headerSizes.badgeSize * 0.22,
+                      }]}>
+                        <Text style={[styles.headerBadgeText, { fontSize: headerSizes.badgeFontSize }]}>
                           {queueAlertCount > 99 ? "99+" : queueAlertCount}
                         </Text>
                       </View>
@@ -363,7 +391,7 @@ function HomeScreenContent() {
               <View style={[styles.gridRowFill, { flex: 1 }]}>
                 <AnimatedGridTile
                   variant="queue"
-                  icon="car-outline"
+                  lucideIcon={IconCar}
                   title={t(locale, "home.actionParkingQueue")}
                   sub={t(locale, "home.actionParkingQueueSub")}
                   onPress={() => router.push({ pathname: "/tickets", params: { queue: "parking" } })}
@@ -375,7 +403,7 @@ function HomeScreenContent() {
                 />
                 <AnimatedGridTile
                   variant="queue"
-                  icon="arrow-undo-outline"
+                  lucideIcon={IconArrowUndo}
                   title={t(locale, "home.actionDeliveryQueue")}
                   sub={t(locale, "home.actionDeliveryQueueSub")}
                   badgeCount={queueAlertCount}
@@ -400,7 +428,8 @@ function HomeScreenContent() {
               <View style={[styles.gridRowFill, { flex: 1 }]}>
                 <AnimatedGridTile
                   variant="accent"
-                  icon="car-outline"
+                  lucideIcon={IconKey}
+                  iconSize={Math.round(headerSizes.avatarSize * 0.5)}
                   title={t(locale, "home.actionReceive")}
                   sub={t(locale, "home.actionReceiveSub")}
                   onPress={() => router.push("/receive")}
@@ -412,7 +441,8 @@ function HomeScreenContent() {
                 />
                 <AnimatedGridTile
                   variant="warm"
-                  icon="arrow-undo-outline"
+                  lucideIcon={IconKeyOff}
+                  iconSize={Math.round(headerSizes.avatarSize * 0.5)}
                   title={t(locale, "home.actionReturn")}
                   sub={t(locale, "home.actionReturnSub")}
                   onPress={() => router.push("/return-pickup")}
@@ -437,7 +467,7 @@ function HomeScreenContent() {
         <View style={styles.bottomCard}>
           <View style={styles.bottomCardInner}>
             <View style={styles.bottomIconWrap}>
-              <Ionicons name="navigate-circle" size={26} color={C.primary} />
+              <IconLocationFilled size={Math.round(14 * textScale)} fill={C.primary}  color={C.primary} />
             </View>
             <View style={styles.bottomTextCol}>
               <View style={styles.bottomTitleRow}>
@@ -451,10 +481,7 @@ function HomeScreenContent() {
                     accessibilityRole="button"
                     accessibilityLabel={t(locale, "home.chooseParking")}
                   >
-                    <Ionicons name="list-outline" size={16} color={C.primary} />
-                    <Text style={[styles.bottomChooseBtnText, { color: C.primary }]}>
-                      {t(locale, "home.chooseParking")}
-                    </Text>
+                    <IconList size={Math.round(18 * textScale)} color={C.primary} />
                   </Pressable>
                 )}
               </View>
@@ -482,12 +509,9 @@ function HomeScreenContent() {
                   </Text>
                   {displayedParking.parking.company && (
                     <Text style={styles.bottomCompany} numberOfLines={1}>
-                      {t(locale, "home.nearestCompany", {
-                        name:
-                          displayedParking.parking.company.commercialName?.trim() ||
-                          displayedParking.parking.company.legalName?.trim() ||
-                          "—",
-                      })}
+                      {displayedParking.parking.company.commercialName?.trim() ||
+                        displayedParking.parking.company.legalName?.trim() ||
+                        "—"}
                     </Text>
                   )}
                   {displayedParking.distanceKm != null && (
@@ -526,7 +550,7 @@ function HomeScreenContent() {
             accessibilityRole="button"
             accessibilityLabel={t(locale, "home.settings")}
           >
-            <Ionicons name="settings-outline" size={22} color={C.primary} />
+            <IconSettings size={Math.round(22 * textScale)} color={C.primary} />
             <Text
               style={[styles.helpLogoutBtnText, { color: C.primary }]}
               maxFontSizeMultiplier={2}
@@ -541,7 +565,7 @@ function HomeScreenContent() {
             accessibilityRole="button"
             accessibilityLabel={t(locale, "tickets.logout")}
           >
-            <Ionicons name="log-out-outline" size={22} color={C.logout} />
+            <IconLogout size={Math.round(22 * textScale)} color={C.logout} />
             <Text
               style={[styles.helpLogoutBtnText, { color: C.logout }]}
               maxFontSizeMultiplier={2}
@@ -685,7 +709,6 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       maxWidth: "58%",
     },
     headerRoleBelow: {
-      fontSize: Math.round(F.status * 0.65),
       fontWeight: Platform.OS === "android" ? "normal" : "600",
       fontFamily: Fonts.primary,
       textAlign: "right",
@@ -694,8 +717,6 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     /** Contenedor del avatar con dot de status */
     avatarWrapper: {
       position: "relative",
-      width: HEADER_AVATAR_SIZE + 4,
-      height: HEADER_AVATAR_SIZE + 4,
       alignItems: "center",
       justifyContent: "center",
       flexShrink: 0,
@@ -707,10 +728,6 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       position: "absolute",
       bottom: 2,
       right: 2,
-      width: 14,
-      height: 14,
-      borderRadius: 7,
-      borderWidth: 2,
       borderColor: C.card,
       ...Platform.select({
         ios: {
@@ -727,16 +744,10 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       justifyContent: "center",
     },
     statusDotInner: {
-      width: 6,
-      height: 6,
-      borderRadius: 3,
       backgroundColor: "#FFFFFF",
       opacity: 0.4,
     },
     headerAvatarInner: {
-      width: HEADER_AVATAR_SIZE,
-      height: HEADER_AVATAR_SIZE,
-      borderRadius: HEADER_AVATAR_SIZE / 2,
       overflow: "hidden",
       alignItems: "center",
       justifyContent: "center",
@@ -745,20 +756,16 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     },
     /** Medidas explícitas: en algunos dispositivos % dentro del círculo no pinta la imagen. */
     headerAvatarImage: {
-      width: HEADER_AVATAR_SIZE,
-      height: HEADER_AVATAR_SIZE,
     },
     headerAvatarInitials: {
       fontSize: Math.round(F.status * 0.65),
-      fontWeight: "800",
+      fontWeight: "600",
       fontFamily: Fonts.primary,
     },
     headerDisplayName: {
-      fontSize: Math.round(F.secondary * 0.85),
       fontWeight: Platform.OS === "android" ? "normal" : "700",
       fontFamily: Fonts.primary,
       textAlign: "right",
-      lineHeight: Math.round(F.secondary * 1.1),
       letterSpacing: -0.3,
     },
     headerBadge: {
@@ -786,8 +793,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     },
     headerBadgeText: {
       color: "#fff",
-      fontSize: Math.round(F.status * 0.65),
-      fontWeight: "900",
+      fontWeight: "700",
       fontFamily: Fonts.primary,
     },
     gridFlex: {
@@ -845,7 +851,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     },
     helpLogoutBtnText: {
       fontSize: Math.round(F.status * 0.65),
-      fontWeight: "800",
+      fontWeight: "600",
       fontFamily: Fonts.primary,
       textAlign: "center",
       flexShrink: 1,
@@ -938,12 +944,12 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     tileBadgeText: {
       color: "#fff",
       fontSize: Math.round(F.status * 0.65),
-      fontWeight: "900",
+      fontWeight: "700",
       letterSpacing: 0.2,
     },
     tileTitle: {
       fontSize: Math.round(F.status * 0.65),
-      fontWeight: Platform.OS === "android" ? "normal" : "800",
+      fontWeight: Platform.OS === "android" ? "normal" : "600",
       fontFamily: Fonts.primary,
       color: C.text,
       marginBottom: 4,
@@ -989,7 +995,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       }),
     },
     bottomIconWrap: {
-      marginTop: 2,
+      marginTop: 36,
     },
     bottomTextCol: {
       flex: 1,
@@ -1004,7 +1010,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     },
     bottomTitle: {
       fontSize: Math.round(F.status * 0.65),
-      fontWeight: "800",
+      fontWeight: "600",
       fontFamily: Fonts.primary,
       color: C.textMuted,
       letterSpacing: 0.6,
@@ -1021,7 +1027,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     },
     bottomChooseBtnText: {
       fontSize: Math.round(F.status * 0.65),
-      fontWeight: "800",
+      fontWeight: "600",
       fontFamily: Fonts.primary,
     },
     bottomManualHint: {
@@ -1037,12 +1043,12 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     },
     bottomUseNearestText: {
       fontSize: Math.round(F.status * 0.65),
-      fontWeight: "800",
+      fontWeight: "600",
       fontFamily: Fonts.primary,
     },
     bottomName: {
       fontSize: Math.round(F.status * 0.65),
-      fontWeight: "800",
+      fontWeight: "600",
       fontFamily: Fonts.primary,
       color: C.text,
     },
@@ -1092,7 +1098,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     },
     modalTitle: {
       fontSize: Math.round(F.status * 0.65),
-      fontWeight: Platform.OS === "android" ? "normal" : "800",
+      fontWeight: Platform.OS === "android" ? "normal" : "600",
       fontFamily: Fonts.primary,
       textAlign: "center",
       marginBottom: S.sm,
@@ -1106,7 +1112,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     },
     parkingRowName: {
       fontSize: Math.round(F.status * 0.65),
-      fontWeight: "800",
+      fontWeight: "600",
       fontFamily: Fonts.primary,
     },
     parkingRowAddr: {

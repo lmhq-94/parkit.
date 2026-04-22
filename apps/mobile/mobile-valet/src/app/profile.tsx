@@ -14,8 +14,8 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { IconUser, IconChevronRight, IconCircleCheck, IconCalendar, IconMail, IconClipboardText, IconCar } from "@/components/TablerIcons";
 import * as ImagePicker from "expo-image-picker";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import type { ValetStaffRole } from "@parkit/shared";
@@ -41,7 +41,6 @@ import {
 
 import { formatYmdLocal, parseYmdLocal } from "@/lib/dateUtils";
 import { EMAIL_RE } from "@/lib/validation";
-import { STAFF_ROLES } from "@/lib/staffRoles";
 
 type MePayload = {
   firstName?: string;
@@ -77,7 +76,6 @@ export default function ProfileScreen() {
   const [staffRole, setStaffRole] = useState<ValetStaffRole>(
     user?.valetStaffRole === "DRIVER" ? "DRIVER" : "RECEPTIONIST"
   );
-  const [roleModalOpen, setRoleModalOpen] = useState(false);
   const [licenseModalOpen, setLicenseModalOpen] = useState(false);
   const [licenseTypes, setLicenseTypes] = useState<string[]>([]);
   /** YYYY-MM-DD local o "" */
@@ -381,16 +379,6 @@ export default function ProfileScreen() {
     }
   };
 
-  const staffRoleLabel =
-    staffRole === "RECEPTIONIST"
-      ? t(locale, "signup.staffRoleReceptionist")
-      : t(locale, "signup.staffRoleDriver");
-
-  const staffRoleSub = (r: ValetStaffRole) =>
-    r === "RECEPTIONIST"
-      ? t(locale, "profile.staffRoleSubReceptionist")
-      : t(locale, "profile.staffRoleSubDriver");
-
   const licenseCodesDisplay = useMemo(
     () => LICENSE_TYPE_VALUES.filter((v) => licenseTypes.includes(v)).join(", "),
     [licenseTypes]
@@ -473,7 +461,7 @@ export default function ProfileScreen() {
                     <Image source={{ uri: displayAvatarUri }} style={styles.avatarImage} />
                   ) : (
                     <View style={[styles.avatarPlaceholder, { backgroundColor: theme.isDark ? "rgba(148,163,184,0.15)" : "rgba(100,116,139,0.15)" }]}>
-                      <Ionicons name="person" size={60} color={C.textMuted} />
+                      <IconUser size={60} color={C.textMuted} />
                     </View>
                   )}
                 </Pressable>
@@ -482,167 +470,156 @@ export default function ProfileScreen() {
                 </Text>
               </View>
 
-            <Text style={styles.label}>{t(locale, "profile.staffRoleLabel")}</Text>
-            <Pressable
-              style={({ pressed }) => [
-                styles.pickerRow,
-                { borderColor: C.border, backgroundColor: C.card },
-                pressed && styles.pressed,
-              ]}
-              onPress={() => setRoleModalOpen(true)}
-              accessibilityRole="button"
-              accessibilityLabel={t(locale, "profile.staffRolePickerTitle")}
-            >
-              <View style={styles.pickerRowText}>
-                <Text style={[styles.pickerRowTitle, { color: C.text }]} numberOfLines={1}>
-                  {staffRoleLabel}
-                </Text>
-                <Text style={[styles.pickerRowSub, { color: C.textMuted }]} numberOfLines={2}>
-                  {staffRoleSub(staffRole)}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={22} color={C.textMuted} />
-            </Pressable>
-
-            <Modal
-              visible={roleModalOpen}
-              animationType="slide"
-              transparent
-              onRequestClose={() => setRoleModalOpen(false)}
-            >
-              <View style={styles.modalOverlay}>
+            <View style={styles.roleSelection}>
+              <Text style={styles.roleLabel}>{t(locale, "profile.staffRoleLabel")}</Text>
+              <View style={styles.roleButtons}>
                 <Pressable
-                  style={styles.modalBackdropPress}
-                  onPress={() => setRoleModalOpen(false)}
-                  accessibilityLabel={t(locale, "common.cancel")}
-                />
-                <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
-                  <Text style={[styles.modalTitle, { color: C.text }]}>
-                    {t(locale, "profile.staffRolePickerTitle")}
-                  </Text>
-                  <FlatList
-                    data={STAFF_ROLES}
-                    keyExtractor={(item) => item}
-                    style={styles.modalList}
-                    keyboardShouldPersistTaps="handled"
-                    renderItem={({ item: r }) => (
-                      <Pressable
-                        style={({ pressed }) => [
-                          styles.roleRow,
-                          { borderBottomColor: C.border },
-                          pressed && styles.pressed,
-                        ]}
-                        onPress={() => {
-                          setStaffRole(r);
-                          setRoleModalOpen(false);
-                          if (r === "RECEPTIONIST") {
-                            setLicenseTypes([]);
-                            setLicenseExpiryYmd("");
-                          }
-                        }}
-                      >
-                        <View style={styles.roleRowText}>
-                          <Text style={[styles.roleRowName, { color: C.text }]} numberOfLines={1}>
-                            {r === "RECEPTIONIST"
-                              ? t(locale, "signup.staffRoleReceptionist")
-                              : t(locale, "signup.staffRoleDriver")}
-                          </Text>
-                          <Text style={[styles.roleRowAddr, { color: C.textMuted }]} numberOfLines={2}>
-                            {staffRoleSub(r)}
-                          </Text>
-                        </View>
-                        {staffRole === r ? (
-                          <Ionicons name="checkmark-circle" size={24} color={C.primary} />
-                        ) : null}
-                      </Pressable>
-                    )}
+                  style={[
+                    styles.roleButton,
+                    staffRole === 'RECEPTIONIST' && styles.roleButtonSelected
+                  ]}
+                  onPress={() => {
+                    setStaffRole('RECEPTIONIST');
+                    setLicenseTypes([]);
+                    setLicenseExpiryYmd("");
+                  }}
+                >
+                  <View style={styles.roleButtonContent}>
+                    <IconClipboardText
+                      size={24}
+                      color={staffRole === 'RECEPTIONIST' ? '#FFFFFF' : C.textMuted}
+                    />
+                    <Text style={[
+                      styles.roleButtonText,
+                      staffRole === 'RECEPTIONIST' && styles.roleButtonTextSelected
+                    ]}>
+                      Recepcionista
+                    </Text>
+                  </View>
+                </Pressable>
+                <Pressable
+                  style={[
+                    styles.roleButton,
+                    staffRole === 'DRIVER' && styles.roleButtonSelected
+                  ]}
+                  onPress={() => setStaffRole('DRIVER')}
+                >
+                  <View style={styles.roleButtonContent}>
+                    <IconCar
+                      size={24}
+                      color={staffRole === 'DRIVER' ? '#FFFFFF' : C.textMuted}
+                    />
+                    <Text style={[
+                      styles.roleButtonText,
+                      staffRole === 'DRIVER' && styles.roleButtonTextSelected
+                    ]}>
+                      Conductor
+                    </Text>
+                  </View>
+                </Pressable>
+              </View>
+            </View>
+
+            <View style={styles.nameRow}>
+              <View style={styles.nameInputContainer}>
+                <Text style={styles.label}>
+                  {t(locale, "profile.firstName")}
+                  <Text style={{ color: C.logout }}> *</Text>
+                </Text>
+                <View style={styles.inputContainer}>
+                  <IconUser size={24} color={C.textMuted} style={styles.inputIcon} />
+                  <TextInput
+                    style={[
+                      styles.input,
+                      { borderColor: fieldErrors.firstName ? C.logout : C.border },
+                    ]}
+                    value={firstName}
+                    onChangeText={(v) => {
+                      setFirstName(v);
+                      if (fieldErrors.firstName) setFieldErrors((e) => ({ ...e, firstName: undefined }));
+                    }}
+                    placeholder={t(locale, "profile.placeholderFirstName")}
+                    placeholderTextColor={C.textSubtle}
+                    autoCapitalize="words"
                   />
                 </View>
+                {fieldErrors.firstName ? (
+                  <Text style={styles.fieldError}>{fieldErrors.firstName}</Text>
+                ) : null}
               </View>
-            </Modal>
 
-            <Text style={styles.label}>
-              {t(locale, "profile.firstName")}
-              <Text style={{ color: C.logout }}> *</Text>
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                { borderColor: fieldErrors.firstName ? C.logout : C.border },
-              ]}
-              value={firstName}
-              onChangeText={(v) => {
-                setFirstName(v);
-                if (fieldErrors.firstName) setFieldErrors((e) => ({ ...e, firstName: undefined }));
-              }}
-              placeholder={t(locale, "profile.placeholderFirstName")}
-              placeholderTextColor={C.textSubtle}
-              autoCapitalize="words"
-            />
-            {fieldErrors.firstName ? (
-              <Text style={styles.fieldError}>{fieldErrors.firstName}</Text>
-            ) : null}
-
-            <Text style={styles.label}>
-              {t(locale, "profile.lastName")}
-              <Text style={{ color: C.logout }}> *</Text>
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                { borderColor: fieldErrors.lastName ? C.logout : C.border },
-              ]}
-              value={lastName}
-              onChangeText={(v) => {
-                setLastName(v);
-                if (fieldErrors.lastName) setFieldErrors((e) => ({ ...e, lastName: undefined }));
-              }}
-              placeholder={t(locale, "profile.placeholderLastName")}
-              placeholderTextColor={C.textSubtle}
-              autoCapitalize="words"
-            />
-            {fieldErrors.lastName ? (
-              <Text style={styles.fieldError}>{fieldErrors.lastName}</Text>
-            ) : null}
+              <View style={styles.nameInputContainer}>
+                <Text style={styles.label}>
+                  {t(locale, "profile.lastName")}
+                  <Text style={{ color: C.logout }}> *</Text>
+                </Text>
+                <View style={styles.inputContainer}>
+                  <IconUser size={24} color={C.textMuted} style={styles.inputIcon} />
+                  <TextInput
+                    style={[
+                      styles.input,
+                      { borderColor: fieldErrors.lastName ? C.logout : C.border },
+                    ]}
+                    value={lastName}
+                    onChangeText={(v) => {
+                      setLastName(v);
+                      if (fieldErrors.lastName) setFieldErrors((e) => ({ ...e, lastName: undefined }));
+                    }}
+                    placeholder={t(locale, "profile.placeholderLastName")}
+                    placeholderTextColor={C.textSubtle}
+                    autoCapitalize="words"
+                  />
+                </View>
+                {fieldErrors.lastName ? (
+                  <Text style={styles.fieldError}>{fieldErrors.lastName}</Text>
+                ) : null}
+              </View>
+            </View>
 
             <Text style={styles.label}>
               {t(locale, "profile.email")}
               <Text style={{ color: C.logout }}> *</Text>
             </Text>
-            <TextInput
-              style={[
-                styles.input,
-                { borderColor: fieldErrors.email ? C.logout : C.border },
-              ]}
-              value={email}
-              onChangeText={(v) => {
-                setEmail(v);
-                if (fieldErrors.email) setFieldErrors((e) => ({ ...e, email: undefined }));
-              }}
-              placeholder={t(locale, "profile.placeholderEmail")}
-              placeholderTextColor={C.textSubtle}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+            <View style={styles.inputContainer}>
+              <IconMail size={24} color={C.textMuted} style={styles.inputIcon} />
+              <TextInput
+                style={[
+                  styles.input,
+                  { borderColor: fieldErrors.email ? C.logout : C.border },
+                ]}
+                value={email}
+                onChangeText={(v) => {
+                  setEmail(v);
+                  if (fieldErrors.email) setFieldErrors((e) => ({ ...e, email: undefined }));
+                }}
+                placeholder={t(locale, "profile.placeholderEmail")}
+                placeholderTextColor={C.textSubtle}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
             {fieldErrors.email ? <Text style={styles.fieldError}>{fieldErrors.email}</Text> : null}
 
             <Text style={styles.label}>{t(locale, "profile.phone")}</Text>
-            <TextInput
-              style={[
-                styles.input,
-                { borderColor: fieldErrors.phone ? C.logout : C.border },
-              ]}
-              value={phone}
-              onChangeText={(v) => {
-                setPhone(formatPhoneWithCountryCode(v, getDeviceCountryCode()));
-                if (fieldErrors.phone) setFieldErrors((e) => ({ ...e, phone: undefined }));
-              }}
-              placeholder={`+${COUNTRY_DIAL_CODES[getDeviceCountryCode()] || "1"}`}
-              placeholderTextColor={C.textSubtle}
-              keyboardType="default"
-              autoComplete="tel"
-              textContentType="telephoneNumber"
-            />
+            <View style={styles.inputContainer}>
+              <IconUser size={24} color={C.textMuted} style={styles.inputIcon} />
+              <TextInput
+                style={[
+                  styles.input,
+                  { borderColor: fieldErrors.phone ? C.logout : C.border },
+                ]}
+                value={phone}
+                onChangeText={(v) => {
+                  setPhone(formatPhoneWithCountryCode(v, getDeviceCountryCode()));
+                  if (fieldErrors.phone) setFieldErrors((e) => ({ ...e, phone: undefined }));
+                }}
+                placeholder={`+${COUNTRY_DIAL_CODES[getDeviceCountryCode()] || "1"}`}
+                placeholderTextColor={C.textSubtle}
+                keyboardType="default"
+                autoComplete="tel"
+                textContentType="telephoneNumber"
+              />
+            </View>
             {fieldErrors.phone ? <Text style={styles.fieldError}>{fieldErrors.phone}</Text> : null}
 
             {staffRole === "DRIVER" && (
@@ -673,7 +650,7 @@ export default function ProfileScreen() {
                         : t(locale, "profile.licenseTypesHint")}
                     </Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={22} color={C.textMuted} />
+                  <IconChevronRight size={22} color={C.textMuted} />
                 </Pressable>
 
                 <Modal
@@ -715,9 +692,7 @@ export default function ProfileScreen() {
                                   {labelForLicenseType(item.value, locale)}
                                 </Text>
                               </View>
-                              <Ionicons
-                                name={selected ? "checkmark-circle" : "ellipse-outline"}
-                                size={26}
+                              <IconCircleCheck size={26}
                                 color={selected ? C.primary : C.textMuted}
                               />
                             </Pressable>
@@ -751,7 +726,7 @@ export default function ProfileScreen() {
                         : t(locale, "profile.licenseExpiryPlaceholder")}
                     </Text>
                   </View>
-                  <Ionicons name="calendar-outline" size={22} color={C.primary} />
+                  <IconCalendar size={22} color={C.primary} />
                 </Pressable>
                 {licenseExpiryYmd.trim() ? (
                   <Pressable onPress={() => setLicenseExpiryYmd("")} style={styles.clearExpiryLink}>
@@ -973,7 +948,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       fontFamily: Fonts.primary,
       color: C.textMuted,
       letterSpacing: 0.6,
-      marginBottom: S.xs,
+      marginBottom: 6,
     },
     pickerRow: {
       flexDirection: "row",
@@ -1049,13 +1024,83 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       backgroundColor: C.card,
       borderWidth: 2,
       borderColor: C.border,
-      borderRadius: R.button,
-      paddingHorizontal: S.md,
-      paddingVertical: 14,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 16,
+      paddingLeft: 48,
       fontSize: Math.round(F.status * 0.65),
       fontFamily: Fonts.primary,
       color: C.text,
       marginBottom: S.xs,
+      minHeight: 56,
+    },
+    inputIcon: {
+      position: "absolute",
+      left: 16,
+      top: "50%",
+      marginTop: -12,
+      zIndex: 1,
+    },
+    inputContainer: {
+      position: "relative",
+      marginBottom: 16,
+    },
+    nameRow: {
+      flexDirection: "row",
+      gap: 12,
+    },
+    nameInputContainer: {
+      flex: 1,
+      position: "relative",
+    },
+    roleSelection: {
+      marginBottom: 20,
+    },
+    roleLabel: {
+      fontSize: Math.round(F.status * 0.6),
+      fontWeight: "600",
+      color: C.text,
+      marginBottom: 12,
+    },
+    roleButtons: {
+      flexDirection: 'row',
+      backgroundColor: C.card,
+      borderRadius: 16,
+      padding: 4,
+      borderWidth: 2,
+      borderColor: C.border,
+    },
+    roleButton: {
+      flex: 1,
+      height: 48,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      marginHorizontal: 2,
+    },
+    roleButtonSelected: {
+      backgroundColor: C.primary,
+      shadowColor: C.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    roleButtonContent: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+    },
+    roleButtonText: {
+      fontSize: Math.round(F.status * 0.52),
+      fontWeight: '700',
+      color: C.textMuted,
+      textAlign: 'center',
+      letterSpacing: 0.3,
+    },
+    roleButtonTextSelected: {
+      color: '#FFFFFF',
     },
     fieldError: {
       fontSize: Math.round(F.status * 0.65),
@@ -1070,14 +1115,19 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderTopWidth: StyleSheet.hairlineWidth,
     },
     primaryBtnFooter: {
-      borderRadius: R.button + 2,
+      borderRadius: 16,
       paddingVertical: S.md,
       alignItems: "center",
       justifyContent: "center",
-      minHeight: 52,
+      minHeight: 56,
+      shadowColor: C.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.35,
+      shadowRadius: 8,
+      elevation: 4,
     },
-    primaryBtnText: { color: "#fff", fontWeight: "800", fontSize: Math.round(F.status * 0.65), fontFamily: Fonts.primary },
-    btnDisabled: { opacity: 0.55 },
+    primaryBtnText: { color: "#fff", fontWeight: "600", fontSize: Math.round(F.status * 0.65), fontFamily: Fonts.primary, letterSpacing: 0.5 },
+    btnDisabled: { opacity: 0.5 },
     pressed: { opacity: 0.9 },
     licenseDivider: {
       height: StyleSheet.hairlineWidth,

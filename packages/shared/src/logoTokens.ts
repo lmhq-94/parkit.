@@ -10,11 +10,11 @@ export const LOGO_FONT_FAMILY_MOBILE = "CalSans" as const;
  * Interletraje del wordmark (ligero ajuste negativo; web y RN comparten este valor).
  * En RN `letterSpacing` va en px → usar `logoLetterSpacingPx(size)`.
  */
-export const LOGO_LETTER_SPACING_EM = -0.01;
+export const LOGO_LETTER_SPACING_EM = -0.02;
 
 export function logoLetterSpacingPx(fontSizePx: number): number {
   return fontSizePx * LOGO_LETTER_SPACING_EM;
 }
 
 /** Misma intención que `font-bold` (700) en la web. */
-export const LOGO_FONT_WEIGHT_MOBILE = "700" as const;
+export const LOGO_FONT_WEIGHT_MOBILE = "800" as const;

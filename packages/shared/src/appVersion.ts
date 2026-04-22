@@ -11,12 +11,19 @@ const getExpoConstants = () => {
 
 export function getAppVersionString(): string {
   const Constants = getExpoConstants();
-  if (!Constants) {
+  if (Constants) {
+    return (
+      Constants.expoConfig?.version ??
+      Constants.nativeApplicationVersion ??
+      ""
+    );
+  }
+  
+  // For web environments (Next.js), read from package.json
+  try {
+    const packageJson = require("../../../package.json");
+    return packageJson.version || "";
+  } catch {
     return "";
   }
-  return (
-    Constants.expoConfig?.version ??
-    Constants.nativeApplicationVersion ??
-    ""
-  );
 }

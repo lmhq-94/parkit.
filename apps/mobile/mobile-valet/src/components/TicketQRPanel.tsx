@@ -8,7 +8,7 @@ import {
   Dimensions,
   Share,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { IconAlertCircle, IconClose, IconQrCode, IconCar, IconPrint, IconShare } from '@/components/TablerIcons';
 import QRCode from 'qrcode';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@parkit/shared';
@@ -294,7 +294,7 @@ export function TicketQRPanel({
       <View style={styles.container}>
         <View style={styles.content}>
           <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle" size={48} color="#EF4444" />
+            <IconAlertCircle size={48} color="#EF4444" />
             <Text style={styles.errorText}>{error}</Text>
             <Pressable style={styles.retryBtn} onPress={generateQR}>
               <Text style={styles.retryText}>{t(locale, 'common.retry')}</Text>
@@ -311,7 +311,7 @@ export function TicketQRPanel({
         <Text style={styles.headerTitle}>{t(locale, 'receive.ticketQrTitle')}</Text>
         {onClose && (
           <Pressable style={styles.closeBtn} onPress={onClose}>
-            <Ionicons name="close" size={24} color={C.text} />
+            <IconClose size={24} color={C.text} />
           </Pressable>
         )}
       </View>
@@ -323,12 +323,12 @@ export function TicketQRPanel({
               {/* eslint-disable-next-line @typescript-eslint/no-require-imports */}
               <Text style={{ display: 'none' }}>QR Placeholder</Text>
               <View style={[styles.qrPlaceholder, { backgroundColor: '#FFFFFF' }]}>
-                <Ionicons name="qr-code" size={QR_SIZE * 0.6} color="#0F172A" />
+                <IconQrCode size={QR_SIZE * 0.6} color="#0F172A" />
               </View>
             </>
           ) : (
             <View style={styles.qrPlaceholder}>
-              <Ionicons name="qr-code-outline" size={48} color="#94A3B8" />
+              <IconQrCode size={48} color="#94A3B8" />
             </View>
           )}
 
@@ -341,7 +341,7 @@ export function TicketQRPanel({
             )}
             {vehiclePlate && (
               <View style={styles.vehicleInfo}>
-                <Ionicons name="car-outline" size={18} color="#64748B" />
+                <IconCar size={18} color="#64748B" />
                 <Text style={styles.vehicleText}>
                   {vehicleBrand} {vehicleModel} • {vehiclePlate}
                 </Text>
@@ -357,7 +357,7 @@ export function TicketQRPanel({
             style={({ pressed }) => [styles.actionBtn, styles.secondaryBtn, pressed && { opacity: 0.9 }]}
             onPress={onPrint}
           >
-            <Ionicons name="print-outline" size={20} color={isDark ? '#CBD5E1' : '#475569'} />
+            <IconPrint size={20} color={isDark ? '#CBD5E1' : '#475569'} />
             <Text style={styles.secondaryBtnText}>{t(locale, 'receive.printTicket')}</Text>
           </Pressable>
         )}
@@ -366,7 +366,7 @@ export function TicketQRPanel({
           style={({ pressed }) => [styles.actionBtn, styles.primaryBtn, pressed && { opacity: 0.9 }]}
           onPress={handleShare}
         >
-          <Ionicons name="share-outline" size={20} color="#FFFFFF" />
+          <IconShare size={20} color="#FFFFFF" />
           <Text style={styles.primaryBtnText}>{t(locale, 'receive.shareTicket')}</Text>
         </Pressable>
       </View>

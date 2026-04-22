@@ -111,8 +111,8 @@ export default function WelcomeScreen() {
         brandLabel: {
           marginTop: 28,
           fontSize: 15,
-          fontWeight: "600",
-          letterSpacing: 4,
+          fontWeight: "700",
+          letterSpacing: 2,
           color: "#F8FAFC",
           textTransform: "lowercase",
         },
@@ -150,7 +150,7 @@ export default function WelcomeScreen() {
         },
         btnPrimaryText: {
           fontSize: 16,
-          fontWeight: "800",
+          fontWeight: "600",
           color: "#FFFFFF",
           letterSpacing: 0.5,
         },
@@ -164,7 +164,7 @@ export default function WelcomeScreen() {
         },
         btnSecondaryText: {
           fontSize: 16,
-          fontWeight: "800",
+          fontWeight: "600",
           color: "#FFFFFF",
           letterSpacing: 0.5,
         },

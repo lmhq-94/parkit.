@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@parkit/shared';
+import { IconCard, IconCash } from '@/components/TablerIcons';
 
 interface ReceptionTypeSelectorProps {
   locale: Locale;
@@ -34,8 +34,7 @@ export function ReceptionTypeSelector({
           accessibilityState={{ checked: receptionType === 'CARD' }}
         >
           <View style={[styles.typeCardIcon, receptionType === 'CARD' && styles.typeCardIconActive]}>
-            <Ionicons
-              name="card-outline"
+            <IconCard
               size={28}
               color={receptionType === 'CARD' ? '#fff' : isDark ? '#38BDF8' : '#1D4ED8'}
             />
@@ -56,8 +55,7 @@ export function ReceptionTypeSelector({
           accessibilityState={{ checked: receptionType === 'DIRECT' }}
         >
           <View style={[styles.typeCardIcon, receptionType === 'DIRECT' && styles.typeCardIconActive]}>
-            <Ionicons
-              name="cash-outline"
+            <IconCash
               size={28}
               color={receptionType === 'DIRECT' ? '#fff' : isDark ? '#FBBF24' : '#D97706'}
             />

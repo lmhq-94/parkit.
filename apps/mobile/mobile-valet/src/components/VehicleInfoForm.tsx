@@ -1,8 +1,8 @@
 import React from 'react';
 import { Text, TextInput, Pressable, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@parkit/shared';
+import { IconChevronDown } from '@/components/TablerIcons';
 
 interface VehicleInfoFormProps {
   locale: Locale;
@@ -109,7 +109,7 @@ export function VehicleInfoForm({
           pointerEvents={onBrandPress ? 'none' : 'auto'}
         />
         {onBrandPress && (
-          <Ionicons name="chevron-down" size={20} color="#64748B" style={styles.selectIcon} />
+          <IconChevronDown size={20} color="#64748B" style={styles.selectIcon} />
         )}
       </Pressable>
 
@@ -126,7 +126,7 @@ export function VehicleInfoForm({
           pointerEvents={onModelPress ? 'none' : 'auto'}
         />
         {onModelPress && (
-          <Ionicons name="chevron-down" size={20} color="#64748B" style={styles.selectIcon} />
+          <IconChevronDown size={20} color="#64748B" style={styles.selectIcon} />
         )}
       </Pressable>
 
@@ -143,7 +143,7 @@ export function VehicleInfoForm({
           pointerEvents={onColorPress ? 'none' : 'auto'}
         />
         {onColorPress && (
-          <Ionicons name="chevron-down" size={20} color="#64748B" style={styles.selectIcon} />
+          <IconChevronDown size={20} color="#64748B" style={styles.selectIcon} />
         )}
       </Pressable>
 

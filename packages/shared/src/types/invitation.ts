@@ -1,12 +1,16 @@
-import { SystemRole } from "./user";
+import { SystemRole, ValetStaffRole } from "./user";
 
-export type InvitationStatus = "PENDING" | "ACCEPTED" | "EXPIRED";
+export type InvitationStatus = "PENDING" | "ACCEPTED" | "CANCELLED" | "EXPIRED";
 
 export interface Invitation {
   id: string;
   email: string;
   companyId: string;
   role: SystemRole;
+  // Campos opcionales para valets
+  valetStaffRole?: ValetStaffRole;
+  licenseNumber?: string;
+  licenseExpiry?: string | Date;
   token: string;
   status: InvitationStatus;
   invitedByUserId: string;

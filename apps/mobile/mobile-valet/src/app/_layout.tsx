@@ -72,15 +72,19 @@ export default function RootLayout() {
         <Stack.Screen name="help" />
         <Stack.Screen
           name="welcome"
-          options={{ animation: 'fade', gestureEnabled: false }}
+          options={{ animation: 'none', gestureEnabled: false }}
         />
         <Stack.Screen
           name="login"
-          options={{ animation: 'slide_from_right', gestureEnabled: true }}
+          options={{ animation: 'none', gestureEnabled: true }}
         />
         <Stack.Screen
           name="forgot-password"
-          options={{ animation: 'slide_from_right', gestureEnabled: true }}
+          options={{ animation: 'none', gestureEnabled: true }}
+        />
+        <Stack.Screen
+          name="signup"
+          options={{ animation: 'none', gestureEnabled: true }}
         />
       </Stack>
       <FeedbackModal />

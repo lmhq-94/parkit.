@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { IconCheck } from '@/components/TablerIcons';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@parkit/shared';
 
@@ -51,7 +51,7 @@ export function TicketCodeForm({
       {/* Unlinked toggle */}
       <Pressable onPress={onToggleUnlinked} style={styles.toggleRow}>
         <View style={[styles.toggleBox, unlinked && styles.toggleBoxActive]}>
-          {unlinked && <Ionicons name="checkmark" size={14} color="#fff" />}
+          {unlinked && <IconCheck size={14} color="#fff" />}
         </View>
         <Text style={styles.toggleText}>
           {unlinked ? t(locale, 'receive.ticketKeySameToggle') : t(locale, 'receive.ticketKeySeparateToggle')}
@@ -74,7 +74,7 @@ export function TicketCodeForm({
       {/* Acknowledgment */}
       <Pressable onPress={onAcknowledge} style={styles.ackRow}>
         <View style={[styles.toggleBox, acknowledged && styles.toggleBoxActive]}>
-          {acknowledged && <Ionicons name="checkmark" size={14} color="#fff" />}
+          {acknowledged && <IconCheck size={14} color="#fff" />}
         </View>
         <Text style={styles.ackText}>{t(locale, 'receive.wizardTicketAck')}</Text>
       </Pressable>

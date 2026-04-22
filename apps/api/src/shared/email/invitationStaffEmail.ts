@@ -7,6 +7,8 @@ const INVITATION_BASE_URL =
 const FROM_EMAIL =
   process.env.INVITATION_FROM_EMAIL || "Parkit <onboarding@resend.dev>";
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL;
+const VALET_APP_IOS_URL = process.env.VALET_APP_IOS_URL || "#";
+const VALET_APP_ANDROID_URL = process.env.VALET_APP_ANDROID_URL || "#";
 
 export interface SendInvitationStaffParams {
   to: string;
@@ -15,6 +17,7 @@ export interface SendInvitationStaffParams {
   token?: string;
   companyName?: string;
   invitationLink: string;
+  isValet?: boolean;
 }
 
 function buildInviteLink(token: string): string {
@@ -25,7 +28,7 @@ function buildInviteLink(token: string): string {
 export async function sendInvitationStaffEmail(
   params: SendInvitationStaffParams,
 ): Promise<{ sent: boolean; error?: string }> {
-  const { to, firstName: _firstName, lastName: _lastName, token, companyName, invitationLink } = params;
+  const { to, firstName: _firstName, lastName: _lastName, token, companyName, invitationLink, isValet = false } = params;
 
   const isDevelopment = process.env.NODE_ENV !== "production";
   const actualTo = isDevelopment ? "luis.herrera506@gmail.com" : to;
@@ -97,7 +100,10 @@ export async function sendInvitationStaffEmail(
                   <tr>
                     <td style="padding-bottom: 28px;">
                       <p style="font-size: 15px; line-height: 1.6; color: #475569; margin: 0;">
-                        Has sido invitado a unirte a <strong style="color: #0f172a; font-weight: 600;">${companyDisplay || "Parkit"}</strong> con privilegios de administración. Configura tu acceso para empezar a gestionar la plataforma.
+                        ${isValet
+                          ? `Has sido invitado a unirte al equipo de <strong style="color: #0f172a; font-weight: 600;">${companyDisplay || "Parkit"}</strong> como valet. Descarga nuestra app móvil para empezar a trabajar.`
+                          : `Has sido invitado a unirte a <strong style="color: #0f172a; font-weight: 600;">${companyDisplay || "Parkit"}</strong> con privilegios de administración. Configura tu acceso para empezar a gestionar la plataforma.`
+                        }
                       </p>
                     </td>
                   </tr>
@@ -111,10 +117,33 @@ export async function sendInvitationStaffEmail(
                   <tr>
                     <td style="padding-bottom: 20px;">
                       <a href="${inviteLink}" target="_blank" style="background-color: #2563eb; color: #ffffff; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">
-                        Configurar acceso
+                        ${isValet ? "Aceptar invitación" : "Configurar acceso"}
                       </a>
                     </td>
                   </tr>
+                  ${isValet ? `
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <p style="font-size: 14px; color: #64748b; margin: 0 0 16px 0; line-height: 1.5;">
+                        O descarga la app directamente:
+                      </p>
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                        <tr>
+                          <td style="padding-right: 12px;">
+                            <a href="${VALET_APP_IOS_URL}" target="_blank" style="display: inline-block; background-color: #000000; color: #ffffff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 500; font-size: 13px;">
+                               App Store
+                            </a>
+                          </td>
+                          <td>
+                            <a href="${VALET_APP_ANDROID_URL}" target="_blank" style="display: inline-block; background-color: #000000; color: #ffffff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 500; font-size: 13px;">
+                              Google Play
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  ` : ''}
                   <tr>
                     <td>
                       <p style="font-size: 13px; color: #64748b; margin: 0; line-height: 1.5;">

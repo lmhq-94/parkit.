@@ -11,10 +11,10 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
+import { IconHandStop, IconCar, IconArrowUndo } from "@/components/TablerIcons";
 import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useCompanyContext } from "@/lib/useCompanyContext";
@@ -153,7 +153,7 @@ export default function ReturnPickupScreen() {
           <View style={{ width: 44 }} />
         </View>
         <View style={styles.blocked}>
-          <Ionicons name="hand-left" size={56} color={C.textMuted} />
+          <IconHandStop size={56} color={C.textMuted} />
           <Text style={styles.blockedTitle}>{t(locale, "receive.driverBlockedTitle")}</Text>
           <Text style={styles.blockedBody}>{t(locale, "receive.driverBlockedBody")}</Text>
         </View>
@@ -201,7 +201,7 @@ export default function ReturnPickupScreen() {
             <ActivityIndicator style={{ marginVertical: 24 }} color={C.primary} size="large" />
           ) : filtered.length === 0 ? (
             <View style={[styles.empty, { flex: 1, justifyContent: "center" }]}>
-              <Ionicons name="car" size={72} color={C.primary} />
+              <IconCar size={72} color={C.primary} />
               <Text style={styles.emptyTitle}>{t(locale, "returnPickup.emptyTitle")}</Text>
               <Text style={styles.emptyHint}>{t(locale, "returnPickup.empty")}</Text>
             </View>
@@ -282,7 +282,7 @@ export default function ReturnPickupScreen() {
                 <ActivityIndicator color="#fff" />
               ) : (
                 <>
-                  <Ionicons name="arrow-undo-circle" size={24} color="#fff" />
+                  <IconArrowUndo size={24} color="#fff" />
                   <Text style={styles.primaryBtnText}>
                     {selectedTicket?.status === "REQUEST_DELIVERY"
                       ? t(locale, "returnPickup.ctaMarkDelivered")

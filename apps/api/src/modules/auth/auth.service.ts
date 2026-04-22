@@ -180,11 +180,10 @@ export class AuthService {
    */
   static async registerInvited(data: RegisterInvitedDTO) {
     const payload = verifyInvitationToken(data.token);
-    const { email, companyId, role } = payload;
+    const { email, companyId, role, valetStaffRole, licenseNumber, licenseExpiry } = payload;
 
     // Check if invitation exists and is pending
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const invitation = await (prisma as any).invitation.findUnique({
+    const invitation = await prisma.invitation.findUnique({
       where: { token: data.token, status: "PENDING" },
     });
 
@@ -195,13 +194,15 @@ export class AuthService {
     const passwordHash = await hashPassword(data.password);
 
     const user = await prisma.$transaction(async (tx) => {
+      const userCompanyId = role === "STAFF" ? null : companyId;
+
       const newUser = await tx.user.create({
         data: {
           firstName: data.firstName.trim(),
           lastName: data.lastName.trim(),
           email: email.toLowerCase().trim(),
           passwordHash,
-          companyId,
+          companyId: userCompanyId,
           systemRole: role,
         },
       });
@@ -216,6 +217,20 @@ export class AuthService {
         });
       }
 
+      // If registering a STAFF with valet data, create the Valet profile
+      if (role === "STAFF" && valetStaffRole) {
+        await tx.valet.create({
+          data: {
+            userId: newUser.id,
+            companyId: null,
+            staffRole: valetStaffRole,
+            licenseNumber: licenseNumber || null,
+            licenseExpiry: licenseExpiry ? new Date(licenseExpiry) : null,
+            lastPresenceAt: new Date(),
+          },
+        });
+      }
+
       // If registering an ADMIN, activate the company
       if (role === "ADMIN" && companyId) {
         await tx.company.update({
@@ -224,8 +239,7 @@ export class AuthService {
         });
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (tx as any).invitation.update({
+      await tx.invitation.update({
         where: { id: invitation.id },
         data: { status: "ACCEPTED" },
       });

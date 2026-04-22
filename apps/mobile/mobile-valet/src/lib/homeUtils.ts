@@ -92,7 +92,50 @@ export const TILE_ICON_SIZE = 30;
 export const HEADER_RADIUS_BOTTOM = 22;
 
 /** Tamaño del avatar en header (círculo perfecto: radio = mitad) */
-export const HEADER_AVATAR_SIZE = 48;
+export const HEADER_AVATAR_SIZE = 40;
 
 /** Grosor del anillo de estado alrededor del avatar (borde de color) */
 export const AVATAR_PRESENCE_RING = 3;
+
+/**
+ * Calcula tamaños proporcionales para elementos del header basados en el tamaño del logo
+ * y la escala de texto de accesibilidad
+ */
+export function getHeaderSizes(logoSize: number, textScale: number) {
+  // Avatar proporcional al logo (1.25x el tamaño del logo)
+  const avatarSize = Math.round(logoSize * 1.25);
+  
+  // Tamaños de texto basados en el logo y escala de accesibilidad
+  const displayNameSize = Math.round(logoSize * 0.65 * textScale);
+  const roleSize = Math.round(logoSize * 0.45 * textScale);
+  
+  // Status dot proporcional al avatar
+  const statusDotSize = Math.max(10, Math.round(avatarSize * 0.35));
+  const statusDotBorderWidth = Math.max(1, Math.round(avatarSize * 0.075));
+  
+  // Badge para notificaciones
+  const badgeSize = Math.max(14, Math.round(avatarSize * 0.45));
+  const badgeFontSize = Math.max(10, Math.round(avatarSize * 0.3 * textScale));
+  
+  // Espaciado proporcional
+  const gap = Math.round(logoSize * 0.3);
+  const avatarPadding = Math.round(avatarSize * 0.1);
+  
+  return {
+    logoSize,
+    avatarSize,
+    displayNameSize,
+    roleSize,
+    statusDotSize,
+    statusDotBorderWidth,
+    badgeSize,
+    badgeFontSize,
+    gap,
+    avatarPadding,
+  };
+}
+
+/**
+ * Tamaño base del logo para el header (se usa como referencia para todos los demás elementos)
+ */
+export const HEADER_LOGO_BASE_SIZE = 32;

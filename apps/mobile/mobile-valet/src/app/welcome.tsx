@@ -1,16 +1,17 @@
 import { View, Text, StyleSheet, Pressable, StatusBar, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Logo } from "@parkit/shared";
-import { useLocaleStore } from "@/lib/store";
+import { useLocaleStore, useAccessibilityStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { useMemo, useState } from "react";
 import { AnimatedAuthBackground } from "@/components/AnimatedAuthBackground";
+import { AnimatedFormCard } from "@/components/AnimatedFormCard";
 import { useValetTheme, ACCENT, useResponsiveLayout } from "@/theme/valetTheme";
-import { getAppVersionString } from "@parkit/shared";
+import { Logo } from "@parkit/shared";
 import { GoogleIcon, MicrosoftIcon, FacebookIcon } from "@/components/OAuthIcons";
 
 const LOGO_SIZE = 72;
+
 const CONTROL_HEIGHT = 56;
 
 export function WelcomeContent({
@@ -24,12 +25,10 @@ export function WelcomeContent({
   const insets = useSafeAreaInsets();
   const theme = useValetTheme();
   const responsive = useResponsiveLayout();
+  const { textScale } = useAccessibilityStore();
   const { auth: a } = theme;
   const F = theme.font;
   const [oauthLoading, _setOauthLoading] = useState<string | null>(null);
-  const heroMinHeight = Math.round(
-    (responsive.isLandscape ? responsive.height * 0.24 : responsive.height * 0.32)
-  );
 
   const styles = useMemo(
     () =>
@@ -50,18 +49,19 @@ export function WelcomeContent({
           backgroundColor: 'transparent',
         },
         hero: {
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: heroMinHeight,
+          position: 'absolute',
+          top: 140,
+          left: 0,
+          right: 0,
+          alignItems: 'center',
         },
         logoWrap: { alignItems: "center" },
         logo: { marginBottom: 0 },
         valetLabel: {
-          marginTop: 28,
-          fontSize: Math.round(F.status * 0.65),
-          fontWeight: "600",
-          letterSpacing: 4,
+          marginTop: 0,
+          fontSize: Math.round(F.secondary * textScale),
+          fontWeight: "700",
+          letterSpacing: 2,
           color: a.authHeroValetLabel,
           textTransform: "lowercase",
         },
@@ -79,8 +79,8 @@ export function WelcomeContent({
           alignSelf: "center",
         },
         ctaText: {
-          fontSize: Math.round(F.status * 0.65),
-          fontWeight: "800",
+          fontSize: Math.round(F.status * 0.65 * textScale),
+          fontWeight: "600",
           color: a.text,
           marginBottom: 20,
           textAlign: "center",
@@ -99,8 +99,8 @@ export function WelcomeContent({
           elevation: 4,
         },
         btnPrimaryText: {
-          fontSize: Math.round(F.status * 0.65),
-          fontWeight: "800",
+          fontSize: Math.round(F.status * 0.65 * textScale),
+          fontWeight: "600",
           color: a.btnLoginText,
           letterSpacing: 0.5,
         },
@@ -113,15 +113,15 @@ export function WelcomeContent({
           marginBottom: 0,
         },
         btnSecondaryText: {
-          fontSize: Math.round(F.status * 0.65),
-          fontWeight: "800",
+          fontSize: Math.round(F.status * 0.65 * textScale),
+          fontWeight: "600",
           color: a.btnSignupText,
           letterSpacing: 0.5,
         },
         btnPressed: { opacity: 0.9 },
         versionLabel: {
           marginTop: 24,
-          fontSize: Math.round(F.status * 0.65),
+          fontSize: Math.round(F.status * 0.65 * textScale),
           fontWeight: "500",
           color: a.textMuted,
           textAlign: "center",
@@ -139,7 +139,7 @@ export function WelcomeContent({
         },
         dividerText: {
           marginHorizontal: 10,
-          fontSize: Math.round(F.status * 0.65),
+          fontSize: Math.round(F.status * 0.65 * textScale),
           color: a.textMuted,
           fontWeight: '500',
         },
@@ -166,12 +166,8 @@ export function WelcomeContent({
           opacity: 0.6,
         },
       }),
-    [a, heroMinHeight, responsive.formMaxWidth, responsive.horizontalPadding, F]
+    [a, responsive.formMaxWidth, responsive.horizontalPadding, F, textScale]
   );
-
-  const versionLabel = t(locale, "welcome.version", {
-    version: getAppVersionString() || "—",
-  });
 
   return (
     <AnimatedAuthBackground isDark={theme.isDark}>
@@ -188,17 +184,24 @@ export function WelcomeContent({
         </View>
 
         <View>
-          <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-            <Text style={styles.ctaText}>{t(locale, "welcome.cta")}</Text>
+          <AnimatedFormCard isVisible={true} animationType="slide_from_bottom">
+            <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+              <Text style={styles.ctaText}>{t(locale, "welcome.cta")}</Text>
             <Pressable
               onPress={onLogin}
               style={({ pressed }) => [styles.btnPrimary, pressed && styles.btnPressed]}
+              accessibilityLabel={t(locale, "welcome.login")}
+              accessibilityRole="button"
+              accessibilityHint="Navegar a la pantalla de inicio de sesión"
             >
               <Text style={styles.btnPrimaryText}>{t(locale, "welcome.login")}</Text>
             </Pressable>
             <Pressable
               onPress={onSignup}
               style={({ pressed }) => [styles.btnSecondary, pressed && styles.btnPressed]}
+              accessibilityLabel={t(locale, "welcome.signup")}
+              accessibilityRole="button"
+              accessibilityHint="Navegar a la pantalla de registro"
             >
               <Text style={styles.btnSecondaryText}>{t(locale, "welcome.signup")}</Text>
             </Pressable>
@@ -206,7 +209,7 @@ export function WelcomeContent({
             {/* OAuth Divider */}
             <View style={styles.oauthDivider}>
               <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>o</Text>
+              <Text style={styles.dividerText}>o continúa con</Text>
               <View style={styles.dividerLine} />
             </View>
 
@@ -218,13 +221,15 @@ export function WelcomeContent({
                 style={({ pressed }) => [
                   styles.oauthButton,
                   pressed && styles.oauthButtonPressed,
-                  oauthLoading === 'google' && styles.oauthButtonDisabled,
+                  oauthLoading !== null && styles.oauthButtonDisabled,
                 ]}
+                accessibilityLabel="Iniciar sesión con Google"
+                accessibilityRole="button"
               >
                 {oauthLoading === 'google' ? (
-                  <ActivityIndicator size="small" color="#EA4335" />
+                  <ActivityIndicator size="small" color={a.text} />
                 ) : (
-                  <GoogleIcon size={24} />
+                  <GoogleIcon />
                 )}
               </Pressable>
               <Pressable 
@@ -233,13 +238,15 @@ export function WelcomeContent({
                 style={({ pressed }) => [
                   styles.oauthButton,
                   pressed && styles.oauthButtonPressed,
-                  oauthLoading === 'microsoft' && styles.oauthButtonDisabled,
+                  oauthLoading !== null && styles.oauthButtonDisabled,
                 ]}
+                accessibilityLabel="Iniciar sesión con Microsoft"
+                accessibilityRole="button"
               >
                 {oauthLoading === 'microsoft' ? (
-                  <ActivityIndicator size="small" color="#0078D4" />
+                  <ActivityIndicator size="small" color={a.text} />
                 ) : (
-                  <MicrosoftIcon size={24} color="#0078D4" />
+                  <MicrosoftIcon />
                 )}
               </Pressable>
               <Pressable 
@@ -248,21 +255,20 @@ export function WelcomeContent({
                 style={({ pressed }) => [
                   styles.oauthButton,
                   pressed && styles.oauthButtonPressed,
-                  oauthLoading === 'facebook' && styles.oauthButtonDisabled,
+                  oauthLoading !== null && styles.oauthButtonDisabled,
                 ]}
+                accessibilityLabel="Iniciar sesión con Facebook"
+                accessibilityRole="button"
               >
                 {oauthLoading === 'facebook' ? (
-                  <ActivityIndicator size="small" color="#1877F2" />
+                  <ActivityIndicator size="small" color={a.text} />
                 ) : (
-                  <FacebookIcon size={24} color="#1877F2" />
+                  <FacebookIcon />
                 )}
               </Pressable>
             </View>
-
-            <Text style={styles.versionLabel} accessibilityRole="text">
-              {versionLabel}
-            </Text>
-          </View>
+            </View>
+          </AnimatedFormCard>
         </View>
       </View>
     </AnimatedAuthBackground>
@@ -275,7 +281,7 @@ export default function WelcomeScreen() {
   return (
     <WelcomeContent
       onLogin={() => router.push("/login")}
-      onSignup={() => router.push("/login?mode=signup")}
+      onSignup={() => router.push("/signup")}
     />
   );
 }

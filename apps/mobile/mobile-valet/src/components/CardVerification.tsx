@@ -6,10 +6,10 @@ import {
   Pressable,
   ActivityIndicator,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Linking from 'expo-linking';
 import { t } from '@/lib/i18n';
+import { IconCircleCheck, IconShieldCheck, IconAlertCircle, IconArrowRight, IconScan, IconExternalLink, IconCard } from '@/components/TablerIcons';
 import type { Locale } from '@parkit/shared';
 import api from '@/lib/api';
 import { messageFromAxios } from "@parkit/shared";
@@ -317,11 +317,7 @@ export function CardVerification({
         <View style={styles.innerCard}>
           <View style={styles.cardRow}>
             <View style={styles.iconBubble}>
-              <Ionicons
-                name={cardVerificationStarted ? 'checkmark-done-circle' : 'card-outline'}
-                size={26}
-                color={cardVerificationStarted ? '#10B981' : C.primary}
-              />
+              {cardVerificationStarted ? <IconCircleCheck size={26} color="#10B981" /> : <IconCard size={26} color={C.primary} />}
             </View>
             <View style={styles.textCol}>
               <Text style={styles.cardTitle}>
@@ -341,7 +337,7 @@ export function CardVerification({
             </View>
             {cardVerificationStarted ? (
               <View style={styles.verifiedBadge}>
-                <Ionicons name="shield-checkmark-outline" size={14} color="#10B981" />
+                <IconShieldCheck size={14} color="#10B981" />
                 <Text style={styles.verifiedText}>{t(locale, 'receive.cardVerifyStarted')}</Text>
               </View>
             ) : (
@@ -357,7 +353,7 @@ export function CardVerification({
 
       {error && (
         <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle" size={18} color="#EF4444" />
+          <IconAlertCircle size={18} color="#EF4444" />
           <Text style={styles.errorText}>{error}</Text>
         </View>
       )}
@@ -384,7 +380,7 @@ export function CardVerification({
               end={{ x: 1, y: 1 }}
               style={styles.primaryBtnBg}
             >
-              <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+              <IconArrowRight size={18} color="#FFFFFF" />
               <Text style={styles.primaryBtnText}>{t(locale, 'common.next')}</Text>
             </LinearGradient>
           </Pressable>
@@ -401,7 +397,7 @@ export function CardVerification({
                 end={{ x: 1, y: 1 }}
                 style={styles.primaryBtnBg}
               >
-                <Ionicons name="scan-outline" size={18} color="#FFFFFF" />
+                <IconScan size={18} color="#FFFFFF" />
                 <Text style={styles.primaryBtnText}>{t(locale, 'receive.cardScanButton')}</Text>
               </LinearGradient>
             </Pressable>
@@ -421,7 +417,7 @@ export function CardVerification({
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
                   <>
-                    <Ionicons name="open-outline" size={18} color="#FFFFFF" />
+                    <IconExternalLink size={18} color="#FFFFFF" />
                     <Text style={styles.primaryBtnText}>{t(locale, 'receive.cardVerifyStart')}</Text>
                   </>
                 )}

@@ -5,7 +5,7 @@ import { parseQueryParamArray } from "../../shared/utils/queryParser";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
 import type { CreateUserInput } from "../../shared/validators";
 import { InvitationsService } from "./invitations.service";
-import { SystemRole } from "@prisma/client";
+import { SystemRole, ValetStaffRole } from "@prisma/client";
 
 export class UsersController {
   static async getProfile(req: Request, res: Response) {
@@ -202,7 +202,7 @@ export class UsersController {
   static async invite(req: Request, res: Response) {
     try {
       const companyId = req.user.companyId!;
-      const { email, role } = req.body;
+      const { email, role, valetStaffRole, licenseNumber, licenseExpiry } = req.body;
       if (!email) throw new Error("Email is required");
 
       const invitation = await InvitationsService.sendInvitation({
@@ -210,6 +210,10 @@ export class UsersController {
         companyId,
         role: (role as SystemRole) || SystemRole.CUSTOMER,
         invitedByUserId: req.user.userId,
+        // Datos opcionales para valets
+        valetStaffRole: valetStaffRole as ValetStaffRole | undefined,
+        licenseNumber,
+        licenseExpiry,
       });
 
       return created(res, invitation);
@@ -221,7 +225,7 @@ export class UsersController {
   static async inviteBatch(req: Request, res: Response) {
     try {
       const companyId = req.user.companyId!;
-      const { emails, role } = req.body;
+      const { emails, role, valetStaffRole, licenseNumber, licenseExpiry } = req.body;
       if (!Array.isArray(emails) || emails.length === 0) {
         throw new Error("Emails array is required and cannot be empty");
       }
@@ -231,6 +235,10 @@ export class UsersController {
         companyId,
         role: (role as SystemRole) || SystemRole.ADMIN,
         invitedByUserId: req.user.userId,
+        // Datos opcionales para valets
+        valetStaffRole: valetStaffRole as ValetStaffRole | undefined,
+        licenseNumber,
+        licenseExpiry,
       });
 
       return created(res, results);

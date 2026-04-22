@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../shared/prisma";
 import type { ParkingSlot, ParkingType, SlotType } from "@prisma/client";
 
@@ -24,7 +25,7 @@ interface UpdateParkingDTO {
   longitude?: number;
   type?: ParkingType;
   totalSlots?: number;
-  dailyPricingConfig?: Record<string, unknown> | null;
+  dailyPricingConfig?: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
 }
 
 export class ParkingsService {
@@ -65,7 +66,16 @@ export class ParkingsService {
   static async list(companyId: string) {
     return prisma.parking.findMany({
       where: { companyId },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        latitude: true,
+        longitude: true,
+        geofenceRadius: true,
+        type: true,
+        totalSlots: true,
+        dailyPricingConfig: true,
         company: { select: { currency: true } },
         slots: {
           select: {
@@ -136,13 +146,9 @@ export class ParkingsService {
     });
   }
 
-  static async update(
-    companyId: string,
-    parkingId: string,
-    data: UpdateParkingDTO
-  ) {
+  static async update(companyId: string, id: string, data: UpdateParkingDTO) {
     return prisma.parking.update({
-      where: { id: parkingId },
+      where: { id, companyId },
       data: {
         name: data.name,
         address: data.address,

@@ -1,5 +1,4 @@
 import { View, Text, Pressable } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useValetTheme } from "@/theme/valetTheme";
 import type { ComponentType } from "react";
 import {
@@ -32,10 +31,7 @@ type Styles = {
 
 interface GridTileProps {
   variant: GridVariant;
-  /** Ionicon por defecto; omitir si usas `lucideIcon`. */
-  icon?: keyof typeof Ionicons.glyphMap;
-  /** Icono Lucide (p. ej. SquareParking para recibir vehículo). */
-  lucideIcon?: TileLucideIcon;
+  lucideIcon: TileLucideIcon;
   iconSize?: number;
   title: string;
   sub: string;
@@ -48,7 +44,6 @@ interface GridTileProps {
 export function GridTile(props: GridTileProps) {
   const {
     variant,
-    icon,
     lucideIcon: LucideCmp,
     iconSize = TILE_ICON_SIZE,
     title,
@@ -88,11 +83,7 @@ export function GridTile(props: GridTileProps) {
         </View>
       ) : null}
       <View style={[styles.tileIconWrap, { backgroundColor: iconBubbleBg }]}>
-        {LucideCmp ? (
-          <LucideCmp size={iconSize} color={iconColor} strokeWidth={2.25} />
-        ) : (
-          <Ionicons name={icon ?? "ellipse-outline"} size={iconSize} color={iconColor} />
-        )}
+        <LucideCmp size={iconSize} color={iconColor} strokeWidth={2.25} />
       </View>
       <Text
         style={[

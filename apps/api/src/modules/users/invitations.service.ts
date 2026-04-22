@@ -1,5 +1,5 @@
 import { prisma } from "../../shared/prisma";
-import { SystemRole, InvitationStatus } from "@prisma/client";
+import { SystemRole, InvitationStatus, ValetStaffRole } from "@prisma/client";
 import { signInvitationToken } from "../auth/auth.utils";
 import { sendInvitationStaffEmail } from "../../shared/email/invitationStaffEmail";
 import { sendInvitationEmployeeEmail } from "../../shared/email/invitationEmployeeEmail";
@@ -14,8 +14,12 @@ export class InvitationsService {
     companyId: string | null;
     role: SystemRole;
     invitedByUserId: string;
+    // Datos opcionales para valets
+    valetStaffRole?: ValetStaffRole;
+    licenseNumber?: string;
+    licenseExpiry?: string;
   }) {
-    const { email, companyId, role, invitedByUserId } = data;
+    const { email, companyId, role, invitedByUserId, valetStaffRole, licenseNumber, licenseExpiry } = data;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -45,7 +49,10 @@ export class InvitationsService {
         invitedByUserId,
         expiresAt,
         status: InvitationStatus.PENDING,
-        ...(companyId && { companyId }),
+        ...(role === SystemRole.STAFF ? {} : { companyId: companyId || null }),
+        ...(valetStaffRole && { valetStaffRole }),
+        ...(licenseNumber && { licenseNumber }),
+        ...(licenseExpiry && { licenseExpiry: new Date(licenseExpiry) }),
       },
     });
 
@@ -73,6 +80,7 @@ export class InvitationsService {
         to: email,
         companyName: companyName || "Parkit",
         invitationLink: registerUrl,
+        isValet: role === SystemRole.STAFF, // Mostrar botones de descarga de app para valets
       });
     }
 
@@ -103,8 +111,12 @@ export class InvitationsService {
     companyId: string | null;
     role: SystemRole;
     invitedByUserId: string;
+    // Datos opcionales para valets (aplicados a todos los emails del batch)
+    valetStaffRole?: ValetStaffRole;
+    licenseNumber?: string;
+    licenseExpiry?: string;
   }) {
-    const { emails, companyId, role, invitedByUserId } = data;
+    const { emails, companyId, role, invitedByUserId, valetStaffRole, licenseNumber, licenseExpiry } = data;
     const results: Array<{
       email: string;
       success: boolean;
@@ -119,6 +131,9 @@ export class InvitationsService {
           companyId,
           role,
           invitedByUserId,
+          valetStaffRole,
+          licenseNumber,
+          licenseExpiry,
         });
         results.push({ email, success: true, invitation });
       } catch (error: unknown) {

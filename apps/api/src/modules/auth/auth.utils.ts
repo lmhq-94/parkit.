@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { SystemRole } from "@prisma/client";
+import { SystemRole, ValetStaffRole } from "@prisma/client";
 
 // JWT configuration - expires in 7 days for security balance between usability and token refresh
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
@@ -49,6 +49,10 @@ export interface InvitationPayload {
   companyId: string;
   role: SystemRole;
   type: string;
+  // Datos opcionales para valets
+  valetStaffRole?: ValetStaffRole;
+  licenseNumber?: string;
+  licenseExpiry?: string;
 }
 
 export const verifyInvitationToken = (token: string): InvitationPayload => {

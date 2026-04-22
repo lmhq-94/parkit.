@@ -3,7 +3,7 @@ import { useAuthStore, usePreferencesStore } from "@/lib/store";
 import { clearUser } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { IconCheck } from "@/components/TablerIcons";
 
 export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
@@ -84,14 +84,14 @@ export default function ProfileScreen() {
           onPress={() => setPendingLocale("es")}
         >
           <Text style={styles.localeLabel}>{t(locale, "settings.spanish")}</Text>
-          {pendingLocale === "es" && <Ionicons name="checkmark-circle" size={22} color="#0066FF" />}
+          {pendingLocale === "es" && <IconCheck size={22} color="#0066FF" />}
         </Pressable>
         <Pressable
           style={[styles.localeRow, pendingLocale === "en" && styles.localeRowActive]}
           onPress={() => setPendingLocale("en")}
         >
           <Text style={styles.localeLabel}>{t(locale, "settings.english")}</Text>
-          {pendingLocale === "en" && <Ionicons name="checkmark-circle" size={22} color="#0066FF" />}
+          {pendingLocale === "en" && <IconCheck size={22} color="#0066FF" />}
         </Pressable>
 
         {/* Theme Selection */}
@@ -101,21 +101,21 @@ export default function ProfileScreen() {
           onPress={() => setPendingTheme("system")}
         >
           <Text style={styles.localeLabel}>{t(locale, "settings.themeSystem")}</Text>
-          {pendingTheme === "system" && <Ionicons name="checkmark-circle" size={22} color="#0066FF" />}
+          {pendingTheme === "system" && <IconCheck size={22} color="#0066FF" />}
         </Pressable>
         <Pressable
           style={[styles.localeRow, pendingTheme === "light" && styles.localeRowActive]}
           onPress={() => setPendingTheme("light")}
         >
           <Text style={styles.localeLabel}>{t(locale, "settings.themeLight")}</Text>
-          {pendingTheme === "light" && <Ionicons name="checkmark-circle" size={22} color="#0066FF" />}
+          {pendingTheme === "light" && <IconCheck size={22} color="#0066FF" />}
         </Pressable>
         <Pressable
           style={[styles.localeRow, pendingTheme === "dark" && styles.localeRowActive]}
           onPress={() => setPendingTheme("dark")}
         >
           <Text style={styles.localeLabel}>{t(locale, "settings.themeDark")}</Text>
-          {pendingTheme === "dark" && <Ionicons name="checkmark-circle" size={22} color="#0066FF" />}
+          {pendingTheme === "dark" && <IconCheck size={22} color="#0066FF" />}
         </Pressable>
 
         {/* Save Button */}

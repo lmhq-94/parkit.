@@ -17,9 +17,9 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useRouter, useLocalSearchParams } from "expo-router";
 import * as Linking from "expo-linking";
-import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatPlate, getVehicleColorOptions, formatVehicleColorLabel, normalizeVehicleColorValue } from "@parkit/shared";
+import { IconHandStop, IconTicket, IconBuilding, IconCircleCheck, IconQrCode, IconCard, IconCalendar, IconCash, IconList, IconLocationFilled, IconResize, IconCheckbox, IconSquare, IconCamera, IconGallery, IconCircleX, IconUser, IconClock, IconHourglass } from "@/components/TablerIcons";
 import { useAuthStore, useLocaleStore, useCompanyStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import type { Locale as _Locale } from "@parkit/shared";
@@ -1159,7 +1159,7 @@ export default function ReceiveScreen() {
           <View style={{ width: 44 }} />
         </View>
         <View style={styles.blocked}>
-          <Ionicons name="hand-left-outline" size={32} color={C.textMuted} />
+          <IconHandStop size={32} color={C.textMuted} />
           <Text style={styles.blockedTitle}>{t(locale, "receive.driverBlockedTitle")}</Text>
           <Text style={styles.blockedBody}>{t(locale, "receive.driverBlockedBody")}</Text>
         </View>
@@ -1481,7 +1481,7 @@ export default function ReceiveScreen() {
               <ActivityIndicator color="#fff" />
             ) : (
               <>
-                <Ionicons name="ticket-outline" size={18} color="#fff" />
+                <IconTicket size={18} color="#fff" />
                 <Text style={styles.primaryBtnText}>{t(locale, "receive.submit")}</Text>
               </>
             )}
@@ -1601,7 +1601,7 @@ export default function ReceiveScreen() {
                           pointerEvents="none"
                           accessibilityRole="text"
                         >
-                          <Ionicons name="business-outline" size={18} color="#FBBF24" />
+                          <IconBuilding size={18} color="#FBBF24" />
                           <Text style={styles.reservationQrCompanyCardText}>
                             {t(locale, "receive.wizardQrNoCompany")}
                           </Text>
@@ -1609,7 +1609,7 @@ export default function ReceiveScreen() {
                       )}
                       {bookingCheck && bookingCheck !== "invalid" && (
                         <View style={styles.reservationQrSuccessCard} pointerEvents="none">
-                          <Ionicons name="checkmark-circle" size={20} color={C.success} />
+                          <IconCircleCheck size={20} color={C.success} />
                           <Text style={styles.reservationQrSuccessText}>
                             {t(locale, "receive.benefitOk", {
                               time: formatBenefitTime(bookingCheck.parking?.freeBenefitMinutes, locale),
@@ -1649,8 +1649,7 @@ export default function ReceiveScreen() {
                                     style={styles.reservationBookingErrorIconRing}
                                   >
                                     <View style={styles.reservationBookingErrorIconCore}>
-                                      <Ionicons
-                                        name="qr-code-outline"
+                                      <IconQrCode
                                         size={18}
                                         color="rgba(248,250,252,0.92)"
                                       />
@@ -1717,8 +1716,7 @@ export default function ReceiveScreen() {
                   accessibilityState={{ checked: receptionType === "CARD" }}
                 >
                   <View style={[styles.typeCardIcon, styles.typeCardIconCard, receptionType === "CARD" && styles.typeCardIconActive]}>
-                    <Ionicons
-                      name="card-outline"
+                    <IconCard
                       size={28}
                       color={receptionType === "CARD" ? "#fff" : theme.isDark ? "#60A5FA" : "#2563EB"}
                     />
@@ -1738,8 +1736,7 @@ export default function ReceiveScreen() {
                   accessibilityState={{ checked: receptionType === "RESERVATION" }}
                 >
                   <View style={[styles.typeCardIcon, styles.typeCardIconReservation, receptionType === "RESERVATION" && styles.typeCardIconActive]}>
-                    <Ionicons
-                      name="calendar-outline"
+                    <IconCalendar
                       size={28}
                       color={receptionType === "RESERVATION" ? "#fff" : theme.isDark ? "#A78BFA" : "#7C3AED"}
                     />
@@ -1759,8 +1756,7 @@ export default function ReceiveScreen() {
                   accessibilityState={{ checked: receptionType === "DIRECT" }}
                 >
                   <View style={[styles.typeCardIcon, styles.typeCardIconDirect, receptionType === "DIRECT" && styles.typeCardIconActive]}>
-                    <Ionicons
-                      name="cash-outline"
+                    <IconCash
                       size={28}
                       color={receptionType === "DIRECT" ? "#fff" : theme.isDark ? "#FBBF24" : "#D97706"}
                     />
@@ -1954,7 +1950,7 @@ export default function ReceiveScreen() {
                 >
                   {formatVehicleColorLabel(vehColor, locale) || t(locale, "receive.placeholderColor")}
                 </Text>
-                <Ionicons name="list-outline" size={16} color={C.textMuted} />
+                <IconList size={16} color={C.textMuted} />
               </Pressable>
               <TextInput
                 style={styles.input}
@@ -1967,7 +1963,7 @@ export default function ReceiveScreen() {
               />
               {!!vehModel && catalogDimensions && (
                 <View style={styles.okBanner}>
-                  <Ionicons name="resize-outline" size={18} color={C.success} />
+                  <IconResize size={18} color={C.success} />
                   <Text style={styles.okText}>{t(locale, "receive.vehicleDimensionsAuto")}</Text>
                 </View>
               )}
@@ -2055,11 +2051,7 @@ export default function ReceiveScreen() {
                 accessibilityState={{ checked: ticketCodesAcknowledged }}
                 accessibilityLabel={t(locale, "receive.wizardTicketAck")}
               >
-                <Ionicons
-                  name={ticketCodesAcknowledged ? "checkbox-outline" : "square-outline"}
-                  size={20}
-                  color={ticketCodesAcknowledged ? C.primary : C.textMuted}
-                />
+                {ticketCodesAcknowledged ? <IconCheckbox size={20} color={C.primary} /> : <IconSquare size={20} color={C.textMuted} />}
                 <Text style={styles.ackRowText}>{t(locale, "receive.wizardTicketAck")}</Text>
               </Pressable>
 
@@ -2111,7 +2103,7 @@ export default function ReceiveScreen() {
               <View style={styles.receiveParkingCard}>
                 <View style={styles.bottomCardInner}>
                   <View style={styles.bottomIconWrap}>
-                    <Ionicons name="navigate-circle" size={22} color={C.primary} />
+                    <IconLocationFilled size={14} color={C.primary} />
                   </View>
                   <View style={styles.bottomTextCol}>
                     <View style={styles.bottomTitleRow}>
@@ -2125,10 +2117,7 @@ export default function ReceiveScreen() {
                           accessibilityRole="button"
                           accessibilityLabel={t(locale, "home.chooseParking")}
                         >
-                          <Ionicons name="list-outline" size={16} color={C.primary} />
-                          <Text style={[styles.bottomChooseBtnText, { color: C.primary }]}>
-                            {t(locale, "home.chooseParking")}
-                          </Text>
+                          <IconList size={18} color={C.primary} />
                         </Pressable>
                       )}
                     </View>
@@ -2159,12 +2148,9 @@ export default function ReceiveScreen() {
                         </Text>
                         {displayedReceiveParking.parking.company && (
                           <Text style={styles.bottomCompany} numberOfLines={1}>
-                            {t(locale, "home.nearestCompany", {
-                              name:
-                                displayedReceiveParking.parking.company.commercialName?.trim() ||
-                                displayedReceiveParking.parking.company.legalName?.trim() ||
-                                "—",
-                            })}
+                            {displayedReceiveParking.parking.company.commercialName?.trim() ||
+                              displayedReceiveParking.parking.company.legalName?.trim() ||
+                              "—"}
                           </Text>
                         )}
                         {displayedReceiveParking.distanceKm != null && (
@@ -2218,7 +2204,7 @@ export default function ReceiveScreen() {
                   disabled={damagePhotoBusy}
                   accessibilityLabel={t(locale, "receive.damageCameraA11y")}
                 >
-                  <Ionicons name="camera" size={20} color="#fff" />
+                  <IconCamera size={20} color="#fff" />
                   <Text style={styles.primaryBtnText}>{t(locale, "receive.damageTakePhoto")}</Text>
                 </Pressable>
                 <Pressable
@@ -2233,7 +2219,7 @@ export default function ReceiveScreen() {
                   disabled={damagePhotoBusy}
                   accessibilityLabel={t(locale, "receive.damageGalleryA11y")}
                 >
-                  <Ionicons name="images-outline" size={20} color={C.textMuted} />
+                  <IconGallery size={20} color={C.textMuted} />
                   <Text style={styles.footerSecondaryBtnText}>{t(locale, "receive.damageFromGallery")}</Text>
                 </Pressable>
               </View>
@@ -2276,7 +2262,7 @@ export default function ReceiveScreen() {
                       onPress={() => removeDamagePhotoAt(index)}
                       accessibilityLabel={t(locale, "receive.damageRemovePhotoA11y")}
                     >
-                      <Ionicons name="close-circle" size={24} color="rgba(255,255,255,0.95)" />
+                      <IconCircleX size={24} color="rgba(255,255,255,0.95)" />
                     </Pressable>
                   </View>
                 ))}
@@ -2310,8 +2296,7 @@ export default function ReceiveScreen() {
               <View style={styles.receiveParkingCard}>
                 <View style={[styles.bottomCardInner, !driverValetId && { borderColor: C.border }]}>
                   <View style={styles.bottomIconWrap}>
-                    <Ionicons
-                      name="person-circle-outline"
+                    <IconUser
                       size={22}
                       color={driverValetId ? C.primary : C.textMuted}
                     />
@@ -2327,7 +2312,7 @@ export default function ReceiveScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={t(locale, "receive.valetSelectChoose")}
                       >
-                        <Ionicons name="list-outline" size={16} color={C.primary} />
+                        <IconList size={16} color={C.primary} />
                         <Text style={[styles.bottomChooseBtnText, { color: C.primary }]}>
                           {t(locale, "receive.valetSelectChoose")}
                         </Text>
@@ -2351,14 +2336,14 @@ export default function ReceiveScreen() {
                         </Text>
                         {selectedBusyDriver ? (
                           <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 }}>
-                            <Ionicons name="time-outline" size={14} color={C.warning} />
+                            <IconClock size={14} color={C.warning} />
                             <Text style={[styles.bottomMeta, { color: C.warning, marginTop: 0 }]}>
                               {t(locale, "receive.valetStatusBusy")} (5-15 min)
                             </Text>
                           </View>
                         ) : (
                           <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 }}>
-                            <Ionicons name="checkmark-circle-outline" size={14} color={C.success} />
+                            <IconCircleCheck size={14} color={C.success} />
                             <Text style={[styles.bottomMeta, { color: C.success, marginTop: 0 }]}>
                               {t(locale, "receive.valetStatusAvailable")}
                             </Text>
@@ -2389,7 +2374,7 @@ export default function ReceiveScreen() {
                   <View style={styles.valetEtaAccent} />
                   <View style={styles.valetEtaContent}>
                     <View style={styles.valetEtaIconWrap}>
-                      <Ionicons name="hourglass-outline" size={20} color={C.warning} />
+                      <IconHourglass size={20} color={C.warning} />
                     </View>
                     <View style={styles.valetEtaTextCol}>
                       <Text style={styles.valetEtaKicker}>{t(locale, "receive.valetEtaKicker")}</Text>
@@ -3246,7 +3231,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       }),
     },
     bottomIconWrap: {
-      marginTop: 2,
+      marginTop: 36,
     },
     bottomTextCol: {
       flex: 1,

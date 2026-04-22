@@ -167,7 +167,7 @@ export const valetStaticTokens = {
     status: fontSize(16),
   },
   fontFamily: {
-    primary: "CalSans",
+    primary: "System",
     secondary: "System",
   } as const,
 } as const;

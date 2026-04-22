@@ -1,5 +1,4 @@
 import { View, Text, Pressable, Platform, StyleSheet, Animated } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import type { ComponentType } from "react";
 import { useEffect, useRef } from "react";
@@ -35,8 +34,7 @@ type Styles = {
 
 interface AnimatedGridTileProps {
   variant: GridVariant;
-  icon?: keyof typeof Ionicons.glyphMap;
-  lucideIcon?: TileLucideIcon;
+  lucideIcon: TileLucideIcon;
   iconSize?: number;
   title: string;
   sub: string;
@@ -54,7 +52,6 @@ interface AnimatedGridTileProps {
 export function AnimatedGridTile(props: AnimatedGridTileProps) {
   const {
     variant,
-    icon,
     lucideIcon: LucideCmp,
     iconSize = TILE_ICON_SIZE,
     title,
@@ -171,19 +168,11 @@ export function AnimatedGridTile(props: AnimatedGridTileProps) {
             textScale > 1 && { width: 56 + (textScale - 1) * 20, height: 56 + (textScale - 1) * 20, borderRadius: 28 + (textScale - 1) * 10 },
           ]}
         >
-          {LucideCmp ? (
-            <LucideCmp
-              size={iconSize + (textScale - 1) * 15}
-              color={iconColor}
-              strokeWidth={2.25}
-            />
-          ) : (
-            <Ionicons
-              name={icon ?? "ellipse-outline"}
-              size={iconSize + (textScale - 1) * 15}
-              color={iconColor}
-            />
-          )}
+          <LucideCmp
+            size={iconSize + (textScale - 1) * 15}
+            color={iconColor}
+            strokeWidth={2.25}
+          />
         </View>
 
         <Text

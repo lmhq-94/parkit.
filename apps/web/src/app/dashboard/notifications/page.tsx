@@ -44,7 +44,7 @@ export default function NotificationsPage() {
   const user = useAuthStore((s) => s.user);
   const selectedCompanyId = useDashboardStore((s: { selectedCompanyId: string | null }) => s.selectedCompanyId);
   const [items, setItems] = useState<NotificationItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, _setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<NotificationItem | null>(null);
@@ -54,7 +54,7 @@ export default function NotificationsPage() {
   const load = useCallback(async () => {
     if (!user?.id) return;
     try {
-      setLoading(true);
+      _setLoading(true);
       setError(null);
       const data = await apiClient.get<NotificationItem[]>(`/notifications/user/${user.id}`);
       setItems(Array.isArray(data) ? data : []);
@@ -62,7 +62,7 @@ export default function NotificationsPage() {
       setError(err instanceof Error ? err.message : "Error al cargar");
       showToastError(t("common.loadError"));
     } finally {
-      setLoading(false);
+      _setLoading(false);
       setInitialLoad(false);
     }
   }, [user?.id, showToastError, t]);
