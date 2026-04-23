@@ -134,6 +134,7 @@ export const UpdateProfileSchema = z.object({
   timezone: z.string().optional(),
   /** `null` removes the avatar (mobile app / web). */
   avatarUrl: z.union([z.string(), z.null()]).optional(),
+  pushToken: z.string().optional(),
   appPreferences: z
     .object({
       theme: z.enum(["light", "dark"]).optional(),

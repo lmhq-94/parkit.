@@ -47,7 +47,24 @@ export class UsersService {
       where: { email: data.email },
     });
 
+    // For walk-in customers, reuse existing user if it's a CUSTOMER
+    if (exists && data.walkInCustomer && exists.systemRole === SystemRole.CUSTOMER) {
+      // Update existing user with new info if provided
+      const updated = await prisma.user.update({
+        where: { id: exists.id },
+        data: {
+          ...(data.firstName && { firstName: data.firstName }),
+          ...(data.lastName && { lastName: data.lastName }),
+          ...(data.phone != null && { phone: data.phone }),
+        },
+      });
+      return updated;
+    }
+
     if (exists) {
+      if (data.walkInCustomer) {
+        throw new Error("Email belongs to an existing staff member. Please use a different email.");
+      }
       throw new Error("Email already in use");
     }
 
@@ -121,6 +138,13 @@ export class UsersService {
         passwordHash,
         systemRole: SystemRole.SUPER_ADMIN,
       },
+    });
+  }
+
+  /** Busca un usuario por email (sin restricción de compañía) */
+  static async getByEmail(email: string) {
+    return prisma.user.findUnique({
+      where: { email },
     });
   }
 
@@ -257,6 +281,7 @@ export class UsersService {
       phone?: string;
       timezone?: string;
       avatarUrl?: string | null;
+      pushToken?: string;
       appPreferences?: {
         theme?: "light" | "dark";
         locale?: "es" | "en";
@@ -279,6 +304,7 @@ export class UsersService {
     if (data.phone !== undefined) updateData.phone = data.phone?.trim() || null;
     if (data.timezone !== undefined) updateData.timezone = data.timezone?.trim() || "UTC";
     if (data.avatarUrl !== undefined) updateData.avatarUrl = data.avatarUrl || null;
+    if (data.pushToken !== undefined) updateData.pushToken = data.pushToken;
     if (data.appPreferences !== undefined) {
       const current = await prisma.user.findUnique({
         where: { id: userId },

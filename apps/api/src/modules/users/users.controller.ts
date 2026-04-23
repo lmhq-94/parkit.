@@ -286,4 +286,32 @@ export class UsersController {
       );
     }
   }
+
+  static async validateEmail(req: Request, res: Response) {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return fail(res, 400, "Email is required");
+      }
+
+      const user = await UsersService.getByEmail(email);
+      if (!user) {
+        return ok(res, { valid: true, exists: false });
+      }
+
+      // If user exists and is staff/admin, email is not valid for walk-in customer
+      if (user.systemRole === "STAFF" || user.systemRole === "ADMIN" || user.systemRole === "SUPER_ADMIN") {
+        return ok(res, { valid: false, exists: true, reason: "staff" });
+      }
+
+      // If user is CUSTOMER, email is valid (will be reused)
+      return ok(res, { valid: true, exists: true, reason: "customer" });
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
 }

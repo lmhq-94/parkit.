@@ -11,6 +11,7 @@ import {
 import type { CreateTicketDTO } from "./tickets.types";
 import { sendTicketCheckInEmail } from "../../shared/email/ticketCheckInEmail";
 import { sendTicketCheckOutEmail } from "../../shared/email/ticketCheckOutEmail";
+import { PushNotificationsService } from "../pushNotifications/pushNotifications.service";
 
 const MANUAL_CODE_MIN_LEN = 2;
 const MANUAL_CODE_MAX_LEN = 64;
@@ -640,6 +641,40 @@ export class TicketsService {
           },
         },
       });
+      
+      // Create in-app notification for the assigned driver
+      if (created.valet.userId) {
+        const vehicle = await tx.vehicle.findUnique({
+          where: { id: ticket.vehicleId },
+          select: { plate: true },
+        });
+        
+        if (vehicle?.plate) {
+          const plate = vehicle.plate.trim();
+          const isCheckout = ticket.status === TicketStatus.REQUEST_DELIVERY;
+          const title = isCheckout ? "Solicitud de devolución asignada" : "Nuevo servicio asignado";
+          const body = isCheckout 
+            ? `Te asignaron la devolución del vehículo ${plate}. Revisa tu cola de trabajo.`
+            : `Te asignaron el vehículo ${plate}. Revisa tu cola de trabajo.`;
+          
+          await tx.notificationLog.create({
+            data: {
+              userId: created.valet.userId,
+              type: NotificationType.PUSH,
+              title,
+              body,
+            },
+          });
+
+          // Send push notification (non-blocking)
+          void PushNotificationsService.sendPushNotification({
+            userId: created.valet.userId,
+            title,
+            body,
+          });
+        }
+      }
+      
       await tx.valet.update({
         where: { id: data.valetId },
         data: { currentStatus: ValetStatus.BUSY },

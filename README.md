@@ -111,6 +111,8 @@ The core of the system:
 - Validation and domain rules
 - Integrations with external services
 
+For detailed API setup and development, see [apps/api/README.md](apps/api/README.md).
+
 ---
 
 ### Web App
@@ -124,6 +126,8 @@ Used to:
 - Configure branding and company preferences
 - Define operational rules
 - Monitor activity and performance
+
+For detailed setup and development, see [apps/web/README.md](apps/web/README.md).
 
 ---
 
@@ -142,6 +146,9 @@ Includes:
   - Assignments
   - Damage reporting
   - Status changes
+
+For mobile valet app details, see [apps/mobile/mobile-valet/README.md](apps/mobile/mobile-valet/README.md).
+For mobile customer app details, see [apps/mobile/mobile-customer/README.md](apps/mobile/mobile-customer/README.md).
 
 ---
 
@@ -163,10 +170,13 @@ parkit/
 │   │   │   │   ├── audit/            # Audit logging
 │   │   │   │   ├── auth/             # Authentication & JWT
 │   │   │   │   ├── bookings/         # Booking management
-│   │   │   │   ├── clients/          # Customer management
 │   │   │   │   ├── companies/        # Company/tenant management
+│   │   │   │   ├── customers/        # Customer management
+│   │   │   │   ├── dashboard/        # Dashboard analytics
 │   │   │   │   ├── notifications/    # Notification system
 │   │   │   │   ├── parkings/         # Parking facilities
+│   │   │   │   ├── payments/         # Payment processing
+│   │   │   │   ├── pushNotifications/ # Push notification tokens
 │   │   │   │   ├── tickets/          # Parking tickets
 │   │   │   │   ├── users/            # User management
 │   │   │   │   ├── valets/           # Valet staff
@@ -262,17 +272,25 @@ parkit/
 
 ## Project Status
 
-🚧 **Early development**
+🚧 **Active Development**
 
-The project is currently focused on:
+The project currently has:
 
-- Database design
-- Backend foundations
-- Core system architecture
-- Developer experience and scalability
+- ✅ Complete database schema with multi-tenant architecture
+- ✅ Backend API with all core modules (auth, companies, parkings, tickets, valets, vehicles, bookings, payments, notifications)
+- ✅ Web admin dashboard (Next.js)
+- ✅ Mobile valet app (React Native + Expo) with real-time operations
+- ✅ Mobile customer app (React Native + Expo) for bookings and tickets
+- ✅ Push notification system
+- ✅ OAuth integration (Google, Apple, Microsoft)
+- ✅ Role-based access control (SUPER_ADMIN, ADMIN, STAFF, CUSTOMER)
 
-Features and applications will be incrementally built following
-a backend-first approach.
+Current focus:
+
+- Enhanced mobile app features
+- Payment processing integration
+- Advanced analytics and reporting
+- Performance optimizations
 
 ---
 
@@ -400,6 +418,7 @@ All project documentation is in the `docs/` folder:
 - `docs/env.md` – Environment variables reference
 - `docs/mobile.md` – Mobile apps quickstart (client & valet)
 - `docs/openapi.yaml` – OpenAPI spec
+- `apps/mobile/mobile-valet/docs/OAUTH_SETUP.md` – OAuth configuration guide
 
 ---
 

@@ -16,6 +16,7 @@ interface DriverInfoFormProps {
   onLastNameChange: (value: string) => void;
   onEmailChange: (value: string) => void;
   onPhoneChange: (value: string) => void;
+  emailError?: string | null;
   colors: {
     textSubtle: string;
     textMuted: string;
@@ -47,6 +48,7 @@ export function DriverInfoForm({
   onLastNameChange,
   onEmailChange,
   onPhoneChange,
+  emailError,
   colors: C,
   fonts: F,
   space: S,
@@ -104,7 +106,7 @@ export function DriverInfoForm({
     },
     inputContainer: {
       position: 'relative',
-      marginBottom: 16,
+      marginBottom: 8,
     },
     input: {
       backgroundColor: C.inputBg,
@@ -126,6 +128,11 @@ export function DriverInfoForm({
       top: '50%',
       marginTop: -16,
       zIndex: 1,
+    },
+    errorText: {
+      fontSize: Math.round(F.status * 0.55),
+      color: '#ef4444',
+      marginTop: -12,
     },
   });
 
@@ -179,6 +186,7 @@ export function DriverInfoForm({
           autoComplete="email"
         />
       </View>
+      {emailError && <Text style={[styles.errorText, { marginBottom: 8 }]}>{emailError}</Text>}
 
       <Text style={styles.inputLabel}>{t(locale, 'receive.labelPhoneOptional')}</Text>
       <View style={styles.inputContainer}>

@@ -15,7 +15,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { IconUser, IconCircleCheck, IconMail, IconClipboardText, IconCar, IconPhone, IconHome2, IconCamera, IconGallery } from "@/components/Icons";
+import { IconUser, IconCircleCheck, IconMail, IconClipboardText, IconCar, IconPhone, IconHome2, IconCamera, IconGallery, IconId, IconList, IconCalendar } from "@/components/Icons";
 import * as ImagePicker from "expo-image-picker";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import type { ValetStaffRole } from "@parkit/shared";
@@ -392,8 +392,6 @@ export default function ProfileScreen() {
     });
   };
 
-  const openExpiryPicker = () => setExpiryPickerOpen(true);
-
   const onExpiryChange = (event: { type?: string }, date?: Date) => {
     if (Platform.OS === "android") {
       setExpiryPickerOpen(false);
@@ -447,7 +445,7 @@ export default function ProfileScreen() {
                   onPress={openPhotoChooser}
                   style={({ pressed }) => [
                     styles.avatarRing,
-                    { borderColor: hasPhotoPending ? "#F59E0B" : C.primary },
+                    { borderColor: hasPhotoPending ? "#F59E0B" : C.border },
                     pressed && styles.pressed,
                   ]}
                   accessibilityRole="button"
@@ -623,20 +621,22 @@ export default function ProfileScreen() {
                 <Text style={styles.label}>{t(locale, "profile.licenseTypesLabel")}</Text>
                 <Pressable
                   style={({ pressed }) => [
-                    styles.inputContainer,
-                    { borderColor: C.border, backgroundColor: C.card },
+                    styles.input,
+                    { borderColor: C.border, backgroundColor: C.card, position: 'relative' },
                     pressed && styles.pressed,
                   ]}
                   onPress={() => setLicenseModalOpen(true)}
                   accessibilityRole="button"
                   accessibilityLabel={t(locale, "profile.licensePickerTitle")}
                 >
-                  <View style={styles.inputContainer}>
-                    <Text style={[styles.pickerRowTitle, { color: C.text }]} numberOfLines={2}>
-                      {licenseCodesDisplay || t(locale, "profile.licenseTypesPlaceholder")}
-                    </Text>
-                  </View>
-                  </Pressable>
+                  <IconId size={20} color={C.textMuted} style={{ position: 'absolute', left: 16, top: '50%', marginTop: 0, zIndex: 1 }} />
+                  <Text
+                    style={[{ color: C.text, paddingTop: 4, textAlignVertical: 'center', fontSize: Math.round(theme.font.status * 0.6 * textScale), fontFamily: theme.fontFamily.primary }]} numberOfLines={1}
+                  >
+                    {licenseCodesDisplay || t(locale, "profile.licenseTypesPlaceholder")}
+                  </Text>
+                  <IconList size={16} color={C.textMuted} style={{ position: 'absolute', right: 16, top: '50%', marginTop: 0, zIndex: 1 }} />
+                </Pressable>
 
                 <Modal
                   visible={licenseModalOpen}
@@ -677,9 +677,7 @@ export default function ProfileScreen() {
                                   {labelForLicenseType(item.value, locale)}
                                 </Text>
                               </View>
-                              <IconCircleCheck size={26}
-                                color={selected ? C.primary : C.textMuted}
-                              />
+                              {selected && <IconCircleCheck size={26} color={C.primary} />}
                             </Pressable>
                           );
                         }}
@@ -693,14 +691,28 @@ export default function ProfileScreen() {
                   </View>
                 </Modal>
 
+                <View style={{ height: 16 }} />
+
                 <Text style={styles.label}>{t(locale, "profile.licenseExpiryLabel")}</Text>
-                <View style={styles.inputContainer}>
-                  <Text style={[styles.pickerRowTitle, { color: C.text }]} numberOfLines={1}>
+                <Pressable
+                  onPress={() => setExpiryPickerOpen(true)}
+                  style={({ pressed }) => [
+                    styles.input,
+                    { borderColor: C.border, backgroundColor: C.card, position: 'relative' },
+                    pressed && styles.pressed,
+                  ]}
+                  accessibilityRole="button"
+                >
+                  <IconCalendar size={20} color={C.textMuted} style={{ position: 'absolute', left: 16, top: '50%', marginTop: 0, zIndex: 1 }} />
+                  <Text
+                    style={[{ color: C.text, paddingTop: 4, textAlignVertical: 'center', fontSize: Math.round(theme.font.status * 0.6 * textScale), fontFamily: theme.fontFamily.primary }]} numberOfLines={1}
+                  >
                     {licenseExpiryYmd.trim()
                       ? licenseExpiryYmd
                       : t(locale, "profile.licenseExpiryPlaceholder")}
                   </Text>
-                </View>
+                  <IconList size={16} color={C.textMuted} style={{ position: 'absolute', right: 16, top: '50%', marginTop: 0, zIndex: 1 }} />
+                </Pressable>
                 {licenseExpiryYmd.trim() ? (
                   <Pressable onPress={() => setLicenseExpiryYmd("")} style={styles.clearExpiryLink}>
                     <Text style={[styles.secondaryLinkText, styles.dangerText]}>
@@ -1024,7 +1036,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       paddingBottom: S.lg,
     },
     modalTitle: {
-      fontSize: Math.round(F.status * 0.65 * textScale),
+      fontSize: Math.round(F.status * 0.6 * textScale),
       fontWeight: "800",
       fontFamily: Fonts.primary,
       textAlign: "center",
@@ -1043,8 +1055,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     roleRowText: { flex: 1, minWidth: 0 },
     roleRowName: {
-      fontSize: Math.round(F.status * 0.65 * textScale),
-      fontWeight: "500",
+      fontSize: Math.round(F.status * 0.6 * textScale),
       fontFamily: Fonts.primary,
     },
     roleRowAddr: {
@@ -1210,7 +1221,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       justifyContent: "center",
     },
     modalDoneBtnText: {
-      fontSize: Math.round(F.status * 0.65 * textScale),
+      fontSize: Math.round(F.status * 0.6 * textScale),
       fontWeight: "800",
       fontFamily: Fonts.primary,
     },
@@ -1239,7 +1250,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderBottomColor: C.border,
     },
     iosExpiryToolbarBtn: {
-      fontSize: Math.round(F.status * 0.65 * textScale),
+      fontSize: Math.round(F.status * 0.6 * textScale),
       fontWeight: "600",
       fontFamily: Fonts.primary,
     },
@@ -1256,7 +1267,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderRadius: 12,
     },
     photoOptionText: {
-      fontSize: Math.round(F.status * 0.65 * textScale),
+      fontSize: Math.round(F.status * 0.6 * textScale),
       fontWeight: "600",
       fontFamily: Fonts.primary,
       color: C.text,

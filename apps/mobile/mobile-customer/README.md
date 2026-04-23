@@ -2,6 +2,13 @@
 
 Expo-based React Native app for Parkit customers to manage bookings and tickets.
 
+This is part of the Parkit monorepo. For the main project overview, see the [root README.md](../../README.md).
+
+For other apps in this monorepo:
+- [Backend API](../../apps/api/README.md)
+- [Web Admin Dashboard](../../apps/web/README.md)
+- [Mobile Valet App](../mobile-valet/README.md)
+
 ## Features
 
 - 🔐 JWT authentication

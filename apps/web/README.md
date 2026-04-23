@@ -2,6 +2,13 @@
 
 Next.js 15 admin dashboard for Parkit parking management system.
 
+This is part of the Parkit monorepo. For the main project overview, see the [root README.md](../../README.md).
+
+For other apps in this monorepo:
+- [Backend API](../../apps/api/README.md)
+- [Mobile Valet App](../mobile/mobile-valet/README.md)
+- [Mobile Customer App](../mobile/mobile-customer/README.md)
+
 ## Features
 
 - 🔐 JWT-based authentication

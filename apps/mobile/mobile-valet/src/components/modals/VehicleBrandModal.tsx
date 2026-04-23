@@ -1,9 +1,10 @@
-import { FlatList, Pressable, Text } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 import { BaseModal, modalStyles } from "./BaseModal";
 import type { useValetTheme } from "@/theme/valetTheme";
 import type { Locale } from "@parkit/shared";
 import type { CatalogMake } from "@/types/receive";
 import { t } from "@/lib/i18n";
+import { IconCircleCheck } from "@/components/Icons";
 
 interface VehicleBrandModalProps {
   visible: boolean;
@@ -13,6 +14,7 @@ interface VehicleBrandModalProps {
   onManualEntry: () => void;
   locale: Locale;
   theme: ReturnType<typeof useValetTheme>;
+  selectedValue?: string;
 }
 
 export function VehicleBrandModal({
@@ -23,6 +25,7 @@ export function VehicleBrandModal({
   onManualEntry,
   locale,
   theme,
+  selectedValue,
 }: VehicleBrandModalProps) {
   const C = theme.colors;
 
@@ -52,20 +55,26 @@ export function VehicleBrandModal({
             </Text>
           </Pressable>
         }
-        renderItem={({ item }) => (
-          <Pressable
-            style={({ pressed }) => [
-              modalStyles.modalRow,
-              { borderBottomColor: C.border },
-              pressed && modalStyles.pressed,
-            ]}
-            onPress={() => onSelect(item.name)}
-          >
-            <Text style={[modalStyles.modalRowName, { color: C.text }]} numberOfLines={2}>
-              {item.name}
-            </Text>
-          </Pressable>
-        )}
+        renderItem={({ item }) => {
+          const isSelected = item.name === selectedValue;
+          return (
+            <Pressable
+              style={({ pressed }) => [
+                modalStyles.modalRowWithCheck,
+                { borderBottomColor: C.border },
+                pressed && modalStyles.pressed,
+              ]}
+              onPress={() => onSelect(item.name)}
+            >
+              <View style={modalStyles.modalRowText}>
+                <Text style={[modalStyles.modalRowName, { color: C.text }]} numberOfLines={2}>
+                  {item.name}
+                </Text>
+              </View>
+              {isSelected && <IconCircleCheck size={26} color={C.primary} />}
+            </Pressable>
+          );
+        }}
         ListEmptyComponent={
           <Text style={{ color: C.textMuted, padding: theme.space.md }}>
             {t(locale, "receive.brandPickerEmpty")}

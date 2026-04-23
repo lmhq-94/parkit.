@@ -35,7 +35,7 @@
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/adapter-neon": "^7.3.0",
-    "@prisma/client": "7.3.0",
+    "@prisma/client": "^7.8.0",
     "@prisma/config": "^7.5.0",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.17",
@@ -49,8 +49,8 @@
     "passport-google-oauth20": "^2.0.0",
     "resend": "^4.0.0",
     "stripe": "^20.4.1",
-    "zod": "^3.25.76",
-    "tsconfig-paths": "^3.15.0"
+    "tsconfig-paths": "^3.15.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

@@ -287,14 +287,27 @@ export default function ProfilePage() {
   };
 
   const isDirty = useMemo(
-    () => JSON.stringify(form) !== JSON.stringify(initialForm),
+    () => {
+      const dirty = (
+        form.firstName !== initialForm.firstName ||
+        form.lastName !== initialForm.lastName ||
+        form.email !== initialForm.email ||
+        form.phone !== initialForm.phone ||
+        form.timezone !== initialForm.timezone ||
+        form.avatarUrl !== initialForm.avatarUrl ||
+        form.theme !== initialForm.theme ||
+        form.locale !== initialForm.locale
+      );
+      console.log('isDirty:', dirty, 'form:', form, 'initialForm:', initialForm);
+      return dirty;
+    },
     [form, initialForm]
   );
   const isValid =
     form.firstName.trim() &&
     form.lastName.trim() &&
     form.email.trim() &&
-    Object.keys(errors).length === 0;
+    Object.values(errors).filter(v => v !== undefined).length === 0;
 
   const handleThemeChange = (value: ThemeValue) => {
     setForm((p) => ({ ...p, theme: value }));
@@ -658,22 +671,22 @@ export default function ProfilePage() {
               if (activeTab === "info") {
                 setForm((p) => ({
                   ...p,
-                  firstName: defaultForm.firstName,
-                  lastName: defaultForm.lastName,
-                  email: defaultForm.email,
-                  phone: defaultForm.phone,
-                  timezone: defaultForm.timezone,
+                  firstName: initialForm.firstName,
+                  lastName: initialForm.lastName,
+                  email: initialForm.email,
+                  phone: initialForm.phone,
+                  timezone: initialForm.timezone,
                 }));
               } else if (activeTab === "avatar") {
                 setForm((p) => ({
                   ...p,
-                  avatarUrl: defaultForm.avatarUrl,
+                  avatarUrl: initialForm.avatarUrl,
                 }));
               } else if (activeTab === "preferences") {
                 setForm((p) => ({
                   ...p,
-                  theme: defaultForm.theme,
-                  locale: defaultForm.locale,
+                  theme: initialForm.theme,
+                  locale: initialForm.locale,
                 }));
               }
               hasLocalEditsRef.current = true;

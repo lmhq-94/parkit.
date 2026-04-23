@@ -62,6 +62,16 @@ export const modalStyles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "800",
   },
+  modalRowWithCheck: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  modalRowText: {
+    flex: 1,
+  },
   modalRowAddr: {
     fontSize: 12,
     marginTop: 4,

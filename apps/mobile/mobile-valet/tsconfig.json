@@ -20,6 +20,12 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
-  ]
+    "dist",
+    "**/node_modules/**"
+  ],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  }
 }

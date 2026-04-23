@@ -11,7 +11,7 @@ import { useValetTheme, ACCENT, useResponsiveLayout } from "@/theme/valetTheme";
 import { Logo, getAppVersionString } from "@parkit/shared";
 import { login, getStoredCredentials, translateError } from "@/lib/auth";
 import { GoogleIcon as _GoogleIcon, MicrosoftIcon as _MicrosoftIcon, FacebookIcon as _FacebookIcon } from "@/components/OAuthIcons";
-import { IconMail, IconLock, IconEye, IconEyeOff } from "@/components/Icons";
+import { IconMail, IconLock, IconEye, IconEyeOff, IconSquareRounded, IconSquareRoundedCheck } from "@/components/Icons";
 import { AuthMessage } from "@/components/AuthMessage";
 
 const LOGO_SIZE = 72;
@@ -263,26 +263,6 @@ inputLabel: {
           flexDirection: 'row',
           alignItems: 'center',
         },
-        checkbox: {
-          width: 20,
-          height: 20,
-          borderRadius: 4,
-          borderWidth: 2,
-          borderColor: a.inputBorder,
-          marginRight: 8,
-          justifyContent: 'center',
-          alignItems: 'center',
-        },
-        checkboxChecked: {
-          borderColor: a.btnLoginBg,
-          backgroundColor: a.btnLoginBg,
-        },
-        checkboxInner: {
-          width: 10,
-          height: 10,
-          borderRadius: 2,
-          backgroundColor: '#FFFFFF',
-        },
         rememberMeText: {
           fontSize: Math.round(F.status * 0.6 * textScale),
           color: a.text,
@@ -393,9 +373,11 @@ inputLabel: {
                   style={styles.rememberMeContainer}
                   onPress={() => setRememberMe(!rememberMe)}
                 >
-                  <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                    {rememberMe && <View style={styles.checkboxInner} />}
-                  </View>
+                  {rememberMe ? (
+                    <IconSquareRoundedCheck size={20} color={a.btnLoginBg} style={{ marginRight: 8 }} />
+                  ) : (
+                    <IconSquareRounded size={20} color={a.inputBorder} style={{ marginRight: 8 }} />
+                  )}
                   <Text style={styles.rememberMeText}>Recordarme</Text>
                 </Pressable>
                 

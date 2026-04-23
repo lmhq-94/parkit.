@@ -195,7 +195,7 @@ export class CustomersService {
       });
     }
 
-    return prisma.customerVehicle.create({
+    const customerVehicle = await prisma.customerVehicle.create({
       data: {
         customerId,
         vehicleId: data.vehicleId,
@@ -210,8 +210,15 @@ export class CustomersService {
             model: true,
           },
         },
+        customer: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
+
+    return { ...customerVehicle, clientId: customerVehicle.customerId };
   }
 
   /**

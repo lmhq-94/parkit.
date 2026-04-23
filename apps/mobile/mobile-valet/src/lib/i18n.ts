@@ -344,21 +344,25 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.wizardParkingHelp": "Confirma el parqueo de ingreso. Puedes seleccionar otro de la lista.",
     "receive.wizardValetStepTitle": "Asignar Valet",
     "receive.wizardValetStepHelp": "Asigna un compañero para estacionar el vehículo. Luego crea el check-in.",
-    "receive.driverValetSection": "Conductor valet",
+    "receive.driverValetSection": "Conductor",
     "receive.valetSelectChoose": "Seleccionar",
     "receive.valetSelectNoSelection": "Sin selección",
+    "receive.valetSelectChange": "Cambiar",
+    "receive.valetSelectViewList": "Ver lista",
     "receive.valetDriversListHint":
       "Solo se listan conductores disponibles en este parqueo con la app abierta recientemente (latido cada ~30 s; si llevan más de 5 min sin usar la app, no aparecen).",
     "receive.valetDriversEmpty":
       "No hay conductores con app activa en este parqueo ahora. Puedes continuar sin asignar; si un compañero tiene la app cerrada hace varios minutos, no saldrá en la lista hasta que vuelva a usarla.",
     "receive.valetDriversNeedParking":
       "Selecciona primero el parqueo de ingreso para ver conductores disponibles.",
+    "receive.valetDriversTitle": "Conductores",
     "receive.valetDriversAvailableTitle": "Conductores disponibles",
     "receive.valetDriversBusyTitle": "Conductores ocupados",
     "receive.valetQueueNotice":
       "No hay conductores disponibles ahora. Puedes asignar uno ocupado y el vehículo quedará en cola hasta que se desocupe.",
     "receive.valetStatusAvailable": "Disponible ahora",
     "receive.valetStatusBusy": "Ocupado (asignación en cola)",
+    "receive.valetStatusAway": "Ausente",
     "receive.valetStatusAvailableShort": "Disponible",
     "receive.valetStatusBusyShort": "En cola",
     "receive.valetNoEmail": "Sin correo",
@@ -469,6 +473,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.errorPlate": "Indica una matrícula válida.",
     "receive.errorDriver":
       "Nombre, apellido y correo del conductor son obligatorios.",
+    "receive.errorEmailStaff":
+      "Este correo pertenece a un miembro del personal. Usa otro correo.",
     "receive.errorContext":
       "Falta empresa, parqueo o perfil valet. Comprueba tu sesión.",
     "receive.errorDriverValetRequired":
@@ -939,21 +945,25 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.wizardValetStepTitle": "Assign Valet",
     "receive.wizardValetStepHelp":
       "Assign a colleague to park the vehicle. Then create the check-in.",
-    "receive.driverValetSection": "Valet driver",
+    "receive.driverValetSection": "Driver",
     "receive.valetSelectChoose": "Select",
     "receive.valetSelectNoSelection": "No selection",
+    "receive.valetSelectChange": "Change",
+    "receive.valetSelectViewList": "View list",
     "receive.valetDriversListHint":
       "Only drivers available at this parking with a recently active app are listed (~30 s heartbeat; after about 5 minutes without the app, they drop off).",
     "receive.valetDriversEmpty":
       "No drivers with an active app at this parking right now. You can continue unassigned; if a colleague closed the app several minutes ago, they will not appear until they use it again.",
     "receive.valetDriversNeedParking":
       "Select the check-in parking first to see available drivers.",
+    "receive.valetDriversTitle": "Drivers",
     "receive.valetDriversAvailableTitle": "Available drivers",
     "receive.valetDriversBusyTitle": "Busy drivers",
     "receive.valetQueueNotice":
       "No drivers are available right now. You can assign a busy one and the vehicle will be queued until a driver is free.",
     "receive.valetStatusAvailable": "Available now",
     "receive.valetStatusBusy": "Busy (queued assignment)",
+    "receive.valetStatusAway": "Away",
     "receive.valetStatusAvailableShort": "Available",
     "receive.valetStatusBusyShort": "Queued",
     "receive.valetNoEmail": "No email",
@@ -1050,6 +1060,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.errorPlate": "Enter a valid plate.",
     "receive.errorDriver":
       "Driver first name, last name and email are required.",
+    "receive.errorEmailStaff":
+      "This email belongs to a staff member. Please use a different email.",
     "receive.errorContext":
       "Missing company, parking or valet profile. Check your session.",
     "receive.errorDriverValetRequired":

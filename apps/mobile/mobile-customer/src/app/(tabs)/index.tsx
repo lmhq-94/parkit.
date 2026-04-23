@@ -3,7 +3,7 @@ import { useAuthStore, usePreferencesStore } from "@/lib/store";
 import { clearUser } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { router } from "expo-router";
-import { IconCheck } from "@/components/TablerIcons";
+import { IconCheck } from "@/components/Icons";
 
 export default function ProfileScreen() {
   const { user, logout } = useAuthStore();

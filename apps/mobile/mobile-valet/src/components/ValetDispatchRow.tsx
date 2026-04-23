@@ -1,11 +1,10 @@
-import { View, Text, Image, Pressable, Animated, StyleSheet, Platform } from "react-native";
-import { useEffect, useRef, useState } from "react";
+import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import type { Locale } from "@parkit/shared";
 import type { ValetOpt } from "@/types/receive";
 import type { useValetTheme } from "@/theme/valetTheme";
-import { valetAvatarColors, valetInitials } from "@/lib/valetAvatar";
 import { t } from "@/lib/i18n";
-import { IconCircleCheck, IconClock } from "@/components/Icons";
+import { IconCircle, IconCircleCheckFilled, IconCircleXFilled, IconUser } from "@/components/Icons";
+import { ValetChipAvatar } from "@/components/ValetChipAvatar";
 
 type Theme = ReturnType<typeof useValetTheme>;
 
@@ -15,111 +14,89 @@ interface ValetDispatchRowProps {
   v: ValetOpt;
   selected: boolean;
   isBusy: boolean;
+  isDisabled?: boolean;
   onPress: () => void;
   locale: Locale;
   theme: Theme;
   styles: Styles;
   statusMeta: string;
-  statusBadgeShort: string;
-  badgeVariant: "available" | "busy";
+  badgeVariant: "available" | "busy" | "away";
 }
 
 export function ValetDispatchRow(props: ValetDispatchRowProps) {
   const {
     v,
     selected,
-    isBusy,
+    isDisabled,
     onPress,
     locale,
     theme,
     styles,
     statusMeta,
-    statusBadgeShort,
     badgeVariant,
   } = props;
   const C = theme.colors;
-  const scale = useRef(new Animated.Value(1)).current;
-  const wasSelected = useRef(false);
-
-  useEffect(() => {
-    if (selected && !wasSelected.current) {
-      Animated.sequence([
-        Animated.spring(scale, {
-          toValue: 1.024,
-          useNativeDriver: true,
-          friction: 5,
-          tension: 380,
-        }),
-        Animated.spring(scale, { toValue: 1, useNativeDriver: true, friction: 8 }),
-      ]).start();
-    }
-    wasSelected.current = selected;
-  }, [selected, scale]);
-
-  const av = valetAvatarColors(v.id, theme.isDark);
-  const initials = valetInitials(v.user.firstName, v.user.lastName);
-  const avatarUrl = v.user.avatarUrl?.trim() || "";
-  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
-
-  useEffect(() => {
-    setAvatarLoadFailed(false);
-  }, [avatarUrl]);
 
   return (
-    <Pressable onPress={onPress} accessibilityRole="radio" accessibilityState={{ selected }}>
-      {({ pressed }) => (
-        <Animated.View
-          style={[
-            styles.valetDriverRow,
-            isBusy && styles.valetDriverRowBusy,
-            selected && !isBusy && styles.valetDriverRowSelected,
-            selected && isBusy && styles.valetDriverRowSelectedBusy,
-            {
-              transform: [{ scale }],
-              opacity: pressed ? 0.88 : 1,
-            },
-          ]}
-        >
-          <View style={[styles.valetAvatar, { backgroundColor: av.bg, borderColor: av.border }]}>
-            {avatarUrl && !avatarLoadFailed ? (
-              <Image
-                source={{ uri: avatarUrl }}
-                style={styles.valetAvatarImage}
-                resizeMode="cover"
-                onError={() => setAvatarLoadFailed(true)}
-              />
-            ) : (
-              <Text style={[styles.valetAvatarText, { color: av.fg }]}>{initials}</Text>
-            )}
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="radio"
+      accessibilityState={{ selected, disabled: isDisabled }}
+      disabled={isDisabled}
+      style={({ pressed }) => [
+        styles.valetDriverRow,
+        selected && styles.valetDriverRowSelected,
+        isDisabled && styles.valetDriverRowDisabled,
+        pressed && !isDisabled && styles.pressed,
+      ]}
+    >
+      <View style={styles.bottomIconWrap}>
+        {v.user.avatarUrl ? (
+          <ValetChipAvatar
+            id={v.id}
+            firstName={v.user.firstName}
+            lastName={v.user.lastName}
+            avatarUrl={v.user.avatarUrl}
+            isDark={theme.isDark}
+            size={40}
+          />
+        ) : (
+          <View
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              alignItems: "center",
+              justifyContent: "center",
+              borderWidth: 1,
+              backgroundColor: selected ? (theme.isDark ? "rgba(59, 130, 246, 0.12)" : "rgba(59, 130, 246, 0.08)") : (theme.isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.03)"),
+              borderColor: selected ? C.primary : C.border,
+            }}
+          >
+            <IconUser size={22} color={selected ? C.primary : C.textMuted} />
           </View>
-          <View style={styles.valetDriverRowTextCol}>
-            <Text
-              style={[
-                styles.valetDriverRowText,
-                selected && !isBusy && { color: C.primary },
-                selected && isBusy && { color: C.warning },
-              ]}
-              maxFontSizeMultiplier={2}
-            >
-              {v.user.firstName} {v.user.lastName}
-            </Text>
-            <Text style={styles.valetDriverRowMeta} numberOfLines={1}>
-              {v.user.email || t(locale, "receive.valetNoEmail")} · {statusMeta}
-            </Text>
-          </View>
-          {badgeVariant === "available" ? (
-            <View style={styles.valetStatusBadgeAvailable}>
-              <IconCircleCheck size={12} color={theme.isDark ? "#86EFAC" : "#166534"} />
-              <Text style={styles.valetStatusBadgeAvailableText}>{statusBadgeShort}</Text>
-            </View>
-          ) : (
-            <View style={styles.valetStatusBadgeBusy}>
-              <IconClock size={12} color={theme.isDark ? "#FCD34D" : "#92400E"} />
-              <Text style={styles.valetStatusBadgeBusyText}>{statusBadgeShort}</Text>
-            </View>
-          )}
-        </Animated.View>
-      )}
+        )}
+      </View>
+      <View style={styles.bottomTextCol}>
+        <Text style={styles.bottomName} numberOfLines={1}>
+          {v.user.firstName} {v.user.lastName}
+        </Text>
+        <Text style={styles.bottomMeta} numberOfLines={1}>
+          {v.user.email || t(locale, "receive.valetNoEmail")}
+        </Text>
+        <Text style={styles.bottomMeta} numberOfLines={1}>
+          {statusMeta}
+        </Text>
+      </View>
+      <View style={{ alignSelf: "center" }}>
+        {badgeVariant === "available" ? (
+          <IconCircleCheckFilled size={20} color={C.success} />
+        ) : badgeVariant === "away" ? (
+          <IconCircle size={20} color={theme.isDark ? "#FCD34D" : "#F59E0B"} />
+        ) : (
+          <IconCircleXFilled size={20} color={theme.isDark ? "#F87171" : "#DC2626"} />
+        )}
+      </View>
     </Pressable>
   );
 }
@@ -133,105 +110,55 @@ export function createValetRowStyles(theme: Theme) {
   return StyleSheet.create({
     valetDriverRow: {
       flexDirection: "row",
-      alignItems: "center",
+      alignItems: "flex-start",
       gap: S.md,
       backgroundColor: C.card,
       borderRadius: R.card,
       borderWidth: 1,
       borderColor: C.border,
-      paddingVertical: S.md,
-      paddingHorizontal: S.md,
+      padding: S.md,
       ...Platform.select({
         ios: {
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.05,
-          shadowRadius: 4,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.06,
+          shadowRadius: 8,
         },
-        android: { elevation: 1 },
+        android: { elevation: 2 },
       }),
-    },
-    valetDriverRowBusy: {
-      borderStyle: "dashed",
     },
     valetDriverRowSelected: {
       borderColor: C.primary,
       borderWidth: 2,
       backgroundColor: theme.isDark ? "rgba(59, 130, 246, 0.12)" : "rgba(59, 130, 246, 0.08)",
     },
-    valetDriverRowSelectedBusy: {
-      borderColor: theme.isDark ? "rgba(245, 158, 11, 0.65)" : "rgba(217, 119, 6, 0.55)",
-      borderWidth: 2,
-      backgroundColor: theme.isDark ? "rgba(245, 158, 11, 0.12)" : "rgba(251, 191, 36, 0.14)",
+    valetDriverRowDisabled: {
+      opacity: 0.5,
     },
-    valetDriverRowTextCol: {
+    pressed: {
+      opacity: 0.88,
+    },
+    bottomIconWrap: {
+      marginTop: 0,
+      alignSelf: "center",
+    },
+    bottomTextCol: {
       flex: 1,
       minWidth: 0,
+      marginTop: 8,
     },
-    valetDriverRowText: {
-      fontSize: F.secondary - 1,
-      fontWeight: "700",
+    bottomName: {
+      fontSize: Math.round(F.status * 0.65),
+      fontWeight: "600",
+      fontFamily: "System",
       color: C.text,
     },
-    valetDriverRowMeta: {
-      fontSize: F.secondary - 1,
-      color: C.textSubtle,
+    bottomMeta: {
+      fontSize: Math.round(F.status * 0.65),
+      fontWeight: "600",
+      fontFamily: "System",
+      color: C.textMuted,
       marginTop: 2,
-    },
-    valetStatusBadgeAvailable: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 4,
-      borderRadius: 999,
-      borderWidth: 1,
-      borderColor: theme.isDark ? "rgba(34,197,94,0.45)" : "rgba(22,163,74,0.35)",
-      backgroundColor: theme.isDark ? "rgba(34,197,94,0.18)" : "rgba(34,197,94,0.12)",
-      paddingVertical: 6,
-      paddingHorizontal: S.sm,
-    },
-    valetStatusBadgeAvailableText: {
-      fontSize: Math.round(F.status * 0.65),
-      fontWeight: "800",
-      color: theme.isDark ? "#86EFAC" : "#166534",
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
-    },
-    valetStatusBadgeBusy: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 4,
-      borderRadius: 999,
-      borderWidth: 1,
-      borderColor: theme.isDark ? "rgba(245,158,11,0.5)" : "rgba(217,119,6,0.35)",
-      backgroundColor: theme.isDark ? "rgba(245,158,11,0.18)" : "rgba(245,158,11,0.12)",
-      paddingVertical: 6,
-      paddingHorizontal: S.sm,
-    },
-    valetStatusBadgeBusyText: {
-      fontSize: Math.round(F.status * 0.65),
-      fontWeight: "800",
-      color: theme.isDark ? "#FCD34D" : "#92400E",
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
-    },
-    valetAvatar: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
-      alignItems: "center",
-      justifyContent: "center",
-      borderWidth: 2,
-      overflow: "hidden",
-    },
-    valetAvatarImage: {
-      width: "100%",
-      height: "100%",
-      borderRadius: 24,
-    },
-    valetAvatarText: {
-      fontSize: Math.round(F.secondary),
-      fontWeight: "800",
-      letterSpacing: -0.3,
     },
   });
 }

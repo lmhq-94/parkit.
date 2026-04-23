@@ -1,4 +1,14 @@
 {
-  "extends": "./apps/api/tsconfig.json",
-  "files": []
+  "files": [],
+  "exclude": ["node_modules"],
+  "references": [
+    { "path": "./apps/api" },
+    { "path": "./apps/web" },
+    { "path": "./apps/mobile/mobile-valet" },
+    { "path": "./apps/mobile/mobile-customer" },
+    { "path": "./packages/shared" }
+  ],
+  "compilerOptions": {
+    "skipLibCheck": true
+  }
 }

@@ -38,8 +38,8 @@ export class ParkingsService {
           companyId,
           name: data.name,
           address: data.address,
-          latitude: data.latitude,
-          longitude: data.longitude,
+          latitude: data.latitude || 0,
+          longitude: data.longitude || 0,
           geofenceRadius: data.geofenceRadius,
           type: data.type || "OPEN",
           totalSlots,
@@ -97,8 +97,8 @@ export class ParkingsService {
   static async listAllWithCoordinates() {
     return prisma.parking.findMany({
       where: {
-        latitude: { not: null },
-        longitude: { not: null },
+        latitude: { not: 0 },
+        longitude: { not: 0 },
       },
       select: {
         id: true,

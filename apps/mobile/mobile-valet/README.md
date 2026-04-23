@@ -2,12 +2,24 @@
 
 Ultra-minimal valet operations interface for real-time parking management.
 
+This is part of the Parkit monorepo. For the main project overview, see the [root README.md](../../README.md).
+
+For other apps in this monorepo:
+- [Backend API](../../apps/api/README.md)
+- [Web Admin Dashboard](../../apps/web/README.md)
+- [Mobile Customer App](../mobile-customer/README.md)
+
 ## 🎯 Features
 
-- **Assigned Tickets**: View active ticket assignments with vehicle plate & location
-- **Status Flow**: `assigned` → `in-transit` → `completed`
-- **One-Tap Actions**: Start move, complete delivery, view location
-- **Real-Time Sync**: Refresh to fetch updated assignments
+- **Multi-role Support**: Receptionist and Driver workflows
+- **Ticket Management**: Receive, park, and return vehicles
+- **Real-time Sync**: Live ticket updates and status changes
+- **Vehicle Recognition**: Card scanning for vehicle details
+- **Push Notifications**: Real-time alerts for queue updates
+- **Location Services**: GPS-based parking selection
+- **Profile Management**: Staff profile with avatar, license types, and expiry
+- **Multi-language Support**: i18n with Spanish and English
+- **Dark/Light Mode**: Theme support with accessibility options
 - **Offline Awareness**: SecureStore for token persistence
 
 ## 📦 Tech Stack
@@ -70,33 +82,63 @@ tsconfig.json        # TypeScript (strict mode)
 
 ## 📱 Screens
 
-### Login (`/login`)
-- Email field (pre-filled: `valet@parkit.local`)
-- Password field (pre-filled: `password123`)
-- Demo credentials for testing
+### Home (`/home`)
+- Dashboard with role-specific actions
+- Driver: Parking queue and delivery queue management
+- Receptionist: Receive and return vehicle workflows
+- Parking location selection with GPS
+- Queue alert notifications
+- Settings and logout
 
-### Assigned Tickets (`/`)
-- **FlatList** of active assignments
-- **Ticket Card** per assignment:
-  - Vehicle plate (monospace font)
-  - Status badge (color-coded)
-  - Location (with pin emoji)
-  - Action buttons (context-based)
-- **Pull-to-refresh**
-- **Status buttons:**
-  - `assigned` → "START MOVE" (blue)
-  - `in-transit` → "COMPLETE" (green)
-  - `completed` → ✓ badge (gray)
-- **Logout** button (top-right)
+### Profile (`/profile`)
+- Staff profile management
+- Avatar upload (camera or gallery)
+- Role selection (Receptionist/Driver)
+- License type selection (for drivers)
+- License expiry date picker
+- Personal information (name, email, phone)
 
-## 🔌 API Endpoints (to implement)
+### Receive (`/receive`)
+- Vehicle entry workflow
+- Card scanning for vehicle details
+- Manual vehicle entry (brand, model, color, plate)
+- Damage reporting with photos
+- Key assignment
+
+### Return/Pickup (`/return-pickup`)
+- Vehicle return workflow
+- Ticket lookup by plate or ticket number
+- Damage verification
+- Key handoff confirmation
+
+### Tickets (`/tickets`)
+- Active tickets list
+- Queue management (parking/delivery)
+- Ticket status updates
+- Ticket details view
+
+### Settings (`/settings`)
+- Language selection
+- Theme toggle (dark/light)
+- Accessibility options (text scale, reduce motion)
+- App information
+
+## 🔌 API Endpoints
 
 | Method | Endpoint | Purpose |
 |--------|----------|---------|
-| POST | `/auth/login` | Valet login |
-| GET | `/valets/{id}/assignments` | Fetch assigned tickets |
-| PATCH | `/assignments/{id}/status` | Update ticket status |
-| POST | `/assignments/{id}/damage-report` | Submit damage report |
+| POST | `/auth/login` | Staff login |
+| GET | `/users/me` | Get current user profile |
+| PATCH | `/users/me` | Update user profile |
+| GET | `/valets/me` | Get valet staff info |
+| PATCH | `/valets/me` | Update valet staff info |
+| POST | `/valets/me/presence` | Update presence status |
+| GET | `/parkings` | List parking locations |
+| GET | `/tickets` | List tickets |
+| POST | `/tickets` | Create new ticket |
+| PATCH | `/tickets/:id` | Update ticket status |
+| GET | `/notifications/user/:id/unread-count` | Get unread notification count |
+| PATCH | `/notifications/:id/read` | Mark notification as read |
 
 ## 🎨 Color Scheme
 
@@ -115,13 +157,13 @@ EXPO_PUBLIC_API_TIMEOUT=10000
 
 ## 📋 TODO
 
-- [ ] Fetch real assignments from API
-- [ ] WebSocket for real-time updates
-- [ ] GPS tracking for in-transit vehicles
-- [ ] Damage report photo capture
-- [ ] Push notifications for new assignments
+- [ ] Enhanced damage reporting with multiple photos
 - [ ] Offline queue for status updates
-- [ ] EAS builds for iOS/Android
+- [ ] Advanced ticket filtering and search
+- [ ] Barcode/QR code scanning for tickets
+- [ ] Voice commands for hands-free operation
+- [ ] Analytics dashboard for valet performance
+- [ ] Integration with payment processing
 
 ## 🚀 Deployment
 

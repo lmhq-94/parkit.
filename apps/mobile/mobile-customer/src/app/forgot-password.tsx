@@ -19,7 +19,7 @@ import { saveUser } from "@/lib/auth";
 import { setAuthToken } from "@/lib/api";
 import { getHasSeenOnboarding } from "@/lib/onboarding";
 import { GoogleIcon, MicrosoftIcon, FacebookIcon } from "@/components/OAuthIcons";
-import { IconCircleArrowLeft } from "@/components/TablerIcons";
+import { IconCircleArrowLeft } from "@/components/Icons";
 
 const ACCENT = "#3B82F6";
 const TEXT_MUTED = "#64748B";
@@ -279,7 +279,7 @@ export default function ForgotPasswordScreen() {
           <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom, 12) }]}>
             <Text style={styles.ctaText}>{t(locale, "forgot.cta")}</Text>
             <Pressable
-              onPress={() => router.replace("/forgot-password-form")}
+              onPress={() => router.replace("/forgot-password")}
               style={({ pressed }) => [styles.btnPrimary, pressed && styles.btnPressed]}
             >
               <Text style={styles.btnPrimaryText}>{t(locale, "forgot.emailReset")}</Text>

@@ -34,7 +34,6 @@ import {
   IconGallery, 
   IconCircleX, 
   IconUser, 
-  IconClock, 
   IconHourglass, 
   IconCar, 
   IconTag, 
@@ -42,6 +41,7 @@ import {
   IconKey,
   IconHome2
 } from "@/components/Icons";
+import { ValetChipAvatar } from "@/components/ValetChipAvatar";
 import { useAuthStore, useLocaleStore, useCompanyStore, useAccessibilityStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import type { Locale as _Locale } from "@parkit/shared";
@@ -113,6 +113,8 @@ export default function ReceiveScreen() {
   const [lookupLoading, setLookupLoading] = useState(false);
   const [lookupReadyForPlate, setLookupReadyForPlate] = useState("");
   const [vehicle, setVehicle] = useState<VehicleLookup | null>(null);
+
+  type ValetWithVariant = ValetOpt & { variant: 'available' | 'away' | 'busy' };
   const [vehicleResolved, setVehicleResolved] = useState(false);
 
   const [driverFirst, setDriverFirst] = useState("");
@@ -384,7 +386,7 @@ export default function ReceiveScreen() {
   }, [effectiveCompanyId, setCompanyId]);
 
   const loadDispatchDrivers = useCallback(async (opts?: { silent?: boolean }) => {
-    if (!user || !effectiveCompanyId || !parkingId) {
+    if (!user || !effectiveCompanyId) {
       setValets([]);
       setValetsLoading(false);
       return;
@@ -392,9 +394,15 @@ export default function ReceiveScreen() {
     const silent = opts?.silent === true;
     setCompanyId(effectiveCompanyId);
     if (!silent) setValetsLoading(true);
+    const parkingIdToUse = parkingId ?? allParkings[0]?.id ?? displayedReceiveParking?.parking?.id;
+    if (!parkingIdToUse) {
+      setValets([]);
+      if (!silent) setValetsLoading(false);
+      return;
+    }
     try {
       const vRes = await api.get<{ data?: { available?: ValetOpt[]; busy?: ValetOpt[] } }>(
-        `/valets/dispatch-drivers/${encodeURIComponent(parkingId)}`
+        `/valets/dispatch-drivers/${encodeURIComponent(parkingIdToUse)}`
       );
       const payload = vRes.data?.data;
       const availableCandidate = payload?.available;
@@ -407,7 +415,7 @@ export default function ReceiveScreen() {
     } finally {
       if (!silent) setValetsLoading(false);
     }
-  }, [user, effectiveCompanyId, parkingId, setCompanyId]);
+  }, [user, effectiveCompanyId, parkingId, setCompanyId, allParkings, displayedReceiveParking]);
 
   useEffect(() => {
     void loadDispatchDrivers();
@@ -753,24 +761,30 @@ export default function ReceiveScreen() {
         feedback.error(t(locale, "receive.errorDriver"));
         return null;
       }
-      const uRes = await api.post<{ data: { id: string } }>("/users", {
-        firstName: fn,
-        lastName: ln,
-        email: em,
-        phone: phoneDigitsForApi(driverPhone),
-        systemRole: "CUSTOMER",
-        walkInCustomer: true,
-      });
-      const userId = uRes.data?.data?.id;
-      if (!userId) throw new Error("User create failed");
-      const linkRes = await api.post<{ data: { clientId?: string } }>(
-        `/users/${userId}/vehicles`,
-        { vehicleId: vehicle.id, isPrimary: true }
-      );
-      const clientId =
-        linkRes.data?.data?.clientId ?? (await findClientIdForUser(userId));
-      if (!clientId) throw new Error("Client link failed");
-      return { clientId, vehicleId: vehicle.id };
+      try {
+        const uRes = await api.post<{ data: { id: string } }>("/users", {
+          firstName: fn,
+          lastName: ln,
+          email: em,
+          phone: phoneDigitsForApi(driverPhone),
+          systemRole: "CUSTOMER",
+          walkInCustomer: true,
+        });
+        const userId = uRes.data?.data?.id;
+        if (!userId) throw new Error("User create failed");
+        const linkRes = await api.post<{ data: { clientId?: string } }>(
+          `/users/${userId}/vehicles`,
+          { vehicleId: vehicle.id, isPrimary: true }
+        );
+        const clientId =
+          linkRes.data?.data?.clientId ?? (await findClientIdForUser(userId));
+        if (!clientId) throw new Error("Client link failed");
+        return { clientId, vehicleId: vehicle.id };
+      } catch (e) {
+        const msg = messageFromAxios(e);
+        feedback.error(msg || t(locale, "receive.errorSubmit"));
+        return null;
+      }
     }
 
     const fn = driverFirst.trim();
@@ -783,42 +797,48 @@ export default function ReceiveScreen() {
       feedback.error(t(locale, "receive.errorDriver"));
       return null;
     }
-    const pwd = randomWalkInPassword();
-    const uRes = await api.post<{ data: { id: string } }>("/users", {
-      firstName: fn,
-      lastName: ln,
-      email: em,
-      phone: phoneDigitsForApi(driverPhone),
-      password: pwd,
-      systemRole: "CUSTOMER",
-      walkInCustomer: true,
-    });
-    const userId = uRes.data?.data?.id;
-    if (!userId) throw new Error("User create failed");
+    try {
+      const pwd = randomWalkInPassword();
+      const uRes = await api.post<{ data: { id: string } }>("/users", {
+        firstName: fn,
+        lastName: ln,
+        email: em,
+        phone: phoneDigitsForApi(driverPhone),
+        password: pwd,
+        systemRole: "CUSTOMER",
+        walkInCustomer: true,
+      });
+      const userId = uRes.data?.data?.id;
+      if (!userId) throw new Error("User create failed");
 
-    const vehRes = await api.post<{ data: { id: string } }>("/vehicles", {
-      plate: formatPlate(plate),
-      countryCode: COUNTRY_CR,
-      brand: br,
-      model: md,
-      color: color || undefined,
-      year: vehYear.trim() ? parseInt(vehYear, 10) : undefined,
-      dimensions: dims,
-    });
-    const vid = vehRes.data?.data?.id;
-    if (!vid) throw new Error("Vehicle create failed");
+      const vehRes = await api.post<{ data: { id: string } }>("/vehicles", {
+        plate: formatPlate(plate),
+        countryCode: COUNTRY_CR,
+        brand: br,
+        model: md,
+        color: color || undefined,
+        year: vehYear.trim() ? parseInt(vehYear, 10) : undefined,
+        dimensions: dims,
+      });
+      const vid = vehRes.data?.data?.id;
+      if (!vid) throw new Error("Vehicle create failed");
 
-    const linkRes = await api.post<{ data: { clientId?: string } }>(
-      `/users/${userId}/vehicles`,
-      {
-        vehicleId: vid,
-        isPrimary: true,
-      }
-    );
-    const clientId =
-      linkRes.data?.data?.clientId ?? (await findClientIdForUser(userId));
-    if (!clientId) throw new Error("Client link failed");
-    return { clientId, vehicleId: vid };
+      const linkRes = await api.post<{ data: { clientId?: string } }>(
+        `/users/${userId}/vehicles`,
+        {
+          vehicleId: vid,
+          isPrimary: true,
+        }
+      );
+      const clientId =
+        linkRes.data?.data?.clientId ?? (await findClientIdForUser(userId));
+      if (!clientId) throw new Error("Client link failed");
+      return { clientId, vehicleId: vid };
+    } catch (e) {
+      const msg = messageFromAxios(e);
+      feedback.error(msg || t(locale, "receive.errorSubmit"));
+      return null;
+    }
   };
 
   async function findClientIdForUser(uid: string): Promise<string | null> {
@@ -1085,7 +1105,49 @@ export default function ReceiveScreen() {
     vehBrand.trim().length > 0 &&
     vehModel.trim().length > 0 &&
     vehColor.trim().length > 0 &&
-    vehYear.trim().length > 0;
+    vehYear.trim().length > 0 &&
+    catalogDimensions !== null;
+
+  const [emailError, setEmailError] = useState<string | null>(null);
+
+  // Debounced email validation
+  useEffect(() => {
+    const timeoutId = setTimeout(async () => {
+      const em = driverEmail.trim();
+      if (!em || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+        setEmailError(null);
+        return;
+      }
+
+      // Skip validation if it's an existing user (from lookup)
+      if (loadedOwnerUserId && loadedDriverSnapshot && loadedDriverSnapshot.email === em) {
+        setEmailError(null);
+        return;
+      }
+
+      try {
+        const res = await api.post<{ data: { valid: boolean; exists: boolean; reason?: string } }>("/users/validate-email", {
+          email: em,
+        });
+        const data = res.data?.data;
+        if (data && !data.valid && data.reason === "staff") {
+          setEmailError(t(locale, "receive.errorEmailStaff"));
+        } else {
+          setEmailError(null);
+        }
+      } catch (e) {
+        // Ignore validation errors - user will see error on submit
+        setEmailError(null);
+      }
+    }, 800); // 800ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [driverEmail, loadedOwnerUserId, loadedDriverSnapshot, locale]);
+
+  const handleDriverNext = () => {
+    if (!driverValid || emailError) return;
+    setWizardStep(vehicleStepNum);
+  };
   const _bookingValidated = bookingCheck !== null && bookingCheck !== "invalid";
 
   const ticketCodesFilled = useMemo(() => {
@@ -1152,7 +1214,7 @@ export default function ReceiveScreen() {
         const res = await api.get<{ data: CatalogModel[] }>(url);
         if (!cancelled) {
           const models = Array.isArray(res.data?.data) ? res.data.data : [];
-          setCatalogModels(models);
+          setCatalogModels(models.sort((a, b) => a.name.localeCompare(b.name)));
           // If no models found and not already retried, try with uppercase
           if (models.length === 0 && !isRetry && makeName) {
             loadModels(makeName.toUpperCase(), true);
@@ -1385,7 +1447,7 @@ export default function ReceiveScreen() {
               !driverValid && styles.btnDisabled,
               pressed && styles.pressed,
             ]}
-            onPress={() => setWizardStep(vehicleStepNum)}
+            onPress={handleDriverNext}
             disabled={!driverValid}
             accessibilityLabel={t(locale, "receive.next")}
           >
@@ -1557,10 +1619,7 @@ export default function ReceiveScreen() {
             {submitting ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <>
-                <IconTicket size={18} color="#fff" />
-                <Text style={styles.primaryBtnText}>{t(locale, "receive.next")}</Text>
-              </>
+              <Text style={styles.primaryBtnText}>{t(locale, "receive.next")}</Text>
             )}
           </Pressable>
         </View>
@@ -1964,6 +2023,7 @@ export default function ReceiveScreen() {
               onLastNameChange={setDriverLast}
               onEmailChange={setDriverEmail}
               onPhoneChange={setDriverPhone}
+              emailError={emailError}
               colors={{
                 textSubtle: C.textSubtle,
                 textMuted: C.textMuted,
@@ -2029,8 +2089,8 @@ export default function ReceiveScreen() {
                   >
                     {vehBrand || t(locale, "receive.placeholderBrand")}
                   </Text>
-                  {loadingCatalogMakes && <ActivityIndicator size={14} color={C.primary} style={{ position: 'absolute', right: 16, top: '50%', marginTop: 0, zIndex: 1 }} />}
-                  {!loadingCatalogMakes && <IconList size={16} color={C.textMuted} style={{ position: 'absolute', right: 16, top: '50%', marginTop: 0, zIndex: 1 }} />}
+                  {loadingCatalogMakes && <ActivityIndicator size={14} color={C.primary} style={{ position: 'absolute', right: 16, top: '50%', marginTop: 2, zIndex: 1 }} />}
+                  {!loadingCatalogMakes && <IconList size={16} color={C.textMuted} style={{ position: 'absolute', right: 16, top: '50%', marginTop: 2, zIndex: 1 }} />}
                 </Pressable>
               )}
 
@@ -2080,8 +2140,8 @@ export default function ReceiveScreen() {
                   >
                     {vehModel || t(locale, "receive.placeholderModel")}
                   </Text>
-                  {loadingCatalogModels && <ActivityIndicator size={14} color={C.primary} style={{ position: 'absolute', right: 16, top: '50%', marginTop: 0, zIndex: 1 }} />}
-                  {!loadingCatalogModels && <IconList size={16} color={C.textMuted} style={{ position: 'absolute', right: 16, top: '50%', marginTop: 0, zIndex: 1 }} />}
+                  {loadingCatalogModels && <ActivityIndicator size={14} color={C.primary} style={{ position: 'absolute', right: 16, top: '50%', marginTop: 2, zIndex: 1 }} />}
+                  {!loadingCatalogModels && <IconList size={16} color={C.textMuted} style={{ position: 'absolute', right: 16, top: '50%', marginTop: 2, zIndex: 1 }} />}
                 </Pressable>
               )}
 
@@ -2249,7 +2309,12 @@ export default function ReceiveScreen() {
               <Text style={styles.stepExplain}>{t(locale, "receive.wizardParkingHelp")}</Text>
 
               <View style={styles.bottomCard}>
-                <View style={styles.bottomCardInner}>
+                <Pressable
+                  style={({ pressed }) => [styles.bottomCardInner, pressed && styles.pressed]}
+                  onPress={() => setReceiveParkingModalOpen(true)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t(locale, "home.chooseParking")}
+                >
                   <View style={styles.bottomIconWrap}>
                     <IconLocationFilled size={Math.round(14 * textScale)} fill={C.primary} color={C.primary} />
                   </View>
@@ -2259,14 +2324,7 @@ export default function ReceiveScreen() {
                         {t(locale, "home.nearestTitle")}
                       </Text>
                       {allParkings.length > 0 && locStatus !== "loading" && locStatus !== "unavailable" && (
-                        <Pressable
-                          style={({ pressed }) => [styles.bottomChooseBtn, pressed && styles.pressed]}
-                          onPress={() => setReceiveParkingModalOpen(true)}
-                          accessibilityRole="button"
-                          accessibilityLabel={t(locale, "home.chooseParking")}
-                        >
-                          <IconList size={Math.round(18 * textScale)} color={C.primary} />
-                        </Pressable>
+                        <IconList size={Math.round(18 * textScale)} color={C.primary} />
                       )}
                     </View>
                     {locStatus === "loading" && (
@@ -2308,7 +2366,7 @@ export default function ReceiveScreen() {
                             })}
                           </Text>
                         )}
-                        <Text style={styles.bottomAddr} numberOfLines={2}>
+                        <Text style={styles.bottomAddr} numberOfLines={3}>
                           {displayedReceiveParking.parking.address}
                         </Text>
                         {displayedReceiveParking.isManual && (
@@ -2324,7 +2382,7 @@ export default function ReceiveScreen() {
                       </>
                     )}
                   </View>
-                </View>
+                </Pressable>
               </View>
             </>
           )}
@@ -2463,29 +2521,49 @@ export default function ReceiveScreen() {
               <Text style={styles.stepExplain}>{t(locale, "receive.wizardValetStepHelp")}</Text>
 
               <View style={styles.receiveParkingCard}>
-                <View style={[styles.bottomCardInner, !driverValetId && { borderColor: C.border }]}>
-                  <View style={styles.bottomIconWrap}>
-                    <IconUser
-                      size={22}
-                      color={driverValetId ? C.primary : C.textMuted}
-                    />
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.bottomCardInner,
+                    !driverValetId && { borderColor: C.border },
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => setValetSelectModalOpen(true)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t(locale, "receive.valetSelectViewList")}
+                >
+                  <View style={[styles.bottomIconWrap, { alignSelf: "center", marginTop: 4 }]}>
+                    {selectedDispatchDriver && selectedDispatchDriver.user.avatarUrl ? (
+                      <ValetChipAvatar
+                        id={selectedDispatchDriver.id}
+                        firstName={selectedDispatchDriver.user.firstName}
+                        lastName={selectedDispatchDriver.user.lastName}
+                        avatarUrl={selectedDispatchDriver.user.avatarUrl}
+                        isDark={theme.isDark}
+                        size={40}
+                      />
+                    ) : (
+                      <View
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 20,
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderWidth: 1,
+                          backgroundColor: theme.isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.03)",
+                          borderColor: C.border,
+                        }}
+                      >
+                        <IconUser size={22} color={C.textMuted} />
+                      </View>
+                    )}
                   </View>
                   <View style={styles.bottomTextCol}>
                     <View style={styles.bottomTitleRow}>
                       <Text style={styles.bottomTitle} numberOfLines={1}>
                         {t(locale, "receive.driverValetSection")}
                       </Text>
-                      <Pressable
-                        style={({ pressed }) => [styles.bottomChooseBtn, pressed && styles.pressed]}
-                        onPress={() => setValetSelectModalOpen(true)}
-                        accessibilityRole="button"
-                        accessibilityLabel={t(locale, "receive.valetSelectChoose")}
-                      >
-                        <Text style={[styles.bottomChooseBtnText, { color: C.primary }]}>
-                          {t(locale, "receive.valetSelectChoose")}
-                        </Text>
-                        <IconList size={16} color={C.primary} />
-                      </Pressable>
+                      <IconList size={16} color={C.primary} />
                     </View>
 
                     {metaLoading || valetsLoading ? (
@@ -2503,21 +2581,6 @@ export default function ReceiveScreen() {
                         <Text style={styles.bottomCompany} numberOfLines={1}>
                           {selectedDispatchDriver.user.email || t(locale, "receive.valetNoEmail")}
                         </Text>
-                        {selectedBusyDriver ? (
-                          <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 }}>
-                            <IconClock size={14} color={C.warning} />
-                            <Text style={[styles.bottomMeta, { color: C.warning, marginTop: 0 }]}>
-                              {t(locale, "receive.valetStatusBusy")} (5-15 min)
-                            </Text>
-                          </View>
-                        ) : (
-                          <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 }}>
-                            <IconCircleCheck size={14} color={C.success} />
-                            <Text style={[styles.bottomMeta, { color: C.success, marginTop: 0 }]}>
-                              {t(locale, "receive.valetStatusAvailable")}
-                            </Text>
-                          </View>
-                        )}
                       </View>
                     ) : (
                       <Text style={[styles.bottomMeta, { color: C.textSubtle }]}>
@@ -2525,7 +2588,7 @@ export default function ReceiveScreen() {
                       </Text>
                     )}
                   </View>
-                </View>
+                </Pressable>
               </View>
 
               {selectedBusyDriver ? (
@@ -2576,7 +2639,7 @@ export default function ReceiveScreen() {
               accessibilityLabel={t(locale, "common.cancel")}
             />
             <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
-              <Text style={[styles.modalTitle, { color: C.text, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]}>{t(locale, "receive.placeholderBrand")}</Text>
+              <Text style={[styles.modalTitle, { color: C.text, fontSize: Math.round(theme.font.status * 0.6 * textScale) }]}>{t(locale, "receive.placeholderBrand")}</Text>
               {loadingCatalogMakes ? (
                 <View style={{ paddingVertical: theme.space.lg, alignItems: "center" }}>
                   <ActivityIndicator color={C.primary} />
@@ -2603,31 +2666,37 @@ export default function ReceiveScreen() {
                         setVehicleBrandModalOpen(false);
                       }}
                     >
-                      <Text style={[styles.parkingRowName, { color: C.primary, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]}>
+                      <Text style={[styles.parkingRowName, { color: C.primary, fontSize: Math.round(theme.font.status * 0.6 * textScale) }]}>
                         {t(locale, "receive.manualEntry")}
                       </Text>
                     </Pressable>
                   }
-                  renderItem={({ item }) => (
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.parkingRow,
-                        { borderBottomColor: C.border },
-                        pressed && styles.pressed,
-                      ]}
-                      onPress={() => {
-                        setVehBrand(item.name);
-                        setVehModel("");
-                        setManualBrandMode(false);
-                        setManualModelMode(false);
-                        setVehicleBrandModalOpen(false);
-                      }}
-                    >
-                      <Text style={[styles.parkingRowName, { color: C.text, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]} numberOfLines={2}>
-                        {item.name}
-                      </Text>
-                    </Pressable>
-                  )}
+                  renderItem={({ item }) => {
+                    const isSelected = item.name === vehBrand;
+                    return (
+                      <Pressable
+                        style={({ pressed }) => [
+                          styles.parkingRow,
+                          { borderBottomColor: C.border },
+                          pressed && styles.pressed,
+                        ]}
+                        onPress={() => {
+                          setVehBrand(item.name);
+                          setVehModel("");
+                          setManualBrandMode(false);
+                          setManualModelMode(false);
+                          setVehicleBrandModalOpen(false);
+                        }}
+                      >
+                        <View style={styles.parkingRowText}>
+                          <Text style={[styles.parkingRowName, { color: C.text, fontSize: Math.round(theme.font.status * 0.6 * textScale) }]} numberOfLines={2}>
+                            {item.name}
+                          </Text>
+                        </View>
+                        {isSelected && <IconCircleCheck size={26} color={C.primary} />}
+                      </Pressable>
+                    );
+                  }}
                   ListEmptyComponent={
                     <Text style={{ color: C.textMuted, padding: theme.space.md, fontSize: Math.round(theme.font.secondary * 0.65 * textScale) }}>
                       {t(locale, "receive.brandPickerEmpty")}
@@ -2652,7 +2721,7 @@ export default function ReceiveScreen() {
               accessibilityLabel={t(locale, "common.cancel")}
             />
             <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
-              <Text style={[styles.modalTitle, { color: C.text, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]}>{t(locale, "receive.placeholderModel")}</Text>
+              <Text style={[styles.modalTitle, { color: C.text, fontSize: Math.round(theme.font.status * 0.6 * textScale) }]}>{t(locale, "receive.placeholderModel")}</Text>
               {loadingCatalogModels ? (
                 <View style={{ paddingVertical: theme.space.lg, alignItems: "center" }}>
                   <ActivityIndicator color={C.primary} />
@@ -2678,29 +2747,35 @@ export default function ReceiveScreen() {
                         setVehicleModelModalOpen(false);
                       }}
                     >
-                      <Text style={[styles.parkingRowName, { color: C.primary, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]}>
+                      <Text style={[styles.parkingRowName, { color: C.primary, fontSize: Math.round(theme.font.status * 0.6 * textScale) }]}>
                         {t(locale, "receive.manualEntry")}
                       </Text>
                     </Pressable>
                   }
-                  renderItem={({ item }) => (
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.parkingRow,
-                        { borderBottomColor: C.border },
-                        pressed && styles.pressed,
-                      ]}
-                      onPress={() => {
-                        setVehModel(item.name);
-                        setManualModelMode(false);
-                        setVehicleModelModalOpen(false);
-                      }}
-                    >
-                      <Text style={[styles.parkingRowName, { color: C.text, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]} numberOfLines={2}>
-                        {item.name}
-                      </Text>
-                    </Pressable>
-                  )}
+                  renderItem={({ item }) => {
+                    const isSelected = item.name === vehModel;
+                    return (
+                      <Pressable
+                        style={({ pressed }) => [
+                          styles.parkingRow,
+                          { borderBottomColor: C.border },
+                          pressed && styles.pressed,
+                        ]}
+                        onPress={() => {
+                          setVehModel(item.name);
+                          setManualModelMode(false);
+                          setVehicleModelModalOpen(false);
+                        }}
+                      >
+                        <View style={styles.parkingRowText}>
+                          <Text style={[styles.parkingRowName, { color: C.text, fontSize: Math.round(theme.font.status * 0.6 * textScale) }]} numberOfLines={2}>
+                            {item.name}
+                          </Text>
+                        </View>
+                        {isSelected && <IconCircleCheck size={26} color={C.primary} />}
+                      </Pressable>
+                    );
+                  }}
                   ListEmptyComponent={
                     <Text style={{ color: C.textMuted, padding: theme.space.md, fontSize: Math.round(theme.font.secondary * 0.65 * textScale) }}>
                       {t(locale, "receive.modelPickerEmpty")}
@@ -2725,7 +2800,7 @@ export default function ReceiveScreen() {
               accessibilityLabel={t(locale, "common.cancel")}
             />
             <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
-              <Text style={[styles.modalTitle, { color: C.text, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]}>{t(locale, "receive.placeholderColor")}</Text>
+              <Text style={[styles.modalTitle, { color: C.text, fontSize: Math.round(theme.font.status * 0.6 * textScale) }]}>{t(locale, "receive.placeholderColor")}</Text>
               <FlatList
                 data={getVehicleColorOptions(locale).sort((a, b) => a.label.localeCompare(b.label))}
                 keyExtractor={(item) => item.value}
@@ -2743,28 +2818,34 @@ export default function ReceiveScreen() {
                       setVehicleColorModalOpen(false);
                     }}
                   >
-                    <Text style={[styles.parkingRowName, { color: C.primary, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]}>
+                    <Text style={[styles.parkingRowName, { color: C.primary, fontSize: Math.round(theme.font.status * 0.6 * textScale) }]}>
                       {t(locale, "receive.noColorOption")}
                     </Text>
                   </Pressable>
                 }
-                renderItem={({ item }) => (
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.parkingRow,
-                      { borderBottomColor: C.border },
-                      pressed && styles.pressed,
-                    ]}
-                    onPress={() => {
-                      setVehColor(item.value);
-                      setVehicleColorModalOpen(false);
-                    }}
-                  >
-                    <Text style={[styles.parkingRowName, { color: C.text, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]} numberOfLines={2}>
-                      {item.label}
-                    </Text>
-                  </Pressable>
-                )}
+                renderItem={({ item }) => {
+                  const isSelected = item.value === vehColor;
+                  return (
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.parkingRow,
+                        { borderBottomColor: C.border },
+                        pressed && styles.pressed,
+                      ]}
+                      onPress={() => {
+                        setVehColor(item.value);
+                        setVehicleColorModalOpen(false);
+                      }}
+                    >
+                      <View style={styles.parkingRowText}>
+                        <Text style={[styles.parkingRowName, { color: C.text, fontSize: Math.round(theme.font.status * 0.6 * textScale) }]} numberOfLines={2}>
+                          {item.label}
+                        </Text>
+                      </View>
+                      {isSelected && <IconCircleCheck size={26} color={C.primary} />}
+                    </Pressable>
+                  );
+                }}
                 ListEmptyComponent={
                   <Text style={{ color: C.textMuted, padding: theme.space.md, fontSize: Math.round(theme.font.secondary * 0.65 * textScale) }}>
                     {t(locale, "receive.colorPickerEmpty")}
@@ -2788,36 +2869,40 @@ export default function ReceiveScreen() {
               accessibilityLabel={t(locale, "common.cancel")}
             />
             <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
-              <Text style={[styles.modalTitle, { color: C.text, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]}>
+              <Text style={[styles.modalTitle, { color: C.text, fontSize: Math.round(theme.font.status * 0.6 * textScale) }]}>
                 {t(locale, "receive.valetSelectPlaceholder")}
               </Text>
               <FlatList
-                data={[...availableValets.map(v => ({ ...v, variant: 'available' as const })), ...busyValets.map(v => ({ ...v, variant: 'busy' as const }))] }
+                data={[
+                  ...availableValets.map(v => ({ ...v, variant: 'available' as const })),
+                  ...busyValets.map(v => ({ ...v, variant: 'busy' as const }))
+                ] as ValetWithVariant[]}
                 keyExtractor={(item) => item.id}
                 style={styles.modalList}
                 keyboardShouldPersistTaps="handled"
-                renderItem={({ item }) => (
-                  <ValetDispatchRow
-                    v={item}
-                    selected={driverValetId === item.id}
-                    isBusy={item.variant === 'busy'}
-                    onPress={() => {
+                renderItem={({ item }) => {
+                  const isBusy = item.variant === 'busy';
+                  const hasAvailable = availableValets.length > 0;
+                  const isDisabled = isBusy && hasAvailable;
+                  
+                  return (
+                    <ValetDispatchRow
+                      v={item}
+                      selected={driverValetId === item.id}
+                      isBusy={isBusy}
+                      isDisabled={isDisabled}
+                      onPress={() => {
+                        if (isDisabled) return;
                         setDriverValetId(item.id);
                         setValetSelectModalOpen(false);
-                    }}
-                    locale={locale}
-                    theme={theme}
-                    styles={createValetRowStyles(theme)}
-                    statusMeta={item.variant === 'available' ? t(locale, "receive.valetStatusAvailable") : t(locale, "receive.valetStatusBusy")}
-                    statusBadgeShort={item.variant === 'available' ? t(locale, "receive.valetStatusAvailableShort") : t(locale, "receive.valetStatusBusyShort")}
-                    badgeVariant={item.variant}
-                  />
-                )}
-                ListHeaderComponent={() => {
-                   if (availableValets.length > 0) {
-                       return <Text style={[styles.valetSectionTitle, { marginTop: 0 }]}>{t(locale, "receive.valetDriversAvailableTitle")}</Text>
-                   }
-                   return null;
+                      }}
+                      locale={locale}
+                      theme={theme}
+                      styles={createValetRowStyles(theme)}
+                      statusMeta=""
+                      badgeVariant={item.variant}
+                    />
+                  );
                 }}
                 ListEmptyComponent={
                   <Text style={{ color: C.textMuted, padding: theme.space.md, fontSize: Math.round(theme.font.secondary * 0.65 * textScale) }}>
@@ -2844,7 +2929,7 @@ export default function ReceiveScreen() {
               accessibilityLabel={t(locale, "common.cancel")}
             />
             <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
-              <Text style={[styles.modalTitle, { color: C.text, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]}>
+              <Text style={[styles.modalTitle, { color: C.text, fontSize: Math.round(theme.font.status * 0.6 * textScale) }]}>
                 {t(locale, "home.parkingPickerTitle")}
               </Text>
               <FlatList
@@ -2852,26 +2937,32 @@ export default function ReceiveScreen() {
                 keyExtractor={(item) => item.id}
                 style={styles.modalList}
                 keyboardShouldPersistTaps="handled"
-                renderItem={({ item }) => (
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.parkingRow,
-                      { borderBottomColor: C.border },
-                      pressed && styles.pressed,
-                    ]}
-                    onPress={() => {
-                      setReceiveManualParkingId(item.id);
-                      setReceiveParkingModalOpen(false);
-                    }}
-                  >
-                    <Text style={[styles.parkingRowName, { color: C.text }]} numberOfLines={2}>
-                      {item.name}
-                    </Text>
-                    <Text style={[styles.parkingRowAddr, { color: C.textMuted }]} numberOfLines={2}>
-                      {item.address}
-                    </Text>
-                  </Pressable>
-                )}
+                renderItem={({ item }) => {
+                  const isSelected = item.id === receiveManualParkingId || (displayedReceiveParking?.parking.id === item.id && !receiveManualParkingId);
+                  return (
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.parkingRow,
+                        { borderBottomColor: C.border },
+                        pressed && styles.pressed,
+                      ]}
+                      onPress={() => {
+                        setReceiveManualParkingId(item.id);
+                        setReceiveParkingModalOpen(false);
+                      }}
+                    >
+                      <View style={styles.parkingRowText}>
+                        <Text style={[styles.parkingRowName, { color: C.text, fontSize: Math.round(theme.font.status * 0.6 * textScale) }]} numberOfLines={2}>
+                          {item.name}
+                        </Text>
+                        <Text style={[styles.parkingRowAddr, { color: C.textMuted, fontSize: Math.round(theme.font.status * 0.6 * textScale) }]} numberOfLines={2}>
+                          {item.address}
+                        </Text>
+                      </View>
+                      {isSelected && <IconCircleCheck size={26} color={C.primary} />}
+                    </Pressable>
+                  );
+                }}
                 ListEmptyComponent={
                   <Text style={{ color: C.textMuted, padding: theme.space.md }}>
                     {t(locale, "home.parkingPickerEmpty")}
@@ -3436,7 +3527,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       }),
     },
     bottomIconWrap: {
-      marginTop: 8,
+      marginTop: 24,
     },
     bottomTextCol: {
       flex: 1,
@@ -3460,9 +3551,9 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     bottomChooseBtn: {
       flexDirection: "row",
-      alignItems: "flex-start",
+      alignItems: "center",
       gap: 4,
-      paddingVertical: 0,
+      paddingVertical: 4,
       paddingHorizontal: S.xs,
       flexShrink: 0,
     },
@@ -3482,6 +3573,16 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       paddingVertical: 4,
     },
     bottomUseNearestText: {
+      fontSize: Math.round(F.status * 0.65),
+      fontWeight: "600",
+      fontFamily: Fonts.primary,
+    },
+    bottomLinkBtn: {
+      marginTop: S.sm,
+      alignSelf: "flex-start",
+      paddingVertical: 4,
+    },
+    bottomLinkText: {
       fontSize: Math.round(F.status * 0.65),
       fontWeight: "600",
       fontFamily: Fonts.primary,
@@ -3547,8 +3648,14 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       maxHeight: 300,
     },
     parkingRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
       paddingVertical: S.sm,
       borderBottomWidth: StyleSheet.hairlineWidth,
+    },
+    parkingRowText: {
+      flex: 1,
     },
     parkingRowName: {
       fontSize: Math.round(F.secondary * 0.65),
@@ -3689,13 +3796,11 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       gap: S.sm,
     },
     valetSectionTitle: {
-      fontSize: F.secondary,
-      fontWeight: "800",
-      color: C.textSubtle,
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
-      marginTop: S.xs,
-      marginBottom: S.xs,
+      fontSize: Math.round(F.status * 0.6),
+      fontWeight: "500",
+      fontFamily: Fonts.primary,
+      color: C.text,
+      marginBottom: 6,
     },
     valetQueueCard: {
       flexDirection: "row",

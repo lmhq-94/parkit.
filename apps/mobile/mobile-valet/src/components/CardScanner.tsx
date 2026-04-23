@@ -495,7 +495,6 @@ export function CardScanner({
           onCardScanned(cardData);
           setGuideText(t(locale, 'receive.cardScannedSuccess'));
         } else {
-          console.log('Card rejected, length:', cardData.number.length);
           setGuideText(t(locale, 'receive.scanCardRetry'));
         }
       }

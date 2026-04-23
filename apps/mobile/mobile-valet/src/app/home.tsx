@@ -15,7 +15,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { Redirect, useRouter } from "expo-router";
 import { useMemo, useEffect, useState, useCallback, useRef } from "react";
 import React from "react";
-import { IconUser, IconLocationFilled, IconList, IconSettings, IconLogout, IconKey, IconKeyOff, IconSteeringWheelOutline, IconTrafficCone } from "@/components/Icons";
+import { IconUser, IconLocationFilled, IconList, IconSettings, IconLogout, IconKey, IconKeyOff, IconSteeringWheelOutline, IconTrafficCone, IconCircleCheck } from "@/components/Icons";
 import { Logo } from "@parkit/shared";
 import api, { clearAuthToken } from "@/lib/api";
 import { useAuthStore, useLocaleStore, useCompanyStore, useParkingPreferenceStore, useAccessibilityStore } from "@/lib/store";
@@ -25,6 +25,7 @@ import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useNearestParking, haversineKm } from "@/lib/useNearestParking";
 import { useOnAppForeground } from "@/lib/useOnAppForeground";
 import { TICKETS_POLL_MS } from "@/lib/syncConstants";
+import { usePushNotifications } from "@/lib/usePushNotifications";
 import {
   avatarPresenceRingColor,
   HEADER_RADIUS_BOTTOM,
@@ -89,6 +90,7 @@ function HomeScreenContent() {
   const isTablet = shortestSide >= 600;
   const isLandscape = winW > winH;
   useValetProfileSync(user);
+  usePushNotifications(user?.id);
   const { nearest, status: locStatus, allParkings, userCoords } = useNearestParking(!!user);
   const manualParkingId = useParkingPreferenceStore((s) => s.manualParkingId);
   const setManualParkingId = useParkingPreferenceStore((s) => s.setManualParkingId);
@@ -456,7 +458,12 @@ function HomeScreenContent() {
         </View>
 
         <View style={styles.bottomCard}>
-          <View style={styles.bottomCardInner}>
+          <Pressable
+            style={({ pressed }) => [styles.bottomCardInner, pressed && styles.pressed]}
+            onPress={() => setParkingModalOpen(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t(locale, "home.chooseParking")}
+          >
             <View style={styles.bottomIconWrap}>
               <IconLocationFilled size={Math.round(14 * textScale)} fill={C.primary}  color={C.primary} />
             </View>
@@ -466,14 +473,7 @@ function HomeScreenContent() {
                   {t(locale, "home.nearestTitle")}
                 </Text>
                 {allParkings.length > 0 && locStatus !== "loading" && locStatus !== "unavailable" && (
-                  <Pressable
-                    style={({ pressed }) => [styles.bottomChooseBtn, pressed && styles.pressed]}
-                    onPress={() => setParkingModalOpen(true)}
-                    accessibilityRole="button"
-                    accessibilityLabel={t(locale, "home.chooseParking")}
-                  >
-                    <IconList size={Math.round(18 * textScale)} color={C.primary} />
-                  </Pressable>
+                  <IconList size={Math.round(18 * textScale)} color={C.primary} />
                 )}
               </View>
               {locStatus === "loading" && (
@@ -531,7 +531,7 @@ function HomeScreenContent() {
                 </>
               )}
             </View>
-          </View>
+          </Pressable>
         </View>
 
         <View style={styles.helpLogoutRow}>
@@ -586,26 +586,32 @@ function HomeScreenContent() {
                 keyExtractor={(item) => item.id}
                 style={styles.modalList}
                 keyboardShouldPersistTaps="handled"
-                renderItem={({ item }) => (
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.parkingRow,
-                      { borderBottomColor: C.border },
-                      pressed && styles.pressed,
-                    ]}
-                    onPress={() => {
-                      void setManualParkingId(item.id);
-                      setParkingModalOpen(false);
-                    }}
-                  >
-                    <Text style={[styles.parkingRowName, { color: C.text }]} numberOfLines={2}>
-                      {item.name}
-                    </Text>
-                    <Text style={[styles.parkingRowAddr, { color: C.textMuted }]} numberOfLines={2}>
-                      {item.address}
-                    </Text>
-                  </Pressable>
-                )}
+                renderItem={({ item }) => {
+                  const isSelected = item.id === manualParkingId || (displayedParking?.parking.id === item.id && !manualParkingId);
+                  return (
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.parkingRow,
+                        { borderBottomColor: C.border },
+                        pressed && styles.pressed,
+                      ]}
+                      onPress={() => {
+                        void setManualParkingId(item.id);
+                        setParkingModalOpen(false);
+                      }}
+                    >
+                      <View style={styles.parkingRowText}>
+                        <Text style={[styles.parkingRowName, { color: C.text }]} numberOfLines={2}>
+                          {item.name}
+                        </Text>
+                        <Text style={[styles.parkingRowAddr, { color: C.textMuted }]} numberOfLines={2}>
+                          {item.address}
+                        </Text>
+                      </View>
+                      {isSelected && <IconCircleCheck size={26} color={C.primary} />}
+                    </Pressable>
+                  );
+                }}
                 ListEmptyComponent={
                   <Text style={{ color: C.textMuted, padding: theme.space.md }}>
                     {t(locale, "home.parkingPickerEmpty")}
@@ -827,31 +833,22 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     },
     headerBadge: {
       position: "absolute",
-      top: -4,
-      right: -4,
-      minWidth: 18,
-      height: 18,
-      borderRadius: 9,
+      top: -2,
+      right: -2,
+      minWidth: 16,
+      height: 16,
+      borderRadius: 8,
       alignItems: "center",
       justifyContent: "center",
-      paddingHorizontal: 4,
-      backgroundColor: theme.isDark ? "#EF4444" : "#DC2626",
-      borderWidth: 1,
-      borderColor: theme.isDark ? "rgba(254, 202, 202, 0.45)" : "rgba(255,255,255,0.7)",
-      ...Platform.select({
-        ios: {
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.2,
-          shadowRadius: 1,
-        },
-        android: { elevation: 2 },
-      }),
+      paddingHorizontal: 5,
+      backgroundColor: C.primary,
+      borderWidth: 0,
     },
     headerBadgeText: {
       color: "#fff",
-      fontWeight: "700",
+      fontWeight: "600",
       fontFamily: Fonts.primary,
+      fontSize: 10,
     },
     gridFlex: {
       flex: 1,
@@ -977,31 +974,21 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     },
     tileBadge: {
       position: "absolute",
-      top: 10,
-      right: 10,
-      minWidth: 24,
-      height: 24,
-      borderRadius: 12,
+      top: 8,
+      right: 8,
+      minWidth: 20,
+      height: 20,
+      borderRadius: 10,
       alignItems: "center",
       justifyContent: "center",
       paddingHorizontal: 6,
-      backgroundColor: theme.isDark ? "#EF4444" : "#DC2626",
-      borderWidth: 1,
-      borderColor: theme.isDark ? "rgba(254, 202, 202, 0.45)" : "rgba(255,255,255,0.7)",
-      ...Platform.select({
-        ios: {
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.2,
-          shadowRadius: 2,
-        },
-        android: { elevation: 2 },
-      }),
+      backgroundColor: C.primary,
+      borderWidth: 0,
     },
     tileBadgeText: {
       color: "#fff",
       fontSize: Math.round(F.status * 0.65),
-      fontWeight: "700",
+      fontWeight: "600",
       letterSpacing: 0.2,
     },
     tileTitle: {
@@ -1164,8 +1151,14 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       maxHeight: 300,
     },
     parkingRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
       paddingVertical: S.sm,
       borderBottomWidth: StyleSheet.hairlineWidth,
+    },
+    parkingRowText: {
+      flex: 1,
     },
     parkingRowName: {
       fontSize: Math.round(F.status * 0.65),

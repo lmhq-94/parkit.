@@ -14,6 +14,7 @@ router.post("/super-admin", validateRequest(CreateSuperAdminSchema), requireAuth
 
 router.post("/", validateRequest(CreateUserSchema), requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), UsersController.create);
 router.get("/", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), UsersController.list);
+router.post("/validate-email", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), UsersController.validateEmail);
 router.post("/invite", requireAuth, requireCompany, requireRole("ADMIN"), UsersController.invite);
 router.post("/invite-batch", requireAuth, requireCompany, requireRole("ADMIN"), UsersController.inviteBatch);
 router.get("/invitations", requireAuth, requireCompany, requireRole("ADMIN"), UsersController.listInvitations);

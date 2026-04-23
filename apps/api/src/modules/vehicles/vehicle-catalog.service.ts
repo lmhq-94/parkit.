@@ -289,7 +289,7 @@ export class VehicleCatalogService {
           lengthCm: variant.lengthCm,
           widthCm: variant.widthCm,
           heightCm: variant.heightCm,
-          weightKg: variant.weightKg,
+          weightKg: variant.weightKg ?? undefined,
         };
       }
     } catch (err) {

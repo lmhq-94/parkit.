@@ -5,7 +5,7 @@ High-level architecture notes for the backend and platform.
 ## Overview
 
 - **Backend:** Express + TypeScript + Prisma (Postgres)
-- **Modules:** audit, auth, bookings, clients, companies, notifications, parkings, tickets, users, valets, vehicles
+- **Modules:** audit, auth, bookings, companies, customers, dashboard, notifications, parkings, payments, pushNotifications, tickets, users, valets, vehicles
 - **Multi-tenant:** `companyId` is used to scope most resources.
 
 ## Schema and migrations

@@ -13,8 +13,14 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "moduleResolution": "node"
   },
   "include": ["src"],
-  "exclude": ["src/__tests__", "src/**/*.test.ts", "node_modules"]
+  "exclude": ["src/__tests__", "src/**/*.test.ts", "node_modules"],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
+  }
 }
