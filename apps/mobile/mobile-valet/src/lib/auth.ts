@@ -113,7 +113,10 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
 
 export const signup = async (credentials: SignupCredentials): Promise<AuthResponse> => {
   try {
-    const response = await api.post('/auth/signup', credentials);
+    const response = await api.post('/auth/register-valet', {
+      ...credentials,
+      staffRole: credentials.valetStaffRole,
+    });
     const { user, token } = response.data.data;
     
     await setAuthToken(token);

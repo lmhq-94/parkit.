@@ -6,17 +6,17 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Platform,
+  Pressable,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { StatusBar } from "react-native";
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
-import { IconMapPin, IconAlertCircle, IconArrowUndo, IconCircleCheck, IconCar, IconBell } from "@/components/Icons";
+import { IconMapPin, IconAlertCircle, IconArrowUndo, IconCircleCheck, IconCar, IconCarOff, IconBell, IconHome2 } from "@/components/Icons";
 import { t } from "@/lib/i18n";
 import { formatVehicleColorLabel } from "@parkit/shared/src/vehicleColors";
 import api from "@/lib/api";
-import { ValetBackButton } from "@/components/ValetBackButton";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useOnAppForeground } from "@/lib/useOnAppForeground";
 import { TICKETS_POLL_MS } from "@/lib/syncConstants";
@@ -841,7 +841,7 @@ export default function TicketsScreen() {
     }
     return (
       <View style={[styles.centerBox, styles.centerBoxEmpty]}>
-        <IconCar size={72} color={C.primary} />
+        <IconCarOff size={64} color={C.textMuted} />
         <Text style={styles.emptyTitle}>
           {isDriverUi ? t(locale, "tickets.emptyDriver") : t(locale, "tickets.emptyReception")}
         </Text>
@@ -863,10 +863,7 @@ export default function TicketsScreen() {
         <View style={styles.contentFrame}>
         <View style={styles.header}>
           <View style={[styles.screenHeader, { paddingTop: insets.top + theme.space.md }]}>
-            <ValetBackButton
-              onPress={() => router.replace("/home")}
-              accessibilityLabel={t(locale, "common.back")}
-            />
+            <View style={{ width: 44 }} />
             <Text style={styles.screenTitle}>
               {isDriverUi
                 ? queueMode === "parking"
@@ -874,7 +871,9 @@ export default function TicketsScreen() {
                   : t(locale, "tickets.titleDeliveryQueue")
                 : t(locale, "tickets.titleReception")}
             </Text>
-            <View style={{ width: 44 }} />
+            <Pressable onPress={() => router.replace("/home")} style={{ width: 44, alignItems: "center", justifyContent: "center" }}>
+              <IconHome2 size={24} color={C.text} />
+            </Pressable>
           </View>
         </View>
 

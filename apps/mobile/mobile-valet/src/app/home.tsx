@@ -15,7 +15,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { Redirect, useRouter } from "expo-router";
 import { useMemo, useEffect, useState, useCallback, useRef } from "react";
 import React from "react";
-import { IconUser, IconLocationFilled, IconList, IconSettings, IconLogout, IconCar, IconArrowUndo, IconKey, IconKeyOff } from "@/components/Icons";
+import { IconUser, IconLocationFilled, IconList, IconSettings, IconLogout, IconKey, IconKeyOff, IconSteeringWheelOutline, IconTrafficCone } from "@/components/Icons";
 import { Logo } from "@parkit/shared";
 import api, { clearAuthToken } from "@/lib/api";
 import { useAuthStore, useLocaleStore, useCompanyStore, useParkingPreferenceStore, useAccessibilityStore } from "@/lib/store";
@@ -23,7 +23,6 @@ import { t } from "@/lib/i18n";
 import { useValetTheme, ticketsA11y } from "@/theme/valetTheme";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useNearestParking, haversineKm } from "@/lib/useNearestParking";
-import { createFeedback } from "@/lib/feedback";
 import { useOnAppForeground } from "@/lib/useOnAppForeground";
 import { TICKETS_POLL_MS } from "@/lib/syncConstants";
 import {
@@ -94,8 +93,9 @@ function HomeScreenContent() {
   const manualParkingId = useParkingPreferenceStore((s) => s.manualParkingId);
   const setManualParkingId = useParkingPreferenceStore((s) => s.setManualParkingId);
   const hydrateParkingPreference = useParkingPreferenceStore((s) => s.hydrateParkingPreference);
-  const feedback = useMemo(() => createFeedback(locale), [locale]);
   const [parkingModalOpen, setParkingModalOpen] = useState(false);
+  const [queueAlertModalOpen, setQueueAlertModalOpen] = useState(false);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [queueAlertCount, setQueueAlertCount] = useState(0);
   const isDriverUi = user?.valetStaffRole === "DRIVER";
   const prevQueueAlertCountRef = useRef(0);
@@ -146,13 +146,10 @@ function HomeScreenContent() {
     if (!isDriverUi) return;
     const prev = prevQueueAlertCountRef.current;
     if (queueAlertCount > prev && queueAlertCount > 0) {
-      feedback.alert(
-        t(locale, "home.queueAlertTitle"),
-        t(locale, "home.queueAlertBody")
-      );
+      setQueueAlertModalOpen(true);
     }
     prevQueueAlertCountRef.current = queueAlertCount;
-  }, [queueAlertCount, isDriverUi, feedback, locale]);
+  }, [queueAlertCount, isDriverUi]);
 
   const displayedParking = useMemo(() => {
     if (!user) return null;
@@ -213,19 +210,15 @@ function HomeScreenContent() {
           : t(locale, "home.statusSyncing");
 
   const handleLogout = () => {
-    feedback.confirm({
-      title: t(locale, "tickets.logoutConfirmTitle"),
-      message: t(locale, "tickets.logoutConfirmMessage"),
-      confirmText: t(locale, "tickets.logout"),
-      destructive: true,
-      onConfirm: async () => {
-        await api.post("/valets/me/presence", { status: "AWAY" }).catch(() => {});
-        await clearAuthToken();
-        setCompanyId(null);
-        setUser(null);
-        router.replace("/login");
-      },
-    });
+    setLogoutModalOpen(true);
+  };
+
+  const confirmLogout = async () => {
+    await api.post("/valets/me/presence", { status: "AWAY" }).catch(() => {});
+    await clearAuthToken();
+    setCompanyId(null);
+    setUser(null);
+    router.replace("/login");
   };
 
   const headerMaxH = Math.min(80, winH * 0.10);
@@ -381,24 +374,26 @@ function HomeScreenContent() {
         <View style={styles.gridFlex}>
           {isDriverUi ? (
             <>
-              <View style={[styles.gridRowFill, { flex: 1 }]}>
+              <View style={[styles.gridRowFill, { flex: 0.6}]}>
                 <AnimatedGridTile
-                  variant="queue"
-                  lucideIcon={IconCar}
+                  variant="accent"
+                  lucideIcon={IconSteeringWheelOutline}
                   title={t(locale, "home.actionParkingQueue")}
-                  sub={t(locale, "home.actionParkingQueueSub")}
+                  sub=""
                   onPress={() => router.push({ pathname: "/tickets", params: { queue: "parking" } })}
                   styles={styles}
                   isDark={theme.isDark}
                   index={0}
                   textScale={textScale}
                   reduceMotion={reduceMotion}
+                  iconStrokeWidth={1.5}
+                  centerContent={true}
                 />
                 <AnimatedGridTile
-                  variant="queue"
-                  lucideIcon={IconArrowUndo}
+                  variant="warm"
+                  lucideIcon={IconTrafficCone}
                   title={t(locale, "home.actionDeliveryQueue")}
-                  sub={t(locale, "home.actionDeliveryQueueSub")}
+                  sub=""
                   badgeCount={queueAlertCount}
                   onPress={() => router.push({ pathname: "/tickets", params: { queue: "delivery" } })}
                   styles={styles}
@@ -406,9 +401,10 @@ function HomeScreenContent() {
                   index={1}
                   textScale={textScale}
                   reduceMotion={reduceMotion}
+                  centerContent={true}
                 />
               </View>
-              <View style={[styles.gridRowFill, { flex: 2 }]}>
+              <View style={[styles.gridRowFill, { flex: 2.2 }]}>
                 <WorkflowTile
                   styles={styles}
                   isDark={theme.isDark}
@@ -418,35 +414,37 @@ function HomeScreenContent() {
             </>
           ) : (
             <>
-              <View style={[styles.gridRowFill, { flex: 1 }]}>
+              <View style={[styles.gridRowFill, { flex: 0.8 }]}>
                 <AnimatedGridTile
                   variant="accent"
                   lucideIcon={IconKey}
                   iconSize={Math.round(headerSizes.avatarSize * 0.5)}
                   title={t(locale, "home.actionReceive")}
-                  sub={t(locale, "home.actionReceiveSub")}
+                  sub=""
                   onPress={() => router.push("/receive")}
                   styles={styles}
                   isDark={theme.isDark}
                   index={0}
                   textScale={textScale}
                   reduceMotion={reduceMotion}
+                  centerContent={true}
                 />
                 <AnimatedGridTile
                   variant="warm"
                   lucideIcon={IconKeyOff}
                   iconSize={Math.round(headerSizes.avatarSize * 0.5)}
                   title={t(locale, "home.actionReturn")}
-                  sub={t(locale, "home.actionReturnSub")}
+                  sub=""
                   onPress={() => router.push("/return-pickup")}
                   styles={styles}
                   isDark={theme.isDark}
                   index={1}
                   textScale={textScale}
                   reduceMotion={reduceMotion}
+                  centerContent={true}
                 />
               </View>
-              <View style={[styles.gridRowFill, { flex: 2 }]}>
+              <View style={[styles.gridRowFill, { flex: 2.2 }]}>
                 <WorkflowTile
                   styles={styles}
                   isDark={theme.isDark}
@@ -614,6 +612,72 @@ function HomeScreenContent() {
                   </Text>
                 }
               />
+            </View>
+          </View>
+        </Modal>
+
+        <Modal
+          visible={queueAlertModalOpen}
+          animationType="slide"
+          transparent
+          onRequestClose={() => setQueueAlertModalOpen(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <Pressable
+              style={styles.modalBackdropPress}
+              onPress={() => setQueueAlertModalOpen(false)}
+              accessibilityLabel={t(locale, "common.cancel")}
+            />
+            <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
+              <Text style={[styles.modalTitle, { color: C.text }]}>{t(locale, "home.queueAlertTitle")}</Text>
+              <Text style={[styles.modalBody, { color: C.textMuted }]}>{t(locale, "home.queueAlertBody")}</Text>
+              <Pressable style={styles.modalDoneBtn} onPress={() => setQueueAlertModalOpen(false)}>
+                <Text style={[styles.modalDoneBtnText, { color: C.primary }]}>{t(locale, "common.ok")}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+
+        <Modal
+          visible={logoutModalOpen}
+          animationType="slide"
+          transparent
+          onRequestClose={() => setLogoutModalOpen(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <Pressable
+              style={styles.modalBackdropPress}
+              onPress={() => setLogoutModalOpen(false)}
+              accessibilityLabel={t(locale, "common.cancel")}
+            />
+            <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
+              <Text style={[styles.modalTitle, { color: C.text }]}>{t(locale, "tickets.logoutConfirmTitle")}</Text>
+              <Text style={[styles.modalBody, { color: C.textMuted }]}>{t(locale, "tickets.logoutConfirmMessage")}</Text>
+              <View style={styles.modalActions}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.modalActionBtn,
+                    { borderColor: C.border, backgroundColor: C.card },
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => setLogoutModalOpen(false)}
+                >
+                  <Text style={[styles.modalActionBtnText, { color: C.text }]}>{t(locale, "common.cancel")}</Text>
+                </Pressable>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.modalActionBtn,
+                    { borderColor: C.logout, backgroundColor: C.logout },
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => {
+                    setLogoutModalOpen(false);
+                    void confirmLogout();
+                  }}
+                >
+                  <Text style={[styles.modalActionBtnText, { color: "#fff" }]}>{t(locale, "tickets.logout")}</Text>
+                </Pressable>
+              </View>
             </View>
           </View>
         </Modal>
@@ -988,7 +1052,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       }),
     },
     bottomIconWrap: {
-      marginTop: 36,
+      marginTop: 24,
     },
     bottomTextCol: {
       flex: 1,
@@ -1113,6 +1177,45 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       fontFamily: Fonts.primary,
       marginTop: 4,
       lineHeight: Math.round(F.status * 0.95),
+    },
+    modalBody: {
+      fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
+      lineHeight: Math.round(F.status * 0.95),
+      marginBottom: S.md,
+    },
+    modalDoneBtn: {
+      alignItems: "center",
+      paddingVertical: S.md,
+      paddingHorizontal: S.sm,
+      marginTop: S.xs,
+      minHeight: 58,
+      justifyContent: "center",
+    },
+    modalDoneBtnText: {
+      fontSize: Math.round(F.status * 0.65),
+      fontWeight: "800",
+      fontFamily: Fonts.primary,
+    },
+    modalActions: {
+      flexDirection: "row",
+      gap: S.sm,
+      marginTop: S.md,
+    },
+    modalActionBtn: {
+      flex: 1,
+      paddingVertical: S.md,
+      paddingHorizontal: S.md,
+      borderRadius: 12,
+      borderWidth: StyleSheet.hairlineWidth,
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 48,
+    },
+    modalActionBtnText: {
+      fontSize: Math.round(F.status * 0.65),
+      fontWeight: "700",
+      fontFamily: Fonts.primary,
     },
   });
 }

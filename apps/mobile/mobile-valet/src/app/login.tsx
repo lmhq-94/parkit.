@@ -373,7 +373,7 @@ inputLabel: {
                   placeholder={t(locale, "auth.password.placeholder")}
                   placeholderTextColor={a.textMuted}
                   secureTextEntry={!showPassword}
-                  textContentType="password"
+                  textContentType="oneTimeCode"
                   autoComplete="password"
                 />
                 <Pressable

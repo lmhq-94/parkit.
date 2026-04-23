@@ -193,6 +193,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "home.actionReservation": "Cliente con reserva",
     "home.actionReservationSub": "Con código de reserva",
     "home.actionSettingsSub": "Tema e idioma",
+    "home.settings": "Ajustes",
     "home.actionWorkflow": "Flujo de trabajo",
     "home.actionWorkflowSub": "Próximamente",
     "home.workflowTitle": "Flujo de trabajo",
@@ -416,6 +417,11 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.noColorOption": "Sin color",
     "receive.vehicleDimensionsAuto":
       "Las dimensiones del vehículo son cargadas automáticamente desde catálogo.",
+    "receive.vehicleDimensionsTitle": "Dimensiones del vehículo",
+    "receive.dimensionLength": "Largo",
+    "receive.dimensionWidth": "Ancho",
+    "receive.dimensionHeight": "Alto",
+    "receive.dimensionWeight": "Peso",
     "receive.placeholderBooking": "ID de reserva",
     "receive.validate": "Validar",
     "receive.benefitOk":
@@ -1005,6 +1011,11 @@ const translations: Record<Locale, Record<string, string>> = {
     "receive.noColorOption": "No color",
     "receive.vehicleDimensionsAuto":
       "Vehicle dimensions loaded automatically from catalog.",
+    "receive.vehicleDimensionsTitle": "Vehicle dimensions",
+    "receive.dimensionLength": "Length",
+    "receive.dimensionWidth": "Width",
+    "receive.dimensionHeight": "Height",
+    "receive.dimensionWeight": "Weight",
     "receive.benefitSection": "Booking / valet benefit",
     "receive.benefitHelp":
       "Optional: paste booking ID to validate courtesy time at the parking.",

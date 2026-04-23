@@ -1,14 +1,11 @@
 import "@/lib/androidTextDefaults";
 import { Stack, SplashScreen } from 'expo-router';
 import { useEffect } from 'react';
-import { StripeProvider } from '@stripe/stripe-react-native';
 import { useAuthStore, useLocaleStore } from '@/lib/store';
 import { useThemeStore } from '@/lib/themeStore';
 import { getStoredUser } from '@/lib/auth';
 import { useFonts } from 'expo-font';
 import { FeedbackModal } from '@/components/FeedbackModal';
-
-const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_your_key_here';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -50,7 +47,7 @@ export default function RootLayout() {
   }
 
   return (
-    <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
+    <>
       <Stack
         screenOptions={{
           headerShown: false,
@@ -66,10 +63,22 @@ export default function RootLayout() {
         <Stack.Screen name="return-pickup" />
         <Stack.Screen name="tickets" />
         <Stack.Screen name="park" />
-        <Stack.Screen name="settings" />
-        <Stack.Screen name="profile" />
-        <Stack.Screen name="workflow" />
-        <Stack.Screen name="help" />
+        <Stack.Screen
+          name="profile"
+          options={{ animation: 'none', gestureEnabled: true }}
+        />
+        <Stack.Screen
+          name="settings"
+          options={{ animation: 'none', gestureEnabled: true }}
+        />
+        <Stack.Screen
+          name="workflow"
+          options={{ animation: 'none', gestureEnabled: true }}
+        />
+        <Stack.Screen
+          name="help"
+          options={{ animation: 'none', gestureEnabled: true }}
+        />
         <Stack.Screen
           name="welcome"
           options={{ animation: 'none', gestureEnabled: false }}
@@ -88,6 +97,6 @@ export default function RootLayout() {
         />
       </Stack>
       <FeedbackModal />
-    </StripeProvider>
+    </>
   );
 }

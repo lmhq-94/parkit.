@@ -418,7 +418,7 @@ export default function SignupScreen() {
                     placeholder={t(locale, "auth.password.placeholder")}
                     placeholderTextColor={a.textMuted}
                     secureTextEntry={!showPassword}
-                    textContentType="newPassword"
+                    textContentType="oneTimeCode"
                     autoComplete="password-new"
                   />
                   <Pressable

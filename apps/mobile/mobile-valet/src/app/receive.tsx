@@ -39,7 +39,8 @@ import {
   IconCar, 
   IconTag, 
   IconPalette,
-  IconKey
+  IconKey,
+  IconHome2
 } from "@/components/Icons";
 import { useAuthStore, useLocaleStore, useCompanyStore, useAccessibilityStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
@@ -226,6 +227,30 @@ export default function ReceiveScreen() {
   const valetStepNum = reservationFlow ? 5 : 9;
 
   const plateBackStep = receptionType === "CARD" ? cardStepNum : typeStepNum;
+
+  const handleBack = useCallback(() => {
+    if (wizardStep === typeStepNum && reservationFlow) {
+      router.replace("/receive");
+    } else if (wizardStep === cardStepNum && !reservationFlow) {
+      setWizardStep(typeStepNum);
+    } else if (wizardStep === plateStepNum && !reservationFlow) {
+      setWizardStep(plateBackStep);
+    } else if (wizardStep === driverStepNum && !reservationFlow) {
+      setWizardStep(plateStepNum);
+    } else if (wizardStep === vehicleStepNum && !reservationFlow) {
+      setWizardStep(driverStepNum);
+    } else if (wizardStep === parkingStepNum) {
+      setWizardStep(reservationFlow ? typeStepNum : vehicleStepNum);
+    } else if (wizardStep === damageStepNum) {
+      setWizardStep(parkingStepNum);
+    } else if (wizardStep === ticketStepNum) {
+      setWizardStep(damageStepNum);
+    } else if (wizardStep === valetStepNum) {
+      setWizardStep(ticketStepNum);
+    } else {
+      router.back();
+    }
+  }, [wizardStep, typeStepNum, cardStepNum, plateStepNum, plateBackStep, driverStepNum, vehicleStepNum, parkingStepNum, damageStepNum, ticketStepNum, valetStepNum, reservationFlow, router]);
   const availableValets = useMemo(
     () => valets.filter((v) => v.currentStatus === "AVAILABLE"),
     [valets]
@@ -1150,15 +1175,15 @@ export default function ReceiveScreen() {
   useEffect(() => {
     const make = vehBrand.trim();
     const model = vehModel.trim();
-    if (!make || !model) {
+    const year = vehYear.trim();
+    if (!make || !model || !year) {
       setCatalogDimensions(null);
       return;
     }
     let cancelled = false;
     (async () => {
       try {
-        const q = new URLSearchParams({ make, model });
-        if (vehYear.trim()) q.set("year", vehYear.trim());
+        const q = new URLSearchParams({ make, model, year });
         const res = await api.get<{ data: VehicleDimensions }>(
           `/vehicles/catalog/dimensions?${q.toString()}`
         );
@@ -1186,12 +1211,17 @@ export default function ReceiveScreen() {
         />
         <View style={styles.frame}>
         <View style={[styles.screenHeader, { paddingTop: safeInsets.top + theme.space.md }]}>
-          <ValetBackButton
-            onPress={() => router.back()}
-            accessibilityLabel={t(locale, "common.back")}
-          />
+          {wizardStep !== typeStepNum && (
+            <ValetBackButton
+              onPress={handleBack}
+              accessibilityLabel={t(locale, "common.back")}
+            />
+          )}
+          {wizardStep === typeStepNum && <View style={{ width: 44 }} />}
           <Text style={styles.screenTitle}>{receiveTitle}</Text>
-          <View style={{ width: 44 }} />
+          <Pressable onPress={() => router.replace("/home")} style={{ width: 44, alignItems: "center", justifyContent: "center" }}>
+            <IconHome2 size={24} color={C.text} />
+          </Pressable>
         </View>
         <View style={styles.blocked}>
           <IconHandStop size={32} color={C.textMuted} />
@@ -1529,7 +1559,7 @@ export default function ReceiveScreen() {
             ) : (
               <>
                 <IconTicket size={18} color="#fff" />
-                <Text style={styles.primaryBtnText}>{t(locale, "receive.submit")}</Text>
+                <Text style={styles.primaryBtnText}>{t(locale, "receive.next")}</Text>
               </>
             )}
           </Pressable>
@@ -1557,12 +1587,17 @@ export default function ReceiveScreen() {
       />
       <View style={styles.frame}>
       <View style={[styles.screenHeader, { paddingTop: safeInsets.top + theme.space.md }]}>
-        <ValetBackButton
-          onPress={() => router.back()}
-          accessibilityLabel={t(locale, "common.back")}
-        />
+        {wizardStep !== typeStepNum && (
+          <ValetBackButton
+            onPress={handleBack}
+            accessibilityLabel={t(locale, "common.back")}
+          />
+        )}
+        {wizardStep === typeStepNum && <View style={{ width: 44 }} />}
         <Text style={styles.screenTitle}>{receiveTitle}</Text>
-        <View style={{ width: 44 }} />
+        <Pressable onPress={() => router.replace("/home")} style={{ width: 44, alignItems: "center", justifyContent: "center" }}>
+          <IconHome2 size={24} color={C.text} />
+        </Pressable>
       </View>
       <View style={{ flex: 1, minHeight: 0, alignSelf: "stretch", width: "100%" }}>
         {wizardStep === 1 && reservationFlow ? (
@@ -2087,6 +2122,44 @@ export default function ReceiveScreen() {
                   maxFontSizeMultiplier={2}
                 />
               </View>
+
+              {catalogDimensions && (
+                <View style={[styles.card, styles.vehicleFoundCard, { marginTop: theme.space.md }]}>
+                  <View style={styles.vehicleFoundHeader}>
+                    <View style={styles.vehicleFoundIcon}>
+                      <IconCircleCheck size={20} color={C.success} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.vehicleFoundTitle, { fontSize: Math.round(theme.font.secondary * 0.7 * textScale) }]} numberOfLines={1} maxFontSizeMultiplier={2}>{t(locale, "receive.vehicleDimensionsTitle")}</Text>
+                      <Text style={[styles.vehicleFoundSubtitle, { fontSize: Math.round(theme.font.secondary * 0.6 * textScale) }]} numberOfLines={1} maxFontSizeMultiplier={2}>{vehBrand} {vehModel}</Text>
+                    </View>
+                  </View>
+                  {catalogDimensions.lengthCm && (
+                    <View style={styles.vehicleSummaryRow}>
+                      <Text style={[styles.vehicleSummaryLabel, { fontSize: Math.round(theme.font.secondary * 0.6 * textScale) }]} maxFontSizeMultiplier={2}>{t(locale, "receive.dimensionLength")}</Text>
+                      <Text style={[styles.vehicleSummaryValue, { fontSize: Math.round(theme.font.secondary * 0.6 * textScale) }]} maxFontSizeMultiplier={2}>{(catalogDimensions.lengthCm / 100).toFixed(2)} m</Text>
+                    </View>
+                  )}
+                  {catalogDimensions.widthCm && (
+                    <View style={styles.vehicleSummaryRow}>
+                      <Text style={[styles.vehicleSummaryLabel, { fontSize: Math.round(theme.font.secondary * 0.6 * textScale) }]} maxFontSizeMultiplier={2}>{t(locale, "receive.dimensionWidth")}</Text>
+                      <Text style={[styles.vehicleSummaryValue, { fontSize: Math.round(theme.font.secondary * 0.6 * textScale) }]} maxFontSizeMultiplier={2}>{(catalogDimensions.widthCm / 100).toFixed(2)} m</Text>
+                    </View>
+                  )}
+                  {catalogDimensions.heightCm && (
+                    <View style={styles.vehicleSummaryRow}>
+                      <Text style={[styles.vehicleSummaryLabel, { fontSize: Math.round(theme.font.secondary * 0.6 * textScale) }]} maxFontSizeMultiplier={2}>{t(locale, "receive.dimensionHeight")}</Text>
+                      <Text style={[styles.vehicleSummaryValue, { fontSize: Math.round(theme.font.secondary * 0.6 * textScale) }]} maxFontSizeMultiplier={2}>{(catalogDimensions.heightCm / 100).toFixed(2)} m</Text>
+                    </View>
+                  )}
+                  {catalogDimensions.weightKg && (
+                    <View style={[styles.vehicleSummaryRow, styles.vehicleSummaryRowLast]}>
+                      <Text style={[styles.vehicleSummaryLabel, { fontSize: Math.round(theme.font.secondary * 0.6 * textScale) }]} maxFontSizeMultiplier={2}>{t(locale, "receive.dimensionWeight")}</Text>
+                      <Text style={[styles.vehicleSummaryValue, { fontSize: Math.round(theme.font.secondary * 0.6 * textScale) }]} maxFontSizeMultiplier={2}>{catalogDimensions.weightKg} kg</Text>
+                    </View>
+                  )}
+                </View>
+              )}
             </>
           )}
 
@@ -2875,13 +2948,17 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     footerPrimaryBtn: { flex: 1, marginBottom: 0 },
     footerSecondaryBtn: {
       flex: 1,
+      minWidth: 0,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: S.sm,
+      paddingVertical: S.md,
+      paddingHorizontal: S.sm,
+      borderRadius: R.card,
       borderWidth: 2,
       borderColor: C.border,
       backgroundColor: C.card,
-      borderRadius: R.button + 2,
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: S.md,
     },
     footerSecondaryBtnText: {
       color: C.text,
@@ -2922,8 +2999,9 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       justifyContent: "center",
       gap: S.sm,
       backgroundColor: C.primary,
-      borderRadius: R.button + 2,
+      borderRadius: R.card,
       paddingVertical: S.md,
+      paddingHorizontal: S.sm,
       marginBottom: S.lg,
       ...Platform.select({
         ios: {
@@ -2932,7 +3010,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
           shadowOpacity: 0.3,
           shadowRadius: 8,
         },
-        android: { elevation: 3 },
+        android: { elevation: 4 },
       }),
     },
     primaryBtnText: {
@@ -3046,8 +3124,29 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     vehicleFoundHeader: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
+      justifyContent: "flex-start",
       marginBottom: S.xs,
+    },
+    vehicleFoundIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: theme.isDark ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.12)",
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: S.sm,
+    },
+    vehicleFoundTitle: {
+      fontSize: Math.round(F.secondary * 0.75),
+      fontWeight: "700",
+      color: C.text,
+      marginBottom: 4,
+      flex: 1,
+    },
+    vehicleFoundSubtitle: {
+      fontSize: Math.round(F.secondary * 0.65),
+      fontWeight: "500",
+      color: C.success,
     },
     vehicleFoundBadge: {
       flexDirection: "row",
@@ -3083,7 +3182,6 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       fontSize: Math.round(F.secondary * 0.75),
       fontWeight: "700",
       color: C.textMuted,
-      textTransform: "uppercase",
       letterSpacing: 0.4,
     },
     vehicleSummaryValue: {

@@ -612,6 +612,7 @@ export class ValetsService {
    * Conductores del parqueo para asignación en recepción:
    * - available: se puede mover de inmediato
    * - busy: se puede asignar en cola (tomará más tiempo)
+   * Incluye conductores con currentParkingId configurado O con asignaciones activas en el parqueo
    */
   static async listDispatchDriversAtParking(parkingId: string, companyId: string) {
     const p = await prisma.parking.findFirst({
@@ -624,13 +625,38 @@ export class ValetsService {
 
     const presenceSince = new Date(Date.now() - VALET_PRESENCE_MAX_AGE_MS);
 
+    // Buscar valets con asignaciones activas en este parking
+    const activeAssignmentValetIds = await prisma.ticketAssignment.findMany({
+      where: {
+        ticket: {
+          parkingId: parkingId,
+          status: {
+            in: [TicketStatus.PARKED, TicketStatus.REQUEST_PARKING, TicketStatus.REQUEST_DELIVERY],
+          },
+        },
+      },
+      select: { valetId: true },
+      distinct: ["valetId"],
+    });
+
+    const assignmentValetIds = activeAssignmentValetIds.map((a) => a.valetId);
+
     const rows = await prisma.valet.findMany({
       where: {
-        currentParkingId: parkingId,
         currentStatus: { in: [ValetStatus.AVAILABLE, ValetStatus.BUSY] },
         lastPresenceAt: { gte: presenceSince },
-        OR: [{ staffRole: ValetStaffRole.DRIVER }, { staffRole: null }],
         user: { isActive: true },
+        AND: [
+          {
+            OR: [{ staffRole: ValetStaffRole.DRIVER }, { staffRole: null }],
+          },
+          {
+            OR: [
+              { currentParkingId: parkingId },
+              { id: { in: assignmentValetIds } },
+            ],
+          },
+        ],
       },
       include: {
         user: {

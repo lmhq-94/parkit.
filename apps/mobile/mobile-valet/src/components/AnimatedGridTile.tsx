@@ -36,6 +36,7 @@ interface AnimatedGridTileProps {
   variant: GridVariant;
   lucideIcon: TileLucideIcon;
   iconSize?: number;
+  iconStrokeWidth?: number;
   title: string;
   sub: string;
   badgeCount?: number;
@@ -43,10 +44,9 @@ interface AnimatedGridTileProps {
   styles: Styles;
   isDark: boolean;
   index: number;
-  /** Escala de texto para accesibilidad (1.0 = normal, 1.4 = máximo) */
   textScale?: number;
-  /** Reducir animaciones para accesibilidad */
   reduceMotion?: boolean;
+  centerContent?: boolean;
 }
 
 export function AnimatedGridTile(props: AnimatedGridTileProps) {
@@ -54,6 +54,7 @@ export function AnimatedGridTile(props: AnimatedGridTileProps) {
     variant,
     lucideIcon: LucideCmp,
     iconSize = TILE_ICON_SIZE,
+    iconStrokeWidth = 2.25,
     title,
     sub,
     badgeCount = 0,
@@ -63,6 +64,7 @@ export function AnimatedGridTile(props: AnimatedGridTileProps) {
     index,
     textScale = 1,
     reduceMotion = false,
+    centerContent = false,
   } = props;
 
   const theme = useValetTheme();
@@ -105,7 +107,6 @@ export function AnimatedGridTile(props: AnimatedGridTileProps) {
     onPress();
   };
 
-  // Estilos para glow effect
   const glowContainerStyle = [
     StyleSheet.absoluteFill,
     {
@@ -135,6 +136,7 @@ export function AnimatedGridTile(props: AnimatedGridTileProps) {
           variant === "workflow" && styles.tileWorkflow,
           pressed && styles.pressed,
           textScale > 1 && { paddingVertical: 20 + (textScale - 1) * 10 },
+          centerContent && { paddingTop: 28 },
         ]}
         onPress={handlePress}
         accessibilityRole="button"
@@ -166,12 +168,13 @@ export function AnimatedGridTile(props: AnimatedGridTileProps) {
             styles.tileIconWrap,
             { backgroundColor: iconBubbleBg },
             textScale > 1 && { width: 56 + (textScale - 1) * 20, height: 56 + (textScale - 1) * 20, borderRadius: 28 + (textScale - 1) * 10 },
+            centerContent && { marginBottom: 12 },
           ]}
         >
           <LucideCmp
             size={iconSize + (textScale - 1) * 15}
             color={iconColor}
-            strokeWidth={2.25}
+            strokeWidth={iconStrokeWidth}
           />
         </View>
 

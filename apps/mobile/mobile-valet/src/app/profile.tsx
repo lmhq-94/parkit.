@@ -15,14 +15,13 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { IconUser, IconChevronRight, IconCircleCheck, IconCalendar, IconMail, IconClipboardText, IconCar, IconPhone } from "@/components/Icons";
+import { IconUser, IconCircleCheck, IconMail, IconClipboardText, IconCar, IconPhone, IconHome2, IconCamera, IconGallery } from "@/components/Icons";
 import * as ImagePicker from "expo-image-picker";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import type { ValetStaffRole } from "@parkit/shared";
 import { useAuthStore, useLocaleStore, useAccessibilityStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
-import { ValetBackButton } from "@/components/ValetBackButton";
 import { StickyFormFooter } from "@/components/StickyFormFooter";
 import api from "@/lib/api";
 import { messageFromAxios } from "@parkit/shared";
@@ -77,11 +76,8 @@ export default function ProfileScreen() {
   const [staffRole, setStaffRole] = useState<ValetStaffRole>(
     user?.valetStaffRole === "DRIVER" ? "DRIVER" : "RECEPTIONIST"
   );
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [licenseModalOpen, setLicenseModalOpen] = useState(false);
-  const [licenseTypes, setLicenseTypes] = useState<string[]>([]);
-  /** YYYY-MM-DD local o "" */
-  const [licenseExpiryYmd, setLicenseExpiryYmd] = useState("");
-  const [expiryPickerOpen, setExpiryPickerOpen] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<
     Partial<Record<"firstName" | "lastName" | "email" | "phone", string>>
   >({});
@@ -96,6 +92,10 @@ export default function ProfileScreen() {
   );
   const [originalLicenseTypes, setOriginalLicenseTypes] = useState<string[]>([]);
   const [originalLicenseExpiryYmd, setOriginalLicenseExpiryYmd] = useState("");
+  const [licenseTypes, setLicenseTypes] = useState<string[]>([]);
+  /** YYYY-MM-DD local o "" */
+  const [licenseExpiryYmd, setLicenseExpiryYmd] = useState("");
+  const [expiryPickerOpen, setExpiryPickerOpen] = useState(false);
   const [originalAvatarRemoved, setOriginalAvatarRemoved] = useState(false);
 
   const hasChanges = useMemo(() => {
@@ -409,11 +409,7 @@ export default function ProfileScreen() {
       void pickImage();
       return;
     }
-    feedback.alert(t(locale, "profile.changePhoto"), "", [
-      { text: t(locale, "common.cancel"), style: "cancel" },
-      { text: t(locale, "profile.photoFromLibrary"), onPress: () => void pickImage() },
-      { text: t(locale, "profile.photoFromCamera"), onPress: () => void takePhoto() },
-    ]);
+    setPhotoModalOpen(true);
   };
 
   return (
@@ -426,12 +422,11 @@ export default function ProfileScreen() {
       <View style={styles.frame}>
       <View style={styles.flex}>
         <View style={[styles.header, { paddingTop: insets.top + theme.space.md }]}>
-          <ValetBackButton
-            onPress={() => router.back()}
-            accessibilityLabel={t(locale, "common.back")}
-          />
+          <View style={{ width: 44 }} />
           <Text style={styles.headerTitle}>{t(locale, "profile.title")}</Text>
-          <View style={styles.headerSpacer} />
+          <Pressable onPress={() => router.replace("/home")} style={{ width: 44, alignItems: "center", justifyContent: "center" }}>
+            <IconHome2 size={24} color={C.text} />
+          </Pressable>
         </View>
 
         {loading ? (
@@ -625,13 +620,10 @@ export default function ProfileScreen() {
 
             {staffRole === "DRIVER" && (
               <>
-                <View style={styles.licenseDivider} />
-                
                 <Text style={styles.label}>{t(locale, "profile.licenseTypesLabel")}</Text>
-                <Text style={[styles.helper, { color: C.textMuted }]}>{t(locale, "profile.licenseTypesHint")}</Text>
                 <Pressable
                   style={({ pressed }) => [
-                    styles.pickerRow,
+                    styles.inputContainer,
                     { borderColor: C.border, backgroundColor: C.card },
                     pressed && styles.pressed,
                   ]}
@@ -639,20 +631,12 @@ export default function ProfileScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={t(locale, "profile.licensePickerTitle")}
                 >
-                  <View style={styles.pickerRowText}>
+                  <View style={styles.inputContainer}>
                     <Text style={[styles.pickerRowTitle, { color: C.text }]} numberOfLines={2}>
                       {licenseCodesDisplay || t(locale, "profile.licenseTypesPlaceholder")}
                     </Text>
-                    <Text style={[styles.pickerRowSub, { color: C.textMuted }]} numberOfLines={1}>
-                      {licenseTypes.length > 0
-                        ? t(locale, "profile.licenseTypesSummary", {
-                            count: String(licenseTypes.length),
-                          })
-                        : t(locale, "profile.licenseTypesHint")}
-                    </Text>
                   </View>
-                  <IconChevronRight size={22} color={C.textMuted} />
-                </Pressable>
+                  </Pressable>
 
                 <Modal
                   visible={licenseModalOpen}
@@ -710,25 +694,13 @@ export default function ProfileScreen() {
                 </Modal>
 
                 <Text style={styles.label}>{t(locale, "profile.licenseExpiryLabel")}</Text>
-                <Text style={[styles.helper, { color: C.textMuted }]}>{t(locale, "profile.licenseExpiryHint")}</Text>
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.pickerRow,
-                    { borderColor: C.border, backgroundColor: C.card },
-                    pressed && styles.pressed,
-                  ]}
-                  onPress={openExpiryPicker}
-                  accessibilityRole="button"
-                >
-                  <View style={styles.pickerRowText}>
-                    <Text style={[styles.pickerRowTitle, { color: C.text }]} numberOfLines={1}>
-                      {licenseExpiryYmd.trim()
-                        ? licenseExpiryYmd
-                        : t(locale, "profile.licenseExpiryPlaceholder")}
-                    </Text>
-                  </View>
-                  <IconCalendar size={22} color={C.primary} />
-                </Pressable>
+                <View style={styles.inputContainer}>
+                  <Text style={[styles.pickerRowTitle, { color: C.text }]} numberOfLines={1}>
+                    {licenseExpiryYmd.trim()
+                      ? licenseExpiryYmd
+                      : t(locale, "profile.licenseExpiryPlaceholder")}
+                  </Text>
+                </View>
                 {licenseExpiryYmd.trim() ? (
                   <Pressable onPress={() => setLicenseExpiryYmd("")} style={styles.clearExpiryLink}>
                     <Text style={[styles.secondaryLinkText, styles.dangerText]}>
@@ -786,6 +758,67 @@ export default function ProfileScreen() {
               </>
             )}
             </ScrollView>
+
+            <Modal
+              visible={photoModalOpen}
+              animationType="slide"
+              transparent
+              onRequestClose={() => setPhotoModalOpen(false)}
+            >
+              <View style={styles.modalOverlay}>
+                <Pressable
+                  style={styles.modalBackdropPress}
+                  onPress={() => setPhotoModalOpen(false)}
+                  accessibilityLabel={t(locale, "common.cancel")}
+                />
+                <View
+                  style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}
+                >
+                  <Text style={[styles.modalTitle, { color: C.text }]}>
+                    {t(locale, "profile.changePhoto")}
+                  </Text>
+                  <View style={styles.photoOptions}>
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.photoOption,
+                        { borderColor: C.border, backgroundColor: C.card },
+                        pressed && styles.pressed,
+                      ]}
+                      onPress={() => {
+                        setPhotoModalOpen(false);
+                        void pickImage();
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel={t(locale, "profile.photoFromLibrary")}
+                    >
+                      <IconGallery size={24} color={C.primary} />
+                      <Text style={[styles.photoOptionText, { color: C.text }]}>{t(locale, "profile.photoFromLibrary")}</Text>
+                    </Pressable>
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.photoOption,
+                        { borderColor: C.border, backgroundColor: C.card },
+                        pressed && styles.pressed,
+                      ]}
+                      onPress={() => {
+                        setPhotoModalOpen(false);
+                        void takePhoto();
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel={t(locale, "profile.photoFromCamera")}
+                    >
+                      <IconCamera size={24} color={C.primary} />
+                      <Text style={[styles.photoOptionText, { color: C.text }]}>{t(locale, "profile.photoFromCamera")}</Text>
+                    </Pressable>
+                  </View>
+                  <Pressable style={styles.modalDoneBtn} onPress={() => setPhotoModalOpen(false)}>
+                    <Text style={[styles.modalDoneBtnText, { color: C.primary }]}>
+                      {t(locale, "common.cancel")}
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            </Modal>
 
             <View>
               <StickyFormFooter keyboardPinned>
@@ -1209,6 +1242,24 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       fontSize: Math.round(F.status * 0.65 * textScale),
       fontWeight: "600",
       fontFamily: Fonts.primary,
+    },
+    photoOptions: {
+      gap: S.sm,
+    },
+    photoOption: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: S.md,
+      paddingVertical: S.md,
+      paddingHorizontal: S.md,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderRadius: 12,
+    },
+    photoOptionText: {
+      fontSize: Math.round(F.status * 0.65 * textScale),
+      fontWeight: "600",
+      fontFamily: Fonts.primary,
+      color: C.text,
     },
   });
 }

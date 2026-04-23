@@ -14,14 +14,13 @@ import { Redirect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
-import { IconHandStop, IconCar, IconArrowUndo } from "@/components/Icons";
+import { IconHandStop, IconCarOff, IconArrowUndo, IconHome2 } from "@/components/Icons";
 import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useCompanyContext } from "@/lib/useCompanyContext";
 import api from "@/lib/api";
 import { messageFromAxios } from "@parkit/shared";
 import { createFeedback } from "@/lib/feedback";
-import { ValetBackButton } from "@/components/ValetBackButton";
 import { StickyFormFooter } from "@/components/StickyFormFooter";
 import { ValetChipAvatar } from "@/components/ValetChipAvatar";
 
@@ -145,12 +144,11 @@ export default function ReturnPickupScreen() {
         />
         <View style={styles.frame}>
         <View style={[styles.screenHeader, { paddingTop: insets.top + theme.space.md }]}>
-          <ValetBackButton
-            onPress={() => router.back()}
-            accessibilityLabel={t(locale, "common.back")}
-          />
-          <Text style={styles.screenTitle}>{t(locale, "returnPickup.title")}</Text>
           <View style={{ width: 44 }} />
+          <Text style={styles.screenTitle}>{t(locale, "returnPickup.title")}</Text>
+          <Pressable onPress={() => router.replace("/home")} style={{ width: 44, alignItems: "center", justifyContent: "center" }}>
+            <IconHome2 size={24} color={C.text} />
+          </Pressable>
         </View>
         <View style={styles.blocked}>
           <IconHandStop size={56} color={C.textMuted} />
@@ -171,12 +169,11 @@ export default function ReturnPickupScreen() {
       />
       <View style={styles.frame}>
       <View style={[styles.screenHeader, { paddingTop: insets.top + theme.space.md }]}>
-        <ValetBackButton
-          onPress={() => router.back()}
-          accessibilityLabel={t(locale, "common.back")}
-        />
-        <Text style={styles.screenTitle}>{t(locale, "returnPickup.title")}</Text>
         <View style={{ width: 44 }} />
+        <Text style={styles.screenTitle}>{t(locale, "returnPickup.title")}</Text>
+        <Pressable onPress={() => router.replace("/home")} style={{ width: 44, alignItems: "center", justifyContent: "center" }}>
+          <IconHome2 size={24} color={C.text} />
+        </Pressable>
       </View>
       <View style={{ flex: 1, minHeight: 0 }}>
         <ScrollView
@@ -198,10 +195,13 @@ export default function ReturnPickupScreen() {
           />
 
           {companyLoading || loading ? (
-            <ActivityIndicator style={{ marginVertical: 24 }} color={C.primary} size="large" />
+            <View style={{ alignItems: "center", marginVertical: 24 }}>
+              <ActivityIndicator color={C.primary} size="large" />
+              <Text style={{ color: C.textMuted, marginTop: theme.space.sm }}>{t(locale, "common.loading")}</Text>
+            </View>
           ) : filtered.length === 0 ? (
             <View style={[styles.empty, { flex: 1, justifyContent: "center" }]}>
-              <IconCar size={72} color={C.primary} />
+              <IconCarOff size={64} color={C.textMuted} />
               <Text style={styles.emptyTitle}>{t(locale, "returnPickup.emptyTitle")}</Text>
               <Text style={styles.emptyHint}>{t(locale, "returnPickup.empty")}</Text>
             </View>

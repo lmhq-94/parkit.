@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from "react-native";
 import { useValetTheme } from "@/theme/valetTheme";
-import { IconCircleArrowLeft } from "@/components/Icons";
+import { IconSquareRoundedArrowLeft } from "@/components/Icons";
 
 /**
  * - `auth`: mismo estilo que login (franja oscura).
@@ -36,7 +36,7 @@ export function ValetBackButton({
       hitSlop={8}
     >
       <View style={styles.iconCenter}>
-        <IconCircleArrowLeft
+        <IconSquareRoundedArrowLeft
           size={26}
           color={isAuth ? a.authHeroBackBtnIcon : (theme.isDark ? "#F8FAFC" : "#0F172A")}
           style={{ marginLeft: 2, marginTop: 1 }}

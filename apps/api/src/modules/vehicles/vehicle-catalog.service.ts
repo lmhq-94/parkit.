@@ -273,10 +273,23 @@ export class VehicleCatalogService {
 
       const variant = dbModel?.variants?.[0];
       if (variant && variant.lengthCm && variant.widthCm && variant.heightCm) {
+        // If local DB has dimensions but no weight, try to get weight from external API
+        if (!variant.weightKg) {
+          const externalDims = await getDimensionsFromCarQuery(make, model, year);
+          if (externalDims?.weightKg) {
+            return {
+              lengthCm: variant.lengthCm,
+              widthCm: variant.widthCm,
+              heightCm: variant.heightCm,
+              weightKg: externalDims.weightKg,
+            };
+          }
+        }
         return {
           lengthCm: variant.lengthCm,
           widthCm: variant.widthCm,
           heightCm: variant.heightCm,
+          weightKg: variant.weightKg,
         };
       }
     } catch (err) {

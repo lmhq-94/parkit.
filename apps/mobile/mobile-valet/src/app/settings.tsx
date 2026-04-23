@@ -12,12 +12,11 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useRouter } from "expo-router";
 import { useLocaleStore, useThemeStore, useAccessibilityStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
-import { IconMinus, IconPlus, IconCircleCheck } from "@/components/Icons";
+import { IconMinus, IconPlus, IconCircleCheck, IconHome2 } from "@/components/Icons";
 import type { Locale } from "@parkit/shared";
 import { useMemo } from "react";
 import { useValetTheme, useResponsiveLayout } from "@/theme/valetTheme";
 import type { ThemePreference } from "@/lib/themeStore";
-import { ValetBackButton } from "@/components/ValetBackButton";
 
 const MIN_ROW = 58;
 
@@ -363,14 +362,13 @@ export default function SettingsScreen() {
       <View style={styles.inner} key={locale}>
         <View style={styles.contentFrame}>
         <View style={[styles.header, { paddingTop: insets.top + theme.space.md }]}>
-          <ValetBackButton
-            onPress={() => router.back()}
-            accessibilityLabel={t(locale, "common.back")}
-          />
+          <View style={{ width: 44 }} />
           <Text style={styles.title} maxFontSizeMultiplier={1.8}>
             {t(locale, "settings.title")}
           </Text>
-          <View style={styles.headerSpacer} />
+          <Pressable onPress={() => router.replace("/home")} style={{ width: 44, alignItems: "center", justifyContent: "center" }}>
+            <IconHome2 size={24} color={theme.colors.text} />
+          </Pressable>
         </View>
 
         <ScrollView

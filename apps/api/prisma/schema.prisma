@@ -396,6 +396,7 @@ model VehicleModelVariant {
   lengthCm    Int?
   widthCm     Int?
   heightCm    Int?
+  weightKg    Int?
   isActive    Boolean  @default(true)
 
   createdAt DateTime @default(now())
