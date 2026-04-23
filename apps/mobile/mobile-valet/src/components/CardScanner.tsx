@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   useWindowDimensions,
   Platform,
-  Modal,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -15,8 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@parkit/shared';
-import { StickyFormFooter } from '@/components/StickyFormFooter';
-import { ValetBackButton } from '@/components/ValetBackButton';
+import { useAccessibilityStore } from '@/lib/store';
 
 interface CardScannerProps {
   locale: Locale;
@@ -49,6 +47,11 @@ interface CardScannerProps {
     md: number;
     lg: number;
   };
+  scannedCardData: {
+    number: string;
+    expiryMonth: string;
+    expiryYear: string;
+  } | null;
 }
 
 export function CardScanner({
@@ -62,21 +65,32 @@ export function CardScanner({
   colors: C,
   fonts: F,
   space: S,
+  scannedCardData,
 }: CardScannerProps) {
   const { width: winW } = useWindowDimensions();
   const safeInsets = useSafeAreaInsets();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanning, setScanning] = useState(false);
-  const [scannedCardData, setScannedCardData] = useState<{ number: string; expiryMonth: string; expiryYear: string } | null>(null);
-  const [guideText, setGuideText] = useState(t(locale, 'receive.scanCardGuide'));
+  const [guideText, setGuideText] = useState(t(locale, 'receive.cardScannerSubtitle'));
   const cameraRef = useRef<CameraView>(null);
+  const { textScale } = useAccessibilityStore();
 
-  const cardWidth = Math.min(winW * 0.92, 360);
+  const CORNER_LEN = 32;
+  const CORNER_THICK = 2.5;
+  const ACCENT_GLOW = "rgba(255, 255, 255, 0.6)";
+
+  const cardWidth = Math.min(winW * 0.85, 340);
   const cardHeight = cardWidth * 0.63;
+  const mask = "rgba(2, 6, 23, 0.45)";
 
   const styles = StyleSheet.create({
     container: {
       flex: 1,
+      minHeight: 0,
+      width: '100%',
+      alignSelf: 'stretch',
+      borderRadius: 0,
+      overflow: 'hidden',
       backgroundColor: '#020617',
     },
     camera: {
@@ -99,16 +113,80 @@ export function CardScanner({
       flex: 1,
       textAlign: 'center',
     },
-    cameraArea: {
+    maskColumn: {
+      ...StyleSheet.absoluteFillObject,
+      justifyContent: 'center',
+    },
+    maskBand: {
       flex: 1,
-      backgroundColor: '#020617',
+    },
+    maskSide: {
+      flex: 1,
+    },
+    frameLayer: {
+      ...StyleSheet.absoluteFillObject,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    frameBox: {
+      position: 'relative',
+    },
+    frameBorder: {
+      ...StyleSheet.absoluteFillObject,
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.15)',
+      borderRadius: 12,
+    },
+    cornerTL: {
+      position: 'absolute',
+      width: CORNER_LEN,
+      height: CORNER_LEN,
+      borderColor: ACCENT_GLOW,
+      top: -1,
+      left: -1,
+      borderTopWidth: CORNER_THICK,
+      borderLeftWidth: CORNER_THICK,
+      borderTopLeftRadius: 8,
+    },
+    cornerTR: {
+      position: 'absolute',
+      width: CORNER_LEN,
+      height: CORNER_LEN,
+      borderColor: ACCENT_GLOW,
+      top: -1,
+      right: -1,
+      borderTopWidth: CORNER_THICK,
+      borderRightWidth: CORNER_THICK,
+      borderTopRightRadius: 8,
+    },
+    cornerBL: {
+      position: 'absolute',
+      width: CORNER_LEN,
+      height: CORNER_LEN,
+      borderColor: ACCENT_GLOW,
+      bottom: -1,
+      left: -1,
+      borderBottomWidth: CORNER_THICK,
+      borderLeftWidth: CORNER_THICK,
+      borderBottomLeftRadius: 8,
+    },
+    cornerBR: {
+      position: 'absolute',
+      width: CORNER_LEN,
+      height: CORNER_LEN,
+      borderColor: ACCENT_GLOW,
+      bottom: -1,
+      right: -1,
+      borderBottomWidth: CORNER_THICK,
+      borderRightWidth: CORNER_THICK,
+      borderBottomRightRadius: 8,
     },
     headerOverlay: {
       position: 'absolute',
       top: 0,
       left: 0,
       right: 0,
-      paddingTop: S.lg,
+      paddingTop: S.sm,
       paddingBottom: S.md,
       paddingHorizontal: S.lg,
       zIndex: 10,
@@ -117,14 +195,13 @@ export function CardScanner({
       ...StyleSheet.absoluteFillObject,
     },
     headerTitle: {
-      fontSize: F.secondary - 1,
+      fontSize: Math.round(F.status * 0.85),
       fontWeight: '800',
       color: '#F8FAFC',
       letterSpacing: -0.5,
     },
     headerSubtitle: {
       marginTop: S.sm,
-      fontSize: F.secondary,
       lineHeight: 22,
       color: 'rgba(248, 250, 252, 0.72)',
       maxWidth: 320,
@@ -178,7 +255,6 @@ export function CardScanner({
       opacity: 0.8,
     },
     fakeCardNumber: {
-      fontSize: 18,
       fontWeight: '600',
       letterSpacing: 2,
       color: isDark ? '#94A3B8' : '#64748B',
@@ -192,13 +268,11 @@ export function CardScanner({
       alignItems: 'flex-end',
     },
     fakeCardLabel: {
-      fontSize: Math.round(F.secondary * 0.65),
       color: isDark ? '#64748B' : '#94A3B8',
       textTransform: 'uppercase',
       marginBottom: 4,
     },
     fakeCardValue: {
-      fontSize: Math.round(F.secondary * 0.8),
       fontWeight: '600',
       color: isDark ? '#94A3B8' : '#64748B',
     },
@@ -207,13 +281,12 @@ export function CardScanner({
     },
     guideTextContainer: {
       position: 'absolute',
-      top: '58%',
+      bottom: S.lg + 80,
       left: S.lg,
       right: S.lg,
       alignItems: 'center',
     },
     guideText: {
-      fontSize: F.secondary,
       lineHeight: 22,
       color: 'rgba(248, 250, 252, 0.85)',
       textAlign: 'center',
@@ -224,6 +297,41 @@ export function CardScanner({
       left: '50%',
       marginLeft: -25,
       marginTop: -25,
+    },
+    scanButtonContainer: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      paddingHorizontal: S.lg,
+      paddingBottom: Math.max(S.lg, 20),
+      alignItems: 'center',
+    },
+    scanButton: {
+      position: 'relative',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 14,
+      height: 60,
+      width: '100%',
+      overflow: 'hidden',
+      ...Platform.select({
+        ios: {
+          shadowColor: C.primary,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+        },
+        android: { elevation: 3 },
+      }),
+    },
+    scanButtonDisabled: {
+      opacity: 0.55,
+    },
+    scanButtonText: {
+      color: '#fff',
+      fontWeight: '800',
     },
     footerRow: {
       flexDirection: 'row',
@@ -291,7 +399,6 @@ export function CardScanner({
       marginBottom: S.sm,
     },
     permissionSheetTitle: {
-      fontSize: Math.round(F.status * 0.65),
       fontWeight: '800',
       color: C.text,
     },
@@ -303,7 +410,6 @@ export function CardScanner({
       marginBottom: S.sm,
     },
     permissionCancelText: {
-      fontSize: Math.round(F.status * 0.6),
       fontWeight: '800',
       color: C.text,
     },
@@ -315,7 +421,6 @@ export function CardScanner({
       marginBottom: S.sm,
     },
     permissionActionText: {
-      fontSize: Math.round(F.status * 0.6),
       fontWeight: '800',
       color: '#fff',
     },
@@ -334,28 +439,19 @@ export function CardScanner({
     return num.replace(/(\d{4})/g, '$1 ').trim();
   };
 
-  const extractCardData = useCallback((text: string) => {
-    // Log para debuggear
-    console.log('OCR Text:', text);
-    
+  const extractCardData = useCallback((text: string) => {    
     // Extract card number - buscar 15-19 dígitos consecutivos
-    // Limpiar todo excepto dígitos
-    const digitsOnly = text.replace(/\D/g, '');
-    console.log('Digits only:', digitsOnly);
-    
+    const digitsOnly = text.replace(/\D/g, '');    
     let number = '';
-    
-    // Buscar cualquier secuencia de 15-19 dígitos en los dígitos consecutivos
+
     const cardPattern = /(\d{15,19})/g;
     const matches = digitsOnly.match(cardPattern);
     
     if (matches) {
-      // Preferir el que tenga 16 dígitos, o el más largo
       const sixteen = matches.find(m => m.length === 16);
       number = sixteen || matches.reduce((a, b) => a.length >= b.length ? a : b, '');
     }
     
-    // Si no encontramos, buscar en el texto original por grupos de 4
     if (!number) {
       const groupPattern = /(\d{4})\s*(\d{4})\s*(\d{4})\s*(\d{4})/;
       const groupMatch = text.match(groupPattern);
@@ -363,8 +459,6 @@ export function CardScanner({
         number = groupMatch.slice(1).join('');
       }
     }
-    
-    console.log('Extracted number:', number, 'length:', number.length);
 
     // Extract expiry date (MM/YY o MM-YY)
     const expiryMatch = text.match(/(0[1-9]|1[0-2])\s*[/-]\s*(\d{2,4})/);
@@ -379,15 +473,15 @@ export function CardScanner({
     return { number, expiryMonth, expiryYear };
   }, []);
 
-  const handleScan = useCallback(async (quality: number = 0.8) => {
-    if (!cameraRef.current || scanning) return null;
+  const handleScan = useCallback(async () => {
+    if (!cameraRef.current || scanning) return;
 
     setScanning(true);
     setGuideText(t(locale, 'receive.scanningCard'));
 
     try {
       const photo = await cameraRef.current.takePictureAsync({
-        quality,
+        quality: 0.8,
         base64: true,
       });
 
@@ -398,34 +492,24 @@ export function CardScanner({
         const cardData = extractCardData(fullText);
 
         if (cardData.number.length >= 15 && cardData.number.length <= 19) {
-          setScannedCardData(cardData);
+          onCardScanned(cardData);
           setGuideText(t(locale, 'receive.cardScannedSuccess'));
-          return cardData;
         } else {
           console.log('Card rejected, length:', cardData.number.length);
           setGuideText(t(locale, 'receive.scanCardRetry'));
-          return null;
         }
       }
     } catch (error) {
       setGuideText(t(locale, 'receive.scanCardError'));
-      return null;
     } finally {
       setScanning(false);
     }
-  }, [cameraRef, scanning, extractCardData, locale]);
+  }, [cameraRef, scanning, extractCardData, locale, onCardScanned]);
 
   const handleCancel = useCallback(() => {
     onCancel();
     onClose();
   }, [onCancel, onClose]);
-
-  const handleVerify = useCallback(() => {
-    if (scannedCardData) {
-      onCardScanned(scannedCardData);
-      onClose();
-    }
-  }, [scannedCardData, onCardScanned, onClose]);
 
   // Auto-scan effect: escanea automáticamente cada 2 segundos
   useEffect(() => {
@@ -444,7 +528,7 @@ export function CardScanner({
     <View style={styles.permissionOverlay}>
       <View style={styles.permissionSheet}>
         <View style={styles.permissionSheetHeader}>
-          <Text style={styles.permissionSheetTitle}>
+          <Text style={[styles.permissionSheetTitle, { fontSize: Math.round(F.status * 0.65 * textScale) }]}>
             {t(locale, 'receive.cameraPermissionNeeded')}
           </Text>
         </View>
@@ -452,7 +536,7 @@ export function CardScanner({
           style={({ pressed }) => [styles.permissionActionBtn, pressed && { opacity: 0.9 }]}
           onPress={requestPermission}
         >
-          <Text style={styles.permissionActionText}>
+          <Text style={[styles.permissionActionText, { fontSize: Math.round(F.status * 0.65 * textScale) }]}>
             {t(locale, 'common.allow')}
           </Text>
         </Pressable>
@@ -460,7 +544,7 @@ export function CardScanner({
           style={({ pressed }) => [styles.permissionCancelBtn, pressed && { opacity: 0.8 }]}
           onPress={handleCancel}
         >
-          <Text style={styles.permissionCancelText}>
+          <Text style={[styles.permissionCancelText, { fontSize: Math.round(F.status * 0.65 * textScale) }]}>
             {t(locale, 'common.cancel')}
           </Text>
         </Pressable>
@@ -469,146 +553,108 @@ export function CardScanner({
   ) : null;
 
   const scannerContent = permission?.granted ? (
-    <View style={[styles.container, embedded && { backgroundColor: isDark ? '#0F172A' : '#FFFFFF' }]}>
-      {!embedded && (
-        <View style={[styles.screenHeader, { paddingTop: safeInsets.top + S.md }]}>
-          <ValetBackButton
-            onPress={handleCancel}
-            accessibilityLabel={t(locale, 'common.back')}
-          />
-          <Text style={styles.screenTitle}>
-            {t(locale, 'receive.wizardCardTitle')}
-          </Text>
-          <View style={{ width: 44 }} />
+    <View style={styles.container}>
+      <CameraView
+        ref={cameraRef}
+        style={StyleSheet.absoluteFill}
+        facing="back"
+        mode="picture"
+      />
+
+      {/* Viñeta suave en bordes */}
+      <LinearGradient
+        colors={['rgba(2,6,23,0.55)', 'transparent', 'rgba(2,6,23,0.45)']}
+        locations={[0, 0.45, 1]}
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      />
+
+      {/* Máscara con "agujero" central */}
+      <View style={styles.maskColumn} pointerEvents="none">
+        <View style={[styles.maskBand, { backgroundColor: mask }]} />
+        <View style={{ flexDirection: "row", height: cardHeight }}>
+          <View style={[styles.maskSide, { backgroundColor: mask }]} />
+          <View style={{ width: cardWidth }} />
+          <View style={[styles.maskSide, { backgroundColor: mask }]} />
         </View>
-      )}
+        <View style={[styles.maskBand, { backgroundColor: mask }]} />
+      </View>
 
-      <View style={[styles.cameraArea, embedded && { borderRadius: 16, overflow: 'hidden', margin: S.md }]}>
-        <CameraView
-          ref={cameraRef}
-          style={StyleSheet.absoluteFill}
-          facing="back"
-          mode="picture"
-        />
-
-        <LinearGradient
-          colors={['rgba(2,6,23,0.55)', 'transparent', 'rgba(2,6,23,0.45)']}
-          locations={[0, 0.45, 1]}
-          style={StyleSheet.absoluteFill}
-          pointerEvents="none"
-        />
-
-        {!embedded && (
-          <>
-            {/* Header con título y subtítulo */}
-            <View style={styles.headerOverlay} pointerEvents="none">
-              <LinearGradient
-                colors={['rgba(2,6,23,0.92)', 'rgba(2,6,23,0)']}
-                style={styles.headerGradient}
-                pointerEvents="none"
-              />
-              <Text style={styles.headerTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>
-                {t(locale, 'receive.cardScannerTitle')}
-              </Text>
-              <Text style={styles.headerSubtitle} numberOfLines={2}>
-                {t(locale, 'receive.cardScannerSubtitle')}
-              </Text>
-            </View>
-
-            {/* Scanner frame - solo silueta de tarjeta */}
-            <View style={styles.scannerContainer} pointerEvents="none">
-              <View style={styles.cardFrame} />
-            </View>
-          </>
-        )}
-
-        {/* Fake card preview - solo aparece después de escanear */}
-        {scannedCardData && (
-          <View style={styles.fakeCardContainer} pointerEvents="none">
-            <View style={styles.fakeCard}>
-              <View style={styles.fakeCardChip} />
-              <Text style={[styles.fakeCardNumber, styles.fakeCardNumberScanned]}>
-                {formatCardNumber(scannedCardData.number)}
-              </Text>
-              <View style={styles.fakeCardRow}>
-                <View>
-                  <Text style={styles.fakeCardLabel}>{t(locale, 'receive.cardHolderLabel')}</Text>
-                  <Text style={[styles.fakeCardValue, styles.fakeCardValueScanned]}>
-                    {t(locale, 'receive.cardHolderPlaceholder')}
-                  </Text>
-                </View>
-                <View>
-                  <Text style={styles.fakeCardLabel}>{t(locale, 'receive.cardExpiresLabel')}</Text>
-                  <Text style={[styles.fakeCardValue, styles.fakeCardValueScanned]}>
-                    {scannedCardData.expiryMonth}/{scannedCardData.expiryYear.slice(-2)}
-                  </Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        )}
-
-        {scanning && (
-          <View style={styles.scanningIndicator}>
-            <ActivityIndicator size="large" color={C.primary} />
-          </View>
-        )}
-
-        <View style={[styles.guideTextContainer, embedded && { top: '65%' }]} pointerEvents="none">
-          <Text style={styles.guideText}>
-            {guideText}
-          </Text>
+      {/* Marco minimalista */}
+      <View style={styles.frameLayer} pointerEvents="none">
+        <View style={[styles.frameBox, { width: cardWidth, height: cardHeight }]}>
+          <View style={styles.frameBorder} />
         </View>
       </View>
 
-      {!embedded && (
-        <StickyFormFooter keyboardPinned backgroundColor="#020617" borderColor="rgba(255,255,255,0.1)">
-          <View style={styles.footerRow}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.primaryBtn,
-                styles.footerPrimaryBtn,
-                (!scannedCardData || scanning) && styles.primaryBtnDisabled,
-                pressed && styles.pressed,
-              ]}
-              onPress={handleVerify}
-              disabled={!scannedCardData || scanning}
-              accessibilityLabel={t(locale, 'receive.verifyCardButton')}
-            >
-              <LinearGradient
-                colors={[C.primary, C.primary]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFill}
-              />
-              <Text style={styles.primaryBtnText}>
-                {t(locale, 'receive.verifyCardButton')}
-              </Text>
-            </Pressable>
+      {/* Texto superior */}
+      <View style={styles.headerOverlay} pointerEvents="none">
+        <LinearGradient
+          colors={['rgba(2,6,23,0.88)', 'rgba(2,6,23,0)']}
+          style={styles.headerGradient}
+        />
+        <Text style={[styles.headerSubtitle, { fontSize: Math.round(F.status * 0.65 * textScale) }]} numberOfLines={2}>
+          {t(locale, 'receive.cardScannerSubtitle')}
+        </Text>
+      </View>
+
+      {/* Fake card preview - solo aparece después de escanear */}
+      {scannedCardData && (
+        <View style={styles.fakeCardContainer} pointerEvents="none">
+          <View style={styles.fakeCard}>
+            <View style={styles.fakeCardChip} />
+            <Text style={[styles.fakeCardNumber, styles.fakeCardNumberScanned, { fontSize: Math.round(F.secondary * 0.9 * textScale) }]}>
+              {formatCardNumber(scannedCardData.number)}
+            </Text>
+            <View style={styles.fakeCardRow}>
+              <View>
+                <Text style={[styles.fakeCardLabel, { fontSize: Math.round(F.status * 0.65 * textScale) }]}>{t(locale, 'receive.cardHolderLabel')}</Text>
+                <Text style={[styles.fakeCardValue, styles.fakeCardValueScanned, { fontSize: Math.round(F.secondary * 0.8 * textScale) }]}>
+                  {t(locale, 'receive.cardHolderPlaceholder')}
+                </Text>
+              </View>
+              <View>
+                <Text style={[styles.fakeCardLabel, { fontSize: Math.round(F.status * 0.65 * textScale) }]}>{t(locale, 'receive.cardExpiresLabel')}</Text>
+                <Text style={[styles.fakeCardValue, styles.fakeCardValueScanned, { fontSize: Math.round(F.secondary * 0.8 * textScale) }]}>
+                  {scannedCardData.expiryMonth}/{scannedCardData.expiryYear.slice(-2)}
+                </Text>
+              </View>
+            </View>
           </View>
-        </StickyFormFooter>
+        </View>
+      )}
+
+      {scanning && (
+        <View style={styles.scanningIndicator}>
+          <ActivityIndicator size="large" color={C.primary} />
+        </View>
+      )}
+
+      <View style={[styles.guideTextContainer, embedded && { top: '65%' }]} pointerEvents="none">
+        <Text style={[styles.guideText, { fontSize: Math.round(F.status * 0.65 * textScale) }]}>
+          {guideText}
+        </Text>
+      </View>
+
+      {!embedded && (
+        <View style={styles.scanButtonContainer}>
+          <Pressable
+            style={({ pressed }) => [styles.scanButton, pressed && { opacity: 0.9 }, scanning && styles.scanButtonDisabled]}
+            onPress={handleScan}
+            disabled={scanning || !!scannedCardData}
+          >
+            {scanning ? (
+              <ActivityIndicator color="#fff" size={20} />
+            ) : (
+              <Text style={[styles.scanButtonText, { fontSize: Math.round(F.status * 0.65 * textScale) }]}>{t(locale, 'receive.scanCardButton')}</Text>
+            )}
+          </Pressable>
+        </View>
       )}
     </View>
   ) : null;
 
-  if (embedded) {
-    if (!visible) return null;
-    return permissionContent || scannerContent;
-  }
+  if (!visible) return null;
 
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={handleCancel}
-      statusBarTranslucent
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          {permissionContent || scannerContent}
-        </View>
-      </View>
-    </Modal>
-  );
+  return permissionContent || scannerContent;
 }

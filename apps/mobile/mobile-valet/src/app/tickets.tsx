@@ -12,7 +12,7 @@ import { StatusBar } from "react-native";
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
-import { IconMapPin, IconAlertCircle, IconArrowUndo, IconCircleCheck, IconCar, IconBell } from "@/components/TablerIcons";
+import { IconMapPin, IconAlertCircle, IconArrowUndo, IconCircleCheck, IconCar, IconBell } from "@/components/Icons";
 import { t } from "@/lib/i18n";
 import { formatVehicleColorLabel } from "@parkit/shared/src/vehicleColors";
 import api from "@/lib/api";

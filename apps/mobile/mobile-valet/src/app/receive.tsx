@@ -19,8 +19,29 @@ import { Redirect, useRouter, useLocalSearchParams } from "expo-router";
 import * as Linking from "expo-linking";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatPlate, getVehicleColorOptions, formatVehicleColorLabel, normalizeVehicleColorValue } from "@parkit/shared";
-import { IconHandStop, IconTicket, IconBuilding, IconCircleCheck, IconQrCode, IconCard, IconCalendar, IconCash, IconList, IconLocationFilled, IconResize, IconCheckbox, IconSquare, IconCamera, IconGallery, IconCircleX, IconUser, IconClock, IconHourglass } from "@/components/TablerIcons";
-import { useAuthStore, useLocaleStore, useCompanyStore } from "@/lib/store";
+import { 
+  IconHandStop, 
+  IconTicket, 
+  IconBuilding, 
+  IconCircleCheck, 
+  IconQrCode, 
+  IconCard, 
+  IconCalendar, 
+  IconCash, 
+  IconList, 
+  IconLocationFilled, 
+  IconCamera, 
+  IconGallery, 
+  IconCircleX, 
+  IconUser, 
+  IconClock, 
+  IconHourglass, 
+  IconCar, 
+  IconTag, 
+  IconPalette,
+  IconKey
+} from "@/components/Icons";
+import { useAuthStore, useLocaleStore, useCompanyStore, useAccessibilityStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import type { Locale as _Locale } from "@parkit/shared";
 import type { ReactNode } from "react";
@@ -39,7 +60,6 @@ import { ReservationQrPanel, createQrStyles } from "@/components/ReservationQrPa
 import { CardScanner } from "@/components/CardScanner";
 import { VehiclePlateInput } from "@/components/VehiclePlateInput";
 import { DriverInfoForm } from "@/components/DriverInfoForm";
-import { TicketQRPanel } from "@/components/TicketQRPanel";
 import { ValetDispatchRow, createValetRowStyles } from "@/components/ValetDispatchRow";
 import {
   COUNTRY_CR,
@@ -126,6 +146,7 @@ export default function ReceiveScreen() {
   const [bookingCode, setBookingCode] = useState("");
   const [bookingCheck, setBookingCheck] = useState<BookingLookup | null | "invalid">(null);
   const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingValidationMessage, setBookingValidationMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: '' });
 
   const [parkings, setParkings] = useState<ParkingOpt[]>([]);
   const [parkingId, setParkingId] = useState<string | null>(null);
@@ -140,8 +161,7 @@ export default function ReceiveScreen() {
 
   const [wizardStep, setWizardStep] = useState(1);
   const [_cardVerificationOpening, _setCardVerificationOpening] = useState(false);
-  const [cardVerificationStarted, setCardVerificationStarted] = useState(false);
-  const [ticketCodesAcknowledged, setTicketCodesAcknowledged] = useState(false);
+  const [_cardVerificationStarted, setCardVerificationStarted] = useState(false);
   const [manualTicketCode, setManualTicketCode] = useState("");
   const [manualKeyCode, setManualKeyCode] = useState("");
 
@@ -156,7 +176,7 @@ export default function ReceiveScreen() {
   const [vehicleColorModalOpen, setVehicleColorModalOpen] = useState(false);
   const [manualBrandMode, setManualBrandMode] = useState(false);
   const [manualModelMode, setManualModelMode] = useState(false);
-  const [cardScannerOpen, setCardScannerOpen] = useState(false);
+  const [scannedCardData, setScannedCardData] = useState<{ number: string; expiryMonth: string; expiryYear: string } | null>(null);
 
   const [receiveManualParkingId, setReceiveManualParkingId] = useState<string | null>(null);
   const [valetSelectModalOpen, setValetSelectModalOpen] = useState(false);
@@ -166,6 +186,7 @@ export default function ReceiveScreen() {
   const isReception = user?.valetStaffRole !== "DRIVER";
   const C = theme.colors;
   const M = ticketsA11y.minTouch;
+  const { textScale } = useAccessibilityStore();
   const feedback = useMemo(() => createFeedback(locale), [locale]);
 
   const _startCardVerification = useCallback(async () => {
@@ -232,16 +253,34 @@ export default function ReceiveScreen() {
     if (wizardStep === typeStepNum && !reservationFlow) {
       return t(locale, "receive.wizardTypeTitle");
     }
+    if (wizardStep === cardStepNum && !reservationFlow) {
+      return t(locale, "receive.wizardCardTitle");
+    }
     if (wizardStep === plateStepNum && !reservationFlow) {
       return t(locale, "receive.wizardPlateTitle");
     }
+    if (wizardStep === driverStepNum && !reservationFlow) {
+      return t(locale, 'receive.labelDriver');
+    }
     if (wizardStep === vehicleStepNum) {
-      return t(locale, "receive.wizardVehicleTitle");
+      return t(locale, 'receive.labelVehicle');
+    }
+    if (wizardStep === parkingStepNum) {
+      return t(locale, "receive.wizardParkingTitle");
+    }
+    if (wizardStep === damageStepNum) {
+      return t(locale, "receive.wizardDamageTitle");
+    }
+    if (wizardStep === ticketStepNum) {
+      return t(locale, "receive.wizardTicketTitle");
+    }
+    if (wizardStep === valetStepNum) {
+      return t(locale, "receive.wizardValetStepTitle");
     }
     return reservationFlow
       ? t(locale, "receive.titleReservation")
       : t(locale, "receive.title");
-  }, [wizardStep, typeStepNum, plateStepNum, vehicleStepNum, reservationFlow, locale]);
+  }, [wizardStep, typeStepNum, cardStepNum, plateStepNum, driverStepNum, vehicleStepNum, parkingStepNum, damageStepNum, ticketStepNum, valetStepNum, reservationFlow, locale]);
 
   const effectiveCompanyId = useMemo(() => {
     if (vehicle?.companyId) return vehicle.companyId;
@@ -434,7 +473,6 @@ export default function ReceiveScreen() {
       return;
     }
     setPlate(formatted);
-    setTicketCodesAcknowledged(false);
     setReceiveManualParkingId(null);
     setLookupLoading(true);
     setVehicleResolved(false);
@@ -548,6 +586,7 @@ export default function ReceiveScreen() {
     const id = (overrideCode ?? bookingCode).trim();
     if (!id) {
       setBookingCheck(null);
+      setBookingValidationMessage({ type: null, text: '' });
       return;
     }
     const cid = companyIdForBooking;
@@ -562,32 +601,33 @@ export default function ReceiveScreen() {
       const b = res.data?.data;
       if (!b) {
         setBookingCheck("invalid");
-        feedback.alert(
-          t(locale, "receive.benefitInvalidTitle"),
-          `${t(locale, "receive.benefitInvalid")}\n\n${t(locale, "receive.benefitInvalidHint")}`
-        );
+        setBookingValidationMessage({
+          type: 'error',
+          text: `${t(locale, "receive.benefitInvalid")}\n\n${t(locale, "receive.benefitInvalidHint")}`
+        });
         return;
       }
       if (b.status === "CANCELLED" || b.status === "NO_SHOW") {
         setBookingCheck("invalid");
-        feedback.alert(
-          t(locale, "receive.benefitInvalidTitle"),
-          `${t(locale, "receive.benefitInvalid")}\n\n${t(locale, "receive.benefitInvalidHint")}`
-        );
+        setBookingValidationMessage({
+          type: 'error',
+          text: `${t(locale, "receive.benefitInvalid")}\n\n${t(locale, "receive.benefitInvalidHint")}`
+        });
         return;
       }
       setBookingCheck(b);
-      feedback.success(
-        t(locale, "receive.benefitOk", {
+      setBookingValidationMessage({
+        type: 'success',
+        text: t(locale, "receive.benefitOk", {
           time: formatBenefitTime(b.parking?.freeBenefitMinutes, locale),
         })
-      );
+      });
     } catch {
       setBookingCheck("invalid");
-      feedback.alert(
-        t(locale, "receive.benefitInvalidTitle"),
-        `${t(locale, "receive.benefitInvalid")}\n\n${t(locale, "receive.benefitInvalidHint")}`
-      );
+      setBookingValidationMessage({
+        type: 'error',
+        text: `${t(locale, "receive.benefitInvalid")}\n\n${t(locale, "receive.benefitInvalidHint")}`
+      });
     } finally {
       setBookingLoading(false);
     }
@@ -1017,8 +1057,11 @@ export default function ReceiveScreen() {
     driverLast.trim().length > 0 &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(driverEmail.trim());
   const vehicleDataValid =
-    vehBrand.trim().length > 0 && vehModel.trim().length > 0;
-  const bookingValidated = bookingCheck !== null && bookingCheck !== "invalid";
+    vehBrand.trim().length > 0 &&
+    vehModel.trim().length > 0 &&
+    vehColor.trim().length > 0 &&
+    vehYear.trim().length > 0;
+  const _bookingValidated = bookingCheck !== null && bookingCheck !== "invalid";
 
   const ticketCodesFilled = useMemo(() => {
     const tc = manualTicketCode.trim();
@@ -1068,9 +1111,7 @@ export default function ReceiveScreen() {
   // Load models immediately when brand changes (no debounce for faster response)
   useEffect(() => {
     const make = vehBrand.trim();
-    console.log("[DEBUG] vehBrand changed:", vehBrand, "trimmed:", make);
     if (!make) {
-      console.log("[DEBUG] No make, clearing models");
       setCatalogModels([]);
       return;
     }
@@ -1078,28 +1119,22 @@ export default function ReceiveScreen() {
     let cancelled = false;
 
     const loadModels = async (makeName: string, isRetry = false) => {
-      console.log("[DEBUG] Starting model load for make:", makeName, "isRetry:", isRetry);
       if (!cancelled) setLoadingCatalogModels(true);
       try {
         const params = new URLSearchParams({ make: makeName });
         if (vehYear.trim()) params.set("year", vehYear.trim());
         const url = `/vehicles/catalog/models?${params.toString()}`;
-        console.log("[DEBUG] Fetching models from:", url);
         const res = await api.get<{ data: CatalogModel[] }>(url);
-        console.log("[DEBUG] Models response:", res.data);
         if (!cancelled) {
           const models = Array.isArray(res.data?.data) ? res.data.data : [];
-          console.log("[DEBUG] Setting models:", models.length, "items");
           setCatalogModels(models);
           // If no models found and not already retried, try with uppercase
           if (models.length === 0 && !isRetry && makeName) {
-            console.log("[DEBUG] No models found, retrying with uppercase");
             loadModels(makeName.toUpperCase(), true);
             return;
           }
         }
       } catch (err) {
-        console.error("[DEBUG] Failed to load models:", err);
         if (!cancelled) setCatalogModels([]);
       } finally {
         if (!cancelled && !isRetry) setLoadingCatalogModels(false);
@@ -1186,7 +1221,7 @@ export default function ReceiveScreen() {
               setWizardStep(cardStepNum);
             } else if (receptionType === "RESERVATION") {
               router.replace("/receive?flow=reservation");
-            } else {
+            } else if (receptionType === "DIRECT") {
               setWizardStep(plateStepNum);
             }
           }}
@@ -1200,20 +1235,34 @@ export default function ReceiveScreen() {
   } else if (wizardStep === typeStepNum && reservationFlow) {
     footer = (
       <StickyFormFooter keyboardPinned>
-        <Pressable
-          style={({ pressed }) => [
-            styles.primaryBtn,
-            styles.primaryBtnSticky,
-            { minHeight: M },
-            !bookingValidated && styles.btnDisabled,
-            pressed && styles.pressed,
-          ]}
-          onPress={() => setWizardStep(parkingStepNum)}
-          disabled={!bookingValidated}
-          accessibilityLabel={t(locale, "receive.next")}
-        >
-          <Text style={styles.primaryBtnText}>{t(locale, "receive.next")}</Text>
-        </Pressable>
+        <View style={styles.footerRow}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.footerSecondaryBtn,
+              { minHeight: M },
+              pressed && styles.pressed,
+            ]}
+            onPress={() => router.replace("/receive")}
+            accessibilityLabel={t(locale, "common.back")}
+          >
+            <Text style={styles.footerSecondaryBtnText}>{t(locale, "common.back")}</Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.primaryBtn,
+              styles.primaryBtnSticky,
+              styles.footerPrimaryBtn,
+              { minHeight: M },
+              !_bookingValidated && styles.btnDisabled,
+              pressed && styles.pressed,
+            ]}
+            onPress={() => setWizardStep(parkingStepNum)}
+            disabled={!_bookingValidated}
+            accessibilityLabel={t(locale, "receive.next")}
+          >
+            <Text style={styles.primaryBtnText}>{t(locale, "receive.next")}</Text>
+          </Pressable>
+        </View>
       </StickyFormFooter>
     );
   } else if (wizardStep === cardStepNum && !reservationFlow) {
@@ -1237,11 +1286,11 @@ export default function ReceiveScreen() {
               styles.primaryBtnSticky,
               styles.footerPrimaryBtn,
               { minHeight: M },
-              !cardVerificationStarted && styles.btnDisabled,
+              !scannedCardData && styles.btnDisabled,
               pressed && styles.pressed,
             ]}
             onPress={() => setWizardStep(plateStepNum)}
-            disabled={!cardVerificationStarted}
+            disabled={!scannedCardData}
             accessibilityLabel={t(locale, "receive.next")}
           >
             <Text style={styles.primaryBtnText}>{t(locale, "receive.next")}</Text>
@@ -1405,11 +1454,11 @@ export default function ReceiveScreen() {
               styles.primaryBtnSticky,
               styles.footerPrimaryBtn,
               { minHeight: M },
-              (!ticketCodesAcknowledged || !ticketCodesFilled) && styles.btnDisabled,
+              !ticketCodesFilled && styles.btnDisabled,
               pressed && styles.pressed,
             ]}
             onPress={() => setWizardStep(valetStepNum)}
-            disabled={!ticketCodesAcknowledged || !ticketCodesFilled}
+            disabled={!ticketCodesFilled}
             accessibilityLabel={t(locale, "receive.next")}
           >
             <Text style={styles.primaryBtnText}>{t(locale, "receive.next")}</Text>
@@ -1438,11 +1487,9 @@ export default function ReceiveScreen() {
               styles.primaryBtnSticky,
               styles.footerPrimaryBtn,
               { minHeight: M },
-              damagePhotoBusy && styles.btnDisabled,
               pressed && styles.pressed,
             ]}
             onPress={() => setWizardStep(ticketStepNum)}
-            disabled={damagePhotoBusy}
             accessibilityLabel={t(locale, "receive.damageContinueA11y")}
           >
             <Text style={styles.primaryBtnText}>{t(locale, "receive.next")}</Text>
@@ -1535,6 +1582,7 @@ export default function ReceiveScreen() {
                 styles={qrStyles}
                 variant="premium"
                 validating={bookingLoading}
+                validationMessage={bookingValidationMessage}
                 pauseAfterScan={bookingCheck !== null && bookingCheck !== "invalid"}
                 onBarcodeScanned={(raw) => {
                   const id = extractBookingIdFromScan(raw);
@@ -1681,6 +1729,66 @@ export default function ReceiveScreen() {
               </View>
             )}
           </View>
+        ) : wizardStep === cardStepNum && !reservationFlow ? (
+          <View
+            style={{
+              flex: 1,
+              minHeight: 0,
+              alignSelf: "stretch",
+              width: "100%",
+              position: "relative",
+              backgroundColor: "#020617",
+            }}
+          >
+            <View style={{ flex: 1, minHeight: 0, alignSelf: "stretch", width: "100%" }}>
+              <CardScanner
+                locale={locale}
+                isDark={theme.isDark}
+                visible={true}
+                embedded={false}
+                onClose={() => setWizardStep(typeStepNum)}
+                onCardScanned={(cardData) => {
+                  setScannedCardData(cardData);
+                }}
+                onCancel={() => {
+                  setWizardStep(typeStepNum);
+                  setReceptionType(null);
+                  setScannedCardData(null);
+                }}
+                colors={{
+                  primary: C.primary,
+                  text: C.text,
+                  textMuted: C.textMuted,
+                  card: C.card,
+                  border: C.border,
+                }}
+                fonts={{
+                  secondary: theme.a11yFont.secondary,
+                  body: theme.a11yFont.body,
+                  button: theme.a11yFont.button,
+                  title: theme.a11yFont.title,
+                  status: theme.a11yFont.status,
+                }}
+                space={{
+                  sm: theme.space.sm,
+                  md: theme.space.md,
+                  lg: theme.space.lg,
+                }}
+                scannedCardData={scannedCardData}
+              />
+            </View>
+            {scannedCardData && (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.primaryBtn,
+                  pressed && styles.pressed,
+                ]}
+                onPress={() => setWizardStep(plateStepNum)}
+              >
+                <Text style={styles.primaryBtnText}>{t(locale, 'receive.next')}</Text>
+              </Pressable>
+            )}
+          </View>
         ) : (
         <ScrollView
           style={{ flex: 1 }}
@@ -1710,15 +1818,14 @@ export default function ReceiveScreen() {
                   ]}
                   onPress={() => {
                   setReceptionType("CARD");
-                  setCardScannerOpen(true);
                 }}
                   accessibilityRole="radio"
                   accessibilityState={{ checked: receptionType === "CARD" }}
                 >
                   <View style={[styles.typeCardIcon, styles.typeCardIconCard, receptionType === "CARD" && styles.typeCardIconActive]}>
                     <IconCard
-                      size={28}
-                      color={receptionType === "CARD" ? "#fff" : theme.isDark ? "#60A5FA" : "#2563EB"}
+                      size={30}
+                      color={receptionType === "CARD" ? "#fff" : theme.isDark ? "#94A3B8" : "#475569"}
                     />
                   </View>
                   <Text style={styles.typeCardTitle}>{t(locale, "receive.typeCardTitle")}</Text>
@@ -1737,8 +1844,8 @@ export default function ReceiveScreen() {
                 >
                   <View style={[styles.typeCardIcon, styles.typeCardIconReservation, receptionType === "RESERVATION" && styles.typeCardIconActive]}>
                     <IconCalendar
-                      size={28}
-                      color={receptionType === "RESERVATION" ? "#fff" : theme.isDark ? "#A78BFA" : "#7C3AED"}
+                      size={30}
+                      color={receptionType === "RESERVATION" ? "#fff" : theme.isDark ? "#60A5FA" : "#2563EB"}
                     />
                   </View>
                   <Text style={styles.typeCardTitle}>{t(locale, "receive.typeReservationTitle")}</Text>
@@ -1757,8 +1864,8 @@ export default function ReceiveScreen() {
                 >
                   <View style={[styles.typeCardIcon, styles.typeCardIconDirect, receptionType === "DIRECT" && styles.typeCardIconActive]}>
                     <IconCash
-                      size={28}
-                      color={receptionType === "DIRECT" ? "#fff" : theme.isDark ? "#FBBF24" : "#D97706"}
+                      size={30}
+                      color={receptionType === "DIRECT" ? "#fff" : theme.isDark ? "#34D399" : "#22C55E"}
                     />
                   </View>
                   <Text style={styles.typeCardTitle}>{t(locale, "receive.typeDirectTitle")}</Text>
@@ -1767,40 +1874,6 @@ export default function ReceiveScreen() {
               </View>
             </>
           )}
-
-          <CardScanner
-            locale={locale}
-            isDark={theme.isDark}
-            visible={cardScannerOpen}
-            onClose={() => setCardScannerOpen(false)}
-            onCardScanned={(_cardData) => {
-              setCardScannerOpen(false);
-              setWizardStep(plateStepNum);
-            }}
-            onCancel={() => {
-              setCardScannerOpen(false);
-              setReceptionType(null);
-            }}
-            colors={{
-              primary: C.primary,
-              text: C.text,
-              textMuted: C.textMuted,
-              card: C.card,
-              border: C.border,
-            }}
-            fonts={{
-              secondary: theme.a11yFont.secondary,
-              body: theme.a11yFont.body,
-              button: theme.a11yFont.button,
-              title: theme.a11yFont.title,
-              status: theme.a11yFont.status,
-            }}
-            space={{
-              sm: theme.space.sm,
-              md: theme.space.md,
-              lg: theme.space.lg,
-            }}
-          />
 
           {wizardStep === plateStepNum && !reservationFlow && (
             <VehiclePlateInput
@@ -1828,10 +1901,13 @@ export default function ReceiveScreen() {
                 card: C.card,
                 border: C.border,
                 text: C.text,
+                inputBg: theme.auth.inputBg,
+                inputBorder: theme.auth.inputBorder,
               }}
               fonts={{
                 secondary: theme.a11yFont.secondary,
                 body: theme.a11yFont.body,
+                status: theme.a11yFont.secondary,
               }}
               space={{
                 sm: theme.space.sm,
@@ -1859,10 +1935,13 @@ export default function ReceiveScreen() {
                 card: C.card,
                 border: C.border,
                 text: C.text,
+                inputBg: theme.auth.inputBg,
+                inputBorder: theme.auth.inputBorder,
               }}
               fonts={{
                 secondary: theme.a11yFont.secondary,
                 body: theme.a11yFont.body,
+                status: theme.a11yFont.secondary,
               }}
               space={{
                 sm: theme.space.sm,
@@ -1873,50 +1952,80 @@ export default function ReceiveScreen() {
 
           {wizardStep === vehicleStepNum && !reservationFlow && (
             <>
-              <Text style={styles.stepExplain}>{t(locale, "receive.wizardVehicleHelp")}</Text>
+              <Text style={styles.stepExplain}>{t(locale, 'receive.wizardVehicleHelp')}</Text>
+
+              <Text style={styles.inputLabel}>{t(locale, 'receive.labelBrand')}</Text>
               {manualBrandMode ? (
-                <TextInput
-                  style={styles.input}
-                  value={vehBrand}
-                  onChangeText={(v) => {
-                    setVehBrand(v);
-                    setVehModel("");
-                  }}
-                  placeholder={t(locale, "receive.placeholderBrand")}
-                  placeholderTextColor={C.textSubtle}
-                  maxFontSizeMultiplier={2}
-                />
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space.sm }}>
+                  <View style={{ position: 'relative', flex: 1 }}>
+                    <IconCar size={20} color={C.textMuted} style={{ position: 'absolute', left: 16, top: '50%', marginTop: -16, zIndex: 1 }} />
+                    <TextInput
+                      style={[styles.input, { paddingLeft: 48, fontSize: Math.round(theme.font.status * 0.6 * textScale) }]}
+                      value={vehBrand}
+                      onChangeText={(v) => {
+                        setVehBrand(v);
+                        setVehModel("");
+                      }}
+                      placeholder={t(locale, "receive.placeholderBrand")}
+                      placeholderTextColor={C.textSubtle}
+                      maxFontSizeMultiplier={2}
+                    />
+                  </View>
+                  <Pressable
+                    onPress={() => setManualBrandMode(false)}
+                    accessibilityLabel={t(locale, "receive.placeholderBrand")}
+                    style={({ pressed }) => [styles.input, styles.selectorInput, pressed && styles.pressed, { flexShrink: 0, justifyContent: 'center', alignItems: 'center' }]}
+                  >
+                    <IconList size={16} color={C.textMuted} />
+                  </Pressable>
+                </View>
               ) : (
                 <Pressable
-                  style={({ pressed }) => [styles.input, styles.selectorInput, pressed && styles.pressed]}
+                  style={({ pressed }) => [styles.input, { position: 'relative' }, pressed && styles.pressed]}
                   onPress={() => setVehicleBrandModalOpen(true)}
                   accessibilityRole="button"
                   accessibilityLabel={t(locale, "receive.placeholderBrand")}
                 >
+                  <IconCar size={20} color={C.textMuted} style={{ position: 'absolute', left: 16, top: '50%', marginTop: 0, zIndex: 1 }} />
                   <Text
-                    style={[styles.selectorInputText, !vehBrand && styles.selectorInputPlaceholder]}
+                    style={[styles.selectorInputText, !vehBrand && styles.selectorInputPlaceholder, { paddingTop: 4, fontSize: Math.round(theme.font.status * 0.6 * textScale), textAlignVertical: 'center' }]}
                     numberOfLines={1}
                     maxFontSizeMultiplier={2}
                   >
                     {vehBrand || t(locale, "receive.placeholderBrand")}
                   </Text>
+                  {loadingCatalogMakes && <ActivityIndicator size={14} color={C.primary} style={{ position: 'absolute', right: 16, top: '50%', marginTop: 0, zIndex: 1 }} />}
+                  {!loadingCatalogMakes && <IconList size={16} color={C.textMuted} style={{ position: 'absolute', right: 16, top: '50%', marginTop: 0, zIndex: 1 }} />}
                 </Pressable>
               )}
-              {(loadingCatalogMakes || loadingCatalogModels) && <ActivityIndicator color={C.primary} style={{ marginBottom: theme.space.sm }} />}
+
+              <Text style={styles.inputLabel}>{t(locale, 'receive.labelModel')}</Text>
               {manualModelMode ? (
-                <TextInput
-                  style={styles.input}
-                  value={vehModel}
-                  onChangeText={setVehModel}
-                  placeholder={t(locale, "receive.placeholderModel")}
-                  placeholderTextColor={C.textSubtle}
-                  maxFontSizeMultiplier={2}
-                />
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space.sm }}>
+                  <View style={{ position: 'relative', flex: 1 }}>
+                    <IconTag size={20} color={C.textMuted} style={{ position: 'absolute', left: 16, top: '50%', marginTop: -16, zIndex: 1 }} />
+                    <TextInput
+                      style={[styles.input, { paddingLeft: 48, fontSize: Math.round(theme.font.status * 0.6 * textScale) }]}
+                      value={vehModel}
+                      onChangeText={setVehModel}
+                      placeholder={t(locale, "receive.placeholderModel")}
+                      placeholderTextColor={C.textSubtle}
+                      maxFontSizeMultiplier={2}
+                    />
+                  </View>
+                  <Pressable
+                    onPress={() => setManualModelMode(false)}
+                    accessibilityLabel={t(locale, "receive.placeholderModel")}
+                    style={({ pressed }) => [styles.input, styles.selectorInput, pressed && styles.pressed, { flexShrink: 0, justifyContent: 'center', alignItems: 'center' }]}
+                  >
+                    <IconList size={16} color={C.textMuted} />
+                  </Pressable>
+                </View>
               ) : (
                 <Pressable
                   style={({ pressed }) => [
                     styles.input,
-                    styles.selectorInput,
+                    { position: 'relative' },
                     !vehBrand && styles.btnDisabled,
                     pressed && styles.pressed,
                   ]}
@@ -1928,51 +2037,61 @@ export default function ReceiveScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={t(locale, "receive.placeholderModel")}
                 >
+                  <IconTag size={20} color={C.textMuted} style={{ position: 'absolute', left: 16, top: '50%', marginTop: 0, zIndex: 1 }} />
                   <Text
-                    style={[styles.selectorInputText, !vehModel && styles.selectorInputPlaceholder]}
+                    style={[styles.selectorInputText, !vehModel && styles.selectorInputPlaceholder, { paddingTop: 4, fontSize: Math.round(theme.font.status * 0.6 * textScale), textAlignVertical: 'center' }]}
                     numberOfLines={1}
                     maxFontSizeMultiplier={2}
                   >
                     {vehModel || t(locale, "receive.placeholderModel")}
                   </Text>
+                  {loadingCatalogModels && <ActivityIndicator size={14} color={C.primary} style={{ position: 'absolute', right: 16, top: '50%', marginTop: 0, zIndex: 1 }} />}
+                  {!loadingCatalogModels && <IconList size={16} color={C.textMuted} style={{ position: 'absolute', right: 16, top: '50%', marginTop: 0, zIndex: 1 }} />}
                 </Pressable>
               )}
+
+              <Text style={styles.inputLabel}>{t(locale, 'receive.labelColor')}</Text>
               <Pressable
-                style={({ pressed }) => [styles.input, styles.selectorInput, pressed && styles.pressed]}
+                style={({ pressed }) => [styles.input, { position: 'relative' }, pressed && styles.pressed]}
                 onPress={() => setVehicleColorModalOpen(true)}
                 accessibilityRole="button"
                 accessibilityLabel={t(locale, "receive.placeholderColor")}
               >
+                <IconPalette size={20} color={C.textMuted} style={{ position: 'absolute', left: 16, top: '50%', marginTop: 0, zIndex: 1 }} />
                 <Text
-                  style={[styles.selectorInputText, !vehColor && styles.selectorInputPlaceholder]}
+                  style={[styles.selectorInputText, !vehColor && styles.selectorInputPlaceholder, { paddingTop: 4, fontSize: Math.round(theme.font.status * 0.6 * textScale), textAlignVertical: 'center' }]}
                   numberOfLines={1}
                   maxFontSizeMultiplier={2}
                 >
                   {formatVehicleColorLabel(vehColor, locale) || t(locale, "receive.placeholderColor")}
                 </Text>
-                <IconList size={16} color={C.textMuted} />
+                <IconList size={16} color={C.textMuted} style={{ position: 'absolute', right: 16, top: '50%', marginTop: 4, zIndex: 1 }} />
               </Pressable>
-              <TextInput
-                style={styles.input}
-                value={vehYear}
-                onChangeText={setVehYear}
-                placeholder={t(locale, "receive.placeholderYear")}
-                placeholderTextColor={C.textSubtle}
-                keyboardType="number-pad"
-                maxFontSizeMultiplier={2}
-              />
-              {!!vehModel && catalogDimensions && (
-                <View style={styles.okBanner}>
-                  <IconResize size={18} color={C.success} />
-                  <Text style={styles.okText}>{t(locale, "receive.vehicleDimensionsAuto")}</Text>
-                </View>
-              )}
+
+              <Text style={styles.inputLabel}>{t(locale, 'receive.labelYear')}</Text>
+              <View style={{ position: 'relative' }}>
+                <IconCalendar size={20} color={C.textMuted} style={{ position: 'absolute', left: 16, top: '50%', marginTop: -16, zIndex: 1 }} />
+                <TextInput
+                  style={[styles.input, { paddingLeft: 48, fontSize: Math.round(theme.font.status * 0.6 * textScale) }]}
+                  value={vehYear}
+                  onChangeText={(text) => {
+                    const numericText = text.replace(/[^0-9]/g, '');
+                    if (numericText.length <= 4) {
+                      setVehYear(numericText);
+                    }
+                  }}
+                  placeholder={t(locale, "receive.placeholderYear")}
+                  placeholderTextColor={C.textSubtle}
+                  keyboardType="number-pad"
+                  maxLength={4}
+                  maxFontSizeMultiplier={2}
+                />
+              </View>
             </>
           )}
 
           {wizardStep === ticketStepNum && (
             <>
-              <Text style={styles.sectionLabel}>{t(locale, "receive.wizardTicketTitle")}</Text>
               <Text style={styles.stepExplain}>{t(locale, "receive.wizardTicketHelp")}</Text>
 
               <Text style={styles.inputFieldLabel}>
@@ -1980,22 +2099,25 @@ export default function ReceiveScreen() {
                   ? t(locale, "receive.ticketCodeOnlyLabel")
                   : t(locale, "receive.ticketCodeFieldLabel")}
               </Text>
-              <TextInput
-                style={styles.input}
-                value={manualTicketCode}
-                onChangeText={(v) => {
-                  setManualTicketCode(v);
-                  if (!keyCodesUnlinked) setManualKeyCode(v);
-                }}
-                placeholder={t(locale, "receive.placeholderTicketKeyCode")}
-                placeholderTextColor={C.textSubtle}
-                autoCapitalize="characters"
-                autoCorrect={false}
-                keyboardType="number-pad"
-                inputMode="numeric"
-                maxLength={64}
-                maxFontSizeMultiplier={2}
-              />
+              <View style={{ position: 'relative' }}>
+                <IconTicket size={20} color={C.textMuted} style={{ position: 'absolute', left: 16, top: '50%', marginTop: -16, zIndex: 1 }} />
+                <TextInput
+                  style={[styles.input, { paddingLeft: 48 }]}
+                  value={manualTicketCode}
+                  onChangeText={(v) => {
+                    setManualTicketCode(v);
+                    if (!keyCodesUnlinked) setManualKeyCode(v);
+                  }}
+                  placeholder={t(locale, "receive.placeholderTicketKeyCode")}
+                  placeholderTextColor={C.textSubtle}
+                  autoCapitalize="characters"
+                  autoCorrect={false}
+                  keyboardType="number-pad"
+                  inputMode="numeric"
+                  maxLength={64}
+                  maxFontSizeMultiplier={2}
+                />
+              </View>
 
               <Pressable
                 onPress={() => {
@@ -2028,82 +2150,35 @@ export default function ReceiveScreen() {
                   <Text style={[styles.inputFieldLabel, { marginTop: theme.space.md }]}>
                     {t(locale, "receive.keyCodeFieldLabel")}
                   </Text>
-                  <TextInput
-                    style={styles.input}
-                    value={manualKeyCode}
-                    onChangeText={setManualKeyCode}
-                    placeholder={t(locale, "receive.placeholderKeyCode")}
-                    placeholderTextColor={C.textSubtle}
-                    autoCapitalize="characters"
-                    autoCorrect={false}
-                    keyboardType="number-pad"
-                    inputMode="numeric"
-                    maxLength={64}
-                    maxFontSizeMultiplier={2}
-                  />
+                  <View style={{ position: 'relative' }}>
+                    <IconKey size={20} color={C.textMuted} style={{ position: 'absolute', left: 16, top: '50%', marginTop: -16, zIndex: 1 }} />
+                    <TextInput
+                      style={[styles.input, { paddingLeft: 48 }]}
+                      value={manualKeyCode}
+                      onChangeText={setManualKeyCode}
+                      placeholder={t(locale, "receive.placeholderKeyCode")}
+                      placeholderTextColor={C.textSubtle}
+                      autoCapitalize="characters"
+                      autoCorrect={false}
+                      keyboardType="number-pad"
+                      inputMode="numeric"
+                      maxLength={64}
+                      maxFontSizeMultiplier={2}
+                    />
+                  </View>
                 </>
               ) : null}
-
-              <Pressable
-                onPress={() => setTicketCodesAcknowledged(!ticketCodesAcknowledged)}
-                style={({ pressed }) => [styles.ackRow, pressed && styles.pressed]}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: ticketCodesAcknowledged }}
-                accessibilityLabel={t(locale, "receive.wizardTicketAck")}
-              >
-                {ticketCodesAcknowledged ? <IconCheckbox size={20} color={C.primary} /> : <IconSquare size={20} color={C.textMuted} />}
-                <Text style={styles.ackRowText}>{t(locale, "receive.wizardTicketAck")}</Text>
-              </Pressable>
-
-              {ticketCodesAcknowledged && manualTicketCode.length >= 2 && (
-                <View style={{ marginTop: theme.space.lg, height: 400 }}>
-                  <TicketQRPanel
-                    locale={locale}
-                    isDark={theme.isDark}
-                    ticketCode={manualTicketCode}
-                    keyCode={keyCodesUnlinked ? manualKeyCode : manualTicketCode}
-                    vehiclePlate={plate}
-                    vehicleBrand={vehBrand}
-                    vehicleModel={vehModel}
-                    driverName={`${driverFirst} ${driverLast}`}
-                    parkingName={displayedReceiveParking?.parking.name}
-                    timestamp={new Date().toISOString()}
-                    colors={{
-                      primary: C.primary,
-                      success: C.success,
-                      text: C.text,
-                      textMuted: C.textMuted,
-                      textSubtle: C.textSubtle,
-                      card: C.card,
-                      border: C.border,
-                    }}
-                    fonts={{
-                      secondary: theme.a11yFont.secondary,
-                      body: theme.a11yFont.body,
-                      button: theme.a11yFont.button,
-                      title: theme.a11yFont.title,
-                    }}
-                    space={{
-                      sm: theme.space.sm,
-                      md: theme.space.md,
-                      lg: theme.space.lg,
-                      xs: theme.space.xs,
-                    }}
-                  />
-                </View>
-              )}
             </>
           )}
 
           {wizardStep === parkingStepNum && (
             <>
-              <Text style={styles.sectionLabel}>{t(locale, "receive.wizardParkingTitle")}</Text>
               <Text style={styles.stepExplain}>{t(locale, "receive.wizardParkingHelp")}</Text>
 
-              <View style={styles.receiveParkingCard}>
+              <View style={styles.bottomCard}>
                 <View style={styles.bottomCardInner}>
                   <View style={styles.bottomIconWrap}>
-                    <IconLocationFilled size={14} color={C.primary} />
+                    <IconLocationFilled size={Math.round(14 * textScale)} fill={C.primary} color={C.primary} />
                   </View>
                   <View style={styles.bottomTextCol}>
                     <View style={styles.bottomTitleRow}>
@@ -2117,7 +2192,7 @@ export default function ReceiveScreen() {
                           accessibilityRole="button"
                           accessibilityLabel={t(locale, "home.chooseParking")}
                         >
-                          <IconList size={18} color={C.primary} />
+                          <IconList size={Math.round(18 * textScale)} color={C.primary} />
                         </Pressable>
                       )}
                     </View>
@@ -2132,9 +2207,6 @@ export default function ReceiveScreen() {
                     )}
                     {locStatus === "denied" && (
                       <Text style={styles.bottomMeta}>{t(locale, "home.nearestDenied")}</Text>
-                    )}
-                    {allParkings.length === 0 && locStatus !== "loading" && (
-                      <Text style={styles.bottomMeta}>{t(locale, "receive.wizardParkingEmpty")}</Text>
                     )}
                     {(locStatus === "ready" || locStatus === "denied") && displayedReceiveParking && (
                       <>
@@ -2186,11 +2258,7 @@ export default function ReceiveScreen() {
 
           {wizardStep === damageStepNum && (
             <>
-              <Text style={styles.sectionLabel}>{t(locale, "receive.wizardDamageTitle")}</Text>
               <Text style={styles.stepExplain}>{t(locale, "receive.damageHeroSub")}</Text>
-
-              <Text style={styles.inputFieldLabel}>{t(locale, "receive.damageSectionPhotos")}</Text>
-              <Text style={styles.help}>{t(locale, "receive.damagePhotosHelp")}</Text>
 
               <View style={styles.damageActionsRow}>
                 <Pressable
@@ -2237,35 +2305,64 @@ export default function ReceiveScreen() {
                   { gap: damageTileGap, marginBottom: theme.space.md },
                 ]}
               >
-                {damagePhotoDataUrls.map((url, index) => (
-                  <View
-                    key={`dmg-${index}`}
+                {damagePhotoDataUrls.length === 0 ? (
+                  <Pressable
                     style={[
                       styles.damageThumbWrap,
+                      styles.damagePlaceholder,
                       {
-                        width: damageThumbSize,
+                        width: "100%",
+                        height: Math.round(damageThumbSize * 0.68),
                       },
                     ]}
+                    onPress={() => void takeDamagePhoto()}
+                    disabled={damagePhotoBusy}
+                    accessibilityLabel={t(locale, "receive.damageCameraA11y")}
                   >
-                    <Image
-                      source={{ uri: url }}
+                    <IconGallery size={32} color={C.textMuted} />
+                    <Text style={styles.damagePlaceholderText}>
+                      {t(locale, "receive.damagePlaceholderText")}
+                    </Text>
+                  </Pressable>
+                ) : null}
+
+                {damagePhotoDataUrls.length === 0 && (
+                  <Text style={styles.stepExplain}>
+                    {t(locale, "receive.damagePhotosHelp")}
+                  </Text>
+                )}
+
+                {damagePhotoDataUrls.length > 0 && (
+                  damagePhotoDataUrls.map((url, index) => (
+                    <View
+                      key={`dmg-${index}`}
                       style={[
-                        styles.damageThumb,
+                        styles.damageThumbWrap,
                         {
-                          height: Math.round(damageThumbSize * 0.68),
+                          width: damageThumbSize,
                         },
                       ]}
-                      resizeMode="cover"
-                    />
-                    <Pressable
-                      style={({ pressed }) => [styles.damageRemoveBtn, pressed && styles.pressed]}
-                      onPress={() => removeDamagePhotoAt(index)}
-                      accessibilityLabel={t(locale, "receive.damageRemovePhotoA11y")}
                     >
-                      <IconCircleX size={24} color="rgba(255,255,255,0.95)" />
-                    </Pressable>
-                  </View>
-                ))}
+                      <Image
+                        source={{ uri: url }}
+                        style={[
+                          styles.damageThumb,
+                          {
+                            height: Math.round(damageThumbSize * 0.68),
+                          },
+                        ]}
+                        resizeMode="cover"
+                      />
+                      <Pressable
+                        style={({ pressed }) => [styles.damageRemoveBtn, pressed && styles.pressed]}
+                        onPress={() => removeDamagePhotoAt(index)}
+                        accessibilityLabel={t(locale, "receive.damageRemovePhotoA11y")}
+                      >
+                        <IconCircleX size={24} color="rgba(255,255,255,0.95)" />
+                      </Pressable>
+                    </View>
+                  ))
+                )}
               </View>
 
               {damagePhotoBusy ? (
@@ -2273,7 +2370,7 @@ export default function ReceiveScreen() {
               ) : null}
 
               <Text style={styles.inputFieldLabel}>{t(locale, "receive.damageNoteLabel")}</Text>
-              <Text style={[styles.damageNoteOptional, { color: C.textMuted }]}>
+              <Text style={styles.stepExplain}>
                 {t(locale, "receive.damageNoteOptional")}
               </Text>
               <TextInput
@@ -2290,7 +2387,6 @@ export default function ReceiveScreen() {
 
           {wizardStep === valetStepNum && (
             <>
-              <Text style={styles.sectionLabel}>{t(locale, "receive.wizardValetStepTitle")}</Text>
               <Text style={styles.stepExplain}>{t(locale, "receive.wizardValetStepHelp")}</Text>
 
               <View style={styles.receiveParkingCard}>
@@ -2312,10 +2408,10 @@ export default function ReceiveScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={t(locale, "receive.valetSelectChoose")}
                       >
-                        <IconList size={16} color={C.primary} />
                         <Text style={[styles.bottomChooseBtnText, { color: C.primary }]}>
                           {t(locale, "receive.valetSelectChoose")}
                         </Text>
+                        <IconList size={16} color={C.primary} />
                       </Pressable>
                     </View>
 
@@ -2407,11 +2503,11 @@ export default function ReceiveScreen() {
               accessibilityLabel={t(locale, "common.cancel")}
             />
             <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
-              <Text style={[styles.modalTitle, { color: C.text }]}>{t(locale, "receive.placeholderBrand")}</Text>
+              <Text style={[styles.modalTitle, { color: C.text, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]}>{t(locale, "receive.placeholderBrand")}</Text>
               {loadingCatalogMakes ? (
                 <View style={{ paddingVertical: theme.space.lg, alignItems: "center" }}>
                   <ActivityIndicator color={C.primary} />
-                  <Text style={{ color: C.textMuted, marginTop: theme.space.sm, fontSize: Math.round(theme.font.secondary * 0.65) }}>
+                  <Text style={{ color: C.textMuted, marginTop: theme.space.sm, fontSize: Math.round(theme.font.secondary * 0.65 * textScale) }}>
                     Cargando marcas...
                   </Text>
                 </View>
@@ -2434,7 +2530,7 @@ export default function ReceiveScreen() {
                         setVehicleBrandModalOpen(false);
                       }}
                     >
-                      <Text style={[styles.parkingRowName, { color: C.primary }]}>
+                      <Text style={[styles.parkingRowName, { color: C.primary, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]}>
                         {t(locale, "receive.manualEntry")}
                       </Text>
                     </Pressable>
@@ -2454,13 +2550,13 @@ export default function ReceiveScreen() {
                         setVehicleBrandModalOpen(false);
                       }}
                     >
-                      <Text style={[styles.parkingRowName, { color: C.text }]} numberOfLines={2}>
+                      <Text style={[styles.parkingRowName, { color: C.text, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]} numberOfLines={2}>
                         {item.name}
                       </Text>
                     </Pressable>
                   )}
                   ListEmptyComponent={
-                    <Text style={{ color: C.textMuted, padding: theme.space.md, fontSize: Math.round(theme.font.secondary * 0.65) }}>
+                    <Text style={{ color: C.textMuted, padding: theme.space.md, fontSize: Math.round(theme.font.secondary * 0.65 * textScale) }}>
                       {t(locale, "receive.brandPickerEmpty")}
                     </Text>
                   }
@@ -2483,11 +2579,11 @@ export default function ReceiveScreen() {
               accessibilityLabel={t(locale, "common.cancel")}
             />
             <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
-              <Text style={[styles.modalTitle, { color: C.text }]}>{t(locale, "receive.placeholderModel")}</Text>
+              <Text style={[styles.modalTitle, { color: C.text, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]}>{t(locale, "receive.placeholderModel")}</Text>
               {loadingCatalogModels ? (
                 <View style={{ paddingVertical: theme.space.lg, alignItems: "center" }}>
                   <ActivityIndicator color={C.primary} />
-                  <Text style={{ color: C.textMuted, marginTop: theme.space.sm, fontSize: Math.round(theme.font.secondary * 0.65) }}>
+                  <Text style={{ color: C.textMuted, marginTop: theme.space.sm, fontSize: Math.round(theme.font.secondary * 0.65 * textScale) }}>
                     Cargando modelos...
                   </Text>
                 </View>
@@ -2509,7 +2605,7 @@ export default function ReceiveScreen() {
                         setVehicleModelModalOpen(false);
                       }}
                     >
-                      <Text style={[styles.parkingRowName, { color: C.primary }]}>
+                      <Text style={[styles.parkingRowName, { color: C.primary, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]}>
                         {t(locale, "receive.manualEntry")}
                       </Text>
                     </Pressable>
@@ -2527,13 +2623,13 @@ export default function ReceiveScreen() {
                         setVehicleModelModalOpen(false);
                       }}
                     >
-                      <Text style={[styles.parkingRowName, { color: C.text }]} numberOfLines={2}>
+                      <Text style={[styles.parkingRowName, { color: C.text, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]} numberOfLines={2}>
                         {item.name}
                       </Text>
                     </Pressable>
                   )}
                   ListEmptyComponent={
-                    <Text style={{ color: C.textMuted, padding: theme.space.md, fontSize: Math.round(theme.font.secondary * 0.65) }}>
+                    <Text style={{ color: C.textMuted, padding: theme.space.md, fontSize: Math.round(theme.font.secondary * 0.65 * textScale) }}>
                       {t(locale, "receive.modelPickerEmpty")}
                     </Text>
                   }
@@ -2556,9 +2652,9 @@ export default function ReceiveScreen() {
               accessibilityLabel={t(locale, "common.cancel")}
             />
             <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
-              <Text style={[styles.modalTitle, { color: C.text }]}>{t(locale, "receive.placeholderColor")}</Text>
+              <Text style={[styles.modalTitle, { color: C.text, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]}>{t(locale, "receive.placeholderColor")}</Text>
               <FlatList
-                data={getVehicleColorOptions(locale)}
+                data={getVehicleColorOptions(locale).sort((a, b) => a.label.localeCompare(b.label))}
                 keyExtractor={(item) => item.value}
                 style={styles.modalList}
                 keyboardShouldPersistTaps="handled"
@@ -2574,7 +2670,7 @@ export default function ReceiveScreen() {
                       setVehicleColorModalOpen(false);
                     }}
                   >
-                    <Text style={[styles.parkingRowName, { color: C.primary }]}>
+                    <Text style={[styles.parkingRowName, { color: C.primary, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]}>
                       {t(locale, "receive.noColorOption")}
                     </Text>
                   </Pressable>
@@ -2591,13 +2687,13 @@ export default function ReceiveScreen() {
                       setVehicleColorModalOpen(false);
                     }}
                   >
-                    <Text style={[styles.parkingRowName, { color: C.text }]} numberOfLines={2}>
+                    <Text style={[styles.parkingRowName, { color: C.text, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]} numberOfLines={2}>
                       {item.label}
                     </Text>
                   </Pressable>
                 )}
                 ListEmptyComponent={
-                  <Text style={{ color: C.textMuted, padding: theme.space.md, fontSize: Math.round(theme.font.secondary * 0.65) }}>
+                  <Text style={{ color: C.textMuted, padding: theme.space.md, fontSize: Math.round(theme.font.secondary * 0.65 * textScale) }}>
                     {t(locale, "receive.colorPickerEmpty")}
                   </Text>
                 }
@@ -2619,11 +2715,9 @@ export default function ReceiveScreen() {
               accessibilityLabel={t(locale, "common.cancel")}
             />
             <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
-              <View style={[styles.bottomTitleRow, { paddingBottom: theme.space.sm, marginBottom: theme.space.sm }]}>
-                <Text style={[styles.modalTitle, { color: C.text, marginBottom: 0 }]}>
-                    {t(locale, "receive.valetSelectPlaceholder")}
-                </Text>
-              </View>
+              <Text style={[styles.modalTitle, { color: C.text, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]}>
+                {t(locale, "receive.valetSelectPlaceholder")}
+              </Text>
               <FlatList
                 data={[...availableValets.map(v => ({ ...v, variant: 'available' as const })), ...busyValets.map(v => ({ ...v, variant: 'busy' as const }))] }
                 keyExtractor={(item) => item.id}
@@ -2653,7 +2747,7 @@ export default function ReceiveScreen() {
                    return null;
                 }}
                 ListEmptyComponent={
-                  <Text style={{ color: C.textMuted, padding: theme.space.md }}>
+                  <Text style={{ color: C.textMuted, padding: theme.space.md, fontSize: Math.round(theme.font.secondary * 0.65 * textScale) }}>
                     {t(locale, "receive.valetDriversEmpty")}
                   </Text>
                 }
@@ -2677,7 +2771,7 @@ export default function ReceiveScreen() {
               accessibilityLabel={t(locale, "common.cancel")}
             />
             <View style={[styles.modalSheet, { backgroundColor: C.card, borderColor: C.border }]}>
-              <Text style={[styles.modalTitle, { color: C.text }]}>
+              <Text style={[styles.modalTitle, { color: C.text, fontSize: Math.round(theme.font.status * 0.65 * textScale) }]}>
                 {t(locale, "home.parkingPickerTitle")}
               </Text>
               <FlatList
@@ -2725,7 +2819,7 @@ type Theme = ReturnType<typeof useValetTheme>;
 function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: number) {
   const C = theme.colors;
   const S = theme.space;
-  const F = theme.font;
+  const F = ticketsA11y.font;
   const R = theme.radius;
   const Fonts = theme.fontFamily;
 
@@ -2741,7 +2835,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       alignItems: "center",
       justifyContent: "space-between",
       paddingHorizontal: sectionPadding,
-      paddingVertical: S.md,
+      paddingVertical: S.xs,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: C.border,
       backgroundColor: C.card,
@@ -2749,7 +2843,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     scroll: { padding: sectionPadding, paddingBottom: S.xl },
     primaryBtnSticky: { marginTop: 0, marginBottom: 0 },
     screenTitle: {
-      fontSize: Math.round(F.secondary * 0.85),
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
       fontFamily: Fonts.primary,
       color: C.text,
@@ -2795,15 +2889,18 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       fontSize: Math.round(F.status * 0.65),
     },
     input: {
-      backgroundColor: C.card,
-      borderWidth: 2,
-      borderColor: C.border,
-      borderRadius: R.button,
-      paddingHorizontal: S.md,
-      paddingVertical: 14,
-      fontSize: Math.round(F.status * 0.65),
-      color: C.text,
+      backgroundColor: theme.auth.inputBg,
+      borderWidth: 1,
+      borderColor: theme.auth.inputBorder,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      paddingLeft: 48,
+      fontSize: Math.round(F.status * 0.6),
+      color: theme.auth.text,
       marginBottom: S.sm,
+      height: 48,
+      textAlign: 'left',
     },
     selectorInput: {
       flexDirection: "row",
@@ -2811,11 +2908,9 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       justifyContent: "space-between",
     },
     selectorInputText: {
-      flex: 1,
       color: C.text,
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.6),
       fontWeight: "600",
-      marginRight: S.sm,
     },
     selectorInputPlaceholder: {
       color: C.textSubtle,
@@ -2908,13 +3003,13 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       backgroundColor: theme.isDark ? "rgba(30, 41, 59, 0.8)" : "rgba(241, 245, 249, 0.9)",
     },
     typeCardIconCard: {
-      backgroundColor: theme.isDark ? "rgba(59, 130, 246, 0.15)" : "rgba(219, 234, 254, 0.6)",
+      backgroundColor: theme.isDark ? "rgba(71, 85, 105, 0.5)" : "rgba(71, 85, 105, 0.15)",
     },
     typeCardIconReservation: {
-      backgroundColor: theme.isDark ? "rgba(139, 92, 246, 0.15)" : "rgba(237, 233, 254, 0.6)",
+      backgroundColor: theme.isDark ? "rgba(37, 99, 235, 0.22)" : "rgba(29, 78, 216, 0.12)",
     },
     typeCardIconDirect: {
-      backgroundColor: theme.isDark ? "rgba(245, 158, 11, 0.15)" : "rgba(254, 243, 199, 0.6)",
+      backgroundColor: theme.isDark ? "rgba(34, 197, 94, 0.2)" : "rgba(22, 163, 74, 0.12)",
     },
     typeCardIconActive: {
       backgroundColor: C.primary,
@@ -3183,7 +3278,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       marginBottom: S.md,
     },
     ticketCodeToggleText: {
-      fontSize: F.secondary,
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "700",
       color: C.primary,
     },
@@ -3193,6 +3288,12 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       marginTop: -4,
       marginBottom: S.md,
       lineHeight: 22,
+    },
+    inputLabel: {
+      fontSize: Math.round(F.status * 0.6),
+      fontWeight: '500',
+      color: C.text,
+      marginBottom: 6,
     },
     ackRow: {
       flexDirection: "row",
@@ -3210,6 +3311,12 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     receiveParkingCard: {
       marginBottom: S.lg,
+    },
+    bottomCard: {
+      paddingHorizontal: S.lg,
+      paddingBottom: S.sm,
+      paddingTop: S.xs,
+      marginHorizontal: -sectionPadding,
     },
     bottomCardInner: {
       flexDirection: "row",
@@ -3231,7 +3338,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       }),
     },
     bottomIconWrap: {
-      marginTop: 36,
+      marginTop: 8,
     },
     bottomTextCol: {
       flex: 1,
@@ -3246,18 +3353,18 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     bottomTitle: {
       fontSize: Math.round(F.status * 0.65),
-      fontWeight: "800",
+      fontWeight: "600",
+      fontFamily: Fonts.primary,
       color: C.textMuted,
-      textTransform: "uppercase",
       letterSpacing: 0.6,
       flex: 1,
       minWidth: 0,
     },
     bottomChooseBtn: {
       flexDirection: "row",
-      alignItems: "center",
+      alignItems: "flex-start",
       gap: 4,
-      paddingVertical: 4,
+      paddingVertical: 0,
       paddingHorizontal: S.xs,
       flexShrink: 0,
     },
@@ -3268,6 +3375,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     bottomManualHint: {
       fontSize: Math.round(F.status * 0.65),
       fontWeight: "700",
+      fontFamily: Fonts.primary,
       marginBottom: 4,
     },
     bottomUseNearestBtn: {
@@ -3276,28 +3384,33 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       paddingVertical: 4,
     },
     bottomUseNearestText: {
-      fontSize: Math.round(F.secondary * 0.75),
-      fontWeight: "800",
+      fontSize: Math.round(F.status * 0.65),
+      fontWeight: "600",
+      fontFamily: Fonts.primary,
     },
     bottomName: {
-      fontSize: F.secondary - 1,
-      fontWeight: "800",
+      fontSize: Math.round(F.status * 0.65),
+      fontWeight: "600",
+      fontFamily: Fonts.primary,
       color: C.text,
     },
     bottomCompany: {
       fontSize: Math.round(F.status * 0.65),
       fontWeight: "600",
+      fontFamily: Fonts.primary,
       color: C.textMuted,
       marginTop: 2,
     },
     bottomMeta: {
-      fontSize: Math.round(F.status * 0.7),
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "700",
+      fontFamily: Fonts.primary,
       color: C.primary,
       marginTop: 2,
     },
     bottomAddr: {
       fontSize: Math.round(F.status * 0.65),
+      fontFamily: Fonts.primary,
       color: C.textSubtle,
       marginTop: 4,
       lineHeight: Math.round(F.status * 0.95),
@@ -3670,21 +3783,38 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     damageActionsRow: {
       flexDirection: "row",
-      gap: S.sm,
-      marginBottom: S.sm,
+      gap: S.md,
+      marginBottom: S.lg,
     },
     damageActionBtnFlex: {
       flex: 1,
       marginBottom: 0,
+      height: 56,
+      borderRadius: 16,
+      shadowColor: C.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 4,
     },
     damageGalleryBtn: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
       gap: S.sm,
+      height: 56,
+      borderRadius: 16,
+      borderWidth: 2,
+      borderColor: C.border,
+      backgroundColor: C.card,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
     },
     damageCountMeta: {
-      fontSize: Math.round(F.secondary * 0.75),
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "700",
       color: C.textMuted,
       marginBottom: S.md,
@@ -3711,16 +3841,32 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       backgroundColor: "rgba(0,0,0,0.45)",
       borderRadius: 999,
     },
+    damagePlaceholder: {
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 2,
+      borderColor: C.border,
+      borderStyle: "dashed",
+      gap: S.sm,
+    },
+    damagePlaceholderText: {
+      fontSize: Math.round(F.status * 0.6),
+      color: C.textMuted,
+      textAlign: "center",
+      marginTop: S.xs,
+    },
     damageNoteOptional: {
-      fontSize: F.secondary - 1,
+      fontSize: Math.round(F.status * 0.65),
       marginTop: -6,
       marginBottom: S.sm,
       lineHeight: 20,
     },
     damageNoteInput: {
-      minHeight: 96,
+      width: "100%",
+      minHeight: 120,
       textAlignVertical: "top",
-      paddingTop: 12,
+      paddingTop: 10,
+      paddingLeft: 16,
     },
     blocked: {
       flex: 1,

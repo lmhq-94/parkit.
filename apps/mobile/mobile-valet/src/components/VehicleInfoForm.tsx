@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@parkit/shared';
-import { IconChevronDown } from '@/components/TablerIcons';
+import { IconChevronDown } from '@/components/Icons';
 
 interface VehicleInfoFormProps {
   locale: Locale;

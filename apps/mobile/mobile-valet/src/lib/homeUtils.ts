@@ -102,12 +102,15 @@ export const AVATAR_PRESENCE_RING = 3;
  * y la escala de texto de accesibilidad
  */
 export function getHeaderSizes(logoSize: number, textScale: number) {
-  // Avatar proporcional al logo (1.25x el tamaño del logo)
-  const avatarSize = Math.round(logoSize * 1.25);
+  // Logo escala con textScale pero con un factor más moderado
+  const scaledLogoSize = Math.round(logoSize * (0.9 + (textScale - 1) * 0.3));
+  
+  // Avatar proporcional al logo (1.4x el tamaño del logo)
+  const avatarSize = Math.round(scaledLogoSize * 1.4);
   
   // Tamaños de texto basados en el logo y escala de accesibilidad
-  const displayNameSize = Math.round(logoSize * 0.65 * textScale);
-  const roleSize = Math.round(logoSize * 0.45 * textScale);
+  const displayNameSize = Math.round(scaledLogoSize * 0.65);
+  const roleSize = Math.round(scaledLogoSize * 0.45);
   
   // Status dot proporcional al avatar
   const statusDotSize = Math.max(10, Math.round(avatarSize * 0.35));
@@ -118,11 +121,11 @@ export function getHeaderSizes(logoSize: number, textScale: number) {
   const badgeFontSize = Math.max(10, Math.round(avatarSize * 0.3 * textScale));
   
   // Espaciado proporcional
-  const gap = Math.round(logoSize * 0.3);
+  const gap = Math.round(scaledLogoSize * 0.3);
   const avatarPadding = Math.round(avatarSize * 0.1);
   
   return {
-    logoSize,
+    logoSize: scaledLogoSize,
     avatarSize,
     displayNameSize,
     roleSize,

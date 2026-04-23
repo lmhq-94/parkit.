@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useValetTheme, ticketsA11y } from '@/theme/valetTheme';
-import { IconUser, IconCar, IconClock } from '@/components/TablerIcons';
+import { IconUser, IconCar, IconClock } from '@/components/Icons';
 
 interface ValetStatusCardProps {
   valet: {

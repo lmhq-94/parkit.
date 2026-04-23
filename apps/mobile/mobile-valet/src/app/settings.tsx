@@ -12,7 +12,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useRouter } from "expo-router";
 import { useLocaleStore, useThemeStore, useAccessibilityStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
-import { IconMinus, IconPlus, IconCircleCheck } from "@/components/TablerIcons";
+import { IconMinus, IconPlus, IconCircleCheck } from "@/components/Icons";
 import type { Locale } from "@parkit/shared";
 import { useMemo } from "react";
 import { useValetTheme, useResponsiveLayout } from "@/theme/valetTheme";
@@ -239,7 +239,7 @@ function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadd
       alignItems: "center",
       justifyContent: "space-between",
       paddingHorizontal: sectionPadding,
-      paddingVertical: S.md,
+      paddingVertical: S.xs,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: C.border,
       backgroundColor: C.card,
@@ -449,10 +449,10 @@ export default function SettingsScreen() {
             </Pressable>
           </View>
 
-          <Text style={styles.sectionTitle}>{t(locale, "settings.accessibilitySection")}</Text>
+          {/* <Text style={styles.sectionTitle}>{t(locale, "settings.accessibilitySection")}</Text>
           <View style={styles.section}>
             <AccessibilitySection />
-          </View>
+          </View> */}
         </ScrollView>
         </View>
       </View>

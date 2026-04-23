@@ -15,7 +15,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { Redirect, useRouter } from "expo-router";
 import { useMemo, useEffect, useState, useCallback, useRef } from "react";
 import React from "react";
-import { IconUser, IconLocationFilled, IconList, IconSettings, IconLogout, IconCar, IconArrowUndo, IconKey, IconKeyOff } from "@/components/TablerIcons";
+import { IconUser, IconLocationFilled, IconList, IconSettings, IconLogout, IconCar, IconArrowUndo, IconKey, IconKeyOff } from "@/components/Icons";
 import { Logo } from "@parkit/shared";
 import api, { clearAuthToken } from "@/lib/api";
 import { useAuthStore, useLocaleStore, useCompanyStore, useParkingPreferenceStore, useAccessibilityStore } from "@/lib/store";
@@ -34,7 +34,7 @@ import {
 } from "@/lib/homeUtils";
 import { AnimatedGridTile } from "@/components/AnimatedGridTile";
 import { WorkflowTile } from "@/components/WorkflowTile";
-import { HeaderAnimatedView, AvatarPulseView } from "@/components/ReanimatedWrappers";
+import { HeaderAnimatedView } from "@/components/ReanimatedWrappers";
 import { LinearGradient } from "expo-linear-gradient";
 
 // Static font sizes for error boundary (fallback UI when theme is not available)
@@ -188,8 +188,8 @@ function HomeScreenContent() {
   }, [user, displayedParking?.parking, displayedParking?.parking?.id, displayedParking?.parking?.companyId]);
 
   const styles = useMemo(
-    () => createStyles(theme, shortestSide, isTablet, isLandscape),
-    [theme, shortestSide, isTablet, isLandscape]
+    () => createStyles(theme, shortestSide, isTablet, isLandscape, headerSizes),
+    [theme, shortestSide, isTablet, isLandscape, headerSizes]
   );
 
   if (!user) {
@@ -228,7 +228,7 @@ function HomeScreenContent() {
     });
   };
 
-  const headerMaxH = Math.min(96, winH * 0.12);
+  const headerMaxH = Math.min(80, winH * 0.10);
 
   const headerGradientSpec = theme.isDark
     ? ({
@@ -308,46 +308,39 @@ function HomeScreenContent() {
                     accessibilityRole="button"
                     onPress={() => router.push("/profile")}
                   >
-                    <AvatarPulseView
-                      isAvailable={isAvailable}
-                      color={avatarPresenceColor}
-                      size={headerSizes.avatarSize}
-                      reduceMotion={reduceMotion}
+                    <View
+                      style={[
+                        styles.headerAvatarInner,
+                        { 
+                          backgroundColor: theme.isDark ? C.card : "#FFFFFF",
+                          width: headerSizes.avatarSize,
+                          height: headerSizes.avatarSize,
+                          borderRadius: headerSizes.avatarSize / 2,
+                        },
+                      ]}
                     >
-                      <View
-                        style={[
-                          styles.headerAvatarInner,
-                          { 
-                            backgroundColor: theme.isDark ? C.card : "#FFFFFF",
+                      {avatarUri ? (
+                        <Image
+                          source={{ uri: avatarUri }}
+                          style={[styles.headerAvatarImage, { 
                             width: headerSizes.avatarSize,
                             height: headerSizes.avatarSize,
-                            borderRadius: headerSizes.avatarSize / 2,
-                          },
-                        ]}
-                      >
-                        {avatarUri ? (
-                          <Image
-                            source={{ uri: avatarUri }}
-                            style={[styles.headerAvatarImage, { 
-                              width: headerSizes.avatarSize,
-                              height: headerSizes.avatarSize,
-                            }]}
-                            resizeMode="cover"
-                          />
-                        ) : (
-                          <View style={{ 
-                            width: headerSizes.avatarSize, 
-                            height: headerSizes.avatarSize, 
-                            borderRadius: headerSizes.avatarSize / 2,
-                            backgroundColor: theme.isDark ? "rgba(148,163,184,0.15)" : "rgba(100,116,139,0.15)",
-                            alignItems: "center",
-                            justifyContent: "center"
-                          }}>
-                            <IconUser size={headerSizes.avatarSize * 0.5} color={C.textMuted} />
-                          </View>
-                        )}
-                      </View>
-                    </AvatarPulseView>
+                          }]}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View style={{ 
+                          width: headerSizes.avatarSize, 
+                          height: headerSizes.avatarSize, 
+                          borderRadius: headerSizes.avatarSize / 2,
+                          backgroundColor: theme.isDark ? "rgba(148,163,184,0.15)" : "rgba(100,116,139,0.15)",
+                          alignItems: "center",
+                          justifyContent: "center"
+                        }}>
+                          <IconUser size={headerSizes.avatarSize * 0.5} color={C.textMuted} />
+                        </View>
+                      )}
+                    </View>
                     <View style={[
                       styles.statusDotBadge,
                       { 
@@ -632,7 +625,7 @@ function HomeScreenContent() {
 
 type Theme = ReturnType<typeof useValetTheme>;
 
-function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isLandscape: boolean) {
+function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isLandscape: boolean, headerSizes: { avatarSize: number }) {
   const C = theme.colors;
   const S = theme.space;
   const F = ticketsA11y.font;
@@ -657,8 +650,8 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
     },
     heroPlain: {
       paddingHorizontal: S.lg,
-      paddingTop: S.md,
-      paddingBottom: S.md + 2,
+      paddingTop: S.sm,
+      paddingBottom: S.sm,
       overflow: "hidden",
       borderBottomLeftRadius: HEADER_RADIUS_BOTTOM,
       borderBottomRightRadius: HEADER_RADIUS_BOTTOM,
@@ -910,9 +903,9 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       borderColor: theme.isDark ? "rgba(6, 182, 212, 0.25)" : "rgba(14, 116, 144, 0.15)",
     },
     tileIconWrap: {
-      width: 56,
-      height: 56,
-      borderRadius: 28,
+      width: headerSizes.avatarSize,
+      height: headerSizes.avatarSize,
+      borderRadius: headerSizes.avatarSize / 2,
       alignItems: "center",
       justifyContent: "center",
       marginBottom: S.sm + 2,

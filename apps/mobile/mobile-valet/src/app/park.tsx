@@ -16,7 +16,7 @@ import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
-import { IconCamera, IconGallery, IconCircleX } from "@/components/TablerIcons";
+import { IconCamera, IconGallery, IconCircleX } from "@/components/Icons";
 import api from "@/lib/api";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";

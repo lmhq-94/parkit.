@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@parkit/shared';
-import { IconCard, IconCash } from '@/components/TablerIcons';
+import { IconCard, IconCash } from '@/components/Icons';
 
 interface ReceptionTypeSelectorProps {
   locale: Locale;

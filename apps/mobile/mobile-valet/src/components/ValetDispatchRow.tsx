@@ -5,6 +5,7 @@ import type { ValetOpt } from "@/types/receive";
 import type { useValetTheme } from "@/theme/valetTheme";
 import { valetAvatarColors, valetInitials } from "@/lib/valetAvatar";
 import { t } from "@/lib/i18n";
+import { IconCircleCheck, IconClock } from "@/components/Icons";
 
 type Theme = ReturnType<typeof useValetTheme>;
 
@@ -108,10 +109,12 @@ export function ValetDispatchRow(props: ValetDispatchRowProps) {
           </View>
           {badgeVariant === "available" ? (
             <View style={styles.valetStatusBadgeAvailable}>
+              <IconCircleCheck size={12} color={theme.isDark ? "#86EFAC" : "#166534"} />
               <Text style={styles.valetStatusBadgeAvailableText}>{statusBadgeShort}</Text>
             </View>
           ) : (
             <View style={styles.valetStatusBadgeBusy}>
+              <IconClock size={12} color={theme.isDark ? "#FCD34D" : "#92400E"} />
               <Text style={styles.valetStatusBadgeBusyText}>{statusBadgeShort}</Text>
             </View>
           )}
@@ -176,11 +179,14 @@ export function createValetRowStyles(theme: Theme) {
       marginTop: 2,
     },
     valetStatusBadgeAvailable: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
       borderRadius: 999,
       borderWidth: 1,
       borderColor: theme.isDark ? "rgba(34,197,94,0.45)" : "rgba(22,163,74,0.35)",
       backgroundColor: theme.isDark ? "rgba(34,197,94,0.18)" : "rgba(34,197,94,0.12)",
-      paddingVertical: 5,
+      paddingVertical: 6,
       paddingHorizontal: S.sm,
     },
     valetStatusBadgeAvailableText: {
@@ -191,11 +197,14 @@ export function createValetRowStyles(theme: Theme) {
       letterSpacing: 0.5,
     },
     valetStatusBadgeBusy: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
       borderRadius: 999,
       borderWidth: 1,
       borderColor: theme.isDark ? "rgba(245,158,11,0.5)" : "rgba(217,119,6,0.35)",
       backgroundColor: theme.isDark ? "rgba(245,158,11,0.18)" : "rgba(245,158,11,0.12)",
-      paddingVertical: 5,
+      paddingVertical: 6,
       paddingHorizontal: S.sm,
     },
     valetStatusBadgeBusyText: {

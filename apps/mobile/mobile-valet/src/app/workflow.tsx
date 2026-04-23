@@ -7,7 +7,7 @@ import { t } from "@/lib/i18n";
 import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
 import { ValetBackButton } from "@/components/ValetBackButton";
 import { ValetStatusCard } from "@/components/ValetStatusCard";
-import { IconUsersGroup, IconCar, IconClock } from "@/components/TablerIcons";
+import { IconUsersGroup, IconCar, IconClock } from "@/components/Icons";
 
 export default function WorkflowScreen() {
   const router = useRouter();

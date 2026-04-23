@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { useValetTheme, ticketsA11y } from "@/theme/valetTheme";
 import { useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
-import { IconUsersGroup } from "@/components/TablerIcons";
+import { IconUsersGroup } from "@/components/Icons";
 import { useEffect, useState } from "react";
 import { parkitTilePalette } from "@/lib/homeUtils";
 import api from "@/lib/api";

@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from "react-native";
 import { useValetTheme } from "@/theme/valetTheme";
-import { IconCircleArrowLeft } from "@/components/TablerIcons";
+import { IconCircleArrowLeft } from "@/components/Icons";
 
 /**
  * - `auth`: mismo estilo que login (franja oscura).

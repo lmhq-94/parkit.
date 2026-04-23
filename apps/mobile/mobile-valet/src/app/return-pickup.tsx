@@ -14,7 +14,7 @@ import { Redirect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthStore, useLocaleStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
-import { IconHandStop, IconCar, IconArrowUndo } from "@/components/TablerIcons";
+import { IconHandStop, IconCar, IconArrowUndo } from "@/components/Icons";
 import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
 import { useValetProfileSync } from "@/lib/useValetProfileSync";
 import { useCompanyContext } from "@/lib/useCompanyContext";
@@ -304,7 +304,7 @@ type Theme = ReturnType<typeof useValetTheme>;
 function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: number) {
   const C = theme.colors;
   const S = theme.space;
-  const F = theme.a11yFont;
+  const F = ticketsA11y.font;
   const R = theme.radius;
   const Fonts = theme.fontFamily;
 
@@ -321,7 +321,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       alignItems: "center",
       justifyContent: "space-between",
       paddingHorizontal: sectionPadding,
-      paddingVertical: S.md,
+      paddingVertical: S.xs,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: C.border,
       backgroundColor: C.card,
@@ -332,7 +332,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       paddingBottom: S.xl,
     },
     screenTitle: {
-      fontSize: Math.round(F.secondary * 0.85),
+      fontSize: Math.round(F.status * 0.65),
       fontWeight: "800",
       fontFamily: Fonts.primary,
       color: C.text,
@@ -346,15 +346,17 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       lineHeight: 22,
     },
     input: {
-      backgroundColor: C.card,
-      borderWidth: 2,
-      borderColor: C.border,
-      borderRadius: R.button,
-      paddingHorizontal: S.md,
-      paddingVertical: 14,
-      fontSize: Math.round(F.status * 0.65),
-      color: C.text,
+      backgroundColor: theme.auth.inputBg,
+      borderWidth: 1,
+      borderColor: theme.auth.inputBorder,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      paddingLeft: 48,
+      fontSize: Math.round(F.status * 0.6),
+      color: theme.auth.text,
       marginBottom: S.lg,
+      height: 48,
     },
     ticketCard: {
       backgroundColor: C.card,

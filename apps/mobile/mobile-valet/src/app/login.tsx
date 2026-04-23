@@ -9,9 +9,10 @@ import { AnimatedFormCard } from "@/components/AnimatedFormCard";
 import { AnimatedBackButton } from "@/components/AnimatedBackButton";
 import { useValetTheme, ACCENT, useResponsiveLayout } from "@/theme/valetTheme";
 import { Logo, getAppVersionString } from "@parkit/shared";
-import { login, getStoredCredentials } from "@/lib/auth";
-import { GoogleIcon, MicrosoftIcon, FacebookIcon } from "@/components/OAuthIcons";
-import { IconMail, IconLock, IconEye, IconEyeOff } from "@/components/TablerIcons";
+import { login, getStoredCredentials, translateError } from "@/lib/auth";
+import { GoogleIcon as _GoogleIcon, MicrosoftIcon as _MicrosoftIcon, FacebookIcon as _FacebookIcon } from "@/components/OAuthIcons";
+import { IconMail, IconLock, IconEye, IconEyeOff } from "@/components/Icons";
+import { AuthMessage } from "@/components/AuthMessage";
 
 const LOGO_SIZE = 72;
 
@@ -27,7 +28,7 @@ export default function LoginScreen() {
   const { setUser } = useAuthStore();
   const { auth: a } = theme;
   const F = theme.font;
-  const [oauthLoading, _setOauthLoading] = useState<string | null>(null);
+  const [_oauthLoading, _setOauthLoading] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -88,7 +89,7 @@ export default function LoginScreen() {
           alignItems: "center",
           paddingHorizontal: Math.max(12, responsive.horizontalPadding - 12),
           paddingTop: 8,
-          paddingBottom: 16,
+          paddingBottom: 8,
           width: "100%",
           maxWidth: responsive.formMaxWidth,
           alignSelf: "center",
@@ -128,13 +129,6 @@ export default function LoginScreen() {
           fontSize: Math.round(F.status * 0.6 * textScale),
           fontWeight: "600",
           color: a.text,
-          marginBottom: 20,
-          textAlign: "center",
-        },
-        errorText: {
-          fontSize: Math.round(F.status * 0.55 * textScale),
-          fontWeight: "500",
-          color: "#EF4444",
           marginBottom: 20,
           textAlign: "center",
         },
@@ -225,18 +219,18 @@ export default function LoginScreen() {
           borderColor: a.inputBorder,
           borderRadius: 12,
           paddingHorizontal: 16,
-          paddingVertical: 16,
+          paddingVertical: 12,
           paddingLeft: 48,
           paddingRight: 48,
           fontSize: Math.round(F.status * 0.6 * textScale),
           color: a.text,
-          height: CONTROL_HEIGHT,
+          height: CONTROL_HEIGHT - 8,
         },
         inputIcon: {
           position: 'absolute',
           left: 16,
           top: '50%',
-          marginTop: -12,
+          marginTop: -10,
           zIndex: 1,
         },
 inputLabel: {
@@ -249,7 +243,7 @@ inputLabel: {
           position: 'absolute',
           right: 16,
           top: '50%',
-          marginTop: -12,
+          marginTop: -10,
           padding: 4,
           zIndex: 1,
         },
@@ -301,7 +295,7 @@ inputLabel: {
     [a, responsive.formMaxWidth, responsive.horizontalPadding, F, textScale]
   );
 
-  const versionLabel = t(locale, "welcome.version", {
+  const _versionLabel = t(locale, "welcome.version", {
     version: getAppVersionString() || "â",
   });
 
@@ -343,9 +337,6 @@ inputLabel: {
           <AnimatedFormCard ref={formCardRef} isVisible={true} animationType="slide_from_bottom">
             <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom, 12) }]}>
               <Text style={styles.ctaText}>Acceso para Personal de Valet</Text>
-              {error && (
-                <Text style={styles.errorText}>{error}</Text>
-              )}
               
 <Text style={styles.inputLabel}>Correo Electrónico</Text>
               <View style={styles.inputContainer}>
@@ -427,7 +418,7 @@ inputLabel: {
                   setUser(result.user);
                   router.replace("/home");
                 } else {
-                  setError(result.error || t(locale, "auth.login.failed"));
+                  setError(result.error ? translateError(result.error, locale, t) : t(locale, "auth.login.failed"));
                 }
               }}
               style={({ pressed }) => [styles.btnPrimary, pressed && styles.btnPressed]}
@@ -440,6 +431,9 @@ inputLabel: {
               )}
             </Pressable>
             
+            {error && (
+              <AuthMessage type="error" message={error} />
+            )}
                         </View>
           </AnimatedFormCard>
             </View>

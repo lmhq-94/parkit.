@@ -1,8 +1,40 @@
 import * as SecureStore from 'expo-secure-store';
-import type { User } from "@parkit/shared";
+import type { User, Locale } from "@parkit/shared";
 import api, { setAuthToken, clearAuthToken } from './api';
 
 export type { User };
+
+export const translateError = (errorMessage: string, locale: Locale, t: (locale: Locale, key: string) => string): string => {
+  const lowerError = errorMessage.toLowerCase();
+  
+  if (lowerError.includes('invalid credentials') || lowerError.includes('incorrect password')) {
+    return t(locale, 'auth.login.failed');
+  }
+  if (lowerError.includes('user not found') || lowerError.includes('email not found')) {
+    return t(locale, 'auth.login.failed');
+  }
+  if (lowerError.includes('email already exists') || lowerError.includes('user already exists')) {
+    return t(locale, 'auth.signup.emailExists');
+  }
+  if (lowerError.includes('company inactive')) {
+    return t(locale, 'auth.errorCompanyInactive');
+  }
+  if (lowerError.includes('account pending') || lowerError.includes('pending activation')) {
+    return t(locale, 'auth.errorAccountPending');
+  }
+  if (lowerError.includes('invalid invite') || lowerError.includes('invitation')) {
+    return t(locale, 'auth.errorInvalidInvite');
+  }
+  if (lowerError.includes('invalid reset') || lowerError.includes('reset link')) {
+    return t(locale, 'auth.errorInvalidReset');
+  }
+  if (lowerError.includes('invalid code')) {
+    return t(locale, 'auth.errorInvalidCode');
+  }
+  
+  // Default fallback
+  return t(locale, 'auth.errorGeneric');
+};
 
 export const saveUser = async (user: User) => {
   await SecureStore.setItemAsync('user', JSON.stringify(user));

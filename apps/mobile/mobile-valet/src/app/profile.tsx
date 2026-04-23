@@ -15,11 +15,11 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { IconUser, IconChevronRight, IconCircleCheck, IconCalendar, IconMail, IconClipboardText, IconCar } from "@/components/TablerIcons";
+import { IconUser, IconChevronRight, IconCircleCheck, IconCalendar, IconMail, IconClipboardText, IconCar, IconPhone } from "@/components/Icons";
 import * as ImagePicker from "expo-image-picker";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import type { ValetStaffRole } from "@parkit/shared";
-import { useAuthStore, useLocaleStore } from "@/lib/store";
+import { useAuthStore, useLocaleStore, useAccessibilityStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { useValetTheme, ticketsA11y, useResponsiveLayout } from "@/theme/valetTheme";
 import { ValetBackButton } from "@/components/ValetBackButton";
@@ -54,12 +54,13 @@ export default function ProfileScreen() {
   const router = useRouter();
   const locale = useLocaleStore((s) => s.locale);
   const { user, mergeUser } = useAuthStore();
+  const { textScale } = useAccessibilityStore();
   const theme = useValetTheme();
   const responsive = useResponsiveLayout();
   const insets = useSafeAreaInsets();
   const styles = useMemo(
-    () => createStyles(theme, responsive.contentMaxWidth, responsive.sectionPadding),
-    [theme, responsive.contentMaxWidth, responsive.sectionPadding]
+    () => createStyles(theme, responsive.contentMaxWidth, responsive.sectionPadding, textScale),
+    [theme, responsive.contentMaxWidth, responsive.sectionPadding, textScale]
   );
   const C = theme.colors;
   const feedback = useMemo(() => createFeedback(locale), [locale]);
@@ -527,7 +528,7 @@ export default function ProfileScreen() {
                   <Text style={{ color: C.logout }}> *</Text>
                 </Text>
                 <View style={styles.inputContainer}>
-                  <IconUser size={24} color={C.textMuted} style={styles.inputIcon} />
+                  <IconUser size={20} color={C.textMuted} style={styles.inputIcon} />
                   <TextInput
                     style={[
                       styles.input,
@@ -554,7 +555,7 @@ export default function ProfileScreen() {
                   <Text style={{ color: C.logout }}> *</Text>
                 </Text>
                 <View style={styles.inputContainer}>
-                  <IconUser size={24} color={C.textMuted} style={styles.inputIcon} />
+                  <IconUser size={20} color={C.textMuted} style={styles.inputIcon} />
                   <TextInput
                     style={[
                       styles.input,
@@ -581,7 +582,7 @@ export default function ProfileScreen() {
               <Text style={{ color: C.logout }}> *</Text>
             </Text>
             <View style={styles.inputContainer}>
-              <IconMail size={24} color={C.textMuted} style={styles.inputIcon} />
+              <IconMail size={20} color={C.textMuted} style={styles.inputIcon} />
               <TextInput
                 style={[
                   styles.input,
@@ -602,7 +603,7 @@ export default function ProfileScreen() {
 
             <Text style={styles.label}>{t(locale, "profile.phone")}</Text>
             <View style={styles.inputContainer}>
-              <IconUser size={24} color={C.textMuted} style={styles.inputIcon} />
+              <IconPhone size={20} color={C.textMuted} style={styles.inputIcon} />
               <TextInput
                 style={[
                   styles.input,
@@ -816,7 +817,7 @@ export default function ProfileScreen() {
 
 type Theme = ReturnType<typeof useValetTheme>;
 
-function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: number) {
+function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: number, textScale: number) {
   const C = theme.colors;
   const S = theme.space;
   const F = ticketsA11y.font;
@@ -837,7 +838,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       alignItems: "center",
       justifyContent: "space-between",
       paddingHorizontal: sectionPadding,
-      paddingVertical: S.md,
+      paddingVertical: S.xs,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: C.border,
       backgroundColor: C.card,
@@ -846,7 +847,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     headerTitle: {
       flex: 1,
       textAlign: "center",
-      fontSize: Math.round(F.secondary * 0.85),
+      fontSize: Math.round(F.secondary * 0.85 * textScale),
       fontWeight: "800",
       fontFamily: Fonts.primary,
       color: C.text,
@@ -857,15 +858,15 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       alignItems: "center",
       gap: S.md,
     },
-    loadingText: { fontSize: Math.round(F.status * 0.65), fontFamily: Fonts.primary, color: C.textMuted },
+    loadingText: { fontSize: Math.round(F.status * 0.65 * textScale), fontFamily: Fonts.primary, color: C.textMuted },
     scroll: { flex: 1 },
     scrollContent: {
       paddingHorizontal: sectionPadding,
-      paddingTop: S.sm,
+      paddingTop: S.lg,
       paddingBottom: S.xl,
     },
     intro: {
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.65 * textScale),
       fontFamily: Fonts.primary,
       color: C.textMuted,
       lineHeight: 24,
@@ -874,14 +875,14 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     avatarBlock: { alignItems: "center", marginBottom: S.lg },
     avatarSub: {
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.65 * textScale),
       fontFamily: Fonts.primary,
       textAlign: "center",
       marginTop: S.sm,
       fontWeight: "500",
     },
     avatarHint: {
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.65 * textScale),
       fontFamily: Fonts.primary,
       textAlign: "center",
       marginTop: S.sm,
@@ -907,7 +908,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderWidth: 2,
     },
     avatarChipText: {
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.65 * textScale),
       fontWeight: "800",
       fontFamily: Fonts.primary,
     },
@@ -928,7 +929,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       backgroundColor: theme.isDark ? "rgba(148,163,184,0.12)" : "rgba(15,23,42,0.06)",
     },
     avatarInitials: {
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.65 * textScale),
       fontWeight: "800",
       fontFamily: Fonts.primary,
       color: C.text,
@@ -936,18 +937,17 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     secondaryLink: { paddingVertical: S.xs },
     secondaryLinkText: {
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.65 * textScale),
       fontWeight: "700",
       fontFamily: Fonts.primary,
       color: C.primary,
     },
     dangerText: { color: C.logout },
     label: {
-      fontSize: Math.round(F.status * 0.65),
-      fontWeight: "800",
+      fontSize: Math.round(F.status * 0.6 * textScale),
+      fontWeight: "500",
       fontFamily: Fonts.primary,
-      color: C.textMuted,
-      letterSpacing: 0.6,
+      color: C.text,
       marginBottom: 6,
     },
     pickerRow: {
@@ -962,12 +962,12 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     pickerRowText: { flex: 1, minWidth: 0 },
     pickerRowTitle: {
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.65 * textScale),
       fontWeight: "800",
       fontFamily: Fonts.primary,
     },
     pickerRowSub: {
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.65 * textScale),
       fontWeight: "600",
       fontFamily: Fonts.primary,
       marginTop: 4,
@@ -991,7 +991,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       paddingBottom: S.lg,
     },
     modalTitle: {
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.65 * textScale),
       fontWeight: "800",
       fontFamily: Fonts.primary,
       textAlign: "center",
@@ -1010,35 +1010,35 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
     },
     roleRowText: { flex: 1, minWidth: 0 },
     roleRowName: {
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.65 * textScale),
       fontWeight: "500",
       fontFamily: Fonts.primary,
     },
     roleRowAddr: {
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.65 * textScale),
       fontFamily: Fonts.primary,
       marginTop: 4,
       lineHeight: Math.round(F.status * 0.85),
     },
     input: {
-      backgroundColor: C.card,
-      borderWidth: 2,
-      borderColor: C.border,
+      backgroundColor: theme.auth.inputBg,
+      borderWidth: 1,
+      borderColor: theme.auth.inputBorder,
       borderRadius: 12,
       paddingHorizontal: 16,
-      paddingVertical: 16,
+      paddingVertical: 12,
       paddingLeft: 48,
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.6 * textScale),
       fontFamily: Fonts.primary,
-      color: C.text,
+      color: theme.auth.text,
       marginBottom: S.xs,
-      minHeight: 56,
+      height: 48,
     },
     inputIcon: {
       position: "absolute",
       left: 16,
       top: "50%",
-      marginTop: -12,
+      marginTop: -14,
       zIndex: 1,
     },
     inputContainer: {
@@ -1057,7 +1057,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       marginBottom: 20,
     },
     roleLabel: {
-      fontSize: Math.round(F.status * 0.6),
+      fontSize: Math.round(F.status * 0.6 * textScale),
       fontWeight: "600",
       color: C.text,
       marginBottom: 12,
@@ -1093,7 +1093,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       gap: 6,
     },
     roleButtonText: {
-      fontSize: Math.round(F.status * 0.52),
+      fontSize: Math.round(F.status * 0.52 * textScale),
       fontWeight: '700',
       color: C.textMuted,
       textAlign: 'center',
@@ -1103,7 +1103,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       color: '#FFFFFF',
     },
     fieldError: {
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.65 * textScale),
       fontWeight: "600",
       fontFamily: Fonts.primary,
       color: C.logout,
@@ -1126,7 +1126,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       shadowRadius: 8,
       elevation: 4,
     },
-    primaryBtnText: { color: "#fff", fontWeight: "600", fontSize: Math.round(F.status * 0.65), fontFamily: Fonts.primary, letterSpacing: 0.5 },
+    primaryBtnText: { color: "#fff", fontWeight: "600", fontSize: Math.round(F.status * 0.65 * textScale), fontFamily: Fonts.primary, letterSpacing: 0.5 },
     btnDisabled: { opacity: 0.5 },
     pressed: { opacity: 0.9 },
     licenseDivider: {
@@ -1135,14 +1135,14 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       marginVertical: S.lg,
     },
     sectionDriver: {
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.65 * textScale),
       fontWeight: "800",
       fontFamily: Fonts.primary,
       color: C.text,
       marginBottom: S.sm,
     },
     helper: {
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.65 * textScale),
       fontFamily: Fonts.primary,
       lineHeight: 18,
       marginBottom: S.sm,
@@ -1177,7 +1177,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       justifyContent: "center",
     },
     modalDoneBtnText: {
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.65 * textScale),
       fontWeight: "800",
       fontFamily: Fonts.primary,
     },
@@ -1206,7 +1206,7 @@ function createStyles(theme: Theme, contentMaxWidth: number, sectionPadding: num
       borderBottomColor: C.border,
     },
     iosExpiryToolbarBtn: {
-      fontSize: Math.round(F.status * 0.65),
+      fontSize: Math.round(F.status * 0.65 * textScale),
       fontWeight: "600",
       fontFamily: Fonts.primary,
     },

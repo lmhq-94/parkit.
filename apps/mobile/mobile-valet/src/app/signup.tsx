@@ -9,8 +9,9 @@ import { AnimatedFormCard } from "@/components/AnimatedFormCard";
 import { AnimatedBackButton } from "@/components/AnimatedBackButton";
 import { useValetTheme, useResponsiveLayout } from "@/theme/valetTheme";
 import { Logo } from "@parkit/shared";
-import { signup } from "@/lib/auth";
-import { IconMail, IconLock, IconUser, IconEye, IconEyeOff, IconClipboardText, IconCar } from "@/components/TablerIcons";
+import { signup, translateError } from "@/lib/auth";
+import { IconMail, IconLock, IconUser, IconEye, IconEyeOff, IconClipboardText, IconCar } from "@/components/Icons";
+import { AuthMessage } from "@/components/AuthMessage";
 
 const LOGO_SIZE = 72;
 
@@ -75,7 +76,7 @@ export default function SignupScreen() {
           alignItems: "center",
           paddingHorizontal: Math.max(12, responsive.horizontalPadding - 12),
           paddingTop: 8,
-          paddingBottom: 16,
+          paddingBottom: 8,
           width: "100%",
           maxWidth: responsive.formMaxWidth,
           alignSelf: "center",
@@ -115,13 +116,6 @@ export default function SignupScreen() {
           fontSize: Math.round(F.status * 0.65 * textScale),
           fontWeight: "600",
           color: a.text,
-          marginBottom: 20,
-          textAlign: "center",
-        },
-        errorText: {
-          fontSize: Math.round(F.status * 0.55 * textScale),
-          fontWeight: "500",
-          color: "#EF4444",
           marginBottom: 20,
           textAlign: "center",
         },
@@ -242,7 +236,7 @@ export default function SignupScreen() {
           position: 'absolute',
           left: 16,
           top: '50%',
-          marginTop: -12,
+          marginTop: -10,
           zIndex: 1,
         },
         inputLabel: {
@@ -305,9 +299,6 @@ export default function SignupScreen() {
           <AnimatedFormCard ref={formCardRef} isVisible={true} animationType="slide_from_bottom">
             <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom, 12) }]}>
               <Text style={styles.ctaText}>Únete a Nuestro Equipo de Valet</Text>
-              {error && (
-                <Text style={styles.errorText}>{error}</Text>
-              )}
               
               <View style={styles.roleSelection}>
                 <Text style={styles.roleLabel}>Función</Text>
@@ -462,7 +453,7 @@ export default function SignupScreen() {
                     setUser(result.user);
                     router.replace("/home");
                   } else {
-                    setError(result.error || t(locale, "auth.signup.failed"));
+                    setError(result.error ? translateError(result.error, locale, t) : t(locale, "auth.signup.failed"));
                   }
                 }}
                 style={({ pressed }) => [styles.btnPrimary, pressed && styles.btnPressed]}
@@ -474,6 +465,10 @@ export default function SignupScreen() {
                   <Text style={styles.btnPrimaryText}>Registrarse</Text>
                 )}
               </Pressable>
+              
+              {error && (
+                <AuthMessage type="error" message={error} />
+              )}
             </View>
           </AnimatedFormCard>
         </View>

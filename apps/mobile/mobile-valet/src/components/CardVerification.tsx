@@ -9,7 +9,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Linking from 'expo-linking';
 import { t } from '@/lib/i18n';
-import { IconCircleCheck, IconShieldCheck, IconAlertCircle, IconArrowRight, IconScan, IconExternalLink, IconCard } from '@/components/TablerIcons';
+import { IconCircleCheck, IconShieldCheck, IconAlertCircle, IconArrowRight, IconScan, IconExternalLink, IconCard } from '@/components/Icons';
 import type { Locale } from '@parkit/shared';
 import api from '@/lib/api';
 import { messageFromAxios } from "@parkit/shared";

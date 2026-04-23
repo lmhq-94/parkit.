@@ -6,18 +6,17 @@ import {
   Platform,
   ActivityIndicator,
   useWindowDimensions,
-  Animated,
-  Easing,
   Modal,
 } from "react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import { IconQrCode } from "@/components/TablerIcons";
+import { IconQrCode, IconCircleCheck, IconAlertCircle } from "@/components/Icons";
 import type { Locale } from "@parkit/shared";
 import { t } from "@/lib/i18n";
 import type { useValetTheme } from "@/theme/valetTheme";
+import { useAccessibilityStore } from "@/lib/store";
 
 type Theme = ReturnType<typeof useValetTheme>;
 
@@ -33,11 +32,13 @@ type Props = {
   variant?: "default" | "premium";
   /** Mientras se valida el código en servidor. */
   validating?: boolean;
+  /** Mensaje de validación (éxito/error) para mostrar en línea. */
+  validationMessage?: { type: 'success' | 'error' | null; text: string };
 };
 
-const CORNER_LEN = 28;
-const CORNER_THICK = 3;
-const ACCENT_GLOW = "rgba(56, 189, 248, 0.95)";
+const CORNER_LEN = 32;
+const CORNER_THICK = 2.5;
+const ACCENT_GLOW = "rgba(255, 255, 255, 0.6)";
 
 /**
  * Vista previa de cámara + escaneo QR para enlazar una reserva (flujo valet).
@@ -51,12 +52,15 @@ export function ReservationQrPanel({
   pauseAfterScan,
   variant = "default",
   validating = false,
+  validationMessage,
 }: Props) {
   const { width: winW, height: winH } = useWindowDimensions();
   const safeInsets = useSafeAreaInsets();
   const [permission, requestPermission] = useCameraPermissions();
   const [permissionModalOpen, setPermissionModalOpen] = useState(false);
   const handledRef = useRef(false);
+  const { textScale } = useAccessibilityStore();
+  const F = theme.font;
   /**
    * Android / expo-camera: si `onBarcodeScanned` activa el analizador antes de que
    * `barcodeScannerSettings` quede aplicado en nativo, el BarcodeAnalyzer se crea con
@@ -104,52 +108,6 @@ export function ReservationQrPanel({
   const handleCancelPermission = useCallback(() => {
     setPermissionModalOpen(false);
   }, []);
-
-  const scanLineAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (variant !== "premium" || pauseAfterScan) return;
-    const lineLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(scanLineAnim, {
-          toValue: 1,
-          duration: 2400,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(scanLineAnim, {
-          toValue: 0,
-          duration: 0,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    lineLoop.start();
-    return () => lineLoop.stop();
-  }, [variant, pauseAfterScan, scanLineAnim]);
-
-  useEffect(() => {
-    if (variant !== "premium") return;
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1600,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 0,
-          duration: 1600,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulse.start();
-    return () => pulse.stop();
-  }, [variant, pulseAnim]);
 
   const handleBarCodeScanned = useCallback(
     ({ data }: { data: string }) => {
@@ -226,15 +184,7 @@ export function ReservationQrPanel({
 
   if (variant === "premium") {
     const frameW = Math.min(winW * 0.76, Math.min(300, winH * 0.42));
-    const mask = "rgba(2, 6, 23, 0.72)";
-    const lineTranslate = scanLineAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [8, frameW - 16],
-    });
-    const cornerOpacity = pulseAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0.75, 1],
-    });
+    const mask = "rgba(2, 6, 23, 0.45)";
 
     return (
       <View style={styles.premiumRoot}>
@@ -264,51 +214,20 @@ export function ReservationQrPanel({
           <View style={[styles.premiumMaskBand, { backgroundColor: mask }]} />
         </View>
 
-        {/* Marco, esquinas y línea de escaneo */}
+        {/* Marco minimalista */}
         <View style={styles.premiumFrameLayer} pointerEvents="none">
           <View style={[styles.premiumFrameBox, { width: frameW, height: frameW }]}>
-            <Animated.View style={[styles.cornerTL, { opacity: cornerOpacity }]} />
-            <Animated.View style={[styles.cornerTR, { opacity: cornerOpacity }]} />
-            <Animated.View style={[styles.cornerBL, { opacity: cornerOpacity }]} />
-            <Animated.View style={[styles.cornerBR, { opacity: cornerOpacity }]} />
-
-            <LinearGradient
-              colors={["transparent", ACCENT_GLOW, "transparent"]}
-              start={{ x: 0, y: 0.5 }}
-              end={{ x: 1, y: 0.5 }}
-              style={styles.premiumFrameHairline}
-            />
-
-            {!pauseAfterScan && (
-              <Animated.View
-                style={[
-                  styles.scanLine,
-                  {
-                    transform: [{ translateY: lineTranslate }],
-                  },
-                ]}
-              >
-                <LinearGradient
-                  colors={["transparent", "rgba(56, 189, 248, 0.9)", "transparent"]}
-                  start={{ x: 0.5, y: 0 }}
-                  end={{ x: 0.5, y: 1 }}
-                  style={StyleSheet.absoluteFill}
-                />
-              </Animated.View>
-            )}
+            <View style={styles.frameBorder} />
           </View>
         </View>
 
         {/* Texto superior: compacto para no invadir el marco central del QR */}
         <View style={styles.premiumHeader} pointerEvents="none">
           <LinearGradient
-            colors={["rgba(2,6,23,0.92)", "rgba(2,6,23,0)"]}
+            colors={["rgba(2,6,23,0.88)", "rgba(2,6,23,0)"]}
             style={StyleSheet.absoluteFill}
             pointerEvents="none"
           />
-          <Text style={styles.premiumTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>
-            {t(locale, "receive.qrPremiumTitle")}
-          </Text>
           <Text style={styles.premiumSubtitle} numberOfLines={2}>
             {t(locale, "receive.qrPremiumSubtitle")}
           </Text>
@@ -324,7 +243,32 @@ export function ReservationQrPanel({
           >
             <View style={styles.validatingCard}>
               <ActivityIndicator color={ACCENT_GLOW} size="small" />
-              <Text style={styles.validatingText}>{t(locale, "receive.qrValidating")}</Text>
+              <Text style={[styles.validatingText, { fontSize: Math.round(F.status * 0.65 * textScale) }]}>{t(locale, "receive.qrValidating")}</Text>
+            </View>
+          </View>
+        )}
+
+        {validationMessage && validationMessage.type && (
+          <View
+            style={[
+              styles.validatingBottomStrip,
+              { paddingBottom: Math.max(safeInsets.bottom, 12) },
+            ]}
+            pointerEvents="none"
+          >
+            <View style={[
+              styles.validatingCard,
+              validationMessage.type === 'success' && styles.validatingCardSuccess,
+              validationMessage.type === 'error' && styles.validatingCardError
+            ]}>
+              {validationMessage.type === 'success' && <IconCircleCheck size={16} color="#10B981" />}
+              {validationMessage.type === 'error' && <IconAlertCircle size={16} color="#EF4444" />}
+              <Text style={[
+                styles.validatingText,
+                { fontSize: Math.round(F.status * 0.65 * textScale) },
+                validationMessage.type === 'success' && styles.validatingTextSuccess,
+                validationMessage.type === 'error' && styles.validatingTextError
+              ]}>{validationMessage.text}</Text>
             </View>
           </View>
         )}
@@ -393,45 +337,43 @@ export function createQrStyles(theme: Theme, safeInsets: { bottom: number }, lay
     premiumFrameBox: {
       position: "relative",
     },
-    premiumFrameHairline: {
+    frameBorder: {
       ...StyleSheet.absoluteFillObject,
-      opacity: 0.45,
-    },
-    scanLine: {
-      position: "absolute",
-      left: 12,
-      right: 12,
-      height: 2,
-      top: 0,
-      overflow: "hidden",
+      borderWidth: 1,
+      borderColor: "rgba(255, 255, 255, 0.15)",
+      borderRadius: 12,
     },
     cornerTL: {
       ...cornerBase,
-      top: -2,
-      left: -2,
+      top: -1,
+      left: -1,
       borderTopWidth: CORNER_THICK,
       borderLeftWidth: CORNER_THICK,
+      borderTopLeftRadius: 8,
     },
     cornerTR: {
       ...cornerBase,
-      top: -2,
-      right: -2,
+      top: -1,
+      right: -1,
       borderTopWidth: CORNER_THICK,
       borderRightWidth: CORNER_THICK,
+      borderTopRightRadius: 8,
     },
     cornerBL: {
       ...cornerBase,
-      bottom: -2,
-      left: -2,
+      bottom: -1,
+      left: -1,
       borderBottomWidth: CORNER_THICK,
       borderLeftWidth: CORNER_THICK,
+      borderBottomLeftRadius: 8,
     },
     cornerBR: {
       ...cornerBase,
-      bottom: -2,
-      right: -2,
+      bottom: -1,
+      right: -1,
       borderBottomWidth: CORNER_THICK,
       borderRightWidth: CORNER_THICK,
+      borderBottomRightRadius: 8,
     },
     premiumHeader: {
       position: "absolute",
@@ -486,11 +428,24 @@ export function createQrStyles(theme: Theme, safeInsets: { bottom: number }, lay
       borderColor: "rgba(56, 189, 248, 0.35)",
       maxWidth: "100%",
     },
+    validatingCardSuccess: {
+      backgroundColor: "rgba(16, 185, 129, 0.15)",
+      borderColor: "rgba(16, 185, 129, 0.5)",
+    },
+    validatingCardError: {
+      backgroundColor: "rgba(239, 68, 68, 0.15)",
+      borderColor: "rgba(239, 68, 68, 0.5)",
+    },
     validatingText: {
       flexShrink: 1,
-      fontSize: Math.round(F.status * 0.65),
       fontWeight: "600",
       color: "#E2E8F0",
+    },
+    validatingTextSuccess: {
+      color: "#10B981",
+    },
+    validatingTextError: {
+      color: "#EF4444",
     },
     permissionBoxPremium: {
       flex: 1,

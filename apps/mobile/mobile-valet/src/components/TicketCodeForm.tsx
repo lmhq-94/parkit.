@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
-import { IconCheck } from '@/components/TablerIcons';
+import { IconCheck } from '@/components/Icons';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@parkit/shared';
 

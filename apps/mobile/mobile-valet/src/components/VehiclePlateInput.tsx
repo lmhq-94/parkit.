@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TextInput, ActivityIndicator, StyleSheet } from 'react-native';
-import { IconCircleCheck } from '@/components/TablerIcons';
+import { IconCircleCheck, IconCar, IconLicensePlate } from '@/components/Icons';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@parkit/shared';
 import { formatPlate } from '@parkit/shared';
@@ -12,6 +12,10 @@ interface Vehicle {
   model: string;
   color?: string | null;
   year?: number | null;
+  length?: number | null;
+  width?: number | null;
+  height?: number | null;
+  weight?: number | null;
   owners?: Array<{
     client: {
       user: {
@@ -39,10 +43,14 @@ interface VehiclePlateInputProps {
     card: string;
     border: string;
     text: string;
+    inputBg: string;
+    inputBorder: string;
+    [key: string]: string;
   };
   fonts: {
     secondary: number;
     body: number;
+    status: number;
   };
   space: {
     sm: number;
@@ -70,32 +78,50 @@ export function VehiclePlateInput({
 
   const styles = StyleSheet.create({
     sectionLabel: {
-      fontSize: Math.round(F.secondary * 0.85),
+      fontSize: Math.round(F.secondary * 0.65),
       fontWeight: '800',
       color: C.text,
-      marginBottom: S.sm,
-      textTransform: 'uppercase',
+      marginBottom: S.md,
       letterSpacing: 0.6,
     },
     stepExplain: {
-      fontSize: Math.round(F.secondary * 0.65),
+      fontSize: Math.round(F.secondary * 0.6),
       fontWeight: '600',
       color: C.textMuted,
       marginTop: -4,
       marginBottom: S.md,
       lineHeight: 22,
     },
+    inputLabel: {
+      fontSize: Math.round(F.status * 0.6),
+      fontWeight: '500',
+      color: C.text,
+      marginBottom: 6,
+    },
     input: {
-      backgroundColor: C.card,
-      borderWidth: 2,
-      borderColor: C.border,
-      borderRadius: 14,
-      paddingHorizontal: S.md,
-      paddingVertical: 14,
-      fontSize: Math.round(F.secondary * 0.65),
+      backgroundColor: C.inputBg,
+      borderWidth: 1,
+      borderColor: C.inputBorder,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      paddingLeft: 48,
+      fontSize: Math.round(F.status * 0.6),
       fontWeight: '600',
       color: C.text,
       marginBottom: S.sm,
+      height: 48,
+    },
+    inputContainer: {
+      position: 'relative',
+      marginBottom: 16,
+    },
+    inputIcon: {
+      position: 'absolute',
+      left: 16,
+      top: '50%',
+      marginTop: -16,
+      zIndex: 1,
     },
     row: {
       flexDirection: 'row',
@@ -104,61 +130,85 @@ export function VehiclePlateInput({
       marginBottom: S.md,
     },
     inlineLoadingText: {
-      fontSize: Math.round(F.secondary * 0.65),
+      fontSize: Math.round(F.secondary * 0.6),
       color: C.textSubtle,
       lineHeight: 20,
       marginBottom: 0,
     },
     card: {
       backgroundColor: C.card,
-      borderRadius: 16,
+      borderRadius: 24,
       padding: 20,
-      borderWidth: 1,
-      borderColor: C.border,
+      borderWidth: 0,
       marginBottom: S.md,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 16,
+      elevation: 2,
     },
     vehicleFoundCard: {
-      borderColor: 'rgba(16, 185, 129, 0.35)',
-      backgroundColor: 'rgba(16, 185, 129, 0.06)',
+      backgroundColor: 'rgba(16, 185, 129, 0.08)',
+      borderWidth: 1,
+      borderColor: 'rgba(16, 185, 129, 0.15)',
     },
     vehicleNotFoundCard: {
-      borderColor: 'rgba(249, 115, 22, 0.35)',
-      backgroundColor: 'rgba(249, 115, 22, 0.06)',
+      backgroundColor: 'rgba(249, 115, 22, 0.08)',
+      borderWidth: 1,
+      borderColor: 'rgba(249, 115, 22, 0.15)',
     },
     vehicleFoundHeader: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      marginBottom: S.xs,
+      justifyContent: 'flex-start',
+      marginBottom: 16,
     },
-    vehicleFoundBadge: {
+    vehicleFoundIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: 'rgba(16, 185, 129, 0.15)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 12,
+    },
+    vehicleNotFoundHeader: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
-      borderRadius: 999,
-      paddingVertical: 4,
-      paddingHorizontal: S.sm,
-      backgroundColor: 'rgba(16, 185, 129, 0.12)',
+      marginBottom: 16,
+    },
+    vehicleNotFoundIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: 'rgba(249, 115, 22, 0.15)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 12,
+    },
+    vehicleFoundTitle: {
+      fontSize: Math.round(F.secondary * 0.7),
+      fontWeight: '700',
+      color: C.text,
+      marginBottom: 4,
+      flex: 1,
+    },
+    vehicleFoundSubtitle: {
+      fontSize: Math.round(F.secondary * 0.6),
+      fontWeight: '500',
+      color: C.success,
     },
     vehicleNotFoundTitle: {
-      fontSize: Math.round(F.secondary * 0.65),
+      fontSize: Math.round(F.secondary * 0.7),
       fontWeight: '700',
-      color: C.warning,
-      letterSpacing: 0.2,
-      marginBottom: S.xs,
+      color: C.text,
+      marginBottom: 4,
+      flex: 1,
     },
-    vehicleFoundBadgeText: {
-      fontSize: Math.round(F.secondary * 0.75),
-      fontWeight: '800',
-      color: C.success,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-    },
-    vehicleNotFoundMessage: {
-      fontSize: Math.round(F.secondary * 0.65),
+    vehicleNotFoundSubtitle: {
+      fontSize: Math.round(F.secondary * 0.6),
       fontWeight: '500',
-      color: C.textMuted,
-      lineHeight: 22,
+      color: C.warning,
     },
     vehicleSummaryRow: {
       flexDirection: 'row',
@@ -175,21 +225,20 @@ export function VehiclePlateInput({
     },
     vehicleSummaryLabel: {
       flexShrink: 1,
-      fontSize: Math.round(F.secondary * 0.8),
+      fontSize: Math.round(F.secondary * 0.6),
       fontWeight: '700',
       color: C.textMuted,
-      textTransform: 'uppercase',
       letterSpacing: 0.4,
     },
     vehicleSummaryValue: {
       flex: 1,
       textAlign: 'right',
-      fontSize: Math.round(F.secondary * 0.85),
+      fontSize: Math.round(F.secondary * 0.6),
       fontWeight: '800',
       color: C.text,
     },
     cardHint: {
-      fontSize: Math.round(F.body * 0.9),
+      fontSize: Math.round(F.secondary * 0.6),
       color: C.textMuted,
       marginTop: S.sm,
       lineHeight: 22,
@@ -200,15 +249,19 @@ export function VehiclePlateInput({
     <>
       <Text style={styles.stepExplain}>{t(locale, 'receive.wizardPlateHelp')}</Text>
 
-      <TextInput
-        style={styles.input}
-        value={plate}
-        onChangeText={handleChange}
-        placeholder={t(locale, 'receive.placeholderPlate')}
-        placeholderTextColor={C.textSubtle}
-        autoCapitalize="characters"
-        maxFontSizeMultiplier={2}
-      />
+      <Text style={styles.inputLabel}>{t(locale, 'receive.labelPlate')}</Text>
+      <View style={styles.inputContainer}>
+        <IconLicensePlate size={20} color={C.textMuted} style={styles.inputIcon} />
+        <TextInput
+          style={styles.input}
+          value={plate}
+          onChangeText={handleChange}
+          placeholder={t(locale, 'receive.placeholderPlate')}
+          placeholderTextColor={C.textSubtle}
+          autoCapitalize="characters"
+          maxFontSizeMultiplier={2}
+        />
+      </View>
 
       {lookupLoading && (
         <View style={styles.row}>
@@ -220,14 +273,13 @@ export function VehiclePlateInput({
       {vehicleResolved && vehicle && (
         <View style={[styles.card, styles.vehicleFoundCard]}>
           <View style={styles.vehicleFoundHeader}>
-            <View style={styles.vehicleFoundBadge}>
-              <IconCircleCheck size={16} color={C.success} />
-              <Text style={styles.vehicleFoundBadgeText}>{t(locale, 'receive.foundVehicle')}</Text>
+            <View style={styles.vehicleFoundIcon}>
+              <IconCircleCheck size={20} color={C.success} />
             </View>
-          </View>
-          <View style={styles.vehicleSummaryRow}>
-            <Text style={styles.vehicleSummaryLabel}>{t(locale, 'receive.wizardPlateTitle')}</Text>
-            <Text style={styles.vehicleSummaryValue}>{formatPlate(vehicle.plate)}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.vehicleFoundTitle} numberOfLines={1}>{t(locale, 'receive.foundVehicle')}</Text>
+              <Text style={styles.vehicleFoundSubtitle} numberOfLines={1}>{formatPlate(vehicle.plate)}</Text>
+            </View>
           </View>
           <View style={styles.vehicleSummaryRow}>
             <Text style={styles.vehicleSummaryLabel}>{t(locale, 'receive.wizardVehicleTitle')}</Text>
@@ -235,6 +287,16 @@ export function VehiclePlateInput({
               {vehicle.brand} {vehicle.model}
             </Text>
           </View>
+          {(vehicle.length || vehicle.width || vehicle.height || vehicle.weight) && (
+            <View style={styles.vehicleSummaryRow}>
+              <Text style={styles.vehicleSummaryLabel}>Dimensiones</Text>
+              <Text style={styles.vehicleSummaryValue}>
+                {vehicle.length && `${vehicle.length}m`} {vehicle.width && `× ${vehicle.width}m`} {vehicle.height && `× ${vehicle.height}m`}
+                {vehicle.weight && (vehicle.length || vehicle.width || vehicle.height) ? ' | ' : ''}
+                {vehicle.weight && `${vehicle.weight}kg`}
+              </Text>
+            </View>
+          )}
           {vehicle.owners?.length ? (
             <View style={[styles.vehicleSummaryRow, styles.vehicleSummaryRowLast]}>
               <Text style={styles.vehicleSummaryLabel}>{t(locale, 'receive.foundOwner')}</Text>
@@ -250,8 +312,15 @@ export function VehiclePlateInput({
 
       {vehicleResolved && !vehicle && plateLooksValid && (
         <View style={[styles.card, styles.vehicleNotFoundCard]}>
-          <Text style={styles.vehicleNotFoundTitle}>{t(locale, 'receive.newVehicleTitle')}</Text>
-          <Text style={styles.vehicleNotFoundMessage}>{t(locale, 'receive.newVehicleHint')}</Text>
+          <View style={styles.vehicleNotFoundHeader}>
+            <View style={styles.vehicleNotFoundIcon}>
+              <IconCar size={20} color={C.warning} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.vehicleNotFoundTitle} numberOfLines={1}>{t(locale, 'receive.newVehicleTitle')}</Text>
+              <Text style={styles.vehicleNotFoundSubtitle} numberOfLines={2}>{t(locale, 'receive.newVehicleHint')}</Text>
+            </View>
+          </View>
         </View>
       )}
     </>

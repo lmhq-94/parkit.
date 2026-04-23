@@ -121,7 +121,7 @@ function homeColors(isDark: boolean): HomeThemeColors {
     };
   }
   return {
-    bg: "#F1F5F9",
+    bg: "#FFFFFF",
     card: "#FFFFFF",
     text: "#0F172A",
     textMuted: "#475569",

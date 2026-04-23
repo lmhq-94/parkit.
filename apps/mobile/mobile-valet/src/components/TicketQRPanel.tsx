@@ -8,7 +8,7 @@ import {
   Dimensions,
   Share,
 } from 'react-native';
-import { IconAlertCircle, IconClose, IconQrCode, IconCar, IconPrint, IconShare } from '@/components/TablerIcons';
+import { IconAlertCircle, IconClose, IconQrCode, IconCar, IconPrint, IconShare } from '@/components/Icons';
 import QRCode from 'qrcode';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@parkit/shared';

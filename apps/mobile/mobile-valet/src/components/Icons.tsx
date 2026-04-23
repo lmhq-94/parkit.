@@ -7,15 +7,15 @@ interface IconProps extends SvgProps {
   strokeWidth?: number;
 }
 
-const createIcon = (paths: string[], displayName: string): React.FC<IconProps> => {
+const createIcon = (paths: string[], displayName: string, fill = false): React.FC<IconProps> => {
   const Component = ({ size = 24, color = 'currentColor', strokeWidth = 2, ...props }: IconProps) => (
     <Svg
       width={size}
       height={size}
       viewBox="0 0 24 24"
-      fill="none"
-      stroke={color}
-      strokeWidth={strokeWidth}
+      fill={fill ? color : "none"}
+      stroke={fill ? "none" : color}
+      strokeWidth={fill ? undefined : strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       {...props}
@@ -46,7 +46,7 @@ export const IconClose = createIcon(['M6 6l12 12', 'M18 6l-12 12'], 'IconClose')
 export const IconRefresh = createIcon(['M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4', 'M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4'], 'IconRefresh');
 export const IconHandStop = createIcon(['M18 11v-6a2 2 0 0 0 -2 -2', 'M14 10v-5a2 2 0 0 0 -2 -2', 'M10 10v-5a2 2 0 0 0 -2 -2', 'M6 11v-5a2 2 0 0 0 -2 -2', 'M10 17v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2 -2v-5h-10z'], 'IconHandStop');
 export const IconUser = createIcon(['M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0', 'M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2'], 'IconUser');
-export const IconCamera = createIcon(['M1 4h16', 'M5 4v16', 'M17 4v16', 'M7 4h10', 'M8 9h8', 'M8 13h8', 'M8 17h8', 'M3 20h18', 'M3 4v16'], 'IconCamera');
+export const IconCamera = createIcon(['M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2', 'M9 13a3 3 0 1 0 6 0a3 3 0 0 0 -6 0'], 'IconCamera');
 export const IconPlus = createIcon(['M12 5l0 14', 'M5 12l14 0'], 'IconPlus');
 export const IconEdit = createIcon(['M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1', 'M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z', 'M16 5l3 3'], 'IconEdit');
 export const IconTrash = createIcon(['M4 7h16', 'M10 11v6', 'M14 11v6', 'M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12', 'M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3'], 'IconTrash');
@@ -68,34 +68,21 @@ export const IconHelp = createIcon(['M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0'
 export const IconAdd = createIcon(['M12 5l0 14', 'M5 12l14 0'], 'IconAdd');
 export const IconMinus = createIcon(['M5 12l14 0'], 'IconMinus');
 export const IconPhoto = createIcon(['M15 8h.01', 'M12 20h-7a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h11a2 2 0 0 1 2 2v5', 'M9 13l2 2l4 -4'], 'IconPhoto');
-export const IconGallery = createIcon(['M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z', 'M4 12l4 8l4 -4', 'M16 20l4 -8', 'M16 14l4 -4', 'M8 12l2 -2'], 'IconGallery');
+export const IconGallery = createIcon(['M15 8h.01', 'M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12', 'M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5', 'M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3'], 'IconGallery');
 export const IconLicense = createIcon(['M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z', 'M8 12h8', 'M12 12v-3'], 'IconLicense');
+export const IconLicensePlate = createIcon(['M3 5m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z', 'M6 8v.01', 'M18 8v.01', 'M6 15v.01', 'M18 15v.01'], 'IconLicensePlate');
 export const IconCalendar = createIcon(['M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z', 'M16 3v4', 'M8 3v4', 'M4 14h16', 'M4 18h2', 'M18 18h2', 'M10 18h4'], 'IconCalendar');
 export const IconX = createIcon(['M6 6l12 12', 'M18 6l-12 12'], 'IconX');
 export const IconList = createIcon(['M9 6l11 0', 'M9 12l11 0', 'M9 18l11 0', 'M5 6l0 .01', 'M5 12l0 .01', 'M5 18l0 .01'], 'IconList');
 export const IconUsers = createIcon(['M9 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0', 'M3 20v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2', 'M16 3.13a4 4 0 0 1 0 7.75', 'M21 20v-2a4 4 0 0 0 -3 -3.85'], 'IconUsers');
 export const IconUsersGroup = createIcon(['M10 13a2 2 0 1 0 4 0a2 2 0 0 0 -4 0', 'M8 21v-1a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v1', 'M15 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0', 'M17 10h2a2 2 0 0 1 2 2v1', 'M5 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0', 'M3 13v-1a2 2 0 0 1 2 -2h2'], 'IconUsersGroup');
-export const IconCash = createIcon(['M3 5v14', 'M17 5v14', 'M7 5h10', 'M7 19h10', 'M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0'], 'IconCash');
+export const IconCash = createIcon(['M7 15h-3a1 1 0 0 1 -1 -1v-8a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v3', 'M7 10a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v8a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1l0 -8', 'M12 14a2 2 0 1 0 4 0a2 2 0 0 0 -4 0'], 'IconCash');
 export const IconChevronDown = createIcon(['M6 9l6 6l6 -6'], 'IconChevronDown');
 export const IconMapPin = createIcon(['M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0', 'M12 17.75l4.75 -4.75a7.5 7.5 0 1 0 -9.5 0l4.75 4.75'], 'IconMapPin');
 export const IconLocationFilled = createIcon(['M20.891 2.006l.106 -.006l.13 .008l.09 .016l.123 .035l.107 .046l.1 .057l.09 .067l.082 .075l.052 .059l.082 .116l.052 .096c.047 .1 .077 .206 .09 .316l.005 .106c0 .075 -.008 .149 -.024 .22l-.035 .123l-6.532 18.077a1.55 1.55 0 0 1 -1.409 .903a1.547 1.547 0 0 1 -1.329 -.747l-.065 -.127l-3.352 -6.702l-6.67 -3.336a1.55 1.55 0 0 1 -.898 -1.259l-.006 -.149c0 -.56 .301 -1.072 .841 -1.37l.14 -.07l18.017 -6.506l.106 -.03l.108 -.018z'], 'IconLocationFilled');
-export const IconCircleArrowLeft: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }: IconProps) => (
-  <Svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    {...props}
-  >
-    <Path
-      d="M12 2a10 10 0 0 1 .324 19.995l-.324 .005l-.324 -.005a10 10 0 0 1 .324 -19.995zm.707 5.293a1 1 0 0 0 -1.414 0l-4 4a1.048 1.048 0 0 0 -.083 .094l-.064 .092l-.052 .098l-.044 .11l-.03 .112l-.017 .126l-.003 .075l.004 .09l.007 .058l.025 .118l.035 .105l.054 .113l.043 .07l.071 .095l.054 .058l4 4l.094 .083a1 1 0 0 0 1.32 -1.497l-2.292 -2.293h5.585l.117 -.007a1 1 0 0 0 -.117 -1.993h-5.586l2.293 -2.293l.083 -.094a1 1 0 0 0 -.083 -1.32z"
-      fill={color}
-    />
-  </Svg>
-);
-IconCircleArrowLeft.displayName = 'IconCircleArrowLeft';
+export const IconCircleArrowLeft = createIcon(['M12 2a10 10 0 0 1 .324 19.995l-.324 .005l-.324 -.005a10 10 0 0 1 .324 -19.995zm.707 5.293a1 1 0 0 0 -1.414 0l-4 4a1.048 1.048 0 0 0 -.083 .094l-.064 .092l-.052 .098l-.044 .11l-.03 .112l-.017 .126l-.003 .075l.004 .09l.007 .058l.025 .118l.035 .105l.054 .113l.043 .07l.071 .095l.054 .058l4 4l.094 .083a1 1 0 0 0 1.32 -1.497l-2.292 -2.293h5.585l.117 -.007a1 1 0 0 0 -.117 -1.993h-5.586l2.293 -2.293l.083 -.094a1 1 0 0 0 -.083 -1.32z'], 'IconCircleArrowLeft', true);
 export const IconBell = createIcon(['M12 2a3 3 0 0 0 -3 3v7a5 5 0 0 0 -5 5v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1 -1v-2a5 5 0 0 0 -5 -5v-7a3 3 0 0 0 -3 -3z', 'M21 12a9 9 0 0 1 -9 9', 'M21 12v7a2 2 0 0 0 -2 2h-1'], 'IconBell');
-export const IconTicket = createIcon(['M3 5m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z', 'M8 12h8', 'M8 12v-3h2v3', 'M14 12v-3h2v3', 'M3 10v4', 'M21 10v4'], 'IconTicket');
+export const IconTicket = createIcon(['M15 5l0 2', 'M15 11l0 2', 'M15 17l0 2', 'M5 5h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-3a2 2 0 0 0 0 -4v-3a2 2 0 0 1 2 -2'], 'IconTicket');
 export const IconBuilding = createIcon(['M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z', 'M9 7v1', 'M9 10v1', 'M9 13v1', 'M9 16v1', 'M15 7v1', 'M15 10v1', 'M15 13v1', 'M15 16v1'], 'IconBuilding');
 export const IconResize = createIcon(['M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z', 'M4 10l16 0', 'M10 4l0 16'], 'IconResize');
 export const IconCheckbox = createIcon(['M7 3a4 4 0 0 1 4 4m0 -4a4 4 0 0 1 4 4m-4 -4v8', 'M7 7h10', 'M7 7l2 2l4 -4'], 'IconCheckbox');
@@ -106,3 +93,6 @@ export const IconKey = createIcon(['M16.555 3.843l3.602 3.602a2.877 2.877 0 0 1 
 export const IconKeyOff = createIcon(['M10.17 6.159l2.316 -2.316a2.877 2.877 0 0 1 4.069 0l3.602 3.602a2.877 2.877 0 0 1 0 4.069l-2.33 2.33', 'M14.931 14.948a2.863 2.863 0 0 1 -1.486 -.79l-.301 -.302l-6.558 6.558a2 2 0 0 1 -1.239 .578l-.175 .008h-1.172a1 1 0 0 1 -.993 -.883l-.007 -.117v-1.172a2 2 0 0 1 .467 -1.284l.119 -.13l.414 -.414h2v-2h2v-2l2.144 -2.144l-.301 -.301a2.863 2.863 0 0 1 -.794 -1.504', 'M15 9h.01', 'M3 3l18 18'], 'IconKeyOff');
 export const IconLock = createIcon(['M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6', 'M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0', 'M8 11v-4a4 4 0 1 1 8 0v4'], 'IconLock');
 export const IconClipboardText = createIcon(['M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2', 'M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2', 'M9 12h6', 'M9 16h6'], 'IconClipboardText');
+export const IconPhone = createIcon(['M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2'], 'IconPhone');
+export const IconTag = createIcon(['M6.5 7.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0', 'M3 6v5.172a2 2 0 0 0 .586 1.414l7.71 7.71a2.41 2.41 0 0 0 3.408 0l5.592 -5.592a2.41 2.41 0 0 0 0 -3.408l-7.71 -7.71a2 2 0 0 0 -1.414 -.586h-5.172a3 3 0 0 0 -3 3'], 'IconTag');
+export const IconPalette = createIcon(['M12 21a9 9 0 0 1 0 -18c4.97 0 9 3.582 9 8c0 1.06 -.474 2.078 -1.318 2.828c-.844 .75 -1.989 1.172 -3.182 1.172h-2.5a2 2 0 0 0 -1 3.75a1.3 1.3 0 0 1 -1 2.25', 'M7.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0', 'M11.5 7.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0', 'M15.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0'], 'IconPalette');

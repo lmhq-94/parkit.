@@ -9,9 +9,10 @@ import { AnimatedFormCard } from "@/components/AnimatedFormCard";
 import { AnimatedBackButton } from "@/components/AnimatedBackButton";
 import { useValetTheme, ACCENT, useResponsiveLayout } from "@/theme/valetTheme";
 import { Logo, getAppVersionString } from "@parkit/shared";
-import { forgotPassword } from "@/lib/auth";
-import { GoogleIcon, MicrosoftIcon, FacebookIcon } from "@/components/OAuthIcons";
-import { IconMail } from "@/components/TablerIcons";
+import { forgotPassword, translateError } from "@/lib/auth";
+import { GoogleIcon as _GoogleIcon, MicrosoftIcon as _MicrosoftIcon, FacebookIcon as _FacebookIcon } from "@/components/OAuthIcons";
+import { IconMail } from "@/components/Icons";
+import { AuthMessage } from "@/components/AuthMessage";
 
 const LOGO_SIZE = 72;
 
@@ -26,7 +27,7 @@ export default function ForgotPasswordScreen() {
   const { textScale } = useAccessibilityStore();
   const { auth: a } = theme;
   const F = theme.font;
-  const [oauthLoading, _setOauthLoading] = useState<string | null>(null);
+  const [_oauthLoading, _setOauthLoading] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +50,7 @@ export default function ForgotPasswordScreen() {
     };
   }, []);
 
-  const heroMinHeight = Math.round(140 + LOGO_SIZE + 16);
+  const _heroMinHeight = Math.round(140 + LOGO_SIZE + 16);
 
   const handleBackPress = () => {
     if (formCardRef.current) {
@@ -74,7 +75,7 @@ export default function ForgotPasswordScreen() {
           alignItems: "center",
           paddingHorizontal: Math.max(12, responsive.horizontalPadding - 12),
           paddingTop: 8,
-          paddingBottom: 16,
+          paddingBottom: 8,
           width: "100%",
           maxWidth: responsive.formMaxWidth,
           alignSelf: "center",
@@ -161,17 +162,17 @@ export default function ForgotPasswordScreen() {
           borderColor: a.inputBorder,
           borderRadius: 12,
           paddingHorizontal: 16,
-          paddingVertical: 16,
+          paddingVertical: 12,
           paddingLeft: 48,
-          fontSize: Math.round(F.status * 0.65 * textScale),
+          fontSize: Math.round(F.status * 0.6 * textScale),
           color: a.text,
-          height: CONTROL_HEIGHT,
+          height: CONTROL_HEIGHT - 8,
         },
         inputIcon: {
           position: 'absolute',
           left: 16,
           top: '50%',
-          marginTop: -12,
+          marginTop: -10,
           zIndex: 1,
         },
 inputLabel: {
@@ -220,20 +221,6 @@ inputLabel: {
           color: a.textMuted,
           fontWeight: '500',
         },
-        errorText: {
-          fontSize: Math.round(F.status * 0.55 * textScale),
-          fontWeight: "500",
-          color: "#EF4444",
-          marginBottom: 20,
-          textAlign: "center",
-        },
-        successText: {
-          fontSize: Math.round(F.status * 0.55 * textScale),
-          fontWeight: "500",
-          color: "#10B981",
-          marginBottom: 20,
-          textAlign: "center",
-        },
         oauthContainer: {
           flexDirection: 'row',
           justifyContent: 'center',
@@ -260,7 +247,7 @@ inputLabel: {
     [a, responsive.formMaxWidth, responsive.horizontalPadding, F, textScale]
   );
 
-  const versionLabel = t(locale, "welcome.version", {
+  const _versionLabel = t(locale, "welcome.version", {
     version: getAppVersionString() || "â",
   });
 
@@ -306,12 +293,6 @@ inputLabel: {
             <Text style={styles.explanationText}>
               Ingresa tu correo electrónico y te enviaremos un enlace para que puedas restablecer tu contraseña.
             </Text>
-            {error && (
-              <Text style={styles.errorText}>{error}</Text>
-            )}
-            {success && (
-              <Text style={styles.successText}>Se ha enviado un enlace de recuperación a tu correo.</Text>
-            )}
             
 <Text style={styles.inputLabel}>Correo Electrónico</Text>
             <View style={styles.inputContainer}>
@@ -349,7 +330,7 @@ inputLabel: {
                   setSuccess(true);
                   setEmail("");
                 } else {
-                  setError(result.error || t(locale, "auth.forgotPassword.failed"));
+                  setError(result.error ? translateError(result.error, locale, t) : t(locale, "auth.forgotPassword.failed"));
                 }
               }}
               style={({ pressed }) => [styles.btnPrimary, pressed && styles.btnPressed]}
@@ -361,6 +342,13 @@ inputLabel: {
                 <Text style={styles.btnPrimaryText}>Enviar Enlace de Recuperación</Text>
               )}
             </Pressable>
+            
+            {error && (
+              <AuthMessage type="error" message={error} />
+            )}
+            {success && (
+              <AuthMessage type="success" message="Se ha enviado un enlace de recuperación a tu correo." />
+            )}
             
             <Pressable onPress={() => router.push("/login")}>
               <Text style={styles.forgotPasswordLink}>Volver al Inicio de Sesión</Text>
