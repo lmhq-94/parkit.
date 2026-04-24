@@ -46,11 +46,7 @@ export class ValetsController {
     }
   }
 
-<<<<<<< HEAD
-  /** Estadísticas del flujo de trabajo para el tile de workflow. */
-=======
   /** Workflow statistics for the workflow tile. */
->>>>>>> de8159c (chore: translate Spanish comments to English)
   static async getWorkflowStatus(req: Request, res: Response) {
     try {
       const companyId = req.user!.companyId;
@@ -70,11 +66,7 @@ export class ValetsController {
     }
   }
 
-<<<<<<< HEAD
-  /** Asignaciones del valet logueado (mobile-valet). No requiere company. */
-=======
   /** Logged-in valet's assignments (mobile-valet). Does not require company. */
->>>>>>> de8159c (chore: translate Spanish comments to English)
   static async getMyAssignments(req: Request, res: Response) {
     try {
       const assignments = await ValetsService.getMyAssignments(req.user!.userId);
@@ -164,11 +156,7 @@ export class ValetsController {
     }
   }
 
-<<<<<<< HEAD
-  /** Iniciar wizard del valet. */
-=======
   /** Start valet wizard. */
->>>>>>> de8159c (chore: translate Spanish comments to English)
   static async postMyWizardStart(req: Request, res: Response) {
     try {
       const { wizardType } = req.body as { wizardType: "RECEIVE" | "PARK" | "RETURN" };
@@ -186,11 +174,7 @@ export class ValetsController {
     }
   }
 
-<<<<<<< HEAD
-  /** Terminar wizard del valet. */
-=======
   /** End valet wizard. */
->>>>>>> de8159c (chore: translate Spanish comments to English)
   static async postMyWizardEnd(req: Request, res: Response) {
     try {
       const updated = await ValetsService.endMyWizard(req.user!.userId);
@@ -204,11 +188,7 @@ export class ValetsController {
     }
   }
 
-<<<<<<< HEAD
-  /** Conductores AVAILABLE en el parqueo indicado (empresa = contexto actual). */
-=======
   /** AVAILABLE drivers at the specified parking (company = current context). */
->>>>>>> de8159c (chore: translate Spanish comments to English)
   static async listAvailableDriversAtParking(req: Request, res: Response) {
     try {
       const companyId = req.user!.companyId;

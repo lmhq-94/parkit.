@@ -598,11 +598,7 @@ export class TicketsService {
             }
           }
 
-<<<<<<< HEAD
-          // Para DRIVER: actualizar estado basado en tickets activos
-=======
           // For DRIVER: update status based on active tickets
->>>>>>> de8159c (chore: translate Spanish comments to English)
           if (staffRole === ValetStaffRole.DRIVER || staffRole === null) {
             const activeCount = await tx.ticketAssignment.count({
               where: {
