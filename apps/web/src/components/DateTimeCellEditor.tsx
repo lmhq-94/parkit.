@@ -8,13 +8,13 @@ interface DateTimeCellEditorProps {
   initialValue?: string | null;
   onValueChange: (value: string | null) => void;
   stopEditing?: (preventFocus?: boolean) => void;
-  /** Si true, no se pueden elegir fechas/horas anteriores a ahora (ej. scheduled entry). */
+  /** If true, cannot select dates/times earlier than now (e.g. scheduled entry). */
   minNow?: boolean;
 }
 
 /**
- * Editor de celda que reutiliza el DateTimePickerField del formulario,
- * para tener la misma UX de selector de fecha y hora dentro de la tabla.
+ * Cell editor that reuses the form's DateTimePickerField,
+ * to have the same date/time picker UX inside the table.
  */
 export function DateTimeCellEditor({
   value: valueProp,

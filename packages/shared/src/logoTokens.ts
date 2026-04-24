@@ -1,14 +1,14 @@
 /**
- * Wordmark Parkit — única fuente de verdad para tipografía del logo (web + móvil).
- * Misma fuente física: `apps/web/src/fonts/CalSans.ttf` y `assets/fonts/CalSans.ttf` en apps móviles.
+ * Parkit wordmark — single source of truth for logo typography (web + mobile).
+ * Same physical font: `apps/web/src/fonts/CalSans.ttf` and `assets/fonts/CalSans.ttf` in mobile apps.
  */
 
-/** Familia registrada con `expo-font` / `useFonts` en las apps RN. */
+/** Font family registered with `expo-font` / `useFonts` in RN apps. */
 export const LOGO_FONT_FAMILY_MOBILE = "CalSans" as const;
 
 /**
- * Interletraje del wordmark (ligero ajuste negativo; web y RN comparten este valor).
- * En RN `letterSpacing` va en px → usar `logoLetterSpacingPx(size)`.
+ * Wordmark letter spacing (slight negative adjustment; web and RN share this value).
+ * In RN `letterSpacing` is in px → use `logoLetterSpacingPx(size)`.
  */
 export const LOGO_LETTER_SPACING_EM = -0.02;
 
@@ -16,5 +16,5 @@ export function logoLetterSpacingPx(fontSizePx: number): number {
   return fontSizePx * LOGO_LETTER_SPACING_EM;
 }
 
-/** Misma intención que `font-bold` (700) en la web. */
+/** Same intent as `font-bold` (700) on the web. */
 export const LOGO_FONT_WEIGHT_MOBILE = "800" as const;

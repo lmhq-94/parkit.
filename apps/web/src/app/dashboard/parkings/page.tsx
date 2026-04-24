@@ -134,7 +134,7 @@ export default function ParkingsPage() {
         renderRowDetail={(parking) => {
           const config = parking.dailyPricingConfig;
           
-          // Agrupar días por valores iguales
+          // Group days by equal values
           const dayGroups: Array<{ label: string; days: string[]; data: { pricePerHour?: number; freeBenefitMinutes?: number } }> = [];
           
           if (config) {
@@ -159,7 +159,7 @@ export default function ParkingsPage() {
               const sameValueDays = [day.key];
               processedDays.add(day.key);
               
-              // Buscar días con el mismo valor
+              // Find days with the same value
               for (const otherDay of days) {
                 if (otherDay.key === day.key || processedDays.has(otherDay.key)) continue;
                 
@@ -172,11 +172,11 @@ export default function ParkingsPage() {
                 }
               }
               
-              // Crear rango inteligente
+              // Create smart range
               const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
               const sortedDays = sameValueDays.sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
               
-              // Determinar si es un rango continuo
+              // Determine if it's a continuous range
               const indices = sortedDays.map(d => dayOrder.indexOf(d));
               const isContinuous = indices.every((idx, i) => {
                 if (i === 0) return true;

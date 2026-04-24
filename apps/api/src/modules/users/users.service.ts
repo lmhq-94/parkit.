@@ -3,7 +3,7 @@ import { CreateUserDTO, UpdateUserDTO } from "./users.types";
 import { hashPassword } from "../auth/auth.utils";
 import { SystemRole } from "@prisma/client";
 
-/** Si la empresa está PENDING y este es el primer usuario, la pasa a ACTIVE. */
+/** If the company is PENDING and this is the first user, changes it to ACTIVE. */
 async function activateCompanyIfFirstUser(companyId: string): Promise<void> {
   const company = await prisma.company.findUnique({
     where: { id: companyId },
@@ -19,7 +19,7 @@ async function activateCompanyIfFirstUser(companyId: string): Promise<void> {
   }
 }
 
-/** Si el usuario es CUSTOMER y tiene companyId, crea el registro en Customer (governmentId pendiente). */
+/** If the user is CUSTOMER and has companyId, creates the Customer record (governmentId pending). */
 async function ensureCustomerForCustomer(
   companyId: string,
   user: { id: string; systemRole: string; companyId: string | null }
@@ -107,7 +107,7 @@ export class UsersService {
     return user;
   }
 
-  /** Crea un SUPER_ADMIN (companyId: null). Solo otros SUPER_ADMIN pueden invocar. */
+  /** Creates a SUPER_ADMIN (companyId: null). Only other SUPER_ADMIN can invoke. */
   static async createSuperAdmin(data: { email: string; firstName: string; lastName: string; password?: string }) {
     const exists = await prisma.user.findUnique({
       where: { email: data.email },
@@ -141,14 +141,14 @@ export class UsersService {
     });
   }
 
-  /** Busca un usuario por email (sin restricción de compañía) */
+  /** Finds a user by email (without company restriction) */
   static async getByEmail(email: string) {
     return prisma.user.findUnique({
       where: { email },
     });
   }
 
-  /** Crea un usuario valet (companyId: null, STAFF). Para invitación por super-admin o auto-registro. */
+  /** Creates a valet user (companyId: null, STAFF). For super-admin invitation or self-registration. */
   static async createValetUser(data: {
     email: string;
     firstName: string;
@@ -187,7 +187,7 @@ export class UsersService {
     });
   }
 
-  /** Select sin columnas de invitación (por si la migración no está aplicada). */
+  /** Select without invitation columns (in case migration is not applied). */
   private static readonly listSelectWithoutInvitation = {
     id: true,
     companyId: true,

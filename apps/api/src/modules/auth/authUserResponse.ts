@@ -1,6 +1,6 @@
 import type { SystemRole, ValetStaffRole } from "@prisma/client";
 
-/** Payload de usuario expuesto al cliente (sin secretos). */
+/** User payload exposed to client (without secrets). */
 export type AuthUserResponse = {
   id: string;
   email: string;
@@ -10,7 +10,7 @@ export type AuthUserResponse = {
   companyId?: string;
   phone?: string;
   avatarUrl?: string;
-  /** Solo valets (STAFF con perfil valet). */
+  /** Only valets (STAFF with valet profile). */
   valetStaffRole: ValetStaffRole | null;
 };
 

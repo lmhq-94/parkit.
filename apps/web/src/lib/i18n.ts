@@ -2195,14 +2195,14 @@ export function t(locale: Locale, key: string, vars?: Record<string, string | nu
   return out;
 }
 
-/** Traduce una clave y sustituye {{companyName}} por el nombre de la empresa o "tu empresa"/"your company". */
+/** Translates a key and replaces {{companyName}} with the company name or "your company". */
 export function tWithCompany(locale: Locale, key: string, companyName: string | null): string {
   const str = t(locale, key);
   const name = companyName ?? t(locale, "common.yourCompany");
   return str.replace(/\{\{companyName\}\}/g, name);
 }
 
-/** Traduce un valor de enum; si no hay clave, devuelve el valor original. */
+/** Translates an enum value; if no key exists, returns the original value. */
 export function translateEnum(
   locale: Locale,
   enumKey: string,

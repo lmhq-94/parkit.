@@ -9,7 +9,7 @@ import { CreateParkingSchema, UpdateParkingSchema, UpdateParkingSlotSchema } fro
 const router = Router();
 
 router.get("/has-bookable", requireAuth, requireCompany, ParkingsController.hasAnyRequiringBooking);
-/** Antes de /:id — valets (STAFF) sin empresa fija: todos los parqueos con coordenadas. */
+/** Before /:id — valets (STAFF) without fixed company: all parkings with coordinates. */
 router.get(
   "/valet/all-locations",
   requireAuth,

@@ -6,7 +6,7 @@ import { created, fail, notFound, ok } from "../../shared/utils/response";
 export class TicketsController {
   static async create(req: Request, res: Response) {
     try {
-      // Recepción en app móvil: el conductor asignado es obligatorio.
+      // Mobile app reception: assigned driver is required.
       if (req.user.role === "STAFF") {
         const body = req.body as { driverValetId?: unknown };
         const driverValetId =

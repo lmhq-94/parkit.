@@ -49,9 +49,9 @@ export interface RegisterValetDTO {
   lastName: string;
   email: string;
   password: string;
-  /** Sub-rol STAFF: recepcionista o conductor. */
+  /** STAFF sub-role: receptionist or driver. */
   staffRole: "RECEPTIONIST" | "DRIVER";
-  /** Opcional; registro desde mobile-valet no envía estos campos. */
+  /** Optional; registration from mobile-valet does not send these fields. */
   licenseNumber?: string;
   licenseExpiry?: string;
 }

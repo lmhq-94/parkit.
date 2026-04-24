@@ -217,7 +217,7 @@ export class VehiclesController {
     }
   }
 
-  /** Placa formateada como en web; búsqueda en todo el sistema (STAFF valet). */
+  /** Plate formatted as in web; search across entire system (STAFF valet). */
   static async getByPlateValet(req: Request, res: Response) {
     try {
       const raw = parseQueryParam(req.query.plate as string | string[] | undefined) || "";

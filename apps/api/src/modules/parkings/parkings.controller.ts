@@ -5,7 +5,7 @@ import { CompaniesService } from "../companies/companies.service";
 import { created, fail, notFound, ok } from "../../shared/utils/response";
 
 export class ParkingsController {
-  /** Si la empresa tiene canal con app (requiresCustomerApp), tiene bookings habilitados. */
+  /** If the company has app channel (requiresCustomerApp), has bookings enabled. */
   static async hasAnyRequiringBooking(req: Request, res: Response) {
     try {
       const company = await CompaniesService.getById(req.user.companyId!);
@@ -51,7 +51,7 @@ export class ParkingsController {
     }
   }
 
-  /** Lista global de parqueos con coordenadas (valets rotativos entre empresas). */
+  /** Global list of parkings with coordinates (valets rotate between companies). */
   static async listAllLocationsForValet(_req: Request, res: Response) {
     try {
       const parkings = await ParkingsService.listAllWithCoordinates();

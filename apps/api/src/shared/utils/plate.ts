@@ -1,4 +1,4 @@
-/** Igual que web/mobile: LLL-NNN o solo dígitos (hasta 6). */
+/** Same as web/mobile: LLL-NNN or only digits (up to 6). */
 export function formatPlate(value: string): string {
   const raw = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
   const letters = raw.replace(/[^A-Z]/g, "").slice(0, 3);

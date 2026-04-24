@@ -128,7 +128,7 @@ export class DashboardService {
     // Build the range keys exactly from `from` through effectiveEnd (inclusive)
     // so the chart matches the selected days without offsets.
     const byDay: Record<string, number> = {};
-    let cursor = new Date(Date.UTC(y1, m1 - 1, d1, 12, 0, 0, 0)); // mediodía UTC evita bordes
+    let cursor = new Date(Date.UTC(y1, m1 - 1, d1, 12, 0, 0, 0)); // UTC noon avoids edge cases
     const endCursor = new Date(Date.UTC(
       parseInt(effectiveEndStr.slice(0, 4), 10),
       parseInt(effectiveEndStr.slice(5, 7), 10) - 1,

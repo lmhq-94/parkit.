@@ -12,7 +12,7 @@ export function parseQueryParam(
   return undefined;
 }
 
-/** Devuelve un array de strings para parámetros como status (acepta ?status=A&status=B o ?status=A,B) */
+/** Returns an array of strings for parameters like status (accepts ?status=A&status=B or ?status=A,B) */
 export function parseQueryParamArray(
   value: string | string[] | ParsedQs | ParsedQs[] | undefined
 ): string[] {

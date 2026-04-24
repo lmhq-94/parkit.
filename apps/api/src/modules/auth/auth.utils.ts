@@ -49,7 +49,7 @@ export interface InvitationPayload {
   companyId: string;
   role: SystemRole;
   type: string;
-  // Datos opcionales para valets
+  // Optional data for valets
   valetStaffRole?: ValetStaffRole;
   licenseNumber?: string;
   licenseExpiry?: string;

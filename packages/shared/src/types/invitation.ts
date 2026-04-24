@@ -7,7 +7,7 @@ export interface Invitation {
   email: string;
   companyId: string;
   role: SystemRole;
-  // Campos opcionales para valets
+  // Optional fields for valets
   valetStaffRole?: ValetStaffRole;
   licenseNumber?: string;
   licenseExpiry?: string | Date;

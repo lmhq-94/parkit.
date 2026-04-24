@@ -44,7 +44,7 @@ export class CompaniesService {
     return company ? withNormalizedBranding(company) : null;
   }
 
-  /** Solo branding (respuesta ligera para cargar rápido en login/cambio de empresa). */
+  /** Branding only (light response to load quickly on login/company change). */
   static async getBrandingById(id: string) {
     const row = await prisma.company.findUnique({
       where: { id },
@@ -70,7 +70,7 @@ export class CompaniesService {
     if (data.email !== undefined) updateInput.email = data.email;
     if (data.contactPhone !== undefined) updateInput.contactPhone = data.contactPhone;
     if (data.legalAddress !== undefined) updateInput.legalAddress = data.legalAddress;
-    // brandingConfig se persiste completo (incl. logoImageUrl y bannerImageUrl en base64)
+    // brandingConfig is persisted completely (including logoImageUrl and bannerImageUrl in base64)
     if (data.brandingConfig !== undefined) {
       updateInput.brandingConfig = data.brandingConfig as Prisma.InputJsonValue;
     }

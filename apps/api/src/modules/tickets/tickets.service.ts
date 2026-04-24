@@ -15,7 +15,7 @@ import { PushNotificationsService } from "../pushNotifications/pushNotifications
 
 const MANUAL_CODE_MIN_LEN = 2;
 const MANUAL_CODE_MAX_LEN = 64;
-/** Letras, números, guion y guion bajo (etiquetas físicas / PKT-…). */
+/** Letters, numbers, hyphen and underscore (physical labels / PKT-…). */
 const MANUAL_CODE_PATTERN = /^[A-Za-z0-9\-_]+$/;
 
 async function allocateTicketCodes(tx: Prisma.TransactionClient): Promise<{
@@ -565,7 +565,7 @@ export class TicketsService {
         }
       }
 
-      // Actualizar estado de valets cuando el ticket cambia de estado
+      // Update valet status when ticket changes state
       if (data.status && data.status !== ticket.status) {
         const assigns = await tx.ticketAssignment.findMany({
           where: { ticketId },
@@ -579,11 +579,10 @@ export class TicketsService {
         for (const assign of assigns) {
           const valetId = assign.valet.id;
           const staffRole = assign.valet.staffRole;
-
-          // Para RECEPTIONIST: si el ticket pasa de REQUEST_PARKING a otro estado, liberar
+          // For RECEPTIONIST: if ticket moves from REQUEST_PARKING to another state, release
           if (staffRole === ValetStaffRole.RECEPTIONIST) {
             if (ticket.status === TicketStatus.REQUEST_PARKING && data.status !== TicketStatus.REQUEST_PARKING) {
-              // Contar tickets activos en REQUEST_PARKING para este recepcionista
+              // Count active tickets in REQUEST_PARKING for this receptionist
               const activeCount = await tx.ticketAssignment.count({
                 where: {
                   valetId,
@@ -599,7 +598,11 @@ export class TicketsService {
             }
           }
 
+<<<<<<< HEAD
           // Para DRIVER: actualizar estado basado en tickets activos
+=======
+          // For DRIVER: update status based on active tickets
+>>>>>>> de8159c (chore: translate Spanish comments to English)
           if (staffRole === ValetStaffRole.DRIVER || staffRole === null) {
             const activeCount = await tx.ticketAssignment.count({
               where: {

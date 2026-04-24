@@ -390,7 +390,7 @@ export default function TicketsScreen() {
   const [valetId, setValetId] = useState<string | null>(null);
   const [queueAlertCount, setQueueAlertCount] = useState(0);
 
-  /** Conductor: puede alternar entre ingresos y devoluciones. */
+  /** Driver: can toggle between check-ins and returns. */
   const isDriverUi = user?.valetStaffRole === "DRIVER";
   const { queue } = useLocalSearchParams<{ queue?: string }>();
   const queueMode =

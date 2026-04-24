@@ -1,6 +1,6 @@
 /**
- * Colores por defecto (alineados con logo Parkit: blue-600/500, slate).
- * Light = modo claro, Dark = modo oscuro (mejor contraste).
+ * Default colors (aligned with Parkit logo: blue-600/500, slate).
+ * Light = light mode, Dark = dark mode (better contrast).
  */
 export const DEFAULT_PRIMARY_LIGHT = "#2563eb";
 export const DEFAULT_PRIMARY_DARK = "#3b82f6";
@@ -26,7 +26,7 @@ export type BrandingConfigRaw = {
   [key: string]: unknown;
 };
 
-/** Objeto por defecto para brandingConfig en BD (colores e imágenes por defecto). */
+/** Default object for brandingConfig in DB (default colors and images). */
 export const DEFAULT_BRANDING_CONFIG: BrandingConfigRaw = {
   bannerImageUrl: null,
   logoImageUrl: null,

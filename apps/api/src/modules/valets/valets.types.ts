@@ -9,7 +9,7 @@ export interface UpdateValetDTO {
   licenseNumber?: string;
   licenseExpiry?: string;
   currentParkingId?: string;
-  /** null para limpiar; omitir para no tocar */
+  /** null to clear; omit to not touch */
   ratingAvg?: number | null;
 }
 

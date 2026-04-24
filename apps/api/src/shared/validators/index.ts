@@ -91,7 +91,7 @@ export const CreateUserSchema = z
     systemRole: z.enum(["SUPER_ADMIN", "ADMIN", "STAFF", "CUSTOMER"]).optional(),
     phone: optionalTrimmedNonEmpty,
     timezone: optionalTrimmedNonEmpty,
-    /** Recepción walk-in: obliga a contraseña inmediata (no solo invitación por email). */
+    /** Walk-in reception: requires immediate password (not just email invitation). */
     walkInCustomer: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
@@ -183,9 +183,9 @@ export const UpdateValetMeSchema = z
     /** Comma-separated license types, same as web panel (e.g. "A1, B1"). */
     licenseNumber: z.union([z.string(), z.null()]).optional(),
     licenseExpiry: z.union([z.string().datetime(), z.null()]).optional(),
-    /** Empresa en la que opera el valet (p. ej. flujo recepción / X-Company-Id). */
+    /** Company where the valet operates (e.g. reception flow / X-Company-Id). */
     companyId: z.union([z.string().uuid(), z.null()]).optional(),
-    /** Parqueo físico actual para listados de disponibilidad. */
+    /** Current physical parking for availability listings. */
     currentParkingId: z.union([z.string().uuid(), z.null()]).optional(),
   })
   .refine(
@@ -202,7 +202,7 @@ export type CreateValetInput = z.infer<typeof CreateValetSchema>;
 export type UpdateValetInput = z.infer<typeof UpdateValetSchema>;
 export type UpdateValetMeInput = z.infer<typeof UpdateValetMeSchema>;
 
-/** Presencia explícita del valet (p. ej. AWAY al cerrar sesión en la app). */
+/** Explicit valet presence (e.g. AWAY when logging out in the app). */
 export const ValetMePresenceSchema = z.object({
   status: z.enum(["AWAY", "AVAILABLE"]),
 });
@@ -333,7 +333,7 @@ const IntakeDamagePhotoSchema = z.object({
   ),
 });
 
-/** IDs opcionales: clientes/envíos a veces mandan `null` explícito; Zod `.optional()` no acepta null. */
+/** Optional IDs: customers/shipments sometimes send `null` explicitly; Zod `.optional()` does not accept null. */
 function optionalNonEmptyStringId() {
   return z.preprocess((v) => {
     if (v === null || v === undefined) return undefined;

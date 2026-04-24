@@ -28,7 +28,7 @@ interface AddressPickerModalProps {
   onSelect: (address: string, coords?: AddressPickerCoords, geofenceRadius?: number) => void;
   initialValue?: string;
   countryCode?: string;
-  /** Si se define, se muestra el campo "Radio de geovalla" y se devuelve en onSelect. */
+  /** If defined, shows the "Geofence radius" field and returns it in onSelect. */
   initialGeofenceRadius?: number;
 }
 

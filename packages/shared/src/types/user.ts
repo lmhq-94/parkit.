@@ -1,9 +1,9 @@
 export type SystemRole = "SUPER_ADMIN" | "ADMIN" | "STAFF" | "CUSTOMER";
 
-/** Sub-rol del perfil valet (app móvil valet). */
+/** Valet profile sub-role (valet mobile app). */
 export type ValetStaffRole = "RECEPTIONIST" | "DRIVER";
 
-/** Estado operativo del valet (API / valets/me). */
+/** Valet operational status (API / valets/me). */
 export type ValetOperationalStatus = "AVAILABLE" | "BUSY" | "AWAY";
 
 export interface User {
@@ -13,13 +13,13 @@ export interface User {
   lastName: string;
   systemRole: SystemRole;
   /**
-   * En la mayoría de los casos el usuario pertenece a una empresa.
-   * En algunos contextos (por ejemplo SUPER_ADMIN) puede ser opcional.
+   * In most cases the user belongs to a company.
+   * In some contexts (e.g. SUPER_ADMIN) it can be optional.
    */
   companyId?: string;
-  /** Si el usuario tiene perfil valet (STAFF en app valet). */
+  /** If the user has a valet profile (STAFF in valet app). */
   valetStaffRole?: ValetStaffRole | null;
-  /** Sincronizado desde GET /valets/me cuando aplica. */
+  /** Synchronized from GET /valets/me when applicable. */
   valetCurrentStatus?: ValetOperationalStatus | null;
   phone?: string | null;
   avatarUrl?: string | null;

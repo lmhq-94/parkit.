@@ -12,7 +12,7 @@ import { useToast } from "@/lib/toastStore";
 import { useDashboardStore } from "@/lib/store";
 
 const IL = "w-full pl-10 pr-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-all duration-200 ease-out focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary/20 focus:ring-inset placeholder:text-text-muted";
-/** Input sin icono (mismo estilo que IL en otros formularios). */
+/** Input without icon (same style as IL in other forms). */
 const INPUT = "w-full px-4 py-3 rounded-lg border border-input-border bg-input-bg text-text-primary text-sm transition-all duration-200 ease-out focus:border-company-primary focus:outline-none focus:ring-1 focus:ring-company-primary/20 focus:ring-inset placeholder:text-text-muted";
 const LABEL = "block text-sm font-medium text-text-secondary mb-1.5";
 

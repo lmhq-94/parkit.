@@ -49,7 +49,7 @@ const VALET_STATUS_OPTIONS = [
   { value: "AWAY", key: "AWAY" },
 ] as const;
 
-/** Activo / inactivo (cuenta de usuario), mismo criterio que empleados. */
+/** Active / inactive (user account), same criteria as employees. */
 function ValetAccountStatusCell(
   params: ICellRendererParams<ValetRow> & { t: (key: string) => string }
 ) {
@@ -83,9 +83,9 @@ export default function ValetsPage() {
   const router = useRouter();
   const [refreshToken, setRefreshToken] = useState(0);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  /** Filtro de cuenta de usuario: activo / inactivo (antes que disponibilidad). */
+  /** User account filter: active / inactive (before availability). */
   const [accountFilters, setAccountFilters] = useState<string[]>([]);
-  /** Filtro de disponibilidad del valet (AVAILABLE / BUSY / AWAY). */
+  /** Valet availability filter (AVAILABLE / BUSY / AWAY). */
   const [availabilityFilters, setAvailabilityFilters] = useState<string[]>([]);
 
   const fetchData = useCallback(

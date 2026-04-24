@@ -206,7 +206,7 @@ export class VehiclesService {
     });
   }
 
-  /** Búsqueda global por placa+país (único en BD). Valets rotativos entre empresas. */
+  /** Global search by plate+country (unique in DB). Valets rotate between companies. */
   static async getByPlateGlobal(plate: string, countryCode: string = "CR") {
     return prisma.vehicle.findUnique({
       where: {

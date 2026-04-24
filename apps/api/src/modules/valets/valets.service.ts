@@ -15,7 +15,7 @@ interface CreateValetDTO {
   staffRole: ValetStaffRole;
 }
 
-/** Última actividad del valet (empresa/parking del último ticket asignado). */
+/** Valet's last activity (company/parking of the last assigned ticket). */
 export interface ValetLastActivity {
   companyId?: string | null;
   companyName?: string | null;
@@ -32,7 +32,7 @@ interface UpdateValetDTO {
   staffRole?: ValetStaffRole | null;
 }
 
-/** DTO para PATCH /valets/me (app móvil). */
+/** DTO for PATCH /valets/me (mobile app). */
 export interface PatchValetMeDTO {
   staffRole?: ValetStaffRole;
   licenseNumber?: string | null;
@@ -42,7 +42,7 @@ export interface PatchValetMeDTO {
 }
 
 export class ValetsService {
-  /** Tickets activos que mantienen al valet en BUSY. */
+  /** Active tickets that keep the valet BUSY. */
   static async countActiveTicketAssignments(valetId: string): Promise<number> {
     const assignments = await prisma.ticketAssignment.findMany({
       where: {
@@ -64,8 +64,8 @@ export class ValetsService {
       },
     });
 
-    // Para RECEPTIONIST: solo cuenta tickets en REQUEST_PARKING (fase de recepción)
-    // Para DRIVER: cuenta tickets en cualquier estado activo
+    // For RECEPTIONIST: only counts tickets in REQUEST_PARKING (reception phase)
+    // For DRIVER: counts tickets in any active state
     const valet = await prisma.valet.findUnique({
       where: { id: valetId },
       select: { staffRole: true },
@@ -79,11 +79,11 @@ export class ValetsService {
       ).length;
     }
 
-    // DRIVER o null (legado): cuenta todos los tickets activos
+    // DRIVER or null (legacy): counts all active tickets
     return assignments.length;
   }
 
-  /** Determina si el valet está ocupado basado en wizard y tickets activos. */
+  /** Determines if the valet is busy based on wizard and active tickets. */
   static async isValetBusy(valetId: string): Promise<boolean> {
     const valet = await prisma.valet.findUnique({
       where: { id: valetId },
@@ -92,10 +92,10 @@ export class ValetsService {
 
     if (!valet) return false;
 
-    // Si está en wizard, está ocupado
+    // If in wizard, is busy
     if (valet.isInWizard) return true;
 
-    // Fallback: verificar tickets activos
+    // Fallback: check active tickets
     const activeCount = await ValetsService.countActiveTicketAssignments(valetId);
     return activeCount > 0;
   }
@@ -120,7 +120,7 @@ export class ValetsService {
     });
   }
 
-  /** Latido desde la app: actualiza lastPresenceAt salvo si está AWAY (p. ej. cerró sesión). */
+  /** Heartbeat from app: updates lastPresenceAt unless AWAY (e.g. logged out). */
   static async pingMyPresence(userId: string) {
     const v = await prisma.valet.findUnique({
       where: { userId },
@@ -178,7 +178,7 @@ export class ValetsService {
         ? { currentStatus: ValetStatus.AWAY, lastPresenceAt: null }
         : { currentStatus: ValetStatus.AVAILABLE, lastPresenceAt: new Date() };
 
-    // Si está en wizard, cerrar el wizard al hacer logout
+    // If in wizard, close wizard on logout
     if (status === "AWAY") {
       await prisma.valet.update({
         where: { id: v.id },
@@ -228,7 +228,7 @@ export class ValetsService {
     });
   }
 
-  /** Iniciar wizard del valet (RECEIVE, PARK, RETURN). */
+  /** Start valet wizard (RECEIVE, PARK, RETURN). */
   static async startMyWizard(userId: string, wizardType: "RECEIVE" | "PARK" | "RETURN") {
     const v = await prisma.valet.findUnique({
       where: { userId },
@@ -252,7 +252,7 @@ export class ValetsService {
     return updated;
   }
 
-  /** Terminar wizard del valet. */
+  /** End valet wizard. */
   static async endMyWizard(userId: string) {
     const v = await prisma.valet.findUnique({
       where: { userId },
@@ -262,7 +262,7 @@ export class ValetsService {
       throw new Error("User is not a valet");
     }
 
-    // Verificar si tiene tickets activos para determinar el estado final
+    // Check if has active tickets to determine final status
     const activeCount = await ValetsService.countActiveTicketAssignments(v.id);
 
     const updated = await prisma.valet.update({
@@ -279,7 +279,7 @@ export class ValetsService {
     return updated;
   }
 
-  /** Timeout automático para wizards abandonados (más de 30 minutos). */
+  /** Automatic timeout for abandoned wizards (more than 30 minutes). */
   static async cleanupAbandonedWizards() {
     const timeoutMinutes = 30;
     const cutoff = new Date(Date.now() - timeoutMinutes * 60 * 1000);
@@ -371,7 +371,7 @@ export class ValetsService {
     });
   }
 
-  /** Lista valets. Si companyId es null/undefined (super-admin), devuelve todos e incluye lastActivity. */
+  /** List valets. If companyId is null/undefined (super-admin), returns all and includes lastActivity. */
   static async list(
     companyId: string | null | undefined,
     statuses?: string[],
@@ -607,7 +607,7 @@ export class ValetsService {
     });
   }
 
-  /** Valets para asignar en tickets: prioridad a quienes ya tienen actividad en la empresa; si no hay, todos los de la empresa. */
+  /** Valets to assign in tickets: priority to those with activity in the company; if none, all in the company. */
   static async listValetsForCompany(companyId: string) {
     const assignmentValetIds = await prisma.ticketAssignment.findMany({
       where: { ticket: { companyId } },
@@ -643,7 +643,7 @@ export class ValetsService {
     });
   }
 
-  /** Valets para el flujo de trabajo filtrados por parking específico. */
+  /** Valets for workflow filtered by specific parking. */
   static async listValetsForParking(parkingId: string, companyId: string) {
     const includeUser = {
       user: {
@@ -657,20 +657,20 @@ export class ValetsService {
       },
     } as const;
 
-    // Obtener todos los valets del parking (por currentParkingId)
+    // Get all valets in the parking (by currentParkingId)
     const valets = await prisma.valet.findMany({
       where: {
         companyId,
         OR: [
           { currentParkingId: parkingId },
-          // También incluir valets con asignaciones activas recientes en el parking
+          // Also include valets with recent active assignments in the parking
         ],
       },
       include: includeUser,
       orderBy: { currentStatus: "asc" },
     });
 
-    // Calcular el estado actual de cada valet basado en isInWizard y tickets activos
+    // Calculate current status of each valet based on isInWizard and active tickets
     const valetsWithStatus = await Promise.all(
       valets.map(async (valet) => {
         const isBusy = await ValetsService.isValetBusy(valet.id);
@@ -684,7 +684,7 @@ export class ValetsService {
     return valetsWithStatus;
   }
 
-  /** Estadísticas del flujo de trabajo para el tile de workflow. */
+  /** Workflow statistics for the workflow tile. */
   static async getWorkflowStatus(companyId: string, parkingId?: string) {
     const now = new Date();
     const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
@@ -693,7 +693,7 @@ export class ValetsService {
       ? { companyId, parkingId }
       : { companyId };
 
-    // Tickets activos (procesos activos)
+    // Active tickets (active processes)
     const activeProcesses = await prisma.ticket.count({
       where: {
         ...where,
@@ -703,7 +703,7 @@ export class ValetsService {
       },
     });
 
-    // Tickets completados hoy
+    // Tickets completed today
     const completedToday = await prisma.ticket.count({
       where: {
         ...where,
@@ -712,7 +712,7 @@ export class ValetsService {
       },
     });
 
-    // Tickets pendientes (en cola)
+    // Pending tickets (in queue)
     const pendingTasks = await prisma.ticket.count({
       where: {
         ...where,
@@ -730,7 +730,7 @@ export class ValetsService {
     };
   }
 
-  /** Asignaciones del valet actual (por userId). Para mobile-valet; no requiere company. */
+  /** Current valet's assignments (by userId). For mobile-valet; does not require company. */
   static async getMyAssignments(userId: string) {
     const valet = await prisma.valet.findUnique({
       where: { userId },
@@ -768,7 +768,7 @@ export class ValetsService {
     return assignments;
   }
 
-  /** Perfil valet del usuario (mobile: rol recepción/conducción). */
+  /** User's valet profile (mobile: reception/driving role). */
   static async getMe(userId: string) {
     return prisma.valet.findUnique({
       where: { userId },
@@ -840,7 +840,7 @@ export class ValetsService {
 
     const presenceSince = new Date(Date.now() - VALET_PRESENCE_MAX_AGE_MS);
 
-    // Buscar valets con asignaciones activas en este parking
+    // Find valets with active assignments in this parking
     const activeAssignmentValetIds = await prisma.ticketAssignment.findMany({
       where: {
         ticket: {
@@ -896,7 +896,7 @@ export class ValetsService {
     return { available, busy };
   }
 
-  /** Actualiza perfil y/o contexto operativo del valet actual (app móvil). */
+  /** Updates current valet's profile and/or operational context (mobile app). */
   static async patchMe(userId: string, dto: PatchValetMeDTO) {
     const existing = await prisma.valet.findUnique({
       where: { userId },

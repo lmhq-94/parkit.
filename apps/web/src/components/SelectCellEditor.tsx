@@ -12,18 +12,18 @@ interface SelectCellEditorProps {
   initialValue?: string | null;
   onValueChange: (value: string | null) => void;
   values?: string[];
-  /** Etiquetas para mostrar (mismo orden que values). Si no se define, se muestran los valores crudos. */
+  /** Labels to display (same order as values). If not defined, raw values are shown. */
   labels?: string[];
   stopEditing?: (preventFocus?: boolean) => void;
-  /** Para columnas de estado: devuelve clases de color (text + dot) por valor. Mantiene el estilo badge en el editor. */
+  /** For status columns: returns color classes (text + dot) per value. Maintains badge style in editor. */
   getStatusStyle?: (value: string) => StatusStyle;
-  /** Si devuelve string, no se cierra el editor y se muestra el mensaje (toast). */
+  /** If returns string, editor does not close and message (toast) is shown. */
   validator?: (value: unknown) => string | null;
 }
 
 /**
- * Editor de celda tipo dropdown para AG Grid.
- * Usa un popup estilizado con las variables del tema (visible en light y dark).
+ * Dropdown cell editor for AG Grid.
+ * Uses a styled popup with theme variables (visible in light and dark).
  */
 export function SelectCellEditor({
   value: valueProp,

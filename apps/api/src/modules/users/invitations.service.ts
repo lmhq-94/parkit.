@@ -14,7 +14,7 @@ export class InvitationsService {
     companyId: string | null;
     role: SystemRole;
     invitedByUserId: string;
-    // Datos opcionales para valets
+    // Optional data for valets
     valetStaffRole?: ValetStaffRole;
     licenseNumber?: string;
     licenseExpiry?: string;
@@ -80,7 +80,7 @@ export class InvitationsService {
         to: email,
         companyName: companyName || "Parkit",
         invitationLink: registerUrl,
-        isValet: role === SystemRole.STAFF, // Mostrar botones de descarga de app para valets
+        isValet: role === SystemRole.STAFF, // Show app download buttons for valets
       });
     }
 
@@ -111,7 +111,7 @@ export class InvitationsService {
     companyId: string | null;
     role: SystemRole;
     invitedByUserId: string;
-    // Datos opcionales para valets (aplicados a todos los emails del batch)
+    // Optional data for valets (applied to all emails in the batch)
     valetStaffRole?: ValetStaffRole;
     licenseNumber?: string;
     licenseExpiry?: string;
