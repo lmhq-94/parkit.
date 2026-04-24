@@ -16,7 +16,6 @@ export class PushNotificationsService {
       });
 
       if (!user?.pushToken) {
-        console.log(`No push token found for user ${data.userId}`);
         return;
       }
 
@@ -41,7 +40,6 @@ export class PushNotificationsService {
       const result = await response.json();
 
       if (result.data?.status === 'error') {
-        console.error('Push notification error:', result.data.message);
         
         // If token is invalid, remove it from user
         if (result.data.message === 'DeviceNotRegistered') {
@@ -52,7 +50,7 @@ export class PushNotificationsService {
         }
       }
     } catch (error) {
-      console.error('Error sending push notification:', error);
+      // Silently ignore errors
     }
   }
 

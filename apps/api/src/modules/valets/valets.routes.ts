@@ -23,6 +23,8 @@ router.post(
   ValetsController.postMyPresence
 );
 router.post("/me/ping", requireAuth, ValetsController.postMyPing);
+router.post("/me/wizard/start", requireAuth, ValetsController.postMyWizardStart);
+router.post("/me/wizard/end", requireAuth, ValetsController.postMyWizardEnd);
 router.get("/me/assignments", requireAuth, ValetsController.getMyAssignments);
 
 router.get(
@@ -41,6 +43,8 @@ router.get(
 );
 
 router.get("/for-company", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ValetsController.listForCompany);
+router.get("/for-parking/:parkingId", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ValetsController.listForParking);
+router.get("/workflow/status", requireAuth, requireCompany, requireRole("ADMIN", "STAFF"), ValetsController.getWorkflowStatus);
 
 // SUPER_ADMIN only: valets are subcontracted and rotate across companies; global list without company scope.
 router.post("/", validateRequest(CreateValetSchema), requireAuth, requireRole("SUPER_ADMIN"), ValetsController.create);

@@ -27,7 +27,7 @@ export default function WorkflowScreen() {
   const loadValets = useCallback(async () => {
     try {
       setLoading(true);
-      // Simular datos de valets para demostración
+      // Simulate valet data for demonstration
       const mockValets = [
         {
           id: '1',
@@ -68,7 +68,7 @@ export default function WorkflowScreen() {
       ];
       setValets(mockValets);
     } catch (error) {
-      console.error('Error loading valets:', error);
+      // Silently ignore load errors
     } finally {
       setLoading(false);
       setRefreshing(false);

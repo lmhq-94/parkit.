@@ -9,13 +9,13 @@ interface AddressCellEditorProps {
   initialValue?: string | null;
   onValueChange: (value: string | null) => void;
   stopEditing?: (preventFocus?: boolean) => void;
-  /** Código de país opcional para filtrar búsquedas (ej. "CR"). */
+  /** Optional country code to filter searches (e.g. "CR"). */
   countryCode?: string;
 }
 
 /**
- * Editor de celda que al abrir muestra el modal de selección de dirección (AddressPickerModal).
- * Usado en la edición inline de la tabla de parkings para el campo address.
+ * Cell editor that when opened shows the address selection modal (AddressPickerModal).
+ * Used in inline editing of the parkings table for the address field.
  */
 export function AddressCellEditor({
   value: valueProp,

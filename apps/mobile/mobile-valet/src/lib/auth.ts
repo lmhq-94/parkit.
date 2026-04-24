@@ -143,7 +143,7 @@ export const logout = async () => {
   try {
     await api.post('/auth/logout');
   } catch (error) {
-    console.error('Logout API call failed:', error);
+    // Silently ignore logout errors
   } finally {
     await clearAuthToken();
     await clearUser();

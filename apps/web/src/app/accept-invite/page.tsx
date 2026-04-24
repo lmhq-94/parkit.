@@ -44,7 +44,6 @@ function AcceptInviteForm() {
         setEmail(response.email);
       } catch (err) {
         // Silently fail, user will see error when trying to submit
-        console.error("Failed to validate invitation token:", err);
       }
     };
     fetchEmail();

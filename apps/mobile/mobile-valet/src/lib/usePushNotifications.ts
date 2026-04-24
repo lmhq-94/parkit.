@@ -53,7 +53,7 @@ export function usePushNotifications(userId: string | undefined) {
       try {
         await api.patch('/users/me', { pushToken: token });
       } catch (error) {
-        console.error('Error saving push token:', error);
+        // Silently ignore token save errors
       }
     }
   }, [userId]);

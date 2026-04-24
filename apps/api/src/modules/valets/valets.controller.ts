@@ -23,6 +23,49 @@ export class ValetsController {
     }
   }
 
+  /** Valets para el flujo de trabajo filtrados por parking específico. */
+  static async listForParking(req: Request, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      if (!companyId) {
+        return fail(res, 400, "Company context required");
+      }
+      const raw = req.params.parkingId;
+      const parkingId = Array.isArray(raw) ? raw[0] : raw;
+      if (!parkingId || typeof parkingId !== "string") {
+        return fail(res, 400, "parkingId required");
+      }
+      const valets = await ValetsService.listValetsForParking(parkingId, companyId);
+      return ok(res, valets);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
+  /** Estadísticas del flujo de trabajo para el tile de workflow. */
+  static async getWorkflowStatus(req: Request, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      if (!companyId) {
+        return fail(res, 400, "Company context required");
+      }
+      const rawParkingId = req.query.parkingId;
+      const parkingId = typeof rawParkingId === "string" ? rawParkingId : undefined;
+      const status = await ValetsService.getWorkflowStatus(companyId, parkingId);
+      return ok(res, status);
+    } catch (error: unknown) {
+      return fail(
+        res,
+        400,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    }
+  }
+
   /** Asignaciones del valet logueado (mobile-valet). No requiere company. */
   static async getMyAssignments(req: Request, res: Response) {
     try {
@@ -103,6 +146,38 @@ export class ValetsController {
     try {
       const { status } = req.body as { status: "AWAY" | "AVAILABLE" };
       const updated = await ValetsService.updateMyPresence(req.user!.userId, status);
+      return ok(res, updated);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      if (msg === "User is not a valet") {
+        return fail(res, 403, msg);
+      }
+      return fail(res, 400, msg);
+    }
+  }
+
+  /** Iniciar wizard del valet. */
+  static async postMyWizardStart(req: Request, res: Response) {
+    try {
+      const { wizardType } = req.body as { wizardType: "RECEIVE" | "PARK" | "RETURN" };
+      if (!wizardType || !["RECEIVE", "PARK", "RETURN"].includes(wizardType)) {
+        return fail(res, 400, "Invalid wizardType");
+      }
+      const updated = await ValetsService.startMyWizard(req.user!.userId, wizardType);
+      return ok(res, updated);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      if (msg === "User is not a valet") {
+        return fail(res, 403, msg);
+      }
+      return fail(res, 400, msg);
+    }
+  }
+
+  /** Terminar wizard del valet. */
+  static async postMyWizardEnd(req: Request, res: Response) {
+    try {
+      const updated = await ValetsService.endMyWizard(req.user!.userId);
       return ok(res, updated);
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : "Unknown error";

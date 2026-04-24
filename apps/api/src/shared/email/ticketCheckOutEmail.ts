@@ -43,10 +43,6 @@ export async function sendTicketCheckOutEmail(
  
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey || apiKey === "re_xxxxxxxxx") {
-    console.log("[Ticket check-out email not sent - no RESEND_API_KEY]");
-    console.log(`  Original To: ${to}`);
-    console.log(`  Ticket code: ${ticketCode}`);
-    console.log(`  Total: ${totalPrice}`);
     return { sent: true };
   }
 
@@ -212,14 +208,12 @@ export async function sendTicketCheckOutEmail(
     if (!response.ok) {
       const message =
         (result && result.error && result.error.message) || response.statusText;
-      console.error("[Ticket check-out email error]", result);
       return { sent: false, error: message };
     }
 
     return { sent: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[Ticket check-out email error]", err);
     return { sent: false, error: message };
   }
 }

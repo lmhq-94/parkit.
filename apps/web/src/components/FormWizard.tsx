@@ -22,11 +22,11 @@ interface FormWizardProps {
   submitLabel?: string;
   cancelHref: string;
   error?: string | null;
-  /** Nota breve que se muestra encima de "Los campos marcados con * son obligatorios" (ej. invitación por correo). */
+  /** Brief note shown above "Fields marked with * are required" (e.g. email invitation). */
   footerNote?: React.ReactNode;
-  /** Llamado antes de avanzar al siguiente paso. Si devuelve Promise, se espera (ej. cargar dimensiones). */
+  /** Called before advancing to the next step. If it returns a Promise, it is awaited (e.g. load dimensions). */
   onBeforeNext?: (fromStep: number, toStep: number) => void | Promise<void>;
-  /** Llamado al hacer clic en Next o Save: valida el paso actual. Si devuelve false, no se avanza ni se envía. */
+  /** Called when clicking Next or Save: validates the current step. If it returns false, it does not advance or submit. */
   onValidateBeforeAction?: (stepIndex: number) => boolean | Promise<boolean>;
 }
 

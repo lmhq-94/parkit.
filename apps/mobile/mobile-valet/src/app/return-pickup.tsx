@@ -64,6 +64,29 @@ export default function ReturnPickupScreen() {
   const M = ticketsA11y.minTouch;
   const feedback = useMemo(() => createFeedback(locale), [locale]);
 
+  // Wizard tracking
+  const startWizard = useCallback(async () => {
+    try {
+      await api.post("/valets/me/wizard/start", { wizardType: "RETURN" });
+    } catch (error) {
+      console.error("Failed to start wizard:", error);
+    }
+  }, []);
+
+  const endWizard = useCallback(async () => {
+    try {
+      await api.post("/valets/me/wizard/end");
+    } catch (error) {
+      // Silently ignore wizard errors
+    }
+  }, []);
+
+  useEffect(() => {
+    void startWizard();
+    // No cleanup - wizard persists if user closes app
+    // Server timeout (30 min) handles abandoned wizards
+  }, [startWizard]);
+
   const load = useCallback(async () => {
     if (!companyId) return;
     setLoading(true);
@@ -107,6 +130,7 @@ export default function ReturnPickupScreen() {
     try {
       if (selectedTicket.status === "REQUEST_DELIVERY") {
         await api.patch(`/tickets/${selectedTicket.id}`, { status: "DELIVERED" });
+        await endWizard();
         feedback.success(t(locale, "returnPickup.successDelivered"), {
           onPress: () => router.replace("/tickets"),
         });
@@ -146,7 +170,7 @@ export default function ReturnPickupScreen() {
         <View style={[styles.screenHeader, { paddingTop: insets.top + theme.space.md }]}>
           <View style={{ width: 44 }} />
           <Text style={styles.screenTitle}>{t(locale, "returnPickup.title")}</Text>
-          <Pressable onPress={() => router.replace("/home")} style={{ width: 44, alignItems: "center", justifyContent: "center" }}>
+          <Pressable onPress={() => { void endWizard(); router.replace("/home"); }} style={{ width: 44, alignItems: "center", justifyContent: "center" }}>
             <IconHome2 size={24} color={C.text} />
           </Pressable>
         </View>
@@ -171,7 +195,7 @@ export default function ReturnPickupScreen() {
       <View style={[styles.screenHeader, { paddingTop: insets.top + theme.space.md }]}>
         <View style={{ width: 44 }} />
         <Text style={styles.screenTitle}>{t(locale, "returnPickup.title")}</Text>
-        <Pressable onPress={() => router.replace("/home")} style={{ width: 44, alignItems: "center", justifyContent: "center" }}>
+        <Pressable onPress={() => { void endWizard(); router.replace("/home"); }} style={{ width: 44, alignItems: "center", justifyContent: "center" }}>
           <IconHome2 size={24} color={C.text} />
         </Pressable>
       </View>

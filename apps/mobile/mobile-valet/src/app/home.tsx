@@ -233,7 +233,7 @@ function HomeScreenContent() {
         end: { x: 1, y: 1 },
       } as const)
     : ({
-        /** Claro: gris azulado premium (neutro frío, casi sin saturación — estilo producto 2024+) */
+        /** Light: premium bluish gray (cold neutral, almost no saturation — 2024+ product style) */
         colors: ["#D5DDE8", "#E6EBF2", "#F4F6F9"] as const,
         locations: [0, 0.42, 1] as const,
         start: { x: 0, y: 0 },
@@ -241,7 +241,7 @@ function HomeScreenContent() {
       } as const);
 
   const headerTextPrimary = theme.isDark ? C.text : "#0F172A";
-  /** Mismo tono que el inicio del gradiente del header (barra de estado alineada visualmente). */
+    /** Same tone as the start of the header gradient (status bar visually aligned). */
   const statusBarBg = headerGradientSpec.colors[0];
   const S = theme.space;
 
@@ -750,7 +750,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       opacity: 1,
       flexShrink: 0,
     },
-    /** Bloque derecho: fila alineada a la derecha [avatar | saludo + puesto]. */
+    /** Right block: row aligned to the right [avatar | greeting + position]. */
     headerUserBlock: {
       flex: 1,
       minWidth: 0,
@@ -777,7 +777,7 @@ function createStyles(theme: Theme, shortestSide: number, isTablet: boolean, isL
       textAlign: "right",
       letterSpacing: 0.2,
     },
-    /** Contenedor del avatar con dot de status */
+    /** Avatar container with status dot */
     avatarWrapper: {
       position: "relative",
       alignItems: "center",

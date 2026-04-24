@@ -135,7 +135,7 @@ export function TicketQRPanel({
 
       await Share.share(shareData);
     } catch (err) {
-      console.error('Share error:', err);
+      // Silently ignore share errors
     }
   }, [qrDataUrl, ticketCode, keyCode, locale]);
 

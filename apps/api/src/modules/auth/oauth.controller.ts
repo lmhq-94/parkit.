@@ -45,7 +45,6 @@ export class OAuthController {
       
       res.redirect(redirectUrl.toString());
     } catch (error: unknown) {
-      console.error("Google OAuth callback error:", error);
       return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=oauth_failed`);
     }
   }
@@ -75,7 +74,6 @@ export class OAuthController {
       
       res.redirect(redirectUrl.toString());
     } catch (error: unknown) {
-      console.error("Apple OAuth callback error:", error);
       return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=oauth_failed`);
     }
   }
@@ -121,7 +119,6 @@ export class OAuthController {
       
       res.redirect(redirectUrl.toString());
     } catch (error: unknown) {
-      console.error("Microsoft OAuth callback error:", error);
       return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=oauth_failed`);
     }
   }
@@ -168,7 +165,6 @@ export class OAuthController {
       
       res.redirect(redirectUrl.toString());
     } catch (error: unknown) {
-      console.error("Facebook OAuth callback error:", error);
       return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=oauth_failed`);
     }
   }

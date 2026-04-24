@@ -99,6 +99,6 @@ export const signOutFromOAuth = async () => {
       await GoogleSignin.signOut();
     }
   } catch (error) {
-    console.error('Error signing out from OAuth providers:', error);
+    // Silently ignore OAuth sign-out errors
   }
 };

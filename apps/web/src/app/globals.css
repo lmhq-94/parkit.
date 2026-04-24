@@ -108,9 +108,9 @@ body {
   @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800;
 }
 
-/* Premium Typography - Títulos y subtítulos elegantes */
+/* Premium Typography - Elegant titles and subtitles */
 
-/* Título principal Premium - Para headers de página */
+/* Premium main title - For page headers */
 .premium-title {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-weight: 700;
@@ -122,7 +122,7 @@ body {
   background-clip: text;
 }
 
-/* Subtítulo Premium - Complemento elegante */
+/* Premium subtitle - Elegant complement */
 .premium-subtitle {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-weight: 500;
@@ -131,7 +131,7 @@ body {
   color: var(--text-secondary);
 }
 
-/* Título de sección Premium */
+/* Premium section title */
 .premium-section-title {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-weight: 650;
@@ -140,7 +140,7 @@ body {
   color: var(--text-primary);
 }
 
-/* Título de card/modal Premium */
+/* Premium card/modal title */
 .premium-card-title {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-weight: 650;
@@ -149,7 +149,7 @@ body {
   color: var(--text-primary);
 }
 
-/* Label/Label pequeño Premium - uppercase elegante */
+/* Premium small label - elegant uppercase */
 .premium-label {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-weight: 600;
@@ -159,7 +159,7 @@ body {
   color: var(--company-primary, #2563eb);
 }
 
-/* Efecto de brillo sutil para títulos importantes */
+/* Subtle glow effect for important titles */
 .premium-title-glow {
   text-shadow: 0 0 40px rgba(37, 99, 235, 0.15);
 }

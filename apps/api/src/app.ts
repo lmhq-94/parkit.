@@ -13,6 +13,7 @@ import ticketsRoutes from "./modules/tickets/tickets.routes";
 import valetsRoutes from "./modules/valets/valets.routes";
 import vehiclesRoutes from "./modules/vehicles/vehicles.routes";
 import dashboardRoutes from "./modules/dashboard/dashboard.routes";
+import { ValetsService } from "./modules/valets/valets.service";
 
 export const app = express();
 
@@ -74,3 +75,12 @@ app.use("/tickets", ticketsRoutes);
 app.use("/valets", valetsRoutes);
 app.use("/vehicles", vehiclesRoutes);
 app.use("/dashboard", dashboardRoutes);
+
+// Cron job: limpiar wizards abandonados cada 5 minutos
+setInterval(async () => {
+  try {
+    await ValetsService.cleanupAbandonedWizards();
+  } catch (error) {
+    // Silently ignore errors
+  }
+}, 5 * 60 * 1000); // 5 minutos

@@ -73,7 +73,7 @@ function createSettingsStyles(theme: Theme, contentMaxWidth: number, sectionPadd
       paddingTop: S.sm,
       paddingBottom: 40,
     },
-    /** Misma jerarquía visual que `receive` / tickets (legible en ES/EN). */
+    /** Same visual hierarchy as `receive` / tickets (readable in ES/EN). */
     sectionTitle: {
       fontSize: Math.round(F.secondary * 0.85 * textScale),
       fontWeight: "800",

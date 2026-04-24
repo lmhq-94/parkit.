@@ -7,15 +7,15 @@ interface FormattedInputCellEditorProps {
   value?: string | null;
   initialValue?: string | null;
   onValueChange: (value: string | null) => void;
-  /** Función para formatear el valor mientras se escribe (ej. formatPlate). */
+  /** Function to format the value while typing (e.g. formatPlate). */
   format?: (value: string) => string;
   stopEditing?: (preventFocus?: boolean) => void;
-  /** Si devuelve string, no se cierra el editor y se muestra el mensaje (toast). */
+  /** If it returns a string, the editor does not close and the message (toast) is shown. */
   validator?: (value: unknown) => string | null;
 }
 
 /**
- * Editor de celda con input que aplica una función de formato al escribir.
+ * Cell editor with input that applies a formatting function while typing.
  */
 export function FormattedInputCellEditor({
   value: valueProp,

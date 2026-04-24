@@ -15,6 +15,6 @@ export async function setHasSeenOnboarding(): Promise<void> {
   try {
     await AsyncStorage.setItem(ONBOARDING_SEEN_KEY, "true");
   } catch (error) {
-    console.error("Failed to save onboarding state:", error);
+    // Silently ignore onboarding save errors
   }
 }

@@ -4,17 +4,17 @@ const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
-// Optimizaciones para desarrollo más rápido en Expo Go
+// Optimizations for faster development in Expo Go
 config.maxWorkers = 2;
 
-// Caché persistente en disco para builds más rápidos
+// Persistent disk cache for faster builds
 config.cacheStores = [
   new (require('metro-cache').FileStore)({ // eslint-disable-line @typescript-eslint/no-var-requires
     root: path.join(__dirname, 'node_modules', '.cache', 'metro'),
   }),
 ];
 
-// Reducir logging en desarrollo - middleware personalizado
+// Reduce logging in development - custom middleware
 config.server = {
   ...config.server,
   enhanceMiddleware: (middleware) => {

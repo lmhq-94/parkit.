@@ -94,9 +94,6 @@ Soporte: ${SUPPORT_EMAIL}`;
 
   const client = getResendClient();
   if (!client) {
-    console.log("[Password reset email not sent - no RESEND_API_KEY]");
-    console.log(`  Original To: ${to}`);
-    console.log(`  Reset link: ${resetLink}`);
     return { sent: true };
   }
 
@@ -109,13 +106,11 @@ Soporte: ${SUPPORT_EMAIL}`;
       text,
     });
     if (error) {
-      console.error("[Password reset email error]", error);
       return { sent: false, error: error.message };
     }
     return { sent: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[Password reset email error]", err);
     return { sent: false, error: message };
   }
 }

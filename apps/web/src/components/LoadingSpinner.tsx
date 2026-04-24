@@ -22,13 +22,13 @@ export interface LoadingSpinnerProps {
   size?: LoadingSpinnerSize;
   variant?: LoadingSpinnerVariant;
   className?: string;
-  /** Para accesibilidad cuando el spinner es el único contenido de la zona */
+  /** For accessibility when the spinner is the only content in the area */
   "aria-label"?: string;
 }
 
 /**
- * Spinner estándar de la plataforma: círculo animado girando.
- * Usar en botones (sm), bloques de carga (md/lg) y pantallas completas (lg).
+ * Standard platform spinner: rotating animated circle.
+ * Use in buttons (sm), loading blocks (md/lg) and full screens (lg).
  */
 export function LoadingSpinner({
   size = "md",

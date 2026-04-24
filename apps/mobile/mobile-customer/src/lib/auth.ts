@@ -15,7 +15,7 @@ export const saveUser = async (user: User, token: string) => {
     ]);
     setAuthToken(token);
   } catch (error) {
-    console.error("Failed to save user:", error);
+    // Silently ignore storage errors
   }
 };
 
@@ -24,7 +24,6 @@ export const getStoredUser = async (): Promise<User | null> => {
     const data = await AsyncStorage.getItem(USER_KEY);
     return data ? JSON.parse(data) : null;
   } catch (error) {
-    console.error("Failed to get user:", error);
     return null;
   }
 };
@@ -37,7 +36,6 @@ export const getStoredToken = async (): Promise<string | null> => {
     }
     return token;
   } catch (error) {
-    console.error("Failed to get token:", error);
     return null;
   }
 };
@@ -47,6 +45,6 @@ export const clearUser = async () => {
     await AsyncStorage.multiRemove([USER_KEY, TOKEN_KEY]);
     clearAuthToken();
   } catch (error) {
-    console.error("Failed to clear user:", error);
+    // Silently ignore storage errors
   }
 };

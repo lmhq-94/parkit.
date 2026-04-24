@@ -12,7 +12,7 @@ async function pingValetPresence() {
   try {
     await api.post("/valets/me/ping", {}, { timeout: 12_000 });
   } catch {
-    /* sin red o no valet */
+    /* no network or not a valet */
   }
 }
 
@@ -37,7 +37,7 @@ async function pullValetMe(user: User, mergeUser: (p: Partial<User>) => void) {
       if (next) await saveUser(next);
     }
   } catch {
-    // Sin perfil valet o red: no borrar rol local.
+    // No valet profile or network: do not delete local role.
   }
 }
 
@@ -46,8 +46,8 @@ async function syncValetProfile(user: User, mergeUser: (p: Partial<User>) => voi
 }
 
 /**
- * Mantiene rol/estado con GET /valets/me y presencia con POST /valets/me/ping (latido).
- * Al volver la app a primer plano también envía ping.
+ * Maintains role/status with GET /valets/me and presence with POST /valets/me/ping (heartbeat).
+ * Also sends ping when the app returns to foreground.
  */
 export function useValetProfileSync(user: User | null) {
   const mergeUser = useAuthStore((s) => s.mergeUser);

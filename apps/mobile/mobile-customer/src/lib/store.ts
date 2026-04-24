@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const token = await getStoredToken();
       set({ user, token });
     } catch (error) {
-      console.error("Hydration error:", error);
+      // Silently ignore hydration errors
     }
   },
 
@@ -137,7 +137,6 @@ export const usePreferencesStore = create<PreferencesStore>((set, get) => ({
         isSaving: false 
       });
     } catch (error) {
-      console.error("Failed to save preferences", error);
       set({ isSaving: false });
       throw error;
     }

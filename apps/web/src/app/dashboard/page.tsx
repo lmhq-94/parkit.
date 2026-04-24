@@ -93,7 +93,7 @@ function toYYYYMMDD(d: Date) {
   return `${y}-${m}-${day}`;
 }
 
-/** Máximo de días permitidos en el rango (igual que en la API). */
+/** Maximum days allowed in the range (same as in the API). */
 const MAX_RANGE_DAYS = 90;
 
 function addDays(dateStr: string, days: number): string {
@@ -109,7 +109,7 @@ function getDefaultCustomRange(): { from: string; to: string } {
   return { from: toYYYYMMDD(from), to: toYYYYMMDD(now) };
 }
 
-/** Ajusta from/to para que el rango no supere MAX_RANGE_DAYS. */
+/** Adjusts from/to so the range does not exceed MAX_RANGE_DAYS. */
 function clampRange(from: string, to: string): { from: string; to: string } {
   const fromDate = new Date(from + "T12:00:00").getTime();
   const toDate = new Date(to + "T12:00:00").getTime();

@@ -34,9 +34,7 @@ export async function sendInvitationStaffEmail(
   const actualTo = isDevelopment ? "luis.herrera506@gmail.com" : to;
 
   if (isDevelopment && to !== actualTo) {
-    console.log(
-      `📧 [DEV MODE] Redirecting invitation email from ${to} → ${actualTo}`,
-    );
+    // Email redirected in development mode
   }
 
   const companyDisplay = (companyName || "").trim();
@@ -45,9 +43,6 @@ export async function sendInvitationStaffEmail(
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey || apiKey === "re_xxxxxxxxx") {
-    console.log("[Invitation email not sent - no RESEND_API_KEY]");
-    console.log(`  Original To: ${to}`);
-    console.log(`  Invite link: ${inviteLink}`);
     return { sent: true };
   }
 
@@ -200,14 +195,12 @@ export async function sendInvitationStaffEmail(
     if (!response.ok) {
       const message =
         (result && result.error && result.error.message) || response.statusText;
-      console.error("[Invitation email error]", result);
       return { sent: false, error: message };
     }
 
     return { sent: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[Invitation email error]", err);
     return { sent: false, error: message };
   }
 }

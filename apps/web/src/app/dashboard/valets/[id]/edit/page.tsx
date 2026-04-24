@@ -146,7 +146,7 @@ export default function EditValetPage() {
         className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden min-h-0 pb-8"
       >
         <div className="md:px-0 lg:px-0 w-full gap-5">
-      {/* Sección — datos del empleado */}
+      {/* Section — employee data */}
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
@@ -181,7 +181,7 @@ export default function EditValetPage() {
         </div>
       </div>
 
-      {/* Sección — licencia */}
+      {/* Section — license */}
       <div className="overflow-hidden">
         <div className="px-6 py-4 flex items-center gap-3">
           <div>
@@ -212,7 +212,7 @@ export default function EditValetPage() {
         </div>
       </div>
 
-      {/* Sección — estado */}
+      {/* Section — status */}
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">

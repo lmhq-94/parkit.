@@ -6,7 +6,7 @@ import { useTheme } from "next-themes";
 import { MapContainer, TileLayer, Marker, Circle, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
 
-/** OpenStreetMap estándar: azul agua, verde parques, beige calles — colorido en light; en dark se oscurece con CSS. */
+/** Standard OpenStreetMap: blue water, green parks, beige streets — colorful in light; darkened with CSS in dark mode. */
 const OSM_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
 const defaultIcon = L.icon({
@@ -23,7 +23,7 @@ interface AddressPickerMapProps {
   lat: number;
   lon: number;
   showMarker?: boolean;
-  /** Radio de geovalla en metros; si está definido, se dibuja un círculo en el mapa. */
+  /** Geofence radius in meters; if defined, a circle is drawn on the map. */
   geofenceRadius?: number;
   onMapClick?: (lat: number, lon: number) => void;
 }

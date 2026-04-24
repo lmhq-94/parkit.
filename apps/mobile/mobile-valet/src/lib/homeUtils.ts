@@ -3,7 +3,7 @@ import type { useValetTheme } from "@/theme/valetTheme";
 
 type Theme = ReturnType<typeof useValetTheme>;
 
-/** Anillo de presencia en el avatar (estilo apps modernas): verde disponible, rojo ocupado, etc. */
+/** Presence ring on avatar (modern app style): green available, red busy, etc. */
 export function avatarPresenceRingColor(
   theme: Theme,
   status: ValetOperationalStatus | null | undefined
@@ -20,7 +20,7 @@ export function avatarPresenceRingColor(
   return "#60A5FA"; // sincronizando / desconocido — azul (sky-400)
 }
 
-/** Tonos por tile: modo claro (más profundos) vs oscuro (más vivos sobre fondo oscuro). */
+/** Tones per tile: light mode (deeper) vs dark mode (more vibrant on dark background). */
 export function parkitTilePalette(isDark: boolean) {
   if (isDark) {
     return {
@@ -91,36 +91,36 @@ export const TILE_ICON_SIZE = 30;
 
 export const HEADER_RADIUS_BOTTOM = 22;
 
-/** Tamaño del avatar en header (círculo perfecto: radio = mitad) */
+/** Avatar size in header (perfect circle: radius = half) */
 export const HEADER_AVATAR_SIZE = 40;
 
-/** Grosor del anillo de estado alrededor del avatar (borde de color) */
+/** Thickness of the status ring around the avatar (colored border) */
 export const AVATAR_PRESENCE_RING = 3;
 
 /**
- * Calcula tamaños proporcionales para elementos del header basados en el tamaño del logo
- * y la escala de texto de accesibilidad
+ * Calculates proportional sizes for header elements based on logo size
+ * and accessibility text scale
  */
 export function getHeaderSizes(logoSize: number, textScale: number) {
-  // Logo escala con textScale pero con un factor más moderado
+  // Logo scales with textScale but with a more moderate factor
   const scaledLogoSize = Math.round(logoSize * (0.9 + (textScale - 1) * 0.3));
   
-  // Avatar proporcional al logo (1.4x el tamaño del logo)
+  // Avatar proportional to logo (1.4x logo size)
   const avatarSize = Math.round(scaledLogoSize * 1.4);
   
-  // Tamaños de texto basados en el logo y escala de accesibilidad
+  // Text sizes based on logo and accessibility scale
   const displayNameSize = Math.round(scaledLogoSize * 0.65);
   const roleSize = Math.round(scaledLogoSize * 0.45);
   
-  // Status dot proporcional al avatar
+  // Status dot proportional to avatar
   const statusDotSize = Math.max(10, Math.round(avatarSize * 0.35));
   const statusDotBorderWidth = Math.max(1, Math.round(avatarSize * 0.075));
   
-  // Badge para notificaciones
+  // Badge for notifications
   const badgeSize = Math.max(14, Math.round(avatarSize * 0.45));
   const badgeFontSize = Math.max(10, Math.round(avatarSize * 0.3 * textScale));
   
-  // Espaciado proporcional
+  // Proportional spacing
   const gap = Math.round(scaledLogoSize * 0.3);
   const avatarPadding = Math.round(avatarSize * 0.1);
   

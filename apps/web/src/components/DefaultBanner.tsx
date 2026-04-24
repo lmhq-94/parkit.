@@ -5,11 +5,11 @@ import { getIndustryIcon } from "@/lib/companyIcons";
 import type { PremiumIcon } from "@/lib/premiumIcons";
 
 /**
- * Banner estilo Microsoft/Google: avatar/logo en círculo a la izquierda
- * y nombre de empresa a la derecha. Misma estructura con o sin imagen de fondo.
- * Si no hay logo, muestra un icono premium acorde a la actividad del negocio.
+ * Microsoft/Google style banner: avatar/logo in a circle on the left
+ * and company name on the right. Same structure with or without background image.
+ * If there is no logo, shows a premium icon matching the business activity.
  * 
- * V2: Diseño premium con glassmorphism mejorado y gradientes elegantes.
+ * V2: Premium design with improved glassmorphism and elegant gradients.
  */
 export function DefaultBanner({
   companyName,
@@ -27,12 +27,12 @@ export function DefaultBanner({
   /** @deprecated Fallback initials - icon is used instead based on businessActivity */
   _initials?: string;
   isDark: boolean;
-  /** Si se indica, se usa como fondo manteniendo el mismo layout (nombre + avatar). */
+  /** If specified, used as background maintaining the same layout (name + avatar). */
   backgroundImageUrl?: string | null;
-  /** Línea de texto sutil debajo del nombre (opcional). */
+  /** Subtle text line below the name (optional). */
   subtitle?: string;
   className?: string;
-  /** Contenido personalizado en la parte derecha. Si se indica, reemplaza título/subtítulo por este nodo. */
+  /** Custom content on the right side. If specified, replaces title/subtitle with this node. */
   renderRight?: React.ReactNode;
   /** Industry/business activity to determine the icon */
   businessActivity?: string | null;
@@ -49,7 +49,7 @@ export function DefaultBanner({
         backgroundColor: hasBackgroundImage ? undefined : isDark ? "#0a0a1a" : "#f0f9ff",
       }}
     >
-      {/* Fondo premium con gradientes estáticos tipo "animated" pero sin animar */}
+      {/* Premium background with static gradients like "animated" but without animation */}
       {hasBackgroundImage ? (
         <>
           <Image
@@ -60,9 +60,9 @@ export function DefaultBanner({
             className="absolute inset-0 w-full h-full object-cover object-center"
             style={{ transform: "scaleX(-1)" }}
           />
-          {/* Overlay premium con gradiente más fuerte para asegurar legibilidad */}
+          {/* Premium overlay with stronger gradient to ensure legibility */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" aria-hidden />
-          {/* Segundo overlay sutil para efecto de profundidad */}
+          {/* Second subtle overlay for depth effect */}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" aria-hidden />
         </>
       ) : (
@@ -91,7 +91,7 @@ export function DefaultBanner({
         </div>
       )}
 
-      {/* Izquierda: avatar/logo o icono de industria - estilo consistente con perfil */}
+      {/* Left: avatar/logo or industry icon - consistent style with profile */}
       <div className={`relative z-10 shrink-0 pl-4 ${hasBackgroundImage ? "drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]" : ""}`}>
         <div
           className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center transition-all duration-300"
@@ -115,7 +115,7 @@ export function DefaultBanner({
         </div>
       </div>
 
-      {/* Derecha: contenido personalizado o título premium */}
+      {/* Right: custom content or premium title */}
       <div className={`relative z-10 flex-1 min-w-0 pl-3 ${hasBackgroundImage ? "drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]" : ""}`}>
         {renderRight ? (
           renderRight

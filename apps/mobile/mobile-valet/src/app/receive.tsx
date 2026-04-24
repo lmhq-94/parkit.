@@ -109,6 +109,29 @@ export default function ReceiveScreen() {
     [theme, safeInsets, windowHeight]
   );
 
+  // Wizard tracking
+  const startWizard = useCallback(async () => {
+    try {
+      await api.post("/valets/me/wizard/start", { wizardType: "RECEIVE" });
+    } catch (error) {
+      console.error("Failed to start wizard:", error);
+    }
+  }, []);
+
+  const endWizard = useCallback(async () => {
+    try {
+      await api.post("/valets/me/wizard/end");
+    } catch (error) {
+      // Silently ignore wizard errors
+    }
+  }, []);
+
+  useEffect(() => {
+    void startWizard();
+    // No cleanup - wizard persists if user closes app
+    // Server timeout (30 min) handles abandoned wizards
+  }, [startWizard]);
+
   const [plate, setPlate] = useState("");
   const [lookupLoading, setLookupLoading] = useState(false);
   const [lookupReadyForPlate, setLookupReadyForPlate] = useState("");
@@ -250,9 +273,10 @@ export default function ReceiveScreen() {
     } else if (wizardStep === valetStepNum) {
       setWizardStep(ticketStepNum);
     } else {
+      void endWizard();
       router.back();
     }
-  }, [wizardStep, typeStepNum, cardStepNum, plateStepNum, plateBackStep, driverStepNum, vehicleStepNum, parkingStepNum, damageStepNum, ticketStepNum, valetStepNum, reservationFlow, router]);
+  }, [wizardStep, typeStepNum, cardStepNum, plateStepNum, plateBackStep, driverStepNum, vehicleStepNum, parkingStepNum, damageStepNum, ticketStepNum, valetStepNum, reservationFlow, router, endWizard]);
   const availableValets = useMemo(
     () => valets.filter((v) => v.currentStatus === "AVAILABLE"),
     [valets]
@@ -339,7 +363,7 @@ export default function ReceiveScreen() {
           currentParkingId: parkingIdToSave,
         });
       } catch {
-        console.error("Failed to sync valet working context");
+        // Silently ignore sync errors
       }
     },
     [user, effectiveCompanyId, parkingId]
@@ -1078,6 +1102,7 @@ export default function ReceiveScreen() {
       }
 
       await api.post("/tickets", payload);
+      await endWizard();
       feedback.success(t(locale, "receive.success"), {
         title: t(locale, "receive.successTitle"),
         okText: t(locale, "common.close"),
@@ -1181,8 +1206,7 @@ export default function ReceiveScreen() {
         if (!cancelled) {
           setCatalogMakes(Array.isArray(res.data?.data) ? res.data.data : []);
         }
-      } catch (err) {
-        console.error("Failed to load makes:", err);
+      } catch (error) {
         if (!cancelled) setCatalogMakes([]);
       } finally {
         if (!cancelled) setLoadingCatalogMakes(false);
@@ -1281,7 +1305,7 @@ export default function ReceiveScreen() {
           )}
           {wizardStep === typeStepNum && <View style={{ width: 44 }} />}
           <Text style={styles.screenTitle}>{receiveTitle}</Text>
-          <Pressable onPress={() => router.replace("/home")} style={{ width: 44, alignItems: "center", justifyContent: "center" }}>
+          <Pressable onPress={() => { void endWizard(); router.replace("/home"); }} style={{ width: 44, alignItems: "center", justifyContent: "center" }}>
             <IconHome2 size={24} color={C.text} />
           </Pressable>
         </View>
@@ -1654,7 +1678,7 @@ export default function ReceiveScreen() {
         )}
         {wizardStep === typeStepNum && <View style={{ width: 44 }} />}
         <Text style={styles.screenTitle}>{receiveTitle}</Text>
-        <Pressable onPress={() => router.replace("/home")} style={{ width: 44, alignItems: "center", justifyContent: "center" }}>
+        <Pressable onPress={() => { void endWizard(); router.replace("/home"); }} style={{ width: 44, alignItems: "center", justifyContent: "center" }}>
           <IconHome2 size={24} color={C.text} />
         </Pressable>
       </View>

@@ -1,6 +1,6 @@
 /**
- * Tema valet: claro solo si el sistema es explícitamente `light`.
- * Si es `dark`, `null` o indeterminado → tema oscuro (fondo #020617, etc.).
+ * Valet theme: light only if system is explicitly `light`.
+ * If `dark`, `null` or indeterminate → dark theme (background #020617, etc.).
  */
 import type { ViewStyle } from "react-native";
 import { Platform, useColorScheme, useWindowDimensions } from "react-native";
@@ -8,24 +8,24 @@ import { useMemo } from "react";
 import { useThemeStore } from "@/lib/themeStore";
 import { useAccessibilityStore } from '@/lib/store';
 
-/** Mismo azul que welcome.btnPrimary */
+/** Same blue as welcome.btnPrimary */
 export const ACCENT = "#3B82F6";
-/** Mismo que welcome.btnSecondary (modo claro) */
+/** Same as welcome.btnSecondary (light mode) */
 export const SIGNUP_BG_LIGHT = "#0F172A";
-/** Registro en modo oscuro: contraste sobre hoja inferior oscura */
+/** Registration in dark mode: contrast over dark bottom sheet */
 export const SIGNUP_BG_DARK = "#475569";
 
 export type AuthThemeColors = {
-  /** Fondo de toda la pantalla auth/splash (mismo slate oscuro que la web en hero). */
+  /** Background of the entire auth/splash screen (same dark slate as the web in hero). */
   authScreenChromeBg: string;
-  /** Área superior logo + «valet»; mismo color que el resto del fondo. */
+  /** Top area logo + «valet»; same color as the rest of the background. */
   authHeroStripBg: string;
-  /** Controles sobre la franja oscura (atrás, etc.). */
+  /** Controls over the dark strip (back, etc.). */
   authHeroBackBtnBg: string;
   authHeroBackBtnIcon: string;
-  /** Texto «valet» bajo el logo en la franja oscura. */
+  /** Text «valet» under the logo in the dark strip. */
   authHeroValetLabel: string;
-  /** Solo tema claro: borde superior de la hoja de formularios (separación respecto al hero). */
+  /** Only light theme: top border of the form sheet (separation from the hero). */
   authFormSheetSeparator: Pick<ViewStyle, "borderTopWidth" | "borderTopColor">;
   bottomSheet: string;
   text: string;
@@ -81,7 +81,7 @@ function authColors(isDark: boolean): AuthThemeColors {
     inputBg: isDark ? "#1E293B" : "#FFFFFF",
     placeholder: "#94A3B8",
     backBtnBg: isDark ? "rgba(248, 250, 252, 0.12)" : "rgba(15, 23, 42, 0.08)",
-    /** Inputs / UI en la hoja (no en la franja oscura). */
+    /** Inputs / UI on the sheet (not on the dark strip). */
     backBtnIcon: isDark ? "#F8FAFC" : "#0F172A",
     btnLoginBg: ACCENT,
     btnLoginText: "#FFFFFF",
@@ -93,7 +93,7 @@ function authColors(isDark: boolean): AuthThemeColors {
     modalSheet: isDark ? "#1E293B" : "#FFFFFF",
     modalBackdrop: "rgba(15, 23, 42, 0.5)",
     modalOptionActive: isDark ? "rgba(59, 130, 246, 0.22)" : "rgba(59, 130, 246, 0.08)",
-    /** Pantallas auth/splash: barra sobre franja oscura. */
+    /** Auth/splash screens: bar over dark strip. */
     statusBarStyle: "light-content",
     statusBarBg: "#020617",
     authFormSheetSeparator: isDark
@@ -140,7 +140,7 @@ function homeColors(isDark: boolean): HomeThemeColors {
 const ANDROID_FONT_DELTA = Platform.OS === "android" ? -4 : 0;
 const fontSize = (value: number) => Math.max(10, value + ANDROID_FONT_DELTA);
 
-/** Aplica el factor de escala de accesibilidad a todos los tamaños de fuente */
+/** Applies accessibility scale factor to all font sizes */
 function applyTextScale(fonts: typeof valetStaticTokens.font, scale: number) {
   return {
     title: Math.round(fonts.title * scale),

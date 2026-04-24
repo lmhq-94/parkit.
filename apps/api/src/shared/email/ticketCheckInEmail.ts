@@ -35,9 +35,7 @@ export async function sendTicketCheckInEmail(
   const actualTo = isDevelopment ? "luis.herrera506@gmail.com" : to;
 
   if (isDevelopment && to !== actualTo) {
-    console.log(
-      `🎫 [DEV MODE] Redirecting ticket check-in email from ${to} → ${actualTo}`,
-    );
+    // Email redirected in development mode
   }
 
   const locationDisplay = (locationName || "").trim();
@@ -45,9 +43,6 @@ export async function sendTicketCheckInEmail(
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey || apiKey === "re_xxxxxxxxx") {
-    console.log("[Ticket check-in email not sent - no RESEND_API_KEY]");
-    console.log(`  Original To: ${to}`);
-    console.log(`  Ticket code: ${ticketCode}`);
     return { sent: true };
   }
 
@@ -229,14 +224,12 @@ export async function sendTicketCheckInEmail(
     if (!response.ok) {
       const message =
         (result && result.error && result.error.message) || response.statusText;
-      console.error("[Ticket check-in email error]", result);
       return { sent: false, error: message };
     }
 
     return { sent: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[Ticket check-in email error]", err);
     return { sent: false, error: message };
   }
 }

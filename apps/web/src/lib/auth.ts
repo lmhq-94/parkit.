@@ -62,7 +62,7 @@ export function getFullName(user: User | null): string {
   return `${user.firstName} ${user.lastName}`.trim();
 }
 
-/** Primer nombre + primer apellido (ej: "Juan Carlos" + "García López" → "Juan García"). Para mostrar junto al avatar. */
+/** First name + first last name (e.g. "Juan Carlos" + "García López" → "Juan García"). To display next to avatar. */
 export function getShortName(user: User | null): string {
   if (!user) return "";
   const first = (user.firstName ?? "").trim();
@@ -72,7 +72,7 @@ export function getShortName(user: User | null): string {
   return [firstWord, lastWord].filter(Boolean).join(" ").trim();
 }
 
-/** Iniciales para avatar: solo primer nombre y primer apellido (ej: "Juan Carlos García López" → "JG"). Si no hay nombre, usa las dos primeras letras del email. */
+/** Initials for avatar: only first name and first last name (e.g. "Juan Carlos García López" → "JG"). If no name, uses first two letters of email. */
 export function getInitials(user: User | null): string {
   if (!user) return "?";
   const first = (user.firstName ?? "").trim();
@@ -87,7 +87,7 @@ export function getInitials(user: User | null): string {
   return "?";
 }
 
-/** Color de fondo para avatar de iniciales (cuando no hay foto). Mismo userId → mismo color. */
+/** Background color for initials avatar (when no photo). Same userId → same color. */
 const AVATAR_COLORS = [
   "#0ea5e9", "#8b5cf6", "#059669", "#d97706",
   "#dc2626", "#7c3aed", "#0d9488", "#b45309",
@@ -100,12 +100,12 @@ export function getAvatarColor(userId: string | null | undefined): string | unde
 }
 
 
-/** Colores HSL para avatar estilo mobile-valet (neutros) */
+/** HSL colors for mobile-valet style avatar (neutral) */
 export function getAvatarHSLColors(
   _userId: string | null | undefined,
   isDark = false
 ): { bg: string; fg: string; border: string } {
-  // Usar colores neutros (gris azulado) para ambos temas
+  // Use neutral colors (bluish gray) for both themes
   if (isDark) {
     return {
       bg: "hsla(220, 10%, 35%, 1)",

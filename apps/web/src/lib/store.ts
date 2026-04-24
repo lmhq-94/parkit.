@@ -108,15 +108,15 @@ interface DashboardStore {
   selectedCompanyName: string | null;
   requiresCustomerApp: boolean | null;
   setSelectedCompany: (id: string | null, name: string | null, requiresCustomerApp?: boolean | null) => void;
-  /** Incrementar para forzar recarga de la lista de companies en el sidebar */
+  /** Increment to force reload of the companies list in the sidebar */
   companiesVersion: number;
   bumpCompanies: () => void;
-  /** Incrementar cuando cambian parkings (ej. requiere reserva) para que el sidebar actualice "Reservas" */
+  /** Increment when parkings change (e.g. require reservation) to update "Reservations" in the sidebar */
   parkingsVersion: number;
   bumpParkings: () => void;
   companyBranding: CompanyBranding;
   setCompanyBranding: (b: CompanyBranding) => void;
-  /** Caché de branding por companyId para mostrar al instante al cambiar de empresa (super admin). */
+  /** Branding cache per company (logo, colors, etc.) */
   brandingCache: Record<string, CompanyBranding>;
   setBrandingInCache: (companyId: string, b: CompanyBranding) => void;
 }

@@ -94,7 +94,7 @@ export default function NewParkingPage() {
           }
         }
       } catch (error) {
-        console.error("Failed to fetch company currency:", error);
+        // Silently ignore currency fetch errors
       }
     })();
   }, []);

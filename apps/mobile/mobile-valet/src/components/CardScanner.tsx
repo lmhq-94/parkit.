@@ -510,7 +510,7 @@ export function CardScanner({
     onClose();
   }, [onCancel, onClose]);
 
-  // Auto-scan effect: escanea automáticamente cada 2 segundos
+  // Auto-scan effect: automatically scans every 2 seconds
   useEffect(() => {
     if (!permission?.granted || scanning || scannedCardData) return;
     

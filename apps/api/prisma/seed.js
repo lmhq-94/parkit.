@@ -24108,7 +24108,6 @@ const VEHICLE_CATALOG = {
 };
 
 async function seedVehicleCatalog() {
-  console.log("Seeding vehicle catalog with detailed dimensions...");
   const startTime = Date.now();
   
   const makes = Object.entries(VEHICLE_CATALOG);
@@ -24205,7 +24204,6 @@ async function seedVehicleCatalog() {
   }
 
   const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-  console.log(`Seeded ${totalMakes} makes, ${totalModels} models, and ${totalVariants} variants in ${duration}s.`);
 }
 
 async function main() {
@@ -24261,7 +24259,6 @@ async function main() {
 }
 
 async function seedBanksAndCards() {
-  console.log("Seeding banks and cards...");
 
   // Banks
   const banks = [
@@ -24315,16 +24312,13 @@ async function seedBanksAndCards() {
     skipDuplicates: true,
   });
 
-  console.log(`Seeded ${banks.length} banks and ${cards.length} cards.`);
 }
 
 main()
   .then(async () => {
     await prisma.$disconnect();
-    console.log("Seed completed successfully.");
   })
   .catch(async (error) => {
-    console.error("Seed failed:", error);
     await prisma.$disconnect();
     process.exit(1);
   });

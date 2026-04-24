@@ -5,9 +5,9 @@ import { useLocaleStore } from "@/lib/store";
 import { getStoredLocale, detectDeviceLocale } from "@/lib/i18n";
 
 /**
- * Este componente inicializa el idioma de forma hidratación-segura.
- * Evita el parpadeo (flicker) al detectar y establecer el idioma
- * antes de que se renderice cualquier contenido traducido.
+ * This component initializes the language in a hydration-safe way.
+ * Prevents flicker by detecting and setting the language
+ * before any translated content is rendered.
  */
 export function LocaleInit({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = useState(false);
@@ -15,13 +15,13 @@ export function LocaleInit({ children }: { children: React.ReactNode }) {
   const setLocale = useLocaleStore((s) => s.setLocale);
 
   useEffect(() => {
-    // Solo ejecutar en el cliente
+    // Only run on the client
     if (typeof window === "undefined") return;
 
     const stored = getStoredLocale();
     const detected = stored || detectDeviceLocale();
 
-    // Si el idioma detectado es diferente al actual, actualizarlo
+    // If the detected language is different from the current one, update it
     if (detected !== locale) {
       setLocale(detected);
     }

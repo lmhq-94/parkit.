@@ -21,14 +21,14 @@ interface BrandModelComboFieldProps {
   placeholder?: string;
   icon?: React.ElementType;
   className?: string;
-  /** Si true, el campo está deshabilitado (ej. modelo cuando no hay marca) */
+  /** If true, the field is disabled (e.g. model when there is no brand) */
   disabled?: boolean;
-  /** Mensaje cuando disabled (ej. "Seleccione marca primero") */
+  /** Message when disabled (e.g. "Select brand first") */
   disabledPlaceholder?: string;
 }
 
 /**
- * Campo combobox para marca/modelo: seleccionar del catálogo O escribir manualmente.
+ * Combobox field for brand/model: select from catalog or type manually.
  */
 export function BrandModelComboField({
   value,

@@ -94,7 +94,7 @@ export default function EditCompanyPage() {
           setInitialForm(loaded);
         }
       } catch {
-        setError("Error al cargar los datos");
+        setError("Error loading data");
         showError(t("common.loadError"));
       } finally {
         setLoading(false);
@@ -206,7 +206,7 @@ export default function EditCompanyPage() {
         className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden min-h-0 pb-8"
       >
         <div className="md:px-0 lg:px-0 w-full gap-5">
-          {/* Sección — datos legales */}
+          {/* Section — legal data */}
           <div className="overflow-hidden">
             <div className="px-6 py-4">
               <div className="flex items-center gap-2 flex-wrap">
@@ -237,7 +237,7 @@ export default function EditCompanyPage() {
       </div>
       </div>
 
-      {/* Sección — contacto */}
+      {/* Section — contact */}
       <div className="overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center gap-2 flex-wrap">
@@ -284,7 +284,7 @@ export default function EditCompanyPage() {
         </div>
       </div>
 
-      {/* Sección — configuración regional */}
+      {/* Section — regional configuration */}
       <div className="overflow-hidden">
         <div className="px-6 py-4 flex items-center gap-3">
           <div>
@@ -319,7 +319,7 @@ export default function EditCompanyPage() {
         </div>
       </div>
 
-      {/* Sección — canal de clientes */}
+      {/* Section — customer channel */}
       <div className="overflow-hidden">
         <div className="px-6 py-4 flex items-center gap-3">
           <div>

@@ -370,7 +370,7 @@ export class TicketsService {
             })
           : undefined,
         notes: data.intakeDamageReport?.description?.trim() ?? undefined,
-      }).catch((err) => console.error("[TicketCheckInEmail Async Error]", err));
+      }).catch(() => {});
     }
 
     return result;
@@ -561,6 +561,60 @@ export class TicketsService {
                 data: { role },
               });
             }
+          }
+        }
+      }
+
+      // Actualizar estado de valets cuando el ticket cambia de estado
+      if (data.status && data.status !== ticket.status) {
+        const assigns = await tx.ticketAssignment.findMany({
+          where: { ticketId },
+          include: {
+            valet: {
+              select: { id: true, staffRole: true },
+            },
+          },
+        });
+
+        for (const assign of assigns) {
+          const valetId = assign.valet.id;
+          const staffRole = assign.valet.staffRole;
+
+          // Para RECEPTIONIST: si el ticket pasa de REQUEST_PARKING a otro estado, liberar
+          if (staffRole === ValetStaffRole.RECEPTIONIST) {
+            if (ticket.status === TicketStatus.REQUEST_PARKING && data.status !== TicketStatus.REQUEST_PARKING) {
+              // Contar tickets activos en REQUEST_PARKING para este recepcionista
+              const activeCount = await tx.ticketAssignment.count({
+                where: {
+                  valetId,
+                  ticket: { status: TicketStatus.REQUEST_PARKING },
+                },
+              });
+              if (activeCount === 0) {
+                await tx.valet.update({
+                  where: { id: valetId },
+                  data: { currentStatus: ValetStatus.AVAILABLE },
+                });
+              }
+            }
+          }
+
+          // Para DRIVER: actualizar estado basado en tickets activos
+          if (staffRole === ValetStaffRole.DRIVER || staffRole === null) {
+            const activeCount = await tx.ticketAssignment.count({
+              where: {
+                valetId,
+                ticket: {
+                  status: {
+                    in: [TicketStatus.PARKED, TicketStatus.REQUEST_PARKING, TicketStatus.REQUEST_DELIVERY],
+                  },
+                },
+              },
+            });
+            await tx.valet.update({
+              where: { id: valetId },
+              data: { currentStatus: activeCount > 0 ? ValetStatus.BUSY : ValetStatus.AVAILABLE },
+            });
           }
         }
       }
@@ -821,7 +875,7 @@ export class TicketsService {
         }),
         locationName: updated.parking.name,
         plateNumber: updated.vehicle.plate,
-      }).catch((err) => console.error("[TicketCheckOutEmail Async Error]", err));
+      }).catch(() => {});
     }
 
     return updated;

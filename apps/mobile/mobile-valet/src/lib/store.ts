@@ -64,9 +64,9 @@ export const useLocaleStore = create<LocaleStore>((set) => ({
 }));
 
 interface AccessibilityStore {
-  /** Escala de texto para accesibilidad (1.0 = normal, 1.5 = máximo) */
+  /** Text scale for accessibility (1.0 = normal, 1.5 = maximum) */
   textScale: number;
-  /** Animaciones reducidas para usuarios sensibles */
+  /** Reduced animations for sensitive users */
   reduceMotion: boolean;
   setTextScale: (scale: number) => void;
   setReduceMotion: (enabled: boolean) => void;

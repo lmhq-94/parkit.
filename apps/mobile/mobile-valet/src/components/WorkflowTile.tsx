@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useValetTheme, ticketsA11y } from "@/theme/valetTheme";
-import { useLocaleStore } from "@/lib/store";
+import { useLocaleStore, useParkingPreferenceStore } from "@/lib/store";
 import { t } from "@/lib/i18n";
 import { IconUsersGroup } from "@/components/Icons";
 import { useEffect, useState } from "react";
@@ -28,6 +28,7 @@ interface WorkflowStatus {
 export function WorkflowTile({ styles: parentStyles, isDark, textScale }: WorkflowTileProps) {
   const theme = useValetTheme();
   const locale = useLocaleStore((s) => s.locale);
+  const manualParkingId = useParkingPreferenceStore((s) => s.manualParkingId);
   const C = theme.colors;
   const F = ticketsA11y.font;
   const Fonts = theme.fontFamily;
@@ -40,9 +41,16 @@ export function WorkflowTile({ styles: parentStyles, isDark, textScale }: Workfl
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const statusUrl = manualParkingId
+          ? `/valets/workflow/status?parkingId=${encodeURIComponent(manualParkingId)}`
+          : "/valets/workflow/status";
+        const valetsUrl = manualParkingId
+          ? `/valets/for-parking/${encodeURIComponent(manualParkingId)}`
+          : "/valets/for-company";
+
         const [statusRes, valetsRes] = await Promise.all([
-          api.get<{ data: WorkflowStatus }>("/workflow/status"),
-          api.get<{ data: ValetOpt[] }>("/valets/for-company"),
+          api.get<{ data: WorkflowStatus }>(statusUrl),
+          api.get<{ data: ValetOpt[] }>(valetsUrl),
         ]);
         setStatus(statusRes.data?.data || {
           activeProcesses: 0,
@@ -67,7 +75,7 @@ export function WorkflowTile({ styles: parentStyles, isDark, textScale }: Workfl
     void fetchData();
     const interval = setInterval(() => void fetchData(), 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [manualParkingId]);
 
   const baseFontSize = Math.round(F.status * 0.65 * textScale);
 

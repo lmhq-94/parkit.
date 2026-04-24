@@ -1,7 +1,7 @@
 export function FormPageSkeleton() {
   return (
     <div className="flex-1 flex flex-col pt-6 pb-8 px-4 md:px-10 lg:px-12 max-w-[1600px] mx-auto w-full gap-5 animate-pulse">
-      {/* Sección 1 */}
+      {/* Section 1 */}
       <div className="overflow-hidden">
         <div className="px-6 py-4 flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-input-border/30 shrink-0" />
@@ -23,7 +23,7 @@ export function FormPageSkeleton() {
         </div>
       </div>
 
-      {/* Sección 2 */}
+      {/* Section 2 */}
       <div className="overflow-hidden">
         <div className="px-6 py-4 flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-input-border/30 shrink-0" />
@@ -45,7 +45,7 @@ export function FormPageSkeleton() {
         </div>
       </div>
 
-      {/* Acciones */}
+      {/* Actions */}
       <div className="flex items-center justify-end gap-3 pt-2">
         <div className="h-[46px] w-28 rounded-lg bg-input-border/20" />
         <div className="h-[46px] w-36 rounded-lg bg-company-primary-muted" />

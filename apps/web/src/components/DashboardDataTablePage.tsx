@@ -177,15 +177,15 @@ function LinkCellRenderer(
 type DetailRow<T> = { __detail: true; __parent: T };
 
 /**
- * Altura inicial antes de medir: debe ser >0 para que el contenido no quede recortado.
- * Tras el primer layout, ResizeObserver + medición “ajustada” fijan la altura real por fila/grid.
+ * Initial height before measurement: must be >0 so content is not clipped.
+ * After first layout, ResizeObserver + "adjusted" measurement fix the actual height per row/grid.
  */
 const DETAIL_ROW_FALLBACK_HEIGHT = 220;
 const DETAIL_ROW_MEASURE_BUFFER_PX = 10;
 
 /**
- * Altura visual desde la parte superior del root hasta el borde inferior más bajo del contenido
- * (cada grid tiene distinto DOM en renderRowDetail; esto evita scrollHeight inflado por stretch del grid).
+ * Visual height from the top of the root to the bottom edge of the content
+ * (each grid has different DOM in renderRowDetail; this prevents scrollHeight inflation due to grid stretching).
  */
 function measureTightDetailHeight(root: HTMLElement): number {
   const rootTop = root.getBoundingClientRect().top;
@@ -604,7 +604,7 @@ export function DashboardDataTablePage<T extends { id?: string | number }>({
     return () => mq.removeEventListener?.("change", update);
   }, []);
 
-  /** Evita alturas cacheadas de otra fila detalle; fuerza nueva medición al expandir. */
+  /** Avoids cached heights from another detail row; forces new measurement when expanding. */
   useEffect(() => {
     setDetailRowHeights({});
   }, [expandedRowId]);

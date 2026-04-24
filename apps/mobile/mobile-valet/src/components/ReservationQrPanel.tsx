@@ -62,10 +62,10 @@ export function ReservationQrPanel({
   const { textScale } = useAccessibilityStore();
   const F = theme.font;
   /**
-   * Android / expo-camera: si `onBarcodeScanned` activa el analizador antes de que
-   * `barcodeScannerSettings` quede aplicado en nativo, el BarcodeAnalyzer se crea con
-   * formatos vacíos y no se vuelve a construir al actualizar solo los settings.
-   * Retrasar el callback un par de frames asegura QR en la primera sesión.
+   * Android / expo-camera: if `onBarcodeScanned` activates the analyzer before
+   * `barcodeScannerSettings` is applied natively, the BarcodeAnalyzer is created with
+   * empty formats and is not rebuilt when updating only the settings.
+   * Delaying the callback a couple of frames ensures QR on the first session.
    */
   const [androidBarcodeReady, setAndroidBarcodeReady] = useState(Platform.OS !== "android");
 

@@ -1123,6 +1123,6 @@ export async function setStoredLocale(locale: Locale): Promise<void> {
   try {
     await SecureStore.setItemAsync(LOCALE_KEY, locale);
   } catch (e) {
-    console.error("Failed to persist locale", e);
+    // Silently ignore locale save errors
   }
 }

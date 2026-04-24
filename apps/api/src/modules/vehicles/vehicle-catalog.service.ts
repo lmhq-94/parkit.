@@ -194,7 +194,7 @@ export class VehicleCatalogService {
         return dbMakes.map((m, i) => ({ Make_ID: i + 1, Make_Name: m.name }));
       }
     } catch (err) {
-      console.error("[VehicleCatalog] Database query failed for makes:", err);
+      // Silently ignore database errors
     }
 
     // Fallback to external API
@@ -227,7 +227,7 @@ export class VehicleCatalogService {
         return dbMake.models.map((m, i) => ({ Model_ID: i + 1, Model_Name: m.name }));
       }
     } catch (err) {
-      console.error("[VehicleCatalog] Database query failed for models:", err);
+      // Silently ignore database errors
     }
 
     // Fallback to external API
@@ -293,7 +293,7 @@ export class VehicleCatalogService {
         };
       }
     } catch (err) {
-      console.error("[VehicleCatalog] Database query failed for dimensions:", err);
+      // Silently ignore database errors
     }
 
     // Fallback to external API

@@ -289,6 +289,29 @@ export default function ParkFlowScreen() {
   const C = theme.colors;
   const M = ticketsA11y.minTouch;
 
+  // Wizard tracking
+  const startWizard = useCallback(async () => {
+    try {
+      await api.post("/valets/me/wizard/start", { wizardType: "PARK" });
+    } catch (error) {
+      console.error("Failed to start wizard:", error);
+    }
+  }, []);
+
+  const endWizard = useCallback(async () => {
+    try {
+      await api.post("/valets/me/wizard/end");
+    } catch (error) {
+      // Silently ignore wizard errors
+    }
+  }, []);
+
+  useEffect(() => {
+    void startWizard();
+    // No cleanup - wizard persists if user closes app
+    // Server timeout (30 min) handles abandoned wizards
+  }, [startWizard]);
+
   const [_ticket, setTicket] = useState<TicketDetail | null>(null);
   const [slots, setSlots] = useState<ParkingSlot[]>([]);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
@@ -487,6 +510,7 @@ export default function ParkFlowScreen() {
           { status: "PARKED", slotId: selectedSlotId },
           { headers: { "x-company-id": companyId } }
         );
+        await endWizard();
         feedback.success(t(locale, "park.successParked"));
         router.replace("/tickets?queue=parking");
       } catch {
@@ -609,7 +633,7 @@ export default function ParkFlowScreen() {
       />
       <View style={styles.frame}>
         <View style={[styles.screenHeader, { paddingTop: insets.top + theme.space.md }]}>
-          <ValetBackButton onPress={() => router.back()} accessibilityLabel={t(locale, "common.back")} />
+          <ValetBackButton onPress={() => { void endWizard(); router.back(); }} accessibilityLabel={t(locale, "common.back")} />
           <Text style={styles.screenTitle}>{t(locale, "park.title")}</Text>
           <View style={{ width: 44 }} />
         </View>

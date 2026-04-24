@@ -36,9 +36,6 @@ export async function sendInvitationEmployeeEmail(
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey || apiKey === "re_xxxxxxxxx") {
-    console.log("[Invitation email not sent - no RESEND_API_KEY]");
-    console.log(`  Original To: ${to}`);
-    console.log(`  Invite link: ${inviteLink}`);
     return { sent: true };
   }
 
@@ -168,14 +165,12 @@ export async function sendInvitationEmployeeEmail(
     if (!response.ok) {
       const message =
         (result && result.error && result.error.message) || response.statusText;
-      console.error("[Invitation email error]", result);
       return { sent: false, error: message };
     }
 
     return { sent: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[Invitation email error]", err);
     return { sent: false, error: message };
   }
 }

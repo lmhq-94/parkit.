@@ -2,14 +2,14 @@ import type { ReactNode } from "react";
 import { StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 
 type Props = {
-  /** Fondo a pantalla completa (mismo tono que splash y franja del logo). */
+  /** Full-screen background (same tone as splash and logo strip). */
   chromeBg: string;
   style?: StyleProp<ViewStyle>;
   children: ReactNode;
 };
 
 /**
- * Contenedor raíz de pantallas auth: cromo claro u oscuro; la franja del logo va aparte (`authHeroStripBg`).
+ * Root container for auth screens: light or dark chrome; the logo strip is separate (`authHeroStripBg`).
  */
 export function AuthHeroGradient({ chromeBg, style, children }: Props) {
   return (

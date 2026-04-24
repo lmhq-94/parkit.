@@ -10,12 +10,12 @@ function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const r = new FileReader();
     r.onload = () => resolve(r.result as string);
-    r.onerror = () => reject(new Error("Error al leer la imagen"));
+    r.onerror = () => reject(new Error("Error reading the image"));
     r.readAsDataURL(file);
   });
 }
 
-/** Redimensiona la imagen si supera maxDimension para que el editor de crop la maneje bien y ocupe todo el espacio. */
+/** Resizes the image if it exceeds maxDimension so the crop editor handles it well and fills the space. */
 function resizeImageToFit(dataUrl: string, maxDimension: number): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();

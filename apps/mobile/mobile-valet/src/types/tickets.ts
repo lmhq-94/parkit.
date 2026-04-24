@@ -28,7 +28,7 @@ export interface TicketAssignment {
   assignmentId: string;
   ticketId: string;
   valetId: string;
-  /** Estado real del ticket en backend. */
+  /** Actual status of the ticket in backend. */
   ticketStatus: string;
   status: "assigned" | "in-transit" | "completed";
   ticketCode?: string | null;

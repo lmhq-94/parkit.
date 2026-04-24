@@ -70,7 +70,7 @@ export default function ProfileScreen() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  /** Vista previa local (data URL) o null si el usuario quitó la foto antes de guardar */
+  /** Local preview (data URL) or null if user removed the photo before saving */
   const [localAvatar, setLocalAvatar] = useState<string | null | undefined>(undefined);
   const [avatarRemoved, setAvatarRemoved] = useState(false);
   const [staffRole, setStaffRole] = useState<ValetStaffRole>(
@@ -198,7 +198,7 @@ export default function ProfileScreen() {
     load();
   }, [load]);
 
-  /** Tras «Quitar foto» no mostrar la URL del servidor hasta guardar. */
+  /** After «Remove photo» do not show the server URL until saving. */
   const displayAvatarUri = useMemo(() => {
     if (avatarRemoved) return null;
     if (typeof localAvatar === "string" && localAvatar.length > 0) return localAvatar;

@@ -3,8 +3,8 @@ import { useValetTheme } from "@/theme/valetTheme";
 import { IconSquareRoundedArrowLeft } from "@/components/Icons";
 
 /**
- * - `auth`: mismo estilo que login (franja oscura).
- * - `surface` (por defecto): contraste sobre cabeceras claras/oscuras (`C.card`, etc.).
+ * - `auth`: same style as login (dark strip).
+ * - `surface` (default): contrast over light/dark headers (`C.card`, etc.).
  */
 export function ValetBackButton({
   onPress,
@@ -13,7 +13,7 @@ export function ValetBackButton({
 }: {
   onPress: () => void;
   accessibilityLabel: string;
-  /** `auth` solo sobre fondo oscuro tipo login/welcome */
+  /** `auth` only on dark background like login/welcome */
   appearance?: "auth" | "surface";
 }) {
   const theme = useValetTheme();
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  /** El glifo «chevron-back» suele ir visualmente desplazado; lo centramos en el círculo. */
+  /** The «chevron-back» glyph is usually visually offset; we center it in the circle. */
   iconCenter: {
     width: 28,
     height: 28,

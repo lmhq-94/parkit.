@@ -125,9 +125,9 @@ function CompanySelector({
   emptyLabel: string;
   isDark?: boolean;
   logoImageUrl?: string | null;
-  /** Cuando es true, no se muestra el círculo con avatar/logo (para usar dentro del banner sin duplicar avatar). */
+  /** When true, the circle with avatar/logo is not shown (to use inside the banner without duplicating avatar). */
   hideAvatar?: boolean;
-  /** Fuerza contraste alto para usarse sobre banners con cualquier fondo. */
+  /** Forces high contrast to use over banners with any background. */
   highContrast?: boolean;
   companyColors?: { primary: string };
 }) {
@@ -361,7 +361,7 @@ export function DashboardSidebar() {
     typeof brandingBanner === "string" && brandingBanner.trim().length > 0;
   const effectiveBannerSrc = hasCustomBanner ? brandingBanner! : bannerDefaultSrc;
 
-  // Obtener colores de la compañía para el banner
+  // Get company colors for the banner
   const getThemeDefaultColors = (dark: boolean) => ({
     primary: dark ? "#3b82f6" : "#2563eb",
     secondary: dark ? "#8b5cf6" : "#7c3aed",

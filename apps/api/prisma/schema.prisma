@@ -39,6 +39,13 @@ enum ValetStaffRole {
   DRIVER
 }
 
+/** Tipo de wizard en el que está trabajando el valet. */
+enum WizardType {
+  RECEIVE
+  PARK
+  RETURN
+}
+
 enum ParkingType {
   OPEN
   COVERED
@@ -261,6 +268,11 @@ model Valet {
   staffRole        ValetStaffRole?
 
   ratingAvg        Float?
+
+  // Wizard tracking para estado en tiempo real
+  isInWizard       Boolean     @default(false)
+  wizardType       WizardType?
+  wizardStartedAt  DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

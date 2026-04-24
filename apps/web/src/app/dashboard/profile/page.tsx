@@ -298,7 +298,6 @@ export default function ProfilePage() {
         form.theme !== initialForm.theme ||
         form.locale !== initialForm.locale
       );
-      console.log('isDirty:', dirty, 'form:', form, 'initialForm:', initialForm);
       return dirty;
     },
     [form, initialForm]

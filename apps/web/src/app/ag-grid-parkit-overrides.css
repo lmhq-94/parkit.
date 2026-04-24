@@ -1,6 +1,6 @@
 /**
- * Overrides de filtros y popups de AG Grid — tema Parkit.
- * Debe importarse DESPUÉS de ag-theme-quartz.css para que tenga prioridad.
+ * AG Grid filters and popups overrides — Parkit theme.
+ * Must be imported AFTER ag-theme-quartz.css to take precedence.
  */
 
 .ag-popup,
@@ -11,7 +11,7 @@
   z-index: 10000 !important;
 }
 
-/* Contenedor principal del filtro */
+/* Main filter container */
 .ag-popup .ag-root-wrapper,
 .ag-filter-body-wrapper .ag-filter-body,
 .ag-filter,
@@ -67,7 +67,7 @@
   border-bottom-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Contenedores intermedios: sin caja, ancho completo */
+/* Intermediate containers: no box, full width */
 .ag-filter-filter,
 .ag-filter-filter .ag-input-field,
 .ag-filter-filter .ag-input-wrapper,
@@ -88,7 +88,7 @@
   box-shadow: none !important;
 }
 
-/* Input de búsqueda del filtro — mismo estilo que inputs del resto de la plataforma */
+/* Filter search input — same style as inputs in the rest of the platform */
 .ag-filter-filter input.ag-text-field-input,
 .ag-filter-filter input.ag-number-field-input,
 .ag-mini-filter input.ag-text-field-input,
@@ -123,7 +123,7 @@
   padding-right: 2rem !important;
 }
 
-/* Resto de inputs de filtro (sin lupa) — mismo estilo pero sin padding extra */
+/* Other filter inputs (without magnifying glass) — same style but without extra padding */
 .ag-theme-parkit .ag-input-field-input,
 .ag-theme-quartz .ag-input-field-input,
 .ag-filter .ag-input-field-input,
@@ -202,8 +202,8 @@
   border-color: rgba(14, 165, 233, 0.4) !important;
 }
 
-/* Dropdown de condición (Contains, Equals…) — idéntico a LocaleToggle: rounded-xl, border-slate-200/700, shadow-2xl, bg white/slate-900 */
-/* Incluye popup del select cell editor (empresas, empleados, etc.) */
+/* Condition dropdown (Contains, Equals…) — identical to LocaleToggle: rounded-xl, border-slate-200/700, shadow-2xl, bg white/slate-900 */
+/* Includes select cell editor popup (companies, employees, etc.) */
 .ag-select-list,
 .ag-list-box,
 .ag-popup-child,
@@ -238,8 +238,8 @@
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* Items del dropdown — mismo estilo que LocaleToggle: px-3 py-2, rounded-lg, selected sky-500/20 */
-/* Incluye items del select cell editor (empresas, empleados, etc.) */
+/* Dropdown items — same style as LocaleToggle: px-3 py-2, rounded-lg, selected sky-500/20 */
+/* Includes select cell editor items (companies, employees, etc.) */
 .ag-select-list-item,
 .ag-list-item,
 .ag-theme-quartz .ag-list-item,
@@ -344,7 +344,7 @@
   border-color: #0ea5e9 !important;
 }
 
-/* Dropdown "Contiene/Equals…" — igual que inputs del resto de la plataforma */
+/* Dropdown "Contains/Equals…" — same as inputs in the rest of the platform */
 .ag-filter .ag-select,
 .ag-filter .ag-picker-field {
   width: 100% !important;
@@ -377,7 +377,7 @@
   font-size: 0.875rem !important;
 }
 
-/* Celdas en edición inline: sin doble borde, input llena la celda */
+/* Inline editing cells: no double border, input fills the cell */
 .ag-theme-parkit .ag-cell.ag-cell-inline-editing {
   padding: 0 !important;
   outline: none !important;
@@ -416,13 +416,13 @@
   box-shadow: none !important;
 }
 
-/* Dropdown del select editor */
+/* Select editor dropdown */
 .ag-theme-parkit .ag-cell-inline-editing .ag-select-cell-editor {
   min-width: 0;
   cursor: pointer;
 }
 
-/* Si usa select nativo: opciones visibles en dark mode */
+/* If using native select: options visible in dark mode */
 .dark .ag-select-cell-editor select,
 .ag-theme-quartz-dark .ag-select-cell-editor select {
   background: #0f172a !important;
@@ -436,7 +436,7 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Fila expandida "Additional info" (full-width): layout y medición de altura */
+/* Expanded row "Additional info" (full-width): layout and height measurement */
 /* -------------------------------------------------------------------------- */
 .ag-theme-parkit .ag-row:has(.parkit-grid-detail-root) .ag-cell {
   align-items: stretch !important;
@@ -468,13 +468,13 @@
   max-height: none;
 }
 
-/* Fila de detalle: sin separación extra respecto a la fila siguiente */
+/* Detail row: no extra separation from the next row */
 .ag-theme-parkit .ag-row:has(.parkit-grid-detail-root) {
   margin-bottom: 0 !important;
   padding-bottom: 0 !important;
 }
 
-/* Clase explícita (getRowClass): evita huecos si :has() falla en algún navegador */
+/* Explicit class (getRowClass): avoids gaps if :has() fails in some browsers */
 .ag-theme-parkit .ag-row.parkit-grid-detail-fullwidth-row {
   margin: 0 !important;
   padding-top: 0 !important;
@@ -499,7 +499,7 @@
   min-height: 0 !important;
 }
 
-/* Full-width embebido / contenedor: sin margen extra debajo del panel */
+/* Embedded full-width / container: no extra margin below the panel */
 .ag-theme-parkit .ag-full-width-container,
 .ag-theme-parkit .ag-full-width-row {
   margin: 0 !important;

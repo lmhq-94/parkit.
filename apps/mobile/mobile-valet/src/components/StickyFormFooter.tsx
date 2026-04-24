@@ -4,23 +4,23 @@ import { useValetTheme } from "@/theme/valetTheme";
 
 type Props = {
   children: ReactNode;
-  /** Fondo del pie (p. ej. tema valet `card` o auth `bottomSheet`). */
+  /** Footer background (e.g. valet theme `card` or auth `bottomSheet`). */
   backgroundColor?: string;
   borderColor?: string;
-  /** Padding horizontal; por defecto `theme.space.lg` (perfil). */
+  /** Horizontal padding; defaults to `theme.space.lg` (profile). */
   paddingHorizontal?: number;
-  /** Suma al padding inferior (p. ej. iOS + teclado: separar botones del teclado). */
+  /** Adds to bottom padding (e.g. iOS + keyboard: separate buttons from keyboard). */
   extraBottomPadding?: number;
   /**
-   * Usar con `KeyboardStickyView` (receive, return-pickup): escucha teclado en iOS y Android
-   * y deja padding inferior casi a 0 al abrir para no duplicar aire con el sticky.
+   * Use with `KeyboardStickyView` (receive, return-pickup): listens to keyboard on iOS and Android
+   * and sets bottom padding to almost 0 when opening to avoid duplicating space with the sticky.
    */
   keyboardPinned?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
 /**
- * Barra inferior fija para el CTA principal de formularios (mismo patrón que perfil).
+ * Fixed bottom bar for the main form CTA (same pattern as profile).
  */
 export function StickyFormFooter({
   children,
